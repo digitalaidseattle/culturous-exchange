@@ -111,14 +111,6 @@ const pages = {
       url: '/drag-drop',
       icon: icons.DragOutlined,
       breadcrumbs: false
-    },
-    {
-      id: 'map-example-page',
-      title: 'Map Example Page',
-      type: 'item',
-      url: '/map-example',
-      icon: icons.GlobalOutlined,
-      breadcrumbs: false
     }
   ]
 };

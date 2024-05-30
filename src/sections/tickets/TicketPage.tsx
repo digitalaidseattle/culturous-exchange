@@ -9,11 +9,12 @@ import { useParams } from 'react-router';
 
 // material-ui
 import { Button, Grid, Stack, Typography } from '@mui/material';
+import { UserContext } from '../../components/contexts/UserContext';
+import { Staff, Ticket, ticketService } from './ticketService';
+import { TicketHistoryCard, TicketLongForm } from './TicketComponents';
+import { DASSnackbar } from '../../components/DASSnackbar';
 
-import { DASSnackbar } from '../components/DASSnackbar';
-import { UserContext } from '../components/contexts/UserContext';
-import { TicketHistoryCard, TicketLongForm } from '../sections/tickets/TicketComponents';
-import { Ticket, Staff, ticketService } from '../sections/tickets/ticketService';
+
 
 const Labels = {
   updateMessage: 'Ticket updated.',

@@ -1,17 +1,16 @@
 import MainCard from '../components/MainCard';
 import MainLayout from '../layout/MainLayout';
 import MinimalLayout from '../layout/MinimalLayout';
+import TicketPage from '../sections/tickets/TicketPage';
 import TicketsGrid from '../sections/tickets/TicketsGrid';
 import TicketsTable from '../sections/tickets/TicketsTable';
-import MapPage from './MapPage';
 import PrivacyPage from './PrivacyPage';
-import TicketPage from './TicketPage';
 import UploadPage from './UploadPage';
 import Login from './authentication/Login';
 import DashboardDefault from './dashboard';
+import DragDropPage from './dragdrop/DragDropPage';
 import Page404 from './error/404';
 import SamplePage from './extra-pages/SamplePage';
-import DragDropPage from './dragdrop/DragDropPage';
 
 const routes = [
   {
@@ -56,10 +55,6 @@ const routes = [
       {
         path: "drag-drop",
         element: <DragDropPage />,
-      },
-      {
-        path: "map-example",
-        element: <MapPage />,
       }
     ]
   },

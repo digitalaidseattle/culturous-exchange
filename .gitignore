@@ -23,6 +23,6 @@ coverage
 *.njsproj
 *.sln
 *.sw?
-.firebase/hosting.cHVibGlj.cache
+.firebase
 .env
 
