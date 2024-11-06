@@ -7,7 +7,7 @@ import MainCard from '../../components/MainCard';
 
 // ================================|| 404 ||================================ //
 
-const SessionPage: React.FC = () => {
+const SessionsPage: React.FC = () => {
 
     return (
         <MainCard title="Session Page">
@@ -18,4 +18,4 @@ const SessionPage: React.FC = () => {
     )
 };
 
-export default SessionPage;
+export default SessionsPage;
