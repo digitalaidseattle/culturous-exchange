@@ -1,16 +1,12 @@
-import MainCard from '../components/MainCard';
 import MainLayout from '../layout/MainLayout';
 import MinimalLayout from '../layout/MinimalLayout';
-import TicketPage from '../sections/tickets/TicketPage';
-import TicketsGrid from '../sections/tickets/TicketsGrid';
-import TicketsTable from '../sections/tickets/TicketsTable';
 import PrivacyPage from './PrivacyPage';
-import UploadPage from './UploadPage';
 import Login from './authentication/Login';
-import DashboardDefault from './dashboard';
-import DragDropPage from './dragdrop/DragDropPage';
 import Page404 from './error/404';
-import SamplePage from './extra-pages/SamplePage';
+import SessionPage from './session';
+import SessionsPage from './sessions';
+import StudentPage from './student';
+import StudentsPage from './students';
 
 const routes = [
   {
@@ -19,42 +15,28 @@ const routes = [
     children: [
       {
         path: "",
-        element: <DashboardDefault />,
+        element: <SessionsPage />,
       },
       {
-        path: "sample-page",
-        element: <SamplePage />,
+        path: "sessions",
+        element: <SessionsPage />,
       },
       {
-        path: "ticket/:id",
-        element: <TicketPage />,
+        path: "session/:id",
+        element: <SessionPage />,
       },
       {
-        path: "tickets",
-        element: (
-          <MainCard title="Tickets Page">
-            <TicketsTable />
-          </MainCard>),
+        path: "students",
+        element: <StudentsPage />,
+
       },
       {
-        path: "tickets-grid",
-        element: (
-          <MainCard title="Tickets Page">
-            <TicketsGrid />
-          </MainCard>
-        ),
+        path: "student/:id",
+        element: <StudentPage />,
       },
       {
         path: "privacy",
         element: <PrivacyPage />,
-      },
-      {
-        path: "upload",
-        element: <UploadPage />,
-      },
-      {
-        path: "drag-drop",
-        element: <DragDropPage />,
       }
     ]
   },

@@ -1,4 +1,4 @@
-import { ReactNode, useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 
 // material-ui
 import {
@@ -12,51 +12,19 @@ import {
   Paper,
   Popper,
   Stack,
-  Tab,
-  Tabs,
   Typography
 } from '@mui/material';
-import { Direction, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 
 // project import
 import Transitions from '../../../../../components/@extended/Transitions';
 import MainCard from '../../../../../components/MainCard';
-import ProfileTab from './ProfileTab';
-import SettingTab from './SettingTab';
 
 // assets
-import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { LogoutOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
 import { UserContext } from '../../../../../components/contexts/UserContext';
 import { authService } from '../../../../../services/authService';
-
-interface TabPanelProps {
-  children: ReactNode,
-  index: number,
-  value: number,
-  dir: Direction
-}
-// tab panel wrapper
-const TabPanel: React.FC<TabPanelProps> = ({ children, value, index, dir, ...other }) => {
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`profile-tabpanel-${index}`}
-      aria-labelledby={`profile-tab-${index}`}
-      dir={dir}
-      {...other}>
-      {value === index && children}
-    </div>
-  );
-}
-
-function a11yProps(index: number) {
-  return {
-    id: `profile-tab-${index}`,
-    'aria-controls': `profile-tabpanel-${index}`
-  };
-}
 
 // ==============================|| HEADER CONTENT - PROFILE ||============================== //
 
@@ -93,12 +61,6 @@ const Profile = () => {
       return;
     }
     setOpen(false);
-  };
-
-  const [value, setValue] = useState(0);
-
-  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
   };
 
   const iconBackColorOpen = 'grey.300';
@@ -164,9 +126,6 @@ const Profile = () => {
                             <Avatar alt="profile user" src={avatar} sx={{ width: 32, height: 32 }} />
                             <Stack>
                               <Typography variant="h6">{username}</Typography>
-                              <Typography variant="body2" color="textSecondary">
-                                Dude
-                              </Typography>
                             </Stack>
                           </Stack>
                         </Grid>
@@ -177,44 +136,6 @@ const Profile = () => {
                         </Grid>
                       </Grid>
                     </CardContent>
-                    {open && (
-                      <>
-                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                          <Tabs variant="fullWidth" value={value} onChange={handleChange} aria-label="profile tabs">
-                            <Tab
-                              sx={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                textTransform: 'capitalize'
-                              }}
-                              icon={<UserOutlined style={{ marginBottom: 0, marginRight: '10px' }} />}
-                              label="Profile"
-                              {...a11yProps(0)}
-                            />
-                            <Tab
-                              sx={{
-                                display: 'flex',
-                                flexDirection: 'row',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                textTransform: 'capitalize'
-                              }}
-                              icon={<SettingOutlined style={{ marginBottom: 0, marginRight: '10px' }} />}
-                              label="Setting"
-                              {...a11yProps(1)}
-                            />
-                          </Tabs>
-                        </Box>
-                        <TabPanel value={value} index={0} dir={theme.direction}>
-                          <ProfileTab handleLogout={handleLogout} />
-                        </TabPanel>
-                        <TabPanel value={value} index={1} dir={theme.direction}>
-                          <SettingTab />
-                        </TabPanel>
-                      </>
-                    )}
                   </MainCard>
                 </ClickAwayListener>
               </Paper>

@@ -23,9 +23,8 @@ const DrawerHeader = (props: { open: boolean }) => {
       alignItems='center'
       justifyContent={props.open ? 'flex-start' : 'center'}
       paddingLeft={theme.spacing(props.open ? 3 : 0)} >
-      <Stack direction="row" spacing={1} alignItems="center">
+      <Stack direction="row" m={1} spacing={1} alignItems="center">
         <Logo />
-        <Typography variant="h5">{import.meta.env.VITE_APPLICATION_NAME}</Typography>        
       </Stack>
     </Box>
   );
