@@ -2,7 +2,6 @@
 // material-ui
 
 // project import
-import { Typography } from '@mui/material';
 import MainCard from '../../components/MainCard';
 import SessionsTable from './SessionsTable';
 
