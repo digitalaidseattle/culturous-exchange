@@ -11,7 +11,7 @@ type Student = {
     city: string;
     state: string;
     country: string;
-    availabilities: Availability[];    
+    availabilities: Availability[];
 }
 
 type Session = {
@@ -19,6 +19,7 @@ type Session = {
     name: string;
     startDate: Date;
     endDate: Date;
+    plans: Plan[];
 }
 
 type Group = {
@@ -35,18 +36,13 @@ type Enrollment = {
     availabilities: Availability[];
 }
 
-type PlanSpec = {
+type Plan = {
     id: string;
+    name: string;
     sessionId: string;
     numberOfGroups: number;
     enrollments: Enrollment[]
-}
-
-type Plan = {
-    id: string;
-    planSpecId: string;
-    planSpec: PlanSpec;
     groups: Group[];
     rating: number;
-    messages: string[];
+    comments: string[];
 }

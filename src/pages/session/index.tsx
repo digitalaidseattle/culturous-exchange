@@ -2,10 +2,14 @@
 // material-ui
 
 // project import
-import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Button, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router';
+import { sessionService } from '../../api/ceSessionService';
 import MainCard from '../../components/MainCard';
-import { useState } from 'react';
 import { GroupBoard } from './GroupBoard';
+import StudentsTable from './StudentsTable';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -36,84 +40,9 @@ function a11yProps(index: number) {
     };
 }
 
-const TEST_PLAN: Plan = {
-    id: '',
-    planSpecId: '',
-    planSpec: {
-        id: '',
-        sessionId: '',
-        numberOfGroups: 6,
-        enrollments: [
-            {
-                id: '1',
-                studentId: 's1',
-                student: {
-                    id: '',
-                    name: 'Student 1',
-                    email: '',
-                    city: '',
-                    state: '',
-                    country: '',
-                    availabilities: []
-                },
-                anchor: true,
-                availabilities: []
-            },
-            {
-                id: '2',
-                studentId: 's2',
-                student: {
-                    id: '',
-                    name: 'Student 2',
-                    email: '',
-                    city: '',
-                    state: '',
-                    country: '',
-                    availabilities: []
-                },
-                anchor: false,
-                availabilities: []
-            },
-            {
-                id: '3',
-                studentId: 's3',
-                student: {
-                    id: '',
-                    name: 'Student 3',
-                    email: '',
-                    city: '',
-                    state: '',
-                    country: '',
-                    availabilities: []
-                },
-                anchor: false,
-                availabilities: []
-            }
-        ]
-    },
-    groups: [
-        {
-            id: undefined,
-            groupNo: 'Group 1',
-            studentIds: ['s1']
-        },
-        {
-            id: undefined,
-            groupNo: 'Group 2',
-            studentIds: ['s2', 's3']
-        },
-        {
-            id: undefined,
-            groupNo: 'Group 3',
-            studentIds: []
-        }
-    ],
-    rating: 10,
-    messages: []
-}
-const BasicTabs = () => {
+const PlanCard = (props: { plan: Plan }) => {
     const [value, setValue] = useState<number>(0);
-    const plan: Plan | undefined = TEST_PLAN;
+    const plan = props.plan;
 
     const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
@@ -123,43 +52,58 @@ const BasicTabs = () => {
         <Box sx={{ width: '100%' }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-                    <Tab label="Specs" {...a11yProps(0)} />
-                    <Tab label="Students" {...a11yProps(1)} />
-                    <Tab label="Grouping" {...a11yProps(2)} />
+                    <Tab label="Setup" {...a11yProps(0)} />
+                    <Tab label="Grouping" {...a11yProps(1)} />
                 </Tabs>
             </Box>
             <CustomTabPanel value={value} index={0}>
-                <Typography>Dates</Typography>
-                <Typography>Number of Groups</Typography>
+                <TextField id="outlined-basic" label="Number of Groups" variant="outlined" />
+                <Box sx={{ marginTop: 1 }}>
+                    <StudentsTable />
+                </Box>
             </CustomTabPanel>
             <CustomTabPanel value={value} index={1}>
-                <Typography>Table of Students</Typography>
-                <Typography>Function to add all available students</Typography>
-                <Typography>Specify Anchors</Typography>
-            </CustomTabPanel>
-            <CustomTabPanel value={value} index={2}>
-                <Typography>Allow adding/removing students in/out of session</Typography>
-                <GroupBoard plan={plan} />
+                <Button variant='contained' onClick={() => alert('Placing Students')}>Place Students</Button>
+                <Box sx={{ marginTop: 1 }}  >
+                    <GroupBoard plan={plan} />
+                </Box>
             </CustomTabPanel>
         </Box>
     );
 }
 
 const SessionPage: React.FC = () => {
-
-    return (
+    const { id: sessionId } = useParams<string>();
+    const [session, setSession] = useState<Session>();
+    useEffect(() => {
+        if (sessionId) {
+            sessionService.getById(sessionId)
+                .then(session => setSession(session))
+        }
+    }, [sessionId])
+    return (session &&
         <Stack gap={1}>
-            <MainCard title="Session Page">
-                <Typography>List of Plans</Typography>
-                <Typography>Duplicate function</Typography>
-                <Typography>Export function</Typography>
+            <MainCard title="Session Page" >
+                <Stack direction={'row'} gap={1} >
+                    <Typography fontWeight={700}>Dates:</Typography>
+                    <DatePicker
+                        label="Start"
+                        value={session.startDate}
+                        onChange={(newValue) => alert(newValue)}
+                    />
+                    <DatePicker
+                        label="End"
+                        value={session.endDate}
+                        onChange={(newValue) => alert(newValue)}
+                    />
+                </Stack>
+                <Button sx={{ marginTop: 1 }} variant="contained" onClick={() => alert('A plan would be added.')}>New Plan</Button>
             </MainCard>
-            <MainCard title="Plan 1">
-                <Typography>Generate plan function</Typography>
-                <Typography>Plan error messages</Typography>
-                <Typography>Plan score?</Typography>
-                <BasicTabs />
-            </MainCard>
+            {session.plans.map(plan =>
+                <MainCard title={plan.name}>
+                    <PlanCard plan={plan} />
+                </MainCard>
+            )}
         </Stack>
     )
 };

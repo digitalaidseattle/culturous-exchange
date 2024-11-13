@@ -6,16 +6,18 @@
  */
 
 // material-ui
-import { Box, Stack } from '@mui/material';
+import { Box, Button, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 // project import
 import Logo from '../../../../components/Logo/Logo';
+import { useNavigate } from 'react-router';
 
 // ==============================|| DRAWER HEADER ||============================== //
 
 const DrawerHeader = (props: { open: boolean }) => {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   return (
     <Box
@@ -24,7 +26,9 @@ const DrawerHeader = (props: { open: boolean }) => {
       justifyContent={props.open ? 'flex-start' : 'center'}
       paddingLeft={theme.spacing(props.open ? 3 : 0)} >
       <Stack direction="row" m={1} spacing={1} alignItems="center">
-        <Logo />
+        <Button onClick={() => navigate('/')}>
+          <Logo />
+        </Button>
       </Stack>
     </Box>
   );
