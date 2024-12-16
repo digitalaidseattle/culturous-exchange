@@ -1,0 +1,38 @@
+name: Deploy to Supabase on merge
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install Supabase CLI
+      run: npm install -g supabase
+
+    - name: Authenticate Supabase CLI
+      run: supabase login --token "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
+
+    - name: Link Supabase Project
+      run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}" --password "${{ secrets.SUPABASE_DB_PWD }}"
+    - name: Deploy migrations
+      run: supabase db push
+
+    - name: Deploy Edge Functions
+      run: |
+        if [ -d "supabase/functions" ] && [ "$(ls -A supabase/functions)" ]; then
+          supabase functions deploy
+        else
+          echo "No functions to deploy."
+        fi
