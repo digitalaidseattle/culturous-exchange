@@ -17,6 +17,7 @@ class CEStudentService {
                     {
                         id: 'sess1',
                         name: 'Student 1',
+                        age: 17,
                         email: 's1@gmail.com',
                         city: "Seattle",
                         state: "Washington",
@@ -26,6 +27,7 @@ class CEStudentService {
                     {
                         id: 'sess2',
                         name: 'Student 1',
+                        age: 15,
                         email: 's2@gmail.com',
                         city: "Essen",
                         state: "",
