@@ -13,28 +13,27 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18' # Update to a compatible version (>=18)
+        node-version: '18' # Ensure compatibility with Supabase CLI
 
-    - name: Install Supabase CLI
-      run: |
-        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-        sudo apt-get install -y nodejs
-        curl -fsSL https://get.supabase.io/install/linux | sh
-      shell: bash
+    - name: Install dependencies
+      run: npm install
+
+    - name: Install Supabase CLI locally
+      run: npm install supabase
 
     - name: Authenticate Supabase CLI
-      run: supabase login --token "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
+      run: npx supabase login --token "${{ secrets.SUPABASE_ACCESS_TOKEN }}"
 
     - name: Link Supabase Project
-      run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}" --password "${{ secrets.SUPABASE_DB_PWD }}"
+      run: npx supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}" --password "${{ secrets.SUPABASE_DB_PWD }}"
 
     - name: Deploy migrations
-      run: supabase db push
+      run: npx supabase db push
 
     - name: Deploy Edge Functions
       run: |
         if [ -d "supabase/functions" ] && [ "$(ls -A supabase/functions)" ]; then
-          supabase functions deploy
+          npx supabase functions deploy
         else
           echo "No functions to deploy."
         fi
