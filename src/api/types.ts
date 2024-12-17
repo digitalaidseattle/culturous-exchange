@@ -7,6 +7,7 @@ type Availability = {
 type Student = {
     id: string;
     name: string;
+    age: number | null;
     email: string;
     city: string;
     state: string;
