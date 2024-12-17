@@ -23,7 +23,7 @@ class CEStudentService {
         async find(_queryModel: QueryModel): Promise<PageInfo<Student>> {
 
     try {
-      const { data, error } = await supabaseClient.from('student_tbl').select('*');
+      const { data, error } = await supabaseClient.from('student').select('*');
 
       if (error) {
         console.error('Error fetching students:', error.message);
