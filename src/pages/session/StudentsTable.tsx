@@ -24,11 +24,9 @@ import {
 // project import
 import { useNavigate } from 'react-router';
 import { studentService } from '../../api/ceStudentService';
-import { LoadingContext } from '../../components/contexts/LoadingContext';
-import { RefreshContext } from '../../components/contexts/RefreshContext';
-import { PageInfo, QueryModel } from '../../services/supabaseClient';
+import {LoadingContext, RefreshContext } from '@digitalaidseattle/core';
+import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { StarFilled } from '@ant-design/icons';
-
 
 const PAGE_SIZE = 10;
 

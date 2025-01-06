@@ -7,9 +7,9 @@ import {
   GridSortModel,
 } from '@mui/x-data-grid';
 
-import { PageInfo, QueryModel } from '../../services/supabaseClient';
+import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
-import { LoadingContext } from '../../components/contexts/LoadingContext';
+import {LoadingContext } from '@digitalaidseattle/core';
 
 const PAGE_SIZE = 10;
 

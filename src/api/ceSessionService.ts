@@ -5,7 +5,7 @@
  *
  */
 
-import { PageInfo, QueryModel } from "../services/supabaseClient";
+import {  PageInfo, QueryModel  } from "@digitalaidseattle/supabase";
 
 
 const TEST_PLAN = {

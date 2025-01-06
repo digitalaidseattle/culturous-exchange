@@ -1,8 +1,11 @@
-import MainLayout from '../layout/MainLayout';
-import MinimalLayout from '../layout/MinimalLayout';
-import PrivacyPage from './PrivacyPage';
-import Login from './authentication/Login';
-import Page404 from './error/404';
+import {
+  Error,
+  Login,
+  MainLayout,
+  MarkdownPage,
+  MinimalLayout
+} from "@digitalaidseattle/mui";
+
 import SessionPage from './session';
 import SessionsPage from './sessions';
 import StudentPage from './student';
@@ -36,7 +39,7 @@ const routes = [
       },
       {
         path: "privacy",
-        element: <PrivacyPage />,
+        element: <MarkdownPage filepath='privacy.md'/>,
       }
     ]
   },
@@ -56,7 +59,7 @@ const routes = [
     children: [
       {
         path: '*',
-        element: <Page404 />
+        element: <Error />
       }
     ]
   }

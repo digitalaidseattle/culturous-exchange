@@ -1,11 +1,12 @@
 /**
  *  main.tsx
  *
- *  @copyright 2024 Digital Aid Seattle
+ *  @copyright 2025 Digital Aid Seattle
  *
  */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './index.css';
 import App from './App';
 
 ReactDOM.createRoot(document.getElementById('root')!)
