@@ -40,6 +40,14 @@ const StudentDetailsTable: React.FC = () => {
   const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
   const { setLoading } = useContext(LoadingContext);
 
+  const [newStudentData, setNewStudentData] = useState<Student[]>();
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const file = e.target.files[0];
+    console.log('file: ', file)
+  }
+
   useEffect(() => {
     if (paginationModel && sortModel) {
       setLoading(true);
@@ -63,6 +71,7 @@ const StudentDetailsTable: React.FC = () => {
         <input
             type="file"
             accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+            onChange={(e) => handleUpload(e)}
         />
       </Stack>
       <DataGrid
