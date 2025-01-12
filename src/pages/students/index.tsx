@@ -4,7 +4,7 @@
 // project import
 import { Typography } from '@mui/material';
 import MainCard from '../../components/MainCard';
-import StudentsDetailsTable from './StudentsDetailsTable';
+import StudentDetailsTable from './StudentDetailsTable';
 
 // ================================|| 404 ||================================ //
 
@@ -13,7 +13,7 @@ const StudentsPage: React.FC = () => {
         <MainCard title="Students Page">
             <Typography>Should include method to upload a spreadsheet</Typography>
             <Typography>Investigate integration with Google Docs to obtain data</Typography>
-            <StudentsDetailsTable />
+            <StudentDetailsTable />
         </MainCard>
     )
 };

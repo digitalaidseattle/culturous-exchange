@@ -33,7 +33,7 @@ const getColumns = (): GridColDef[] => {
   ]
 }
 
-const StudentsDetailsTable: React.FC = () => {
+const StudentDetailsTable: React.FC = () => {
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'name', sort: 'asc' }]);
   const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
@@ -77,4 +77,4 @@ const StudentsDetailsTable: React.FC = () => {
   )
 }
 
-export default StudentsDetailsTable;
+export default StudentDetailsTable;
