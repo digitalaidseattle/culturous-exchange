@@ -10,6 +10,7 @@ import {
 import { PageInfo, QueryModel } from '../../services/supabaseClient';
 import { studentService } from '../../api/ceStudentService';
 import { LoadingContext } from '../../components/contexts/LoadingContext';
+import { Stack } from '@mui/material';
 
 const PAGE_SIZE = 10;
 
@@ -58,6 +59,12 @@ const StudentDetailsTable: React.FC = () => {
 
   return (
     <Box>
+      <Stack spacing={2} m={2}>
+        <input
+            type="file"
+            accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+        />
+      </Stack>
       <DataGrid
         rows={pageInfo.rows}
         columns={getColumns()}
