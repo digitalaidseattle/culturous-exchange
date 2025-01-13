@@ -40,12 +40,15 @@ const StudentDetailsTable: React.FC = () => {
   const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
   const { setLoading } = useContext(LoadingContext);
 
-  const [newStudentData, setNewStudentData] = useState<Student[]>();
+  // const [newStudentData, setNewStudentData] = useState<Student[]>();
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
-    const file = e.target.files[0];
-    console.log('file: ', file)
+    // const file = e.target.files[0];
+    //send to student service that will validate, parse, update, and return the data from the database
+    //if newStudentData
+      //set in newStudentData state
+      //spread newStudentData with pageInfo
   }
 
   useEffect(() => {
