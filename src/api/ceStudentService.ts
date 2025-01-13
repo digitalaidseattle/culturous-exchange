@@ -1,11 +1,10 @@
 /**
  *  cePlanService.ts
  *
- *  @copyright 2024 Digital Aid Seattle
+ *  @copyright 2025 Digital Aid Seattle
  *
  */
-import { PageInfo, QueryModel } from "../services/supabaseClient";
-import { supabaseClient } from '../services/supabaseClient';
+import { PageInfo, QueryModel, supabaseClient } from "@digitalaidseattle/supabase";
 
 interface Student {
   id: string; // Adjust based on database schema
@@ -18,9 +17,8 @@ interface Student {
   availabilities: any[]; // Adjust based on schema
 }
 
-
 class CEStudentService {
-        async find(_queryModel: QueryModel): Promise<PageInfo<Student>> {
+  async find(_queryModel: QueryModel): Promise<PageInfo<Student>> {
 
     try {
       const { data, error } = await supabaseClient.from('student').select('*');
