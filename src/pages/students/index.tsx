@@ -1,9 +1,9 @@
 
 // material-ui
+import { Typography } from '@mui/material';
 
 // project import
-import { Typography } from '@mui/material';
-import MainCard from '../../components/MainCard';
+import { MainCard } from '@digitalaidseattle/mui';
 import StudentsDetailsTable from './StudentsDetailsTable';
 
 // ================================|| 404 ||================================ //

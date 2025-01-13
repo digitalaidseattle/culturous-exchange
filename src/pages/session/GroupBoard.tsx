@@ -6,15 +6,15 @@
  *
  */
 
+import { ReactNode, useEffect, useState } from "react";
+
 import { StarFilled } from "@ant-design/icons";
 import {
     Card,
     CardContent,
     Typography
 } from "@mui/material";
-import { ReactNode, useEffect, useState } from "react";
-import DragDropBoard from "../../components/dragdrop/DragDropBoard";
-import { DDCategory, DDType } from "../../components/dragdrop/types";
+import { DragAndDrop, DDCategory, DDType } from '@digitalaidseattle/draganddrop';
 
 
 export const StudentCard = (props: { enrollment: Enrollment }) => {
@@ -59,7 +59,7 @@ export const GroupBoard = (props: { plan: Plan | undefined }) => {
 
     return (
         <>{props.plan && categories &&
-            <DragDropBoard
+            <DragAndDrop
                 onChange={(c: Map<string, unknown>, e: Enrollment) => handleChange(c, e)}
                 items={props.plan.enrollments}
                 categories={categories}
