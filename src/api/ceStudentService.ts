@@ -4,42 +4,46 @@
  *  @copyright 2024 Digital Aid Seattle
  *
  */
+import { PageInfo, QueryModel } from "../services/supabaseClient";
+import { supabaseClient } from '../services/supabaseClient';
 
-import { PageInfo, QueryModel } from "@digitalaidseattle/supabase";
+interface Student {
+  id: string; // Adjust based on database schema
+  name: string;
+  age: number;
+  email: string;
+  city: string;
+  state: string;
+  country: string;
+  availabilities: any[]; // Adjust based on schema
+}
 
 
 class CEStudentService {
+        async find(_queryModel: QueryModel): Promise<PageInfo<Student>> {
 
-    async find(_queryModel: QueryModel): Promise<PageInfo<Student>> {
+    try {
+      const { data, error } = await supabaseClient.from('student').select('*');
+
+      if (error) {
+        console.error('Error fetching students:', error.message);
+        throw new Error('Failed to fetch students');
+      }
+
+      if (data) {
         return {
-            totalRowCount: 2,
-            rows: [
-                {
-                    id: 'sess1',
-                    name: 'Student 1',
-                    age: 17,
-                    email: 's1@gmail.com',
-                    city: "Seattle",
-                    state: "Washington",
-                    country: "US",
-                    availabilities: []
-                },
-                {
-                    id: 'sess2',
-                    name: 'Student 1',
-                    age: 15,
-                    email: 's2@gmail.com',
-                    city: "Essen",
-                    state: "",
-                    country: "Germany",
-                    availabilities: []
-                }
-            ]
-        }
-    }
+          totalRowCount: data.length,
+          rows: data as Student[],
+        };
+      }
 
+      return { totalRowCount: 0, rows: [] };
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      throw err;
+    }
+  }
 }
 
-const studentService = new CEStudentService()
+const studentService = new CEStudentService();
 export { studentService };
-
