@@ -54,6 +54,16 @@ const getColumns = (): GridColDef[] => {
       field: 'availabilities',
       headerName: 'Availabilities',
       width: 150,
+      renderCell: (params) => {
+        const availabilities = params.value || [];
+        return (
+          <Box>
+            {availabilities.map((timeStamp: string, idx: number) => (
+              <Box key={idx}>{timeStamp}</Box>
+            ))}
+          </Box>
+        )
+      }
     },
   ]
 }
