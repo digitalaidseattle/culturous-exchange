@@ -3,7 +3,7 @@
 
 // project import
 import { Typography } from '@mui/material';
-import MainCard from '../../components/MainCard';
+import { MainCard } from '@digitalaidseattle/mui';
 
 // ================================|| 404 ||================================ //
 

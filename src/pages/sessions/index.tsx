@@ -2,7 +2,7 @@
 // material-ui
 
 // project import
-import MainCard from '../../components/MainCard';
+import { MainCard } from '@digitalaidseattle/mui';
 import SessionsTable from './SessionsTable';
 
 // ================================|| 404 ||================================ //
