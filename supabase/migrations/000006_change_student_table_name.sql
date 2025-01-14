@@ -13,10 +13,10 @@ CREATE TABLE student (
     availabilities JSONB DEFAULT '[]' -- Storing availabilities as a JSON array
 );
 
--- Insert the first student
-INSERT INTO student (name, age, email, city, state, country, availabilities)
-VALUES ('Student1', 17, 's1@gmail.com', 'Seattle', 'Washington', 'US', '[]');
+-- -- Insert the first student
+-- INSERT INTO student (name, age, email, city, state, country, availabilities)
+-- VALUES ('Student1', 17, 's1@gmail.com', 'Seattle', 'Washington', 'US', '[]');
 
--- Insert the second student
-INSERT INTO student (name, age, email, city, state, country, availabilities)
-VALUES ('Student2', 15, 's2@gmail.com', 'Essen', '', 'Germany', '[]');
+-- -- Insert the second student
+-- INSERT INTO student (name, age, email, city, state, country, availabilities)
+-- VALUES ('Student2', 15, 's2@gmail.com', 'Essen', '', 'Germany', '[]');
