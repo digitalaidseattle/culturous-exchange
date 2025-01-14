@@ -1,13 +1,14 @@
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router';
 
 // material-ui
 
 // project import
 import { Box, Button, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+
+import { MainCard } from '@digitalaidseattle/mui';
 import { sessionService } from '../../api/ceSessionService';
-import MainCard from '../../components/MainCard';
 import { GroupBoard } from './GroupBoard';
 import StudentsTable from './StudentsTable';
 

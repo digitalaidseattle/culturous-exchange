@@ -7,14 +7,19 @@ import {
   GridSortModel,
 } from '@mui/x-data-grid';
 
-import { PageInfo, QueryModel } from '../../services/supabaseClient';
+import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
-import { LoadingContext } from '../../components/contexts/LoadingContext';
+import {LoadingContext } from '@digitalaidseattle/core';
 
 const PAGE_SIZE = 10;
 
 const getColumns = (): GridColDef[] => {
   return [
+    {
+      field: 'id',
+      headerName: 'Id',
+      width: 150,
+    },
     {
       field: 'name',
       headerName: 'Name',
@@ -26,9 +31,39 @@ const getColumns = (): GridColDef[] => {
       width: 150,
     },
     {
+      field: 'email',
+      headerName: 'Email',
+      width: 150,
+    },
+    {
+      field: 'city',
+      headerName: 'City',
+      width: 150,
+    },
+    {
+      field: 'state',
+      headerName: 'State',
+      width: 150,
+    },
+    {
       field: 'country',
       headerName: 'Country',
       width: 150,
+    },
+    {
+      field: 'availabilities',
+      headerName: 'Availabilities',
+      width: 150,
+      renderCell: (params) => {
+        const availabilities = params.value || [];
+        return (
+          <Box>
+            {availabilities.map((timeStamp: string, idx: number) => (
+              <Box key={idx}>{timeStamp}</Box>
+            ))}
+          </Box>
+        )
+      }
     },
   ]
 }
