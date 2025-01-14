@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabaseClient } from "./supabaseClient";
-import { loggingService } from "./loggingService";
+import { supabaseClient } from "@digitalaidseattle/supabase";
+import { useLoggingService } from "@digitalaidseattle/core";
 
 
 export type AppConstant = {
@@ -12,6 +12,7 @@ const cache: Record<string, AppConstant[]> = {}
 const useAppConstants = (type: string) => {
     const [status, setStatus] = useState('idle');
     const [data, setData] = useState<AppConstant[]>([]);
+    const loggingService = useLoggingService();
 
     useEffect(() => {
         fetchData();
