@@ -9,7 +9,7 @@ import {
 
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
-import {LoadingContext } from '@digitalaidseattle/core';
+import { LoadingContext } from '@digitalaidseattle/core';
 import { Stack } from '@mui/material';
 
 const PAGE_SIZE = 10;
@@ -56,18 +56,23 @@ const getColumns = (): GridColDef[] => {
       headerName: 'Availabilities',
       width: 150,
       renderCell: (params) => {
-        const availabilities = params.value || [];
+        const availabilities = Array.isArray(params.value)
+          ? params.value
+          : typeof params.value === 'string'
+          ? params.value.split(",")
+          : [];
+    
         return (
           <Box>
             {availabilities.map((timeStamp: string, idx: number) => (
               <Box key={idx}>{timeStamp}</Box>
             ))}
           </Box>
-        )
-      }
-    },
-  ]
-}
+        );
+      },
+    }
+  ];
+};
 
 const StudentDetailsTable: React.FC = () => {
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
@@ -75,60 +80,70 @@ const StudentDetailsTable: React.FC = () => {
   const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
   const { setLoading } = useContext(LoadingContext);
 
-  // const [newStudentData, setNewStudentData] = useState<Student[]>();
-
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
-    // const file = e.target.files[0];
-    //send to student service that will validate, parse, update, and return the data from the database
-    //if newStudentData
-      //set in newStudentData state
-      //spread newStudentData with pageInfo
-  }
+    const file = e.target.files[0];
+
+    setLoading(true);
+    try {
+      const successCount = await studentService.insert_from_excel(file);
+      console.log(`Successfully inserted ${successCount} students.`);
+      // Refresh the table data after insertion
+      const queryModel = {
+        page: paginationModel.page,
+        pageSize: paginationModel.pageSize,
+        sortField: sortModel.length === 0 ? 'name' : sortModel[0].field,
+        sortDirection: sortModel.length === 0 ? 'asc' : sortModel[0].sort,
+      } as QueryModel;
+      const pi = await studentService.find(queryModel);
+      setPageInfo(pi);
+    } catch (err) {
+      console.error('Error processing uploaded file:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (paginationModel && sortModel) {
       setLoading(true);
-        const queryModel = {
-          page: paginationModel.page,
-          pageSize: paginationModel.pageSize,
-          sortField: sortModel.length === 0 ? 'name' : sortModel[0].field,
-          sortDirection: sortModel.length === 0 ? 'asc' : sortModel[0].sort
-        } as QueryModel
-        studentService.find(queryModel)
-          .then((pi) => setPageInfo(pi))
-          .catch((err) => console.error(err))
-          .finally(() => setLoading(false))
+      const queryModel = {
+        page: paginationModel.page,
+        pageSize: paginationModel.pageSize,
+        sortField: sortModel.length === 0 ? 'name' : sortModel[0].field,
+        sortDirection: sortModel.length === 0 ? 'asc' : sortModel[0].sort,
+      } as QueryModel;
+      studentService
+        .find(queryModel)
+        .then((pi) => setPageInfo(pi))
+        .catch((err) => console.error(err))
+        .finally(() => setLoading(false));
     }
-  }, [paginationModel, sortModel])
-
+  }, [paginationModel, sortModel]);
 
   return (
     <Box>
       <Stack spacing={2} m={2}>
         <input
-            type="file"
-            accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
-            onChange={(e) => handleUpload(e)}
+          type="file"
+          accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+          onChange={(e) => handleUpload(e)}
         />
       </Stack>
       <DataGrid
         rows={pageInfo.rows}
         columns={getColumns()}
-
-        paginationMode='server'
+        paginationMode="server"
         paginationModel={paginationModel}
         rowCount={pageInfo.totalRowCount}
         onPaginationModelChange={setPaginationModel}
-
-        sortingMode='server'
+        sortingMode="server"
         sortModel={sortModel}
         onSortModelChange={setSortModel}
-
         pageSizeOptions={[5, 10, 25, 100]}
       />
     </Box>
-  )
-}
+  );
+};
 
 export default StudentDetailsTable;
