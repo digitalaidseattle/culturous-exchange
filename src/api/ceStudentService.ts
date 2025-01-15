@@ -112,26 +112,27 @@ class CEStudentService {
       throw new Error('Failed to parse Excel file');
     }
   }
-  async insert_from_excel(excel_file: File): Promise<number> {
+  async insert_from_excel(excel_file: File): Promise<{ successCount: number; failedStudents: Student[] }> {
     try {
       const students = await this.get_students_from_excel(excel_file);
       let successCount = 0;
+      const failedStudents: Student[] = [];
   
       for (const student of students) {
         try {
           await this.insert(student);
           successCount++;
         } catch (error) {
+          failedStudents.push(student);
           if (error instanceof Error) {
             console.error(`Failed to insert student with ID ${student.id}:`, error.message);
           } else {
             console.error(`Failed to insert student with ID ${student.id}:`, error);
           }
-          // Continue to process other students even if one fails
         }
       }
   
-      return successCount;
+      return { successCount, failedStudents };
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error processing Excel file:', error.message);
@@ -141,6 +142,7 @@ class CEStudentService {
       throw new Error('Failed to insert students from Excel file');
     }
   }
+  
 }
 
 const studentService = new CEStudentService();

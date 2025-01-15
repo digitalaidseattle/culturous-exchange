@@ -86,8 +86,16 @@ const StudentsDetailsTable: React.FC = () => {
 
     setLoading(true);
     try {
-      const successCount = await studentService.insert_from_excel(file);
+      const { successCount, failedStudents } = await studentService.insert_from_excel(file);
       console.log(`Successfully inserted ${successCount} students.`);
+      
+      if (failedStudents.length > 0) {
+        console.log(`Failed to insert ${failedStudents.length} students:`);
+        failedStudents.forEach((student) => {
+          console.log(`- Student ID: ${student.id}, Name: ${student.name}`);
+        });
+      }
+      
       // Refresh the table data after insertion
       const queryModel = {
         page: paginationModel.page,
