@@ -1,43 +1,47 @@
 /**
  *  cePlanService.ts
  *
- *  @copyright 2024 Digital Aid Seattle
+ *  @copyright 2025 Digital Aid Seattle
  *
  */
+import { PageInfo, QueryModel, supabaseClient } from "@digitalaidseattle/supabase";
 
-import { PageInfo, QueryModel } from "../services/supabaseClient";
-
-
-class CEStudentService {
-
-        async find(_queryModel: QueryModel): Promise<PageInfo<Student>> {
-            return {
-                totalRowCount: 2,
-                rows: [
-                    {
-                        id: 'sess1',
-                        name: 'Student 1',
-                        email: 's1@gmail.com',
-                        city: "Seattle",
-                        state: "Washington",
-                        country: "US",
-                        availabilities: []
-                    },
-                    {
-                        id: 'sess2',
-                        name: 'Student 1',
-                        email: 's2@gmail.com',
-                        city: "Essen",
-                        state: "",
-                        country: "Germany",
-                        availabilities: []
-                    }
-                ]
-            }
-        }
-
+interface Student {
+  id: string; // Adjust based on database schema
+  name: string;
+  age: number;
+  email: string;
+  city: string;
+  state: string;
+  country: string;
+  availabilities: any[]; // Adjust based on schema
 }
 
-const studentService = new CEStudentService()
-export { studentService };
+class CEStudentService {
+  async find(_queryModel: QueryModel): Promise<PageInfo<Student>> {
 
+    try {
+      const { data, error } = await supabaseClient.from('student').select('*');
+
+      if (error) {
+        console.error('Error fetching students:', error.message);
+        throw new Error('Failed to fetch students');
+      }
+
+      if (data) {
+        return {
+          totalRowCount: data.length,
+          rows: data as Student[],
+        };
+      }
+
+      return { totalRowCount: 0, rows: [] };
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      throw err;
+    }
+  }
+}
+
+const studentService = new CEStudentService();
+export { studentService };

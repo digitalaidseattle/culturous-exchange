@@ -5,7 +5,7 @@
  *
  */
 
-import { PageInfo, QueryModel } from "../services/supabaseClient";
+import {  PageInfo, QueryModel  } from "@digitalaidseattle/supabase";
 
 
 const TEST_PLAN = {
@@ -20,6 +20,7 @@ const TEST_PLAN = {
             student: {
                 id: '',
                 name: 'Student 1',
+                age: null,
                 email: '',
                 city: '',
                 state: '',
@@ -35,6 +36,7 @@ const TEST_PLAN = {
             student: {
                 id: '',
                 name: 'Student 2',
+                age: null,
                 email: '',
                 city: '',
                 state: '',
@@ -50,6 +52,7 @@ const TEST_PLAN = {
             student: {
                 id: '',
                 name: 'Student 3',
+                age: null,
                 email: '',
                 city: '',
                 state: '',
