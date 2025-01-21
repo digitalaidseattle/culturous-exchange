@@ -1,5 +1,5 @@
 /**
- * SessionsTable.tsx
+ * StudentsTable.tsx
  * 
  * Example of integrating tickets with data-grid
  */
@@ -112,13 +112,13 @@ export default function StudentsTable() {
         alert(`Apply some action to ${rowSelectionModel ? rowSelectionModel.length : 0} items.`)
     }
 
-    const newSession = () => {
-        alert(`New Session not implemented`)
+    const addStudent = () => {
+        alert(`Add student not implemented`)
     }
 
     function handleRowClick(params: any, event: any, details: any): void {
         console.log(params, event, details)
-        navigate(`/session/${params.row.id}`)
+        navigate(`/student/${params.row.id}`)
     }
 
     return (
@@ -128,7 +128,7 @@ export default function StudentsTable() {
                     title='Add Student'
                     variant="contained"
                     color="primary"
-                    onClick={newSession}>
+                    onClick={addStudent}>
                     {'Add Student'}
                 </Button>
                 <Button

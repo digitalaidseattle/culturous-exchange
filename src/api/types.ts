@@ -15,11 +15,9 @@ type Student = {
     availabilities: Availability[];
 }
 
-type Session = {
+type Cohort = {
     id: string;
     name: string;
-    startDate: Date;
-    endDate: Date;
     plans: Plan[];
 }
 
@@ -40,7 +38,7 @@ type Enrollment = {
 type Plan = {
     id: string;
     name: string;
-    sessionId: string;
+    cohortId: string;
     numberOfGroups: number;
     enrollments: Enrollment[]
     groups: Group[];

@@ -8,8 +8,8 @@
 
 class CEPlanService {
 
-    async findBySessionId(sessionId: string): Promise<Plan[]> {
-        console.log("get ", sessionId);
+    async findByCohortId(cohortId: string): Promise<Plan[]> {
+        console.log("get ", cohortId);
         return [
             {
                 id: 'plan1',
@@ -17,7 +17,7 @@ class CEPlanService {
                 numberOfGroups: 3,
                 rating: 0,
                 comments: [],
-                sessionId: "sess1",
+                cohortId: "sess1",
                 enrollments: [
                     {
                         id: '1',
