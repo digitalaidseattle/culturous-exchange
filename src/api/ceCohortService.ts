@@ -1,16 +1,16 @@
 /**
- *  dasVolunteerService.ts
+ *  ceCohortService.ts
  *
  *  @copyright 2024 Digital Aid Seattle
  *
  */
 
-import {  PageInfo, QueryModel  } from "@digitalaidseattle/supabase";
+import { PageInfo, QueryModel } from "@digitalaidseattle/supabase";
 
 
 const TEST_PLAN = {
     id: 'xxyyzz',
-    sessionId: '',
+    cohortId: '',
     name: 'Plan 1',
     numberOfGroups: 3,
     enrollments: [
@@ -83,43 +83,37 @@ const TEST_PLAN = {
     rating: 10,
     comments: []
 }
-class CESessionService {
+class CECohortService {
 
-    async find(_queryModel: QueryModel): Promise<PageInfo<Session>> {
+    async find(_queryModel: QueryModel): Promise<PageInfo<Cohort>> {
         return {
             totalRowCount: 2,
             rows: [
                 {
-                    id: 'sess1',
-                    name: 'Session 1',
-                    startDate: new Date(),
-                    endDate: new Date(),
+                    id: 'cohort1',
+                    name: 'Cohort 1',
                     plans: []
                 },
                 {
-                    id: 'sess2',
-                    name: 'Session 2',
-                    startDate: new Date(),
-                    endDate: new Date(),
+                    id: 'cohort2',
+                    name: 'Cohort 2',
                     plans: []
                 }
             ]
         }
     }
 
-    async getById(id: string): Promise<Session> {
+    async getById(id: string): Promise<Cohort> {
         console.log("get ", id);
         return {
-            id: 'sess1',
-            name: 'Session 1',
-            startDate: new Date(),
-            endDate: new Date(),
+            id: 'cohort1',
+            name: 'Cohort 1',
             plans: [TEST_PLAN]
         }
     }
 
 }
 
-const sessionService = new CESessionService()
-export { sessionService };
+const cohortService = new CECohortService()
+export { cohortService };
 

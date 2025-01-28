@@ -14,10 +14,10 @@ const pages = {
   type: 'group',
   children: [
     {
-      id: 'sessions',
-      title: 'Sessions',
+      id: 'cohorts',
+      title: 'Cohorts',
       type: 'item',
-      url: '/sessions',
+      url: '/cohorts',
       icon: <CalendarOutlined />
     } as MenuItem,
     {

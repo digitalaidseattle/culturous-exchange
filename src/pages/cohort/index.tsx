@@ -4,11 +4,10 @@ import { useParams } from 'react-router';
 // material-ui
 
 // project import
-import { Box, Button, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
+import { Box, Button, Stack, Tab, Tabs, TextField } from '@mui/material';
 
 import { MainCard } from '@digitalaidseattle/mui';
-import { sessionService } from '../../api/ceSessionService';
+import { cohortService } from '../../api/ceCohortService';
 import { GroupBoard } from './GroupBoard';
 import StudentsTable from './StudentsTable';
 
@@ -73,34 +72,21 @@ const PlanCard = (props: { plan: Plan }) => {
     );
 }
 
-const SessionPage: React.FC = () => {
-    const { id: sessionId } = useParams<string>();
-    const [session, setSession] = useState<Session>();
+const CohortPage: React.FC = () => {
+    const { id: cohortId } = useParams<string>();
+    const [cohort, setCohort] = useState<Cohort>();
     useEffect(() => {
-        if (sessionId) {
-            sessionService.getById(sessionId)
-                .then(session => setSession(session))
+        if (cohortId) {
+            cohortService.getById(cohortId)
+                .then(cohort => setCohort(cohort))
         }
-    }, [sessionId])
-    return (session &&
+    }, [cohortId])
+    return (cohort &&
         <Stack gap={1}>
-            <MainCard title="Session Page" >
-                <Stack direction={'row'} gap={1} >
-                    <Typography fontWeight={700}>Dates:</Typography>
-                    <DatePicker
-                        label="Start"
-                        value={session.startDate}
-                        onChange={(newValue) => alert(newValue)}
-                    />
-                    <DatePicker
-                        label="End"
-                        value={session.endDate}
-                        onChange={(newValue) => alert(newValue)}
-                    />
-                </Stack>
+            <MainCard title={"Cohort : " + cohort.name}>
                 <Button sx={{ marginTop: 1 }} variant="contained" onClick={() => alert('A plan would be added.')}>New Plan</Button>
             </MainCard>
-            {session.plans.map(plan =>
+            {cohort.plans.map(plan =>
                 <MainCard title={plan.name}>
                     <PlanCard plan={plan} />
                 </MainCard>
@@ -109,4 +95,4 @@ const SessionPage: React.FC = () => {
     )
 };
 
-export default SessionPage;
+export default CohortPage;
