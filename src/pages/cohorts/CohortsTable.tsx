@@ -1,7 +1,8 @@
 /**
  * CohortsTable.tsx
- * 
- * Example of integrating tickets with data-grid
+ *
+ *  @copyright 2025 Digital Aid Seattle
+ *
  */
 import { useContext, useEffect, useState } from 'react';
 
@@ -9,7 +10,8 @@ import { useContext, useEffect, useState } from 'react';
 import {
     Box,
     Button,
-    Stack
+    Stack,
+    Typography
 } from '@mui/material';
 import {
     DataGrid,
@@ -37,14 +39,11 @@ const getColumns = (): GridColDef[] => {
             width: 150,
         },
         {
-            field: 'startDate',
-            headerName: 'Start Date',
-            width: 140,
-        },
-        {
-            field: 'endDate',
-            headerName: 'End Date',
-            width: 140,
+            field: 'plans',
+            headerName: 'Plans',
+            renderCell: (param: any) => {
+                return <Typography>{param.row.plans.map((p: Plan) => p.name).join(', ')}</Typography>
+            }
         }
     ];
 }
@@ -88,16 +87,11 @@ export default function CohortsTable() {
 
     }, [refresh])
 
-    const applyAction = () => {
-        alert(`Apply some action to ${rowSelectionModel ? rowSelectionModel.length : 0} items.`)
-    }
-
     const newCohort = () => {
-        alert(`New Cohort not implemented`)
+        navigate(`/cohort/new`)
     }
 
-    function handleRowClick(params: any, event: any, details: any): void {
-        console.log(params, event, details)
+    function handleRowClick(params: any, _event: any, _details: any): void {
         navigate(`/cohort/${params.row.id}`)
     }
 
@@ -110,14 +104,6 @@ export default function CohortsTable() {
                     color="primary"
                     onClick={newCohort}>
                     {'New'}
-                </Button>
-                <Button
-                    title='Action'
-                    variant="contained"
-                    color="secondary"
-                    disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
-                    onClick={applyAction}>
-                    {'Action'}
                 </Button>
             </Stack>
             <DataGrid
@@ -135,7 +121,7 @@ export default function CohortsTable() {
                 onSortModelChange={setSortModel}
 
                 pageSizeOptions={[5, 10, 25, 100]}
-                checkboxSelection
+
                 onRowSelectionModelChange={setRowSelectionModel}
                 disableRowSelectionOnClick={false}
                 onRowClick={handleRowClick}
