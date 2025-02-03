@@ -6,6 +6,13 @@
  */
 import { useContext, useState } from 'react';
 
+/**
+ *  students/index.tsx
+ *
+ *  @copyright 2025 Digital Aid Seattle
+ *
+ */
+
 // material-ui
 import { Button, Stack } from '@mui/material';
 

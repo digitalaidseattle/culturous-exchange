@@ -1,7 +1,7 @@
 /**
  *  ceCohortService.ts
  *
- *  @copyright 2024 Digital Aid Seattle
+ *  @copyright 2025 Digital Aid Seattle
  *
  */
 
@@ -12,6 +12,7 @@ const TEST_PLAN = {
     id: 'xxyyzz',
     cohortId: '',
     name: 'Plan 1',
+    note: 'Default',
     numberOfGroups: 3,
     enrollments: [
         {
@@ -83,6 +84,11 @@ const TEST_PLAN = {
     rating: 10,
     comments: []
 }
+
+const TEST_PLAN2 ={...TEST_PLAN,
+    name: 'Plan 2',
+    note: 'shifted student X from group 1 to group 2'
+}
 class CECohortService {
 
     async find(_queryModel: QueryModel): Promise<PageInfo<Cohort>> {
@@ -92,7 +98,7 @@ class CECohortService {
                 {
                     id: 'cohort1',
                     name: 'Cohort 1',
-                    plans: []
+                    plans: [TEST_PLAN, TEST_PLAN2]
                 },
                 {
                     id: 'cohort2',
