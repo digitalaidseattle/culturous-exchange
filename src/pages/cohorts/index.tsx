@@ -3,17 +3,17 @@
 
 // project import
 import { MainCard } from '@digitalaidseattle/mui';
-import SessionsTable from './SessionsTable';
+import CohortsTable from './CohortsTable';
 
 // ================================|| 404 ||================================ //
 
-const SessionsPage: React.FC = () => {
+const CohortsPage: React.FC = () => {
 
     return (
-        <MainCard title="Session Page">
-            <SessionsTable />
+        <MainCard title="Cohorts">
+            <CohortsTable />
         </MainCard>
     )
 };
 
-export default SessionsPage;
+export default CohortsPage;

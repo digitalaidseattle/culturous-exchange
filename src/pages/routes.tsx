@@ -6,8 +6,8 @@ import {
   MinimalLayout
 } from "@digitalaidseattle/mui";
 
-import SessionPage from './session';
-import SessionsPage from './sessions';
+import CohortPage from "./cohort";
+import CohortsPage from "./cohorts";
 import StudentPage from './student';
 import StudentsPage from './students';
 
@@ -18,15 +18,15 @@ const routes = [
     children: [
       {
         path: "",
-        element: <SessionsPage />,
+        element: <CohortsPage />,
       },
       {
-        path: "sessions",
-        element: <SessionsPage />,
+        path: "cohorts",
+        element: <CohortsPage />,
       },
       {
-        path: "session/:id",
-        element: <SessionPage />,
+        path: "cohort/:id",
+        element: <CohortPage />,
       },
       {
         path: "students",

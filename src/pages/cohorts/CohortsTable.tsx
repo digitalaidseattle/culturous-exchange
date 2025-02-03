@@ -1,5 +1,5 @@
 /**
- * SessionsTable.tsx
+ * CohortsTable.tsx
  * 
  * Example of integrating tickets with data-grid
  */
@@ -23,7 +23,7 @@ import {
 
 // project import
 import { useNavigate } from 'react-router';
-import { sessionService } from '../../api/ceSessionService';
+import { cohortService } from '../../api/ceCohortService';
 import {LoadingContext, RefreshContext } from '@digitalaidseattle/core';
 import { PageInfo, QueryModel } from  '@digitalaidseattle/supabase';
 
@@ -50,11 +50,11 @@ const getColumns = (): GridColDef[] => {
 }
 
 
-export default function SessionsTable() {
+export default function CohortsTable() {
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
-    const [pageInfo, setPageInfo] = useState<PageInfo<Session>>({ rows: [], totalRowCount: 0 });
+    const [pageInfo, setPageInfo] = useState<PageInfo<Cohort>>({ rows: [], totalRowCount: 0 });
     const apiRef = useGridApiRef();
     const { setLoading } = useContext(LoadingContext);
     const { refresh } = useContext(RefreshContext);
@@ -69,7 +69,7 @@ export default function SessionsTable() {
                 sortField: sortModel.length === 0 ? 'created_at' : sortModel[0].field,
                 sortDirection: sortModel.length === 0 ? 'created_at' : sortModel[0].sort
             } as QueryModel
-            sessionService.find(queryModel)
+            cohortService.find(queryModel)
                 .then((sess) => setPageInfo(sess))
         }
     }, [paginationModel, sortModel])
@@ -82,7 +82,7 @@ export default function SessionsTable() {
             sortDirection: sortModel.length === 0 ? 'created_at' : sortModel[0].sort
         } as QueryModel
         setLoading(true);
-        sessionService.find(queryModel)
+        cohortService.find(queryModel)
             .then((pi) => setPageInfo(pi))
             .finally(() => setLoading(false))
 
@@ -92,13 +92,13 @@ export default function SessionsTable() {
         alert(`Apply some action to ${rowSelectionModel ? rowSelectionModel.length : 0} items.`)
     }
 
-    const newSession = () => {
-        alert(`New Session not implemented`)
+    const newCohort = () => {
+        alert(`New Cohort not implemented`)
     }
 
     function handleRowClick(params: any, event: any, details: any): void {
         console.log(params, event, details)
-        navigate(`/session/${params.row.id}`)
+        navigate(`/cohort/${params.row.id}`)
     }
 
     return (
@@ -108,7 +108,7 @@ export default function SessionsTable() {
                     title='Action'
                     variant="contained"
                     color="primary"
-                    onClick={newSession}>
+                    onClick={newCohort}>
                     {'New'}
                 </Button>
                 <Button
