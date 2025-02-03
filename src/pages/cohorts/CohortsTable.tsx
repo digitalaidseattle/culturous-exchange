@@ -52,7 +52,6 @@ const getColumns = (): GridColDef[] => {
 export default function CohortsTable() {
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
-    const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
     const [pageInfo, setPageInfo] = useState<PageInfo<Cohort>>({ rows: [], totalRowCount: 0 });
     const apiRef = useGridApiRef();
     const { setLoading } = useContext(LoadingContext);
@@ -122,7 +121,6 @@ export default function CohortsTable() {
 
                 pageSizeOptions={[5, 10, 25, 100]}
 
-                onRowSelectionModelChange={setRowSelectionModel}
                 disableRowSelectionOnClick={false}
                 onRowClick={handleRowClick}
             />
