@@ -16,7 +16,6 @@ import {
 import {
     DataGrid,
     GridColDef,
-    GridRowSelectionModel,
     GridSortModel,
     useGridApiRef
 } from '@mui/x-data-grid';
@@ -24,10 +23,10 @@ import {
 // third-party
 
 // project import
+import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
+import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { useNavigate } from 'react-router';
 import { cohortService } from '../../api/ceCohortService';
-import {LoadingContext, RefreshContext } from '@digitalaidseattle/core';
-import { PageInfo, QueryModel } from  '@digitalaidseattle/supabase';
 
 const PAGE_SIZE = 10;
 
