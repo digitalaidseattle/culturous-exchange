@@ -92,7 +92,7 @@ class CEPlanService {
     }
 
     async duplicate(plan: Plan): Promise<Plan[]> {
-        alert(` a plan would be duplicated `)
+        alert(`  '${plan.name}' would be duplicated  ${plan.name}`)
         return [{...TEST_PLAN}]
     }
 

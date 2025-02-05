@@ -15,6 +15,7 @@ import {
 import {
     DataGrid,
     GridColDef,
+    GridRenderCellParams,
     GridRowSelectionModel,
     GridSortModel,
     useGridApiRef
@@ -26,7 +27,6 @@ import {
 import { StarFilled } from '@ant-design/icons';
 import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
-import { useNavigate } from 'react-router';
 import { studentService } from '../../api/ceStudentService';
 
 const PAGE_SIZE = 10;
@@ -37,14 +37,16 @@ const getColumns = (): GridColDef[] => {
             field: 'anchor',
             headerName: 'Anchor',
             width: 100,
-            renderCell: (_param: any) => {
+            type: 'boolean',
+            renderCell: (_param: GridRenderCellParams) => {
                 return <StarFilled style={{ color: "gray" }} />
             }
         }, {
             field: 'priority',
             headerName: 'Priority',
             width: 100,
-            renderCell: (_param: any) => {
+            type: 'boolean',
+            renderCell: (_param: GridRenderCellParams) => {
                 return <Switch />
             }
         },
@@ -84,8 +86,6 @@ export default function Setup() {
     const apiRef = useGridApiRef();
     const { setLoading } = useContext(LoadingContext);
     const { refresh } = useContext(RefreshContext);
-    // const { data: statuses } = useAppConstants('STATUS')
-    const navigate = useNavigate();
 
     useEffect(() => {
         if (paginationModel && sortModel) {
