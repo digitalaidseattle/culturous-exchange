@@ -1,5 +1,5 @@
 /**
- * StudentsTable.tsx
+ * SetupPanel.tsx
  * 
  * Example of integrating tickets with data-grid
  */
@@ -9,7 +9,8 @@ import { useContext, useEffect, useState } from 'react';
 import {
     Box,
     Button,
-    Stack
+    Stack,
+    Switch
 } from '@mui/material';
 import {
     DataGrid,
@@ -22,11 +23,11 @@ import {
 // third-party
 
 // project import
+import { StarFilled } from '@ant-design/icons';
+import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
+import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { useNavigate } from 'react-router';
 import { studentService } from '../../api/ceStudentService';
-import {LoadingContext, RefreshContext } from '@digitalaidseattle/core';
-import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
-import { StarFilled } from '@ant-design/icons';
 
 const PAGE_SIZE = 10;
 
@@ -36,9 +37,15 @@ const getColumns = (): GridColDef[] => {
             field: 'anchor',
             headerName: 'Anchor',
             width: 100,
-            renderCell: (param: any) => {
-                console.log("param", param.row)
+            renderCell: (_param: any) => {
                 return <StarFilled style={{ color: "gray" }} />
+            }
+        }, {
+            field: 'priority',
+            headerName: 'Priority',
+            width: 100,
+            renderCell: (_param: any) => {
+                return <Switch />
             }
         },
         {
@@ -69,8 +76,7 @@ const getColumns = (): GridColDef[] => {
     ];
 }
 
-
-export default function StudentsTable() {
+export default function Setup() {
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
@@ -116,14 +122,9 @@ export default function StudentsTable() {
         alert(`Add student not implemented`)
     }
 
-    function handleRowClick(params: any, event: any, details: any): void {
-        console.log(params, event, details)
-        navigate(`/student/${params.row.id}`)
-    }
-
     return (
         <Box>
-            <Stack margin="1" gap="1" direction="row" spacing={'1rem'}>
+            <Stack margin={1} gap={1} direction="row" spacing={'1rem'}>
                 <Button
                     title='Add Student'
                     variant="contained"
@@ -132,12 +133,20 @@ export default function StudentsTable() {
                     {'Add Student'}
                 </Button>
                 <Button
-                    title='Action'
+                    title='Set Anchor'
                     variant="contained"
-                    color="secondary"
+                    color="primary"
                     disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
                     onClick={applyAction}>
-                    {'Action'}
+                    {'Set as anchor'}
+                </Button>
+                <Button
+                    title='Set Priority'
+                    variant="contained"
+                    color="primary"
+                    disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
+                    onClick={applyAction}>
+                    {'Set as priority'}
                 </Button>
             </Stack>
             <DataGrid
@@ -157,8 +166,7 @@ export default function StudentsTable() {
                 pageSizeOptions={[5, 10, 25, 100]}
                 checkboxSelection
                 onRowSelectionModelChange={setRowSelectionModel}
-                disableRowSelectionOnClick={false}
-                onRowClick={handleRowClick}
+                disableRowSelectionOnClick={true}
             />
         </Box>
     );

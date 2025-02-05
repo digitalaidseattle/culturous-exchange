@@ -12,7 +12,7 @@ const TEST_PLAN = {
     id: 'xxyyzz',
     cohortId: '',
     name: 'Plan 1',
-    note: 'Default',
+    notes: 'Default',
     numberOfGroups: 3,
     enrollments: [
         {
@@ -87,7 +87,7 @@ const TEST_PLAN = {
 
 const TEST_PLAN2 ={...TEST_PLAN,
     name: 'Plan 2',
-    note: 'shifted student X from group 1 to group 2'
+    notes: 'shifted student X from group 1 to group 2'
 }
 class CECohortService {
 
@@ -114,7 +114,7 @@ class CECohortService {
         return {
             id: 'cohort1',
             name: 'Cohort 1',
-            plans: [TEST_PLAN]
+            plans: [TEST_PLAN, TEST_PLAN2]
         }
     }
 

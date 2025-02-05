@@ -43,5 +43,5 @@ type Plan = {
     enrollments: Enrollment[]
     groups: Group[];
     rating: number;
-    comments: string[];
+    notes: string;
 }
