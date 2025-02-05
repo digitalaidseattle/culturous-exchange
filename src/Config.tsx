@@ -10,7 +10,6 @@ import { MenuItem } from "@digitalaidseattle/mui";
 
 const pages = {
   id: 'main',
-  title: 'Culturous Exchange',
   type: 'group',
   children: [
     {
@@ -31,7 +30,7 @@ const pages = {
 } as MenuItem;
 
 export const Config = {
-  appName: 'DAS',
+  appName: 'Culturous Exchange',
   logoUrl: logo,
   drawerWidth: 240,
   menuItems: [pages],
