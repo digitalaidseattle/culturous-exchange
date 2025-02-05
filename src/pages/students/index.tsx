@@ -21,17 +21,19 @@ import { MainCard } from '@digitalaidseattle/mui';
 
 import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
-import { RefreshContext } from '@digitalaidseattle/core';
+import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 
 const UploadSection = () => {
+    const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
 
     const handleUpdate = (resp: any) => {
-        console.log('handleUpdate', resp);
         setRefresh(refresh + 1);
         setShowDropzone(false);
+        notifications.success(`Files are accepted, adding ${resp.successCount} students.`)
     }
+
     return (
         <Stack>
             <Stack spacing={2} m={2} direction={'row'}>
