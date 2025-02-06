@@ -10,6 +10,8 @@ import { ReactNode, useEffect, useState } from "react";
 
 import { StarFilled } from "@ant-design/icons";
 import {
+    Box,
+    Button,
     Card,
     CardContent,
     Typography
@@ -22,7 +24,7 @@ export const StudentCard = (props: { enrollment: Enrollment }) => {
     return (
         <Card sx={{ pointerEvents: 'auto', margin: 0 }}>
             <CardContent>
-                <Typography>{props.enrollment.anchor && <StarFilled style={{color:"red"}}/>} {props.enrollment.student.name}</Typography>
+                <Typography>{props.enrollment.anchor && <StarFilled style={{ color: "red" }} />} {props.enrollment.student.name}</Typography>
             </CardContent>
         </Card>
     );
@@ -58,17 +60,22 @@ export const GroupBoard = (props: { plan: Plan | undefined }) => {
     }
 
     return (
-        <>{props.plan && categories &&
-            <DragAndDrop
-                onChange={(c: Map<string, unknown>, e: Enrollment) => handleChange(c, e)}
-                items={props.plan.enrollments}
-                categories={categories}
-                isCategory={isCategory}
-                cardRenderer={cellRender}
-            />}
-            {!props.plan &&
-                <Typography>No plan found.</Typography>
-            }
+        <>
+            <Button variant='contained' onClick={() => alert('Placing Students')}>Place Students</Button>
+            <Box sx={{ marginTop: 1 }}  >
+                <>{props.plan && categories &&
+                    <DragAndDrop
+                        onChange={(c: Map<string, unknown>, e: Enrollment) => handleChange(c, e)}
+                        items={props.plan.enrollments}
+                        categories={categories}
+                        isCategory={isCategory}
+                        cardRenderer={cellRender}
+                    />}
+                    {!props.plan &&
+                        <Typography>No plan found.</Typography>
+                    }
+                </>
+            </Box>
         </>
     )
 };

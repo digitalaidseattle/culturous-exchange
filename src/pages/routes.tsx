@@ -10,6 +10,7 @@ import CohortPage from "./cohort";
 import CohortsPage from "./cohorts";
 import StudentPage from './student';
 import StudentsPage from './students';
+import PlanPage from "./plan";
 
 const routes = [
   {
@@ -27,6 +28,10 @@ const routes = [
       {
         path: "cohort/:id",
         element: <CohortPage />,
+      },
+      {
+        path: "plan/:id",
+        element: <PlanPage />,
       },
       {
         path: "students",
