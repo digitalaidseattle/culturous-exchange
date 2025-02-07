@@ -54,7 +54,7 @@ function StudentUploader(props: any) {
                         failedStudents: allFailed,
                         successCount: allSuccess,
                         failedCount: allFailed.length,
-                        attemptedCount: studentFiles.length
+                        attemptedCount: allFailed.length + allSuccess
                     });
             })
             .catch((err) => {
