@@ -31,7 +31,17 @@ const UploadSection = () => {
     const handleUpdate = (resp: any) => {
         setRefresh(refresh + 1);
         setShowDropzone(false);
-        notifications.success(`Files are accepted, adding ${resp.successCount} students.`)
+        if (resp.failedCount > 0) {
+            notifications.warn(
+                `Attempted: ${resp.attemptedCount}
+                 ${resp.successCount} added, ${resp.failedCount} failed.
+            Failed Students: ${resp.failedStudents.map((student: any) => `- ID: ${student.id}, Name: ${student.name}`).join(' | ')}`
+            );
+        } else if (resp.successCount === resp.attemptedCount) {
+            notifications.success(`Successfully added ${resp.successCount} of ${resp.attemptedCount} students.`)
+        } else {
+            notifications.error(`Error uploading spreadsheet. Failed to add ${resp.successCount} of ${resp.attemptedCount}`)
+        }
     }
 
     return (
