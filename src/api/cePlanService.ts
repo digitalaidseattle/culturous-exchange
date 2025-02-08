@@ -17,7 +17,7 @@ const TEST_PLAN = {
             id: '1',
             studentId: 's1',
             student: {
-                id: '',
+                id: 's1',
                 name: 'Student 1',
                 age: null,
                 email: '',
@@ -27,13 +27,14 @@ const TEST_PLAN = {
                 availabilities: []
             },
             anchor: true,
+            priority: true,
             availabilities: []
         },
         {
             id: '2',
             studentId: 's2',
             student: {
-                id: '',
+                id: 's2',
                 name: 'Student 2',
                 age: null,
                 email: '',
@@ -43,13 +44,14 @@ const TEST_PLAN = {
                 availabilities: []
             },
             anchor: false,
+            priority: true,
             availabilities: []
         },
         {
             id: '3',
             studentId: 's3',
             student: {
-                id: '',
+                id: 's3',
                 name: 'Student 3',
                 age: null,
                 email: '',
@@ -59,6 +61,7 @@ const TEST_PLAN = {
                 availabilities: []
             },
             anchor: false,
+            priority: false,
             availabilities: []
         }
     ], groups: [
@@ -82,7 +85,6 @@ const TEST_PLAN = {
 
 class CEPlanService {
     async getById(id: string): Promise<Plan> {
-        console.log("get plan", id);
         return TEST_PLAN;
     }
 
@@ -93,7 +95,7 @@ class CEPlanService {
 
     async duplicate(plan: Plan): Promise<Plan[]> {
         alert(`  '${plan.name}' would be duplicated  ${plan.name}`)
-        return [{...TEST_PLAN}]
+        return [{ ...TEST_PLAN }]
     }
 
 }

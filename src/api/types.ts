@@ -32,6 +32,7 @@ type Enrollment = {
     studentId: string;
     student: Student;
     anchor: boolean;
+    priority: boolean;
     availabilities: Availability[];
 }
 
