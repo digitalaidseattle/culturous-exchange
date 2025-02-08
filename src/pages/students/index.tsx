@@ -28,23 +28,23 @@ const UploadSection = () => {
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
-    const [failedStudents, setFailedStudents] = useState<Student[]>([]);
+    const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
 
     const handleUpdate = (resp: any) => {
         setRefresh(refresh + 1);
         setShowDropzone(false);
-        if (resp.failedCount > 0) {
+        if (resp.failedCount === resp.attemptedCount) {
+            notifications.error(`Error uploading spreadsheet. Failed to add ${resp.successCount} of ${resp.attemptedCount}`)
+        } else if (resp.failedCount > 0) {
             setFailedStudents(resp.failedStudents)
             setIsModalOpen(true);
             notifications.warn(
                 `${resp.attemptedCount} Attempted, ${resp.successCount} added, ${resp.failedCount} failed.`
             );
-        } else if (resp.successCount === resp.attemptedCount) {
-            notifications.success(`Successfully added ${resp.successCount} of ${resp.attemptedCount} students.`)
         } else {
-            notifications.error(`Error uploading spreadsheet. Failed to add ${resp.successCount} of ${resp.attemptedCount}`)
+            notifications.success(`${resp.attemptedCount} Attempted, ${resp.successCount} successfully added`)
         }
     }
 

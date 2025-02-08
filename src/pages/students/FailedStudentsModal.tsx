@@ -21,7 +21,7 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 interface Props {
   isModalOpen: boolean
   onClose: () => void
-  failedStudents: Student[]
+  failedStudents: FailedStudent[]
 }
 
 const FailedStudentsModal: React.FC<Props> = ( { isModalOpen, onClose, failedStudents } ) => {
@@ -33,9 +33,9 @@ const FailedStudentsModal: React.FC<Props> = ( { isModalOpen, onClose, failedStu
         aria-labelledby="customized-dialog-title"
         open={isModalOpen}
       >
-        <Stack direction='row'>
+        <Stack direction='row' justifyContent='space-between'>
           <DialogTitle>
-            Some Uploads Failed:
+            Students that require attention:
           </DialogTitle>
           <IconButton
             aria-label="close"
@@ -45,18 +45,23 @@ const FailedStudentsModal: React.FC<Props> = ( { isModalOpen, onClose, failedStu
           </IconButton>
         </Stack>
         <DialogContent dividers>
-          {failedStudents.map((student: Student, idx: number) => (
+          {failedStudents.map((student: FailedStudent, idx: number) => (
               <List key={idx}>
                 <ListItem>
                   <ListItemText>
-                    {`ID: ${student.id} | Name: ${student.name}` }
+                    {`ID: ${student.id} | Name: ${student.name} | Error: ${student.failedError}` }
                   </ListItemText>
                 </ListItem>
               </List>
           ))}
         </DialogContent>
         <DialogActions>
-          <Button autoFocus onClick={onClose}>
+          <Button
+            autoFocus
+            onClick={onClose}
+            variant='contained'
+            color='primary'
+            >
             Close
           </Button>
         </DialogActions>
