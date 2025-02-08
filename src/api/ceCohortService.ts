@@ -29,6 +29,7 @@ const TEST_PLAN = {
                 availabilities: []
             },
             anchor: true,
+            priority: false,
             availabilities: []
         },
         {
@@ -45,6 +46,7 @@ const TEST_PLAN = {
                 availabilities: []
             },
             anchor: false,
+            priority: false,
             availabilities: []
         },
         {
@@ -61,6 +63,7 @@ const TEST_PLAN = {
                 availabilities: []
             },
             anchor: false,
+            priority: false,
             availabilities: []
         }
     ],
