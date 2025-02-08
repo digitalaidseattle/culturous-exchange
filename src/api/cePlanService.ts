@@ -84,7 +84,7 @@ const TEST_PLAN = {
 }
 
 class CEPlanService {
-    async getById(id: string): Promise<Plan> {
+    async getById(_id: string): Promise<Plan> {
         return TEST_PLAN;
     }
 

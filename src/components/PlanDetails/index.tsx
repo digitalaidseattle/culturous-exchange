@@ -43,7 +43,7 @@ import { SetupStudents } from './SetupStudents';
 // }
 
 const SteppedDetails: React.FC<PlanProps> = ({ plan }) => {
-    const steps = ['Setup Students', 'Set Group Number', 'Review'];
+    const steps = ['Setup Students', 'Number of Groups', 'Review'];
 
     const [activeStep, setActiveStep] = useState(0);
 
