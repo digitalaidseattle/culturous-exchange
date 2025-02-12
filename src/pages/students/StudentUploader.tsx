@@ -8,6 +8,7 @@
 import { useCallback, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 import { studentService } from "../../api/ceStudentService";
+import { Student } from "../../api/types";
 
 const baseStyle = {
     flex: 1,

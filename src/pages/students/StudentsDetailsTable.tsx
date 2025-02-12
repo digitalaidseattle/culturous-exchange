@@ -16,6 +16,7 @@ import {
 import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
+import { Student } from '../../api/types';
 
 const PAGE_SIZE = 10;
 

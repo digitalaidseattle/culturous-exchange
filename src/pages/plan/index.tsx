@@ -8,6 +8,7 @@ import { Stack } from '@mui/material';
 
 import { planService } from '../../api/cePlanService';
 import { PlanDetails } from '../../components/PlanDetails';
+import { Plan } from '../../api/types';
 
 const PlanPage: React.FC = () => {
     const { id: planId } = useParams<string>();

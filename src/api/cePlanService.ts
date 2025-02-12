@@ -5,8 +5,10 @@
  *
  */
 
+import { Plan } from "./types";
+
 const TEST_PLAN = {
-    id: 'plan1',
+    id: 1,
     name: 'Plan1',
     numberOfGroups: 3,
     rating: 0,
