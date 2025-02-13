@@ -16,7 +16,12 @@ type Student = Entity & {
     availabilities: Availability[];
 }
 
-type Cohort = Entity & {
+type FailedStudent = Student & {
+    failedError: string;
+}
+
+type Cohort = {
+    id: string;
     name: string;
     plans: Plan[];
 }
