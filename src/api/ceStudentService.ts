@@ -7,7 +7,7 @@
 import { v4 as uuid } from 'uuid';
 import { read, utils } from "xlsx";
 import { EntityService } from "./entityService";
-import { Student } from "./types";
+import { FailedStudent, Student } from "./types";
 
 class CEStudentService extends EntityService<Student> {
 

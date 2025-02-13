@@ -25,7 +25,7 @@ const CohortsPage: React.FC = () => {
         const cohort = await cohortService.insert(
             {
                 id: 1,
-                name: `(New) Cohort`
+                name: `(New) Cohort`,
             } as Cohort
         );
         console.log('cohort', cohort)

@@ -23,6 +23,7 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import FailedStudentsModal from './FailedStudentsModal';
+import { FailedStudent } from '../../api/types';
 
 const UploadSection = () => {
     const notifications = useNotifications();

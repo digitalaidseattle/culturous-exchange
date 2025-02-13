@@ -20,8 +20,7 @@ type FailedStudent = Student & {
     failedError: string;
 }
 
-type Cohort = {
-    id: string;
+type Cohort = Entity & {
     name: string;
     plans: Plan[];
 }
@@ -51,4 +50,4 @@ type Plan = Entity & {
     notes: string;
 }
 
-export type { Availability, Student, Cohort, Group, Enrollment, Plan }
+export type { Availability, FailedStudent, Student, Cohort, Group, Enrollment, Plan }
