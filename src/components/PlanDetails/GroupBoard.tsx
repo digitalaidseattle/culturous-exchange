@@ -17,6 +17,7 @@ import {
     Typography
 } from "@mui/material";
 import { DragAndDrop, DDCategory, DDType } from '@digitalaidseattle/draganddrop';
+import { Enrollment, Plan } from "../../api/types";
 
 
 export const StudentCard = (props: { enrollment: Enrollment }) => {

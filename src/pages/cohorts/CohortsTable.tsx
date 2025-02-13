@@ -8,9 +8,6 @@ import { useContext, useEffect, useState } from 'react';
 
 // material-ui
 import {
-    Box,
-    Button,
-    Stack,
     Typography
 } from '@mui/material';
 import {
@@ -27,6 +24,8 @@ import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { useNavigate } from 'react-router';
 import { cohortService } from '../../api/ceCohortService';
+import { Cohort, Plan } from '../../api/types';
+import { MainCard } from '@digitalaidseattle/mui';
 
 const PAGE_SIZE = 10;
 
@@ -85,25 +84,12 @@ export default function CohortsTable() {
 
     }, [refresh])
 
-    const newCohort = () => {
-        navigate(`/cohort/new`)
-    }
-
     function handleRowClick(params: any, _event: any, _details: any): void {
         navigate(`/cohort/${params.row.id}`)
     }
 
-    return (
-        <Box>
-            <Stack margin="1" gap="1" direction="row" spacing={'1rem'}>
-                <Button
-                    title='Action'
-                    variant="contained"
-                    color="primary"
-                    onClick={newCohort}>
-                    {'New'}
-                </Button>
-            </Stack>
+    return (pageInfo.rows.length > 0 &&
+        <MainCard>
             <DataGrid
                 apiRef={apiRef}
                 rows={pageInfo.rows}
@@ -123,6 +109,6 @@ export default function CohortsTable() {
                 disableRowSelectionOnClick={false}
                 onRowClick={handleRowClick}
             />
-        </Box>
+        </MainCard>
     );
 }

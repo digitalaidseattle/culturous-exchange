@@ -1,11 +1,12 @@
+import { Entity } from "./entityService";
+
 type Availability = {
     id: string;
     startDate: Date;
     endDate: Date;
 }
 
-type Student = {
-    id: string;
+type Student = Entity & {
     name: string;
     age: number | null;
     email: string;
@@ -19,8 +20,7 @@ type FailedStudent = Student & {
     failedError: string;
 }
 
-type Cohort = {
-    id: string;
+type Cohort = Entity & {
     name: string;
     plans: Plan[];
 }
@@ -39,8 +39,8 @@ type Enrollment = {
     availabilities: Availability[];
 }
 
-type Plan = {
-    id: string;
+type Plan = Entity & {
+    id: number;
     name: string;
     cohortId: string;
     numberOfGroups: number;
@@ -49,3 +49,5 @@ type Plan = {
     rating: number;
     notes: string;
 }
+
+export type { Availability, FailedStudent, Student, Cohort, Group, Enrollment, Plan }

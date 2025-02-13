@@ -12,6 +12,7 @@ import { TabPanel } from "../TabPanel";
 import { TextEdit } from "../TextEdit";
 import { GroupBoard } from "./GroupBoard";
 import Setup from "./Setup";
+import { Plan } from '../../api/types';
 
 export const PlanDetails = (props: { plan: Plan }) => {
     const [value, setValue] = useState<number>(0);
