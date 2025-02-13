@@ -15,6 +15,10 @@ type Student = {
     availabilities: Availability[];
 }
 
+type FailedStudent = Student & {
+    failedError: string;
+}
+
 type Cohort = {
     id: string;
     name: string;

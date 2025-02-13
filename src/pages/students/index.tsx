@@ -22,16 +22,30 @@ import { MainCard } from '@digitalaidseattle/mui';
 import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
+import FailedStudentsModal from './FailedStudentsModal';
 
 const UploadSection = () => {
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
+    const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
 
     const handleUpdate = (resp: any) => {
         setRefresh(refresh + 1);
         setShowDropzone(false);
-        notifications.success(`Files are accepted, adding ${resp.successCount} students.`)
+        if (resp.failedCount === resp.attemptedCount) {
+            notifications.error(`Error uploading spreadsheet. Failed to add ${resp.successCount} of ${resp.attemptedCount}`)
+        } else if (resp.failedCount > 0) {
+            setFailedStudents(resp.failedStudents)
+            setIsModalOpen(true);
+            notifications.warn(
+                `${resp.attemptedCount} Attempted, ${resp.successCount} added, ${resp.failedCount} failed.`
+            );
+        } else {
+            notifications.success(`${resp.attemptedCount} Attempted, ${resp.successCount} successfully added`)
+        }
     }
 
     return (
@@ -48,6 +62,11 @@ const UploadSection = () => {
             {showDropzone &&
                 <StudentUploader onChange={handleUpdate} />
             }
+            <FailedStudentsModal
+                isModalOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                failedStudents={failedStudents}
+            />
         </Stack>
     )
 }
