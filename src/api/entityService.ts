@@ -19,20 +19,52 @@ abstract class EntityService<T extends Entity> {
         this.tableName = tableName;
     }
 
+    supportedStringFilters(): string[] {
+        return ['contains', 'startsWith', 'endsWith']
+    }
+
+    supportedNumberFilters(): string[] {
+        return ['=', '>', '<']
+    }
+
     async find(queryModel: QueryModel): Promise<PageInfo<T>> {
         try {
-            return supabaseClient
+            const fModel = queryModel as any;
+            let query: any = supabaseClient
                 .from(this.tableName)
                 .select('*', { count: 'exact' })
-                .range(queryModel.page, queryModel.page + queryModel.pageSize)
-                .order(queryModel.sortField, { ascending: queryModel.sortDirection === 'asc' })
+                .range(queryModel.page, queryModel.page + queryModel.pageSize - 1)
+                .order(queryModel.sortField, { ascending: queryModel.sortDirection === 'asc' });
+            if (fModel.filterField && fModel.filterOperator && fModel.filterValue) {
+                switch (fModel.filterOperator) {
+                    case '=':
+                        query = query.eq(fModel.filterField, fModel.filterValue)
+                        break;
+                    case '>':
+                        query = query.gt(fModel.filterField, fModel.filterValue)
+                        break;
+                    case '<':
+                        query = query.lt(fModel.filterField, fModel.filterValue)
+                        break;
+                    case 'contains':
+                        query = query.ilike(fModel.filterField, `%${fModel.filterValue}%`)
+                        break;
+                    case 'startsWith':
+                        query = query.ilike(fModel.filterField, `${fModel.filterValue}%`)
+                        break;
+                    case 'endsWith':
+                        query = query.ilike(fModel.filterField, `%${fModel.filterValue}`)
+                        break;
+                }
+            }
 
-                .then(resp => {
-                    return {
-                        rows: resp.data as T[],
-                        totalRowCount: resp.count,
-                    } as PageInfo<T>;
-                })
+
+            return query.then((resp: any) => {
+                return {
+                    rows: resp.data as T[],
+                    totalRowCount: resp.count,
+                } as PageInfo<T>;
+            })
         } catch (err) {
             console.error('Unexpected error:', err);
             throw err;
@@ -114,5 +146,6 @@ abstract class EntityService<T extends Entity> {
 
 }
 
-export { EntityService }
-export type { Entity }
+export { EntityService };
+export type { Entity };
+
