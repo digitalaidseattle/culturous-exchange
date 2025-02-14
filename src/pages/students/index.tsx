@@ -26,6 +26,7 @@ import FailedStudentsModal from './FailedStudentsModal';
 import { FailedStudent, Student, StudentField } from '../../api/types';
 import AddStudentModal from './AddStudentModal';
 import { EntityService } from '../../api/entityService';
+import { studentService } from '../../api/ceStudentService';
 
 const UploadSection = () => {
     const notifications = useNotifications();
@@ -66,8 +67,10 @@ const UploadSection = () => {
     const handleAddStudent = async (event: any) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        const formJson = Object.fromEntries((formData as any).entries());
+        const formJson = Object.fromEntries((formData).entries());
+
         // const email = formJson.email;
+        const resp = await studentService.insert(formJson)
         console.log('formJson: ', formJson);
     }
 

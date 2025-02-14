@@ -98,6 +98,23 @@ class CEStudentService extends EntityService<Student> {
     }
   }
 
+  async insert(entity: Partial<Student>, select?: string ): Promise<Student> {
+    if (!entity.name || !entity.age || !entity.city || !entity.country || !entity.email || !entity.state || !entity.availabilities) {
+      throw new Error("Name and Email are required fields.");
+    }
+    const studentWithId: Student = {
+      id: entity.id?? uuid(),
+      name: entity.name,
+      email: entity.email,
+      age: entity.age,
+      city: entity.city,
+      state: entity.state,
+      country: entity.country,
+      availabilities: entity.availabilities?? ''
+    }
+    return await super.insert(studentWithId, select);
+  }
+
 }
 
 const studentService = new CEStudentService('student');
