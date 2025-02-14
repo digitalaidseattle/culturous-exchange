@@ -7,10 +7,9 @@ import { MainCard } from '@digitalaidseattle/mui';
 import { Button, Stack } from '@mui/material';
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
+import { useContext } from 'react';
 import { cohortService } from '../../api/ceCohortService';
 import { CohortsStack } from './CohortsStack';
-import { useContext } from 'react';
-import { Cohort } from '../../api/types';
 
 // ================================|| 404 ||================================ //
 
@@ -22,18 +21,12 @@ const CohortsPage: React.FC = () => {
     const notifications = useNotifications();
 
     const newCohort = async () => {
-        const cohort = await cohortService.insert(
-            {
-                id: 1,
-                name: `(New) Cohort`,
-            } as Cohort
-        );
-        console.log('cohort', cohort)
+        const cohort = await cohortService.create();
         if (cohort) {
             notifications.success(`Chort ${cohort.name} created.`);
             setRefresh(refresh + 1);
         } else {
-            notifications.error('wah wah');
+            notifications.error('Unable to create new cohort');
         }
     }
 

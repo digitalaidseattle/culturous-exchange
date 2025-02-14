@@ -5,11 +5,22 @@
  *
  */
 
+import { v4 as uuidv4 } from 'uuid';
 import { EntityService } from "./entityService";
 import { Cohort } from "./types";
 
 
 class CECohortService extends EntityService<Cohort> {
+
+    async create(): Promise<Cohort> {
+        // TODO add unenrolled students
+        return await cohortService.insert(
+            {
+                id: uuidv4(),
+                name: `(New) Cohort`,
+            } as Cohort
+        );
+    }
 
     async getById(entityId: number | undefined, select?: string): Promise<Cohort | null> {
         try {
