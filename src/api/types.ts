@@ -1,4 +1,12 @@
-import { Entity } from "./entityService";
+/**
+ * types.ts
+ *
+ * @copyright 2025 Digital Aid Seattle
+ *
+ */
+type Entity = {
+    id: string | number;
+}
 
 type Availability = {
     id: string;
@@ -23,6 +31,7 @@ type FailedStudent = Student & {
 type Cohort = Entity & {
     name: string;
     plans: Plan[];
+    enrolled: Student[];
 }
 
 type Group = {
@@ -32,7 +41,13 @@ type Group = {
 }
 
 type Enrollment = {
+    cohortId: string;
+    studentId: string;
+}
+
+type Placement = {
     id: string;
+    cohortId: string;
     studentId: string;
     student: Student;
     anchor: boolean;
@@ -40,7 +55,6 @@ type Enrollment = {
 }
 
 type Plan = Entity & {
-    id: number;
     name: string;
     cohortId: string;
     numberOfGroups: number;
@@ -50,4 +64,14 @@ type Plan = Entity & {
     notes: string;
 }
 
-export type { Availability, FailedStudent, Student, Cohort, Group, Enrollment, Plan }
+export type {
+    Availability,
+    Enrollment,
+    Entity,
+    FailedStudent,
+    Student,
+    Cohort,
+    Group,
+    Placement,
+    Plan
+}

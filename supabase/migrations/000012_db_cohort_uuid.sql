@@ -1,0 +1,7 @@
+ALTER TABLE cohort DROP COLUMN id CASCADE;
+ALTER TABLE cohort ADD COLUMN id UUID PRIMARY KEY;
+ALTER TABLE enrollment DROP COLUMN cohort_id CASCADE;
+ALTER TABLE enrollment ADD COLUMN cohort_id UUID REFERENCES cohort(id);
+ALTER TABLE plan DROP COLUMN cohort_id CASCADE;
+ALTER TABLE plan ADD COLUMN cohort_id UUID REFERENCES cohort(id);
+ALTER TABLE enrollment ADD PRIMARY KEY (cohort_id, student_id);

@@ -6,10 +6,7 @@
  */
 
 import { PageInfo, QueryModel, supabaseClient } from "@digitalaidseattle/supabase";
-
-interface Entity {
-    id: string | number;
-}
+import { Entity } from "./types";
 
 abstract class EntityService<T extends Entity> {
 

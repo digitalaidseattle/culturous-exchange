@@ -17,21 +17,21 @@ import {
     Typography
 } from "@mui/material";
 import { DragAndDrop, DDCategory, DDType } from '@digitalaidseattle/draganddrop';
-import { Enrollment, Plan } from "../../api/types";
+import { Placement, Plan } from "../../api/types";
 
 
-export const StudentCard = (props: { enrollment: Enrollment }) => {
+export const StudentCard = (props: { placement: Placement }) => {
 
     return (
         <Card sx={{ pointerEvents: 'auto', margin: 0 }}>
             <CardContent>
-                <Typography>{props.enrollment.anchor && <StarFilled style={{ color: "red" }} />} {props.enrollment.student.name}</Typography>
+                <Typography>{props.placement.anchor && <StarFilled style={{ color: "red" }} />} {props.placement.student.name}</Typography>
             </CardContent>
         </Card>
     );
 }
 
-type EnrollmentWrapper = Enrollment & DDType
+type EnrollmentWrapper = Placement & DDType
 
 export const GroupBoard = (props: { plan: Plan | undefined }) => {
     const [categories, setCategories] = useState<DDCategory<string>[]>();
@@ -44,7 +44,7 @@ export const GroupBoard = (props: { plan: Plan | undefined }) => {
         }
     }, [props])
 
-    function handleChange(c: Map<string, unknown>, t: Enrollment) {
+    function handleChange(c: Map<string, unknown>, t: Placement) {
         console.log(c, t)
     }
 
@@ -57,7 +57,7 @@ export const GroupBoard = (props: { plan: Plan | undefined }) => {
     }
 
     function cellRender(item: EnrollmentWrapper): ReactNode {
-        return <StudentCard enrollment={item} />
+        return <StudentCard placement={item} />
     }
 
     return (
@@ -66,7 +66,7 @@ export const GroupBoard = (props: { plan: Plan | undefined }) => {
             <Box sx={{ marginTop: 1 }}  >
                 <>{props.plan && categories &&
                     <DragAndDrop
-                        onChange={(c: Map<string, unknown>, e: Enrollment) => handleChange(c, e)}
+                        onChange={(c: Map<string, unknown>, e: Placement) => handleChange(c, e)}
                         items={props.plan.enrollments}
                         categories={categories}
                         isCategory={isCategory}

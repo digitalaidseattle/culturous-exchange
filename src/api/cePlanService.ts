@@ -8,7 +8,7 @@
 import { Plan } from "./types";
 
 const TEST_PLAN = {
-    id: 1,
+    id: '1',
     name: 'Plan1',
     numberOfGroups: 3,
     rating: 0,
@@ -17,6 +17,7 @@ const TEST_PLAN = {
     enrollments: [
         {
             id: '1',
+            cohortId: '1',
             studentId: 's1',
             student: {
                 id: '',
@@ -33,6 +34,7 @@ const TEST_PLAN = {
         },
         {
             id: '2',
+            cohortId: '1',
             studentId: 's2',
             student: {
                 id: '',
@@ -49,6 +51,7 @@ const TEST_PLAN = {
         },
         {
             id: '3',
+            cohortId: '1',
             studentId: 's3',
             student: {
                 id: '',
