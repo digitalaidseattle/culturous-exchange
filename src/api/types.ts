@@ -28,6 +28,13 @@ type FailedStudent = Student & {
     failedError: string;
 }
 
+type StudentField = {
+    key: keyof Student;
+    label: string;
+    type: string;
+    required: boolean;
+}
+
 type Cohort = Entity & {
     name: string;
     plans: Plan[];
@@ -68,7 +75,7 @@ export type {
     Entity,
     FailedStudent,
     Student,
-    Cohort,
+    StudentField, Cohort,
     Group,
     Placement,
     Plan

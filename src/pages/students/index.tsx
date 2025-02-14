@@ -23,8 +23,9 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import FailedStudentsModal from './FailedStudentsModal';
-import { FailedStudent, Student } from '../../api/types';
+import { FailedStudent, Student, StudentField } from '../../api/types';
 import AddStudentModal from './AddStudentModal';
+import { EntityService } from '../../api/entityService';
 
 const UploadSection = () => {
     const notifications = useNotifications();
@@ -34,6 +35,16 @@ const UploadSection = () => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
     const [newStudent, setNewStudent] = useState<Student[]>([])
+
+    const studentField: StudentField[] = [
+        { key: 'name', label: 'Full Name', type: 'string', required: true },
+        { key: 'age', label: 'Age', type: 'number', required: true },
+        { key: 'email', label: 'Email', type: 'email', required: true },
+        { key: 'city', label: 'City', type: 'string', required: true },
+        { key: 'country', label: 'Country', type: 'string', required: true },
+        //TODO: Decide on Availabilities structure - i.e. Date Picker, dropdown menu day/start/end
+        { key: 'availabilities', label: 'Availabilities', type: 'string', required: false },
+      ]
 
 
     const handleUpdate = (resp: any) => {
@@ -52,12 +63,12 @@ const UploadSection = () => {
         }
     }
 
-    const handleAddStudent = (event: any) => {
+    const handleAddStudent = async (event: any) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const formJson = Object.fromEntries((formData as any).entries());
-        const email = formJson.email;
-        console.log(email);
+        // const email = formJson.email;
+        console.log('formJson: ', formJson);
     }
 
     return (
@@ -91,6 +102,7 @@ const UploadSection = () => {
                 onClose={() => setIsAddStudentModalOpen(false)}
                 newStudent={newStudent}
                 handleAddStudent={handleAddStudent}
+                studentField={studentField}
             />
         </Stack>
     )

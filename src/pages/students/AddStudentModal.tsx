@@ -5,15 +5,17 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import { Student } from '../../api/types';
+import { Student, StudentField } from '../../api/types';
 
 interface Props {
-  isAddStudentModalOpen: boolean
-  onClose: () => void
-  newStudent: Student[]
-  handleAddStudent: (event: any) => void
+  isAddStudentModalOpen: boolean;
+  onClose: () => void;
+  newStudent: Student[];
+  handleAddStudent: (event: any) => void;
+  studentField: StudentField[];
 }
-const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStudent, handleAddStudent} ) => {
+
+const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStudent, handleAddStudent, studentField} ) => {
 
   return (
     <React.Fragment>
@@ -28,17 +30,20 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStuden
       >
         <DialogTitle>New Student Details</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            required
-            margin="dense"
-            id="email"
-            name="email"
-            label="Email Address"
-            type="email"
-            fullWidth
-            variant="standard"
-          />
+          {studentField.map(( {key, label, type, required} ) => (
+            <TextField
+              autoFocus
+              required={required}
+              key={key}
+              margin="dense"
+              id={key}
+              name={key}
+              label={label}
+              type={type}
+              fullWidth
+              variant="standard"
+            />
+          ))}
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
