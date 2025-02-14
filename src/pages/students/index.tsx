@@ -23,7 +23,8 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import FailedStudentsModal from './FailedStudentsModal';
-import { FailedStudent } from '../../api/types';
+import { FailedStudent, Student } from '../../api/types';
+import AddStudentModal from './AddStudentModal';
 
 const UploadSection = () => {
     const notifications = useNotifications();
@@ -31,6 +32,8 @@ const UploadSection = () => {
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
     const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
+    const [newStudent, setNewStudent] = useState<Student[]>([])
 
 
     const handleUpdate = (resp: any) => {
@@ -49,6 +52,14 @@ const UploadSection = () => {
         }
     }
 
+    const handleAddStudent = (event: any) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const formJson = Object.fromEntries((formData as any).entries());
+        const email = formJson.email;
+        console.log(email);
+    }
+
     return (
         <Stack>
             <Stack spacing={2} m={2} direction={'row'}>
@@ -59,6 +70,13 @@ const UploadSection = () => {
                     onClick={() => setShowDropzone(!showDropzone)}>
                     Upload
                 </Button>
+                <Button
+                    title='Add Student'
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setIsAddStudentModalOpen(true)}>
+                    Add Student
+                </Button>
             </Stack>
             {showDropzone &&
                 <StudentUploader onChange={handleUpdate} />
@@ -67,6 +85,12 @@ const UploadSection = () => {
                 isModalOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 failedStudents={failedStudents}
+            />
+            <AddStudentModal
+                isAddStudentModalOpen={isAddStudentModalOpen}
+                onClose={() => setIsAddStudentModalOpen(false)}
+                newStudent={newStudent}
+                handleAddStudent={handleAddStudent}
             />
         </Stack>
     )
