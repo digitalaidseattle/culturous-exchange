@@ -6,26 +6,41 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import { enrollmentService } from './ceEnrollmentService';
+import { studentService } from './ceStudentService';
 import { EntityService } from "./entityService";
-import { Cohort } from "./types";
+import { Cohort, Enrollment } from "./types";
 
 
 class CECohortService extends EntityService<Cohort> {
 
     async create(): Promise<Cohort> {
-        // TODO add unenrolled students
-        return await cohortService.insert(
-            {
-                id: uuidv4(),
-                name: `(New) Cohort`,
-            } as Cohort
-        );
+        return studentService.findUnenrolled()
+            .then(students => {
+                return cohortService.insert(
+                    {
+                        id: uuidv4(),
+                        name: `(New) Cohort`,
+                    } as Cohort
+                )
+                    .then(cohort => {
+                        const enrollments = students.map(student => {
+                            return {
+                                cohort_id: cohort.id,
+                                student_id: student.id
+                            } as Enrollment
+                        });
+                        enrollmentService.batchInsert(enrollments)
+                        return cohort
+                    })
+            })
     }
 
-    async getById(entityId: number | undefined, select?: string): Promise<Cohort | null> {
+    async getById(entityId: string | number, select?: string): Promise<Cohort | null> {
         try {
-            const cohort = await super.getById(entityId, select)
+            const cohort = await super.getById(entityId, select ?? '*, plan(*)')
             if (cohort) {
+                console.log(cohort)
                 return {
                     ...cohort,
                     plans: []   // TODO join into plans

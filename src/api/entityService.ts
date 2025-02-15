@@ -75,7 +75,7 @@ abstract class EntityService<T extends Entity> {
             .then((resp: any) => resp.data ?? [])
     }
 
-    async getById(entityId: number | undefined, select?: string): Promise<T | null> {
+    async getById(entityId: string | number, select?: string): Promise<T | null> {
         try {
             return supabaseClient.from(this.tableName)
                 .select(select ?? '*')
@@ -84,6 +84,23 @@ abstract class EntityService<T extends Entity> {
                 .then((resp: any) => resp.data ?? undefined)
         } catch (err) {
             console.error('Unexpected error during select:', err);
+            throw err;
+        }
+    }
+
+    async batchInsert(entities: T[], select?: string): Promise<T> {
+        try {
+            const { data, error } = await supabaseClient
+                .from(this.tableName)
+                .insert(entities)
+                .select(select ?? '*')
+            if (error) {
+                console.error('Error inserting entity:', error.message);
+                throw new Error('Failed to insert entity');
+            }
+            return data as unknown as T;
+        } catch (err) {
+            console.error('Unexpected error during insertion:', err);
             throw err;
         }
     }

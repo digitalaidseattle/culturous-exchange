@@ -21,7 +21,7 @@ const CohortPage: React.FC = () => {
 
     useEffect(() => {
         if (cohortId) {
-            cohortService.getById(parseInt(cohortId))
+            cohortService.getById(cohortId)
                 .then(cohort => setCohort(cohort))
         }
     }, [cohortId]);

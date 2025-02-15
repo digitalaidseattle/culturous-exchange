@@ -40,9 +40,9 @@ type Group = {
     studentIds: string[];
 }
 
-type Enrollment = {
-    cohortId: string;
-    studentId: string;
+type Enrollment = Entity & {
+    cohort_id: string | number;
+    student_id: string | number;
 }
 
 type Placement = {
