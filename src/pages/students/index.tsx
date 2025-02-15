@@ -25,7 +25,6 @@ import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import FailedStudentsModal from './FailedStudentsModal';
 import { FailedStudent, Student, StudentField } from '../../api/types';
 import AddStudentModal from './AddStudentModal';
-import { EntityService } from '../../api/entityService';
 import { studentService } from '../../api/ceStudentService';
 
 const UploadSection = () => {
@@ -44,8 +43,8 @@ const UploadSection = () => {
         { key: 'city', label: 'City', type: 'string', required: true },
         { key: 'country', label: 'Country', type: 'string', required: true },
         //TODO: Decide on Availabilities structure - i.e. Date Picker, dropdown menu day/start/end
-        { key: 'availabilities', label: 'Availabilities', type: 'string', required: false },
-      ]
+        { key: 'availabilities', label: 'Availabilities', type: 'object[]', required: false },
+    ];
 
 
     const handleUpdate = (resp: any) => {
@@ -67,11 +66,14 @@ const UploadSection = () => {
     const handleAddStudent = async (event: any) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        const formJson = Object.fromEntries((formData).entries());
-
-        // const email = formJson.email;
-        const resp = await studentService.insert(formJson)
-        console.log('formJson: ', formJson);
+        const formJson = Object.fromEntries((formData).entries()) as Partial<Student>;
+        try {
+            const resp = await studentService.insert(formJson);
+            notifications.success(`Success. Added student: - id ${resp.id} | - name: ${resp.name}`)
+        } catch (err: any) {
+            console.error(`Insertion failed: ${err.message}`)
+            notifications.error(`Insertion failed: ${err.message}`)
+        }
     }
 
     return (
