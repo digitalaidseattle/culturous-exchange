@@ -51,7 +51,7 @@ export const GroupBoard = (props: { plan: Plan | undefined }) => {
     function isCategory(item: EnrollmentWrapper, category: DDCategory<any>): boolean {
         if (props.plan) {
             const group = props.plan.groups.find(group => group.groupNo === category.value);
-            return group ? group.studentIds.includes(item.studentId) : false;
+            return group ? group.studentIds.includes(item.student_id) : false;
         }
         return false;
     }
@@ -67,7 +67,7 @@ export const GroupBoard = (props: { plan: Plan | undefined }) => {
                 <>{props.plan && categories &&
                     <DragAndDrop
                         onChange={(c: Map<string, unknown>, e: Placement) => handleChange(c, e)}
-                        items={props.plan.enrollments}
+                        items={props.plan.placements}
                         categories={categories}
                         isCategory={isCategory}
                         cardRenderer={cellRender}

@@ -5,20 +5,19 @@
  *
  */
 
-import { Plan } from "./types";
+import { Placement, Plan } from "./types";
 
 const TEST_PLAN = {
     id: '1',
     name: 'Plan1',
-    numberOfGroups: 3,
     rating: 0,
     notes: '',
-    cohortId: "sess1",
-    enrollments: [
+    cohort_id: "sess1",
+    placements: [
         {
             id: '1',
-            cohortId: '1',
-            studentId: 's1',
+            cohort_id: '1',
+            student_id: 's1',
             student: {
                 id: '',
                 name: 'Student 1',
@@ -31,11 +30,11 @@ const TEST_PLAN = {
             },
             anchor: true,
             availabilities: []
-        },
+        } ,
         {
             id: '2',
-            cohortId: '1',
-            studentId: 's2',
+            cohort_id: '1',
+            student_id: 's2',
             student: {
                 id: '',
                 name: 'Student 2',
@@ -51,8 +50,8 @@ const TEST_PLAN = {
         },
         {
             id: '3',
-            cohortId: '1',
-            studentId: 's3',
+            cohort_id: '1',
+            student_id: 's3',
             student: {
                 id: '',
                 name: 'Student 3',
@@ -66,7 +65,8 @@ const TEST_PLAN = {
             anchor: false,
             availabilities: []
         }
-    ], groups: [
+    ]  as Placement[],
+    groups: [
         {
             id: undefined,
             groupNo: 'Group 1',
@@ -83,7 +83,7 @@ const TEST_PLAN = {
             studentIds: []
         }
     ],
-}
+} as Plan;
 
 class CEPlanService {
     async getById(id: string): Promise<Plan> {
@@ -98,7 +98,7 @@ class CEPlanService {
 
     async duplicate(plan: Plan): Promise<Plan[]> {
         alert(`  '${plan.name}' would be duplicated  ${plan.name}`)
-        return [{...TEST_PLAN}]
+        return [{ ...TEST_PLAN }]
     }
 
 }
