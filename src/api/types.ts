@@ -4,8 +4,10 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
+type Identifier = string | number;
+
 type Entity = {
-    id: string | number;
+    id: Identifier;
 }
 
 type Availability = {
@@ -41,8 +43,8 @@ type Group = {
 }
 
 type Enrollment = Entity & {
-    cohort_id: string | number;
-    student_id: string | number;
+    cohort_id: Identifier;
+    student_id: Identifier;
 }
 
 type Placement = {
@@ -56,12 +58,12 @@ type Placement = {
 
 type Plan = Entity & {
     name: string;
-    cohortId: string;
+    cohort_id: Identifier;
     numberOfGroups: number;
-    enrollments: Enrollment[]
+    placements: Placement[];
     groups: Group[];
     rating: number;
-    notes: string;
+    note: string;
 }
 
 export type {
@@ -69,6 +71,7 @@ export type {
     Enrollment,
     Entity,
     FailedStudent,
+    Identifier,
     Student,
     Cohort,
     Group,

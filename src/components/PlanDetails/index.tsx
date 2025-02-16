@@ -27,7 +27,7 @@ export const PlanDetails = (props: { plan: Plan }) => {
         <MainCard sx={{ width: '100%' }}>
             
             <TextEdit label={'Name'} value={plan.name} onChange={(text: string) => alert(`TODO  save : ${text} name`)} />
-            <TextEdit label={'Notes'} value={plan.notes} rows={2} onChange={(text: string) => alert(`TODO  note save : ${text}`)} />
+            <TextEdit label={'Notes'} value={plan.note} rows={2} onChange={(text: string) => alert(`TODO  note save : ${text}`)} />
 
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">

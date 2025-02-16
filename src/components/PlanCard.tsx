@@ -13,9 +13,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { planService } from "../api/cePlanService";
 import { Plan } from "../api/types";
+import { useNotifications } from "@digitalaidseattle/core";
 
 
 export const PlanCard = (props: { plan: Plan }) => {
+    const notifications = useNotifications();
+
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const showMenu = Boolean(anchorEl);
 
@@ -41,17 +44,22 @@ export const PlanCard = (props: { plan: Plan }) => {
         setAnchorEl(null);
     };
 
-    const handleDelete  = () => {
+    const handleDelete = () => {
         setOpenDeleteDialog(true)
         setAnchorEl(null);
     };
 
-    const doDelete  = () => {
-        alert(' TODO delete plan')
-        setOpenDeleteDialog(false);
-        setAnchorEl(null);
+    const doDelete = () => {
+        if (props.plan) {
+            planService.delete(props.plan.id)
+                .then(() => {
+                    notifications.success(`Deleted plan ${props.plan.name}.`);
+                    setOpenDeleteDialog(false);
+                    setAnchorEl(null);
+                })
+        }
     };
-    
+
     return (
         <Card
             sx={{
@@ -91,7 +99,7 @@ export const PlanCard = (props: { plan: Plan }) => {
             </Menu>
             <CardContent>
                 <Typography fontWeight={600}>{props.plan.name}</Typography>
-                <Typography>Notes : {props.plan.notes}</Typography>
+                <Typography>Notes : {props.plan.note}</Typography>
                 <Typography>Stats : # of students, groups, etc.</Typography>
                 <ConfirmationDialog
                     message={`Delete ${props.plan.name}?`}

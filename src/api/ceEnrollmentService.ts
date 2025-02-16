@@ -14,11 +14,12 @@ class CEEnrollmentService extends EntityService<Enrollment> {
 
     async getStudents(cohort: Cohort): Promise<Student[]> {
         return await supabaseClient
-            .from('enrollment')
+            .from(this.tableName)
             .select('student(*)')
             .eq('cohort_id', cohort.id)
             .then(resp => resp.data as unknown as Student[]);
     }
+    
 }
 
 const enrollmentService = new CEEnrollmentService('enrollment')

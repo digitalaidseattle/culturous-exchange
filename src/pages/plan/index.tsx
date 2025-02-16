@@ -16,7 +16,7 @@ const PlanPage: React.FC = () => {
     useEffect(() => {
         if (planId) {
             planService.getById(planId)
-                .then(p => setPlan(p))
+                .then(p => setPlan(p!))
         }
     }, [planId])
     return (plan &&

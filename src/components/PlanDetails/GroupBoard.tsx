@@ -67,7 +67,7 @@ export const GroupBoard = (props: { plan: Plan | undefined }) => {
                 <>{props.plan && categories &&
                     <DragAndDrop
                         onChange={(c: Map<string, unknown>, e: Placement) => handleChange(c, e)}
-                        items={props.plan.enrollments}
+                        items={props.plan.placements}
                         categories={categories}
                         isCategory={isCategory}
                         cardRenderer={cellRender}
