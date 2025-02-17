@@ -62,6 +62,10 @@ const UploadSection = () => {
         }
     }
 
+    const handleCloseAddStudentModal = () => {
+        setAvailabilities([]);
+        setIsAddStudentModalOpen(false)
+    }
 
     const handleAddStudent = async (event: any) => {
         event.preventDefault();
@@ -72,10 +76,11 @@ const UploadSection = () => {
 
         try {
             const resp = await studentService.insert(formJson);
-            notifications.success(`Success. Added student: - id ${resp.id} | - name: ${resp.name}`)
+            notifications.success(`Success. Added student: - id ${resp.id} | - name: ${resp.name}`);
+            handleCloseAddStudentModal();
         } catch (err: any) {
-            console.error(`Insertion failed: ${err.message}`)
-            notifications.error(`Insertion failed: ${err.message}`)
+            console.error(`Insertion failed: ${err.message}`);
+            notifications.error(`Insertion failed: ${err.message}`);
         }
     }
 
@@ -107,7 +112,7 @@ const UploadSection = () => {
             />
             <AddStudentModal
                 isAddStudentModalOpen={isAddStudentModalOpen}
-                onClose={() => setIsAddStudentModalOpen(false)}
+                onClose={() => handleCloseAddStudentModal()}
                 handleAddStudent={handleAddStudent}
                 studentField={studentField}
                 availabilities={availabilities}
