@@ -99,8 +99,8 @@ class CEStudentService extends EntityService<Student> {
   }
 
   async insert(entity: Partial<Student>, select?: string ): Promise<Student> {
+    console.log('entity: ', entity)
     if (!entity.name || !entity.age || !entity.city || !entity.country || !entity.email || !entity.state) {
-
       throw new Error("Name and Email are required fields.");
     }
     const studentWithId: Student = {

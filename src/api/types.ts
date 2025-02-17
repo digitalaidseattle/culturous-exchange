@@ -27,7 +27,7 @@ type Student = Entity & {
     city: string;
     state: string;
     country: string;
-    availabilities: Availability[];
+    availabilities: SelectAvailability[];
 }
 
 type FailedStudent = Student & {

@@ -23,7 +23,7 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import FailedStudentsModal from './FailedStudentsModal';
-import { Availability, FailedStudent, Student, StudentField } from '../../api/types';
+import { FailedStudent, SelectAvailability, Student, StudentField } from '../../api/types';
 import AddStudentModal from './AddStudentModal';
 import { studentService } from '../../api/ceStudentService';
 
@@ -34,16 +34,15 @@ const UploadSection = () => {
     const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
-    const [newStudent, setNewStudent] = useState<Student[]>([])
+    const [availabilities, setAvailabilities] = useState<SelectAvailability[]>([])
 
     const studentField: StudentField[] = [
         { key: 'name', label: 'Full Name', type: 'string', required: true },
         { key: 'age', label: 'Age', type: 'number', required: true },
         { key: 'email', label: 'Email', type: 'email', required: true },
         { key: 'city', label: 'City', type: 'string', required: true },
+        { key: 'state', label: 'State', type: 'string', required: true },
         { key: 'country', label: 'Country', type: 'string', required: true },
-        //TODO: Decide on Availabilities structure - i.e. Date Picker, dropdown menu day/start/end
-        { key: 'availabilities', label: 'Availabilities', type: 'object[]', required: false },
     ];
 
 
@@ -63,10 +62,14 @@ const UploadSection = () => {
         }
     }
 
+
     const handleAddStudent = async (event: any) => {
         event.preventDefault();
+        setRefresh(refresh + 1);
         const formData = new FormData(event.currentTarget);
         const formJson = Object.fromEntries((formData).entries()) as Partial<Student>;
+        formJson.availabilities = availabilities;
+
         try {
             const resp = await studentService.insert(formJson);
             notifications.success(`Success. Added student: - id ${resp.id} | - name: ${resp.name}`)
@@ -105,9 +108,10 @@ const UploadSection = () => {
             <AddStudentModal
                 isAddStudentModalOpen={isAddStudentModalOpen}
                 onClose={() => setIsAddStudentModalOpen(false)}
-                newStudent={newStudent}
                 handleAddStudent={handleAddStudent}
                 studentField={studentField}
+                availabilities={availabilities}
+                setAvailabilities={setAvailabilities}
             />
         </Stack>
     )

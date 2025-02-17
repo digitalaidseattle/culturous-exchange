@@ -1,28 +1,27 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
-import { Box, IconButton, Typography, Stack, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel} from '@mui/material';
-import { SelectAvailability, Student, StudentField } from '../../api/types';
+import { Box, IconButton, Typography, Stack, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, DialogContentText } from '@mui/material';
+import { SelectAvailability, StudentField } from '../../api/types';
 import { CloseCircleOutlined } from '@ant-design/icons';
 
 interface Props {
   isAddStudentModalOpen: boolean;
   onClose: () => void;
-  newStudent: Student[];
   handleAddStudent: (event: any) => void;
   studentField: StudentField[];
+  availabilities: SelectAvailability[];
+  setAvailabilities: React.Dispatch<React.SetStateAction<SelectAvailability[]>>
 }
 
-const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStudent, handleAddStudent, studentField} ) => {
+const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAddStudent, studentField, availabilities, setAvailabilities} ) => {
   const [selectedDay, setSelectedDay] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
 
-  const [availabilities, setAvailabilities] = useState<SelectAvailability[]>([])
-
   const days = ['Friday', 'Saturday', 'Sunday'];
   const timeSlots = [
-    { label: 'Morning', start: '07:00 (PST)', end: '12:00 (PST)' },
-    { label: 'Afternoon', start: '12:00 (PST)', end: '17:00 (PST)' },
-    { label: 'Evening', start: '17:00 (PST)', end: '22:00 (PST)' }
+    { label: 'Morning', start: '07:00', end: '12:00' },
+    { label: 'Afternoon', start: '12:00', end: '17:00' },
+    { label: 'Evening', start: '17:00', end: '22:00' }
   ];
 
   const handleAddAvailability = () => {
@@ -45,7 +44,6 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStuden
     ))
     setAvailabilities(remainingAvailabilities)
   }
-  console.log('selectedDay: ', selectedDay, 'selectedTime: ', selectedTime)
 
   return (
     <React.Fragment>
@@ -75,6 +73,10 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStuden
             />
           ))}
           <Stack spacing={1} mt={1}>
+            <DialogContentText>Current Availabilities</DialogContentText>
+            {!availabilities.length && (
+              <Typography>none</Typography>
+            )}
             {availabilities.map((avilability, idx) => (
               <Stack key={idx} direction='row' justifyContent='space-between'>
                 <Typography>{avilability.day}</Typography>
@@ -87,7 +89,10 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStuden
               </Stack>
             ))}
           </Stack>
-          <Box>
+          <Box my={4}>
+          <DialogContentText>
+            Select Availabilities
+          </DialogContentText>
             <Stack direction='row' my={2} spacing={2}>
                 <FormControl>
                   <InputLabel shrink>Day</InputLabel>
