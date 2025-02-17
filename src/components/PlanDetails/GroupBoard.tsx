@@ -38,7 +38,7 @@ export const GroupBoard = (props: { plan: Plan | undefined }) => {
 
     useEffect(() => {
         if (props.plan) {
-            setCategories(props.plan.groups.map(group => {
+            setCategories((props.plan.groups ?? []).map(group => {
                 return { label: group.groupNo, value: group.groupNo }
             }))
         }
@@ -51,7 +51,7 @@ export const GroupBoard = (props: { plan: Plan | undefined }) => {
     function isCategory(item: EnrollmentWrapper, category: DDCategory<any>): boolean {
         if (props.plan) {
             const group = props.plan.groups.find(group => group.groupNo === category.value);
-            return group ? group.studentIds.includes(item.studentId) : false;
+            return group ? group.studentIds.includes(item.student_id as string) : false;
         }
         return false;
     }
