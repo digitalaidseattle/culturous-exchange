@@ -8,8 +8,37 @@ import { v4 as uuid } from 'uuid';
 import { read, utils } from "xlsx";
 import { EntityService } from "./entityService";
 import { FailedStudent, Student } from "./types";
+import { supabaseClient } from '@digitalaidseattle/supabase';
 
 class CEStudentService extends EntityService<Student> {
+
+  async findUnenrolled(): Promise<Student[]> {
+    try {
+      // TODO Scaling this may require using edge function
+      const enrollment_ids = await supabaseClient
+        .from('enrollment')
+        .select('student_id')
+        .then(resp => {
+          return resp.data?.map((row: any) => row.student_id)
+        })
+      return supabaseClient
+        .from('student')
+        .select('*')
+        .not('id', 'in', `(${enrollment_ids})`)
+        .then((resp: any) => {
+          if (resp.data) {
+            return resp.data as Student[]
+          }
+          else {
+            throw new Error('Could not execute query.')
+          }
+        })
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      throw err;
+    }
+  }
+
 
   async get_students_from_excel(excel_file: File): Promise<Student[]> {
     try {

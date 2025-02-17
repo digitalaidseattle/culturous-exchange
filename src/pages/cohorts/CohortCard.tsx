@@ -8,16 +8,18 @@
 import { MoreOutlined } from "@ant-design/icons";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { Card, CardContent, IconButton, Menu, MenuItem, Theme, Typography } from "@mui/material";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { cohortService } from "../../api/ceCohortService";
 import { Cohort } from "../../api/types";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
+import { enrollmentService } from "../../api/ceEnrollmentService";
 
 
 export const CohortCard = (props: { cohort: Cohort }) => {
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
+    const [cohort, setCohort] = useState<Cohort>(props.cohort);
 
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const showMenu = Boolean(anchorEl);
@@ -25,6 +27,19 @@ export const CohortCard = (props: { cohort: Cohort }) => {
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (props.cohort) {
+            enrollmentService.getStudents(props.cohort)
+                .then(students => {
+                    setCohort({
+                        ...cohort,
+                        enrolled: students
+                    })
+                })
+        }
+    }, [props]);
+
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -35,7 +50,7 @@ export const CohortCard = (props: { cohort: Cohort }) => {
     };
 
     const handleOpen = () => {
-        navigate(`/cohort/${props.cohort.id}`);
+        navigate(`/cohort/${cohort.id}`);
         setAnchorEl(null);
     };
 
@@ -45,18 +60,18 @@ export const CohortCard = (props: { cohort: Cohort }) => {
     };
 
     const doDelete = () => {
-        cohortService.delete(props.cohort.id.toString())
+        cohortService.delete(cohort.id.toString())
             .then(() => {
                 setRefresh(refresh + 1);
                 setOpenDeleteDialog(false);
                 setAnchorEl(null);
                 navigate(`/cohorts`);
-                notifications.success(`Cohort ${props.cohort.name} has been deleted.`);
+                notifications.success(`Cohort ${cohort.name} has been deleted.`);
             })
     };
 
-    return (
-        <Card key={props.cohort.id}
+    return (cohort && 
+        <Card key={cohort.id}
             sx={{
                 width: "240px",
                 height: "240px",
@@ -92,10 +107,11 @@ export const CohortCard = (props: { cohort: Cohort }) => {
                 <MenuItem onClick={handleDelete}>Delete...</MenuItem>
             </Menu>
             <CardContent>
-                <Typography fontWeight={600}>{props.cohort.name}</Typography>
-                <Typography>Stats : # of plans, students, etc.</Typography>
+                <Typography fontWeight={600}>{cohort.name}</Typography>
+                <Typography>Students : {cohort.enrolled?.length} </Typography>
+                <Typography>Plans : {cohort.plans?.length} </Typography>
                 <ConfirmationDialog
-                    message={`Delete ${props.cohort.name}?`}
+                    message={`Delete ${cohort.name}?`}
                     open={openDeleteDialog}
                     handleConfirm={() => doDelete()}
                     handleCancel={() => setOpenDeleteDialog(false)} />

@@ -40,15 +40,14 @@ type Group = {
     studentIds: string[];
 }
 
-type Enrollment = {
-    cohortId: string;
-    studentId: string;
+type Enrollment = Entity & {
+    cohort_id: string | number;
+    student_id: string | number;
 }
 
-type Placement = {
-    id: string;
-    cohortId: string;
-    studentId: string;
+type Placement = Entity &  {
+    cohort_id: string;
+    student_id: string;
     student: Student;
     anchor: boolean;
     availabilities: Availability[];
@@ -56,9 +55,8 @@ type Placement = {
 
 type Plan = Entity & {
     name: string;
-    cohortId: string;
-    numberOfGroups: number;
-    enrollments: Enrollment[]
+    cohort_id: string;
+    placements: Placement[]
     groups: Group[];
     rating: number;
     notes: string;
