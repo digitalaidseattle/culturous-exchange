@@ -14,6 +14,12 @@ type Availability = {
     endDate: Date;
 }
 
+type SelectAvailability = {
+    day: string;
+    start: string;
+    end: string;
+}
+
 type Student = Entity & {
     name: string;
     age: number | null;

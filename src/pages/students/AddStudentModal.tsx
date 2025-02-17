@@ -1,11 +1,7 @@
-import * as React from 'react';
-import Button from '@mui/material/Button';
+import React, {useState} from 'react';
 import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import { Student, StudentField } from '../../api/types';
+import { Box, Typography, Stack, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel} from '@mui/material';
+import { SelectAvailability, Student, StudentField } from '../../api/types';
 
 interface Props {
   isAddStudentModalOpen: boolean;
@@ -16,6 +12,33 @@ interface Props {
 }
 
 const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStudent, handleAddStudent, studentField} ) => {
+  const [selectedDay, setSelectedDay] = useState<string>('');
+  const [selectedTime, setSelectedTime] = useState<string>('');
+
+  const [availabilities, setAvailabilities] = useState<SelectAvailability[]>([])
+
+  const days = ['Friday', 'Saturday', 'Sunday'];
+  const timeSlots = [
+    { label: 'Morning', start: '07:00', end: '12:00' },
+    { label: 'Afternoon', start: '12:00', end: '17:00' },
+    { label: 'Evening', start: '17:00', end: '22:00' }
+  ];
+
+  const handleAddAvailability = () => {
+    if (!selectedDay || !selectedTime) return;
+    const timeSlot = timeSlots.find(slot => slot.label === selectedTime);
+
+    if (!timeSlot) return
+    const newAvailability: SelectAvailability = {
+      day: selectedDay,
+      start: timeSlot.start,
+      end: timeSlot.end
+    }
+    setAvailabilities([...availabilities, newAvailability]);
+    setSelectedDay('');
+    setSelectedTime('');
+  }
+  console.log('selectedDay: ', selectedDay, 'selectedTime: ', selectedTime)
 
   return (
     <React.Fragment>
@@ -44,6 +67,48 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStuden
               variant="standard"
             />
           ))}
+          <Stack spacing={1} mt={1}>
+            {availabilities.map((avilability, idx) => (
+              <Typography key={idx}>{`Day: ${avilability.day} ${avilability.start} - ${avilability.end}`}</Typography>
+            ))}
+          </Stack>
+          <Box>
+            <Stack direction='row' my={2} spacing={2}>
+                <FormControl>
+                  <InputLabel shrink>Day</InputLabel>
+                  <Select
+                    value={selectedDay}
+                    // label={selectedDay}
+                    onChange={(e) => setSelectedDay(e.target.value)}
+                  >
+                    {days.map((day: string, idx: number) => (
+                      <MenuItem key={idx} value={day}>{day}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl sx={{minWidth: '5rem'}}>
+                  <InputLabel shrink>Time Slot</InputLabel>
+                  <Select
+                    value={selectedTime}
+                    // label={selectedTime}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                  >
+                    {timeSlots.map((timeSlot: {label: string, start: string, end: string}, idx: number) => (
+                      <MenuItem key={idx} value={timeSlot.label}>{timeSlot.label}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              <Button
+                onClick={handleAddAvailability}
+                variant="outlined"
+                color='primary'
+                size='small'
+                disabled={!selectedDay || ! selectedTime}
+                >
+                Add Availability
+              </Button>
+            </Stack>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>

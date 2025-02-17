@@ -23,7 +23,7 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import FailedStudentsModal from './FailedStudentsModal';
-import { FailedStudent, Student, StudentField } from '../../api/types';
+import { Availability, FailedStudent, Student, StudentField } from '../../api/types';
 import AddStudentModal from './AddStudentModal';
 import { studentService } from '../../api/ceStudentService';
 
