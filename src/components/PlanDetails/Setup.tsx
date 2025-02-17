@@ -152,7 +152,7 @@ export default function Setup() {
             </Stack>
             <DataGrid
                 apiRef={apiRef}
-                rows={pageInfo.rows}
+                rows={pageInfo.rows ?? []}
                 columns={getColumns()}
 
                 paginationMode='server'

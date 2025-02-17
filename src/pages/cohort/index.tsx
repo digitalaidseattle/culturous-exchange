@@ -10,13 +10,14 @@ import { MainCard } from '@digitalaidseattle/mui';
 import { cohortService } from '../../api/ceCohortService';
 import { PlanCard } from '../../components/PlanCard';
 import { TextEdit } from '../../components/TextEdit';
-import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
+import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { Cohort, Plan } from '../../api/types';
 import { planService } from '../../api/cePlanService';
 
 const CohortPage: React.FC = () => {
     const { id: cohortId } = useParams<string>();
     const { refresh, setRefresh } = useContext(RefreshContext);
+    const { setLoading } = useContext(LoadingContext);
 
     const notifications = useNotifications();
 
@@ -40,7 +41,7 @@ const CohortPage: React.FC = () => {
     function handleNameChange(newText: string) {
         if (cohort) {
             cohortService
-                .update(cohort.id.toString(), { name: newText }) // FIXME change ID to UUID
+                .update(cohort.id.toString(), { name: newText })
                 .then(updated => {
                     setCohort(updated);
                     notifications.success(`Cohort ${updated.name} updated.`);
@@ -51,10 +52,13 @@ const CohortPage: React.FC = () => {
 
     function handleNewPlan() {
         if (cohort) {
+            setLoading(true);
             planService.create(cohort)
                 .then(plan => {
+                    setRefresh(refresh + 1);
                     notifications.success(`Plan ${plan.name} created.`);
                 })
+                .finally(() => setLoading(false));
         }
     }
 
@@ -68,11 +72,10 @@ const CohortPage: React.FC = () => {
             <MainCard title="Plans">
                 <Stack direction={'row'} gap={2}>
                     {plans.map(plan =>
-                        <PlanCard plan={plan} />
+                        <PlanCard key={plan.id} plan={plan} />
                     )}
                 </Stack>
             </MainCard>
-
         </Stack>
     )
 };

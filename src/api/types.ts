@@ -47,12 +47,12 @@ type Enrollment = Entity & {
     student_id: Identifier;
 }
 
-type Placement = {
-    id: string;
-    cohortId: string;
-    studentId: string;
+type Placement = Entity & {
+    plan_id: Identifier;
+    student_id: Identifier;
     student: Student;
     anchor: boolean;
+    priority: number;
     availabilities: Availability[];
 }
 

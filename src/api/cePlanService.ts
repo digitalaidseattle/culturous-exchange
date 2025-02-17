@@ -7,8 +7,10 @@
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { v4 as uuidv4 } from 'uuid';
+import { placementService } from "./cePlacementService";
 import { EntityService } from "./entityService";
-import { Cohort, Identifier, Plan } from "./types";
+import { Cohort, Identifier, Placement, Plan } from "./types";
+import { enrollmentService } from "./ceEnrollmentService";
 
 class CEPlanService extends EntityService<Plan> {
     async create(cohort: Cohort): Promise<Plan> {
@@ -18,11 +20,27 @@ class CEPlanService extends EntityService<Plan> {
             note: '',
             cohort_id: cohort.id
         } as Plan
-        return this.insert(proposed)
-            .then(plan => {
-                // TODO add placement
-                return plan;
-            })
+        // 
+        return enrollmentService.getStudents(cohort)
+            .then(students => {
+                return this.insert(proposed)
+                    .then(plan => {
+                        const placements = students.map(student => {
+                            return {
+                                plan_id: plan.id,
+                                student_id: student.id,
+                                anchor: false,
+                                priority: 0
+                            } as Placement
+                        })
+                        return placementService
+                            .batchInsert(placements)
+                            .then(createdPlacements => {
+                                plan.placements = createdPlacements;
+                                return plan;
+                            })
+                    })
+            });
     }
 
     async duplicate(plan: Plan): Promise<Plan> {

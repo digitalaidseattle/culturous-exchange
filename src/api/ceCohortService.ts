@@ -17,12 +17,13 @@ class CECohortService extends EntityService<Cohort> {
     async create(): Promise<Cohort> {
         return studentService.findUnenrolled()
             .then(students => {
-                return cohortService.insert(
-                    {
-                        id: uuidv4(),
-                        name: `(New) Cohort`,
-                    } as Cohort
-                )
+                return cohortService
+                    .insert(
+                        {
+                            id: uuidv4(),
+                            name: `(New) Cohort`,
+                        } as Cohort
+                    )
                     .then(cohort => {
                         const enrollments = students.map(student => {
                             return {
@@ -38,9 +39,9 @@ class CECohortService extends EntityService<Cohort> {
 
     async getById(entityId: string | number, select?: string): Promise<Cohort | null> {
         try {
-            const cohort = await super.getById(entityId, select ?? '*, plan(*)')
+            const cohort = await super.getById(entityId, select ?? '*, enrollment(*), plan(*)');
+            console.log(cohort);
             if (cohort) {
-                console.log(cohort)
                 return {
                     ...cohort,
                     plans: []   // TODO join into plans

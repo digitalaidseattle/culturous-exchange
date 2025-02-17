@@ -88,7 +88,7 @@ abstract class EntityService<T extends Entity> {
         }
     }
 
-    async batchInsert(entities: T[], select?: string): Promise<T> {
+    async batchInsert(entities: T[], select?: string): Promise<T[]> {
         try {
             const { data, error } = await supabaseClient
                 .from(this.tableName)
@@ -98,7 +98,7 @@ abstract class EntityService<T extends Entity> {
                 console.error('Error inserting entity:', error.message);
                 throw new Error('Failed to insert entity');
             }
-            return data as unknown as T;
+            return data as unknown as T[];
         } catch (err) {
             console.error('Unexpected error during insertion:', err);
             throw err;
