@@ -81,7 +81,9 @@ export type {
     Entity,
     FailedStudent,
     Student,
-    StudentField, Cohort,
+    StudentField,
+    SelectAvailability,
+    Cohort,
     Group,
     Placement,
     Plan
