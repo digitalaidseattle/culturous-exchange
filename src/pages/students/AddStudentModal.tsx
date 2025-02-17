@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
 import TextField from '@mui/material/TextField';
-import { Box, Typography, Stack, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel} from '@mui/material';
+import { Box, IconButton, Typography, Stack, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel} from '@mui/material';
 import { SelectAvailability, Student, StudentField } from '../../api/types';
+import { CloseCircleOutlined } from '@ant-design/icons';
 
 interface Props {
   isAddStudentModalOpen: boolean;
@@ -19,9 +20,9 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStuden
 
   const days = ['Friday', 'Saturday', 'Sunday'];
   const timeSlots = [
-    { label: 'Morning', start: '07:00', end: '12:00' },
-    { label: 'Afternoon', start: '12:00', end: '17:00' },
-    { label: 'Evening', start: '17:00', end: '22:00' }
+    { label: 'Morning', start: '07:00 (PST)', end: '12:00 (PST)' },
+    { label: 'Afternoon', start: '12:00 (PST)', end: '17:00 (PST)' },
+    { label: 'Evening', start: '17:00 (PST)', end: '22:00 (PST)' }
   ];
 
   const handleAddAvailability = () => {
@@ -37,6 +38,12 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStuden
     setAvailabilities([...availabilities, newAvailability]);
     setSelectedDay('');
     setSelectedTime('');
+  }
+  const handleDeleteAvailability = (day: string, start: string, end: string) => {
+    const remainingAvailabilities = availabilities.filter((val) => (
+      !(val.day === day && val.start === start && val.end === end)
+    ))
+    setAvailabilities(remainingAvailabilities)
   }
   console.log('selectedDay: ', selectedDay, 'selectedTime: ', selectedTime)
 
@@ -69,7 +76,15 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStuden
           ))}
           <Stack spacing={1} mt={1}>
             {availabilities.map((avilability, idx) => (
-              <Typography key={idx}>{`Day: ${avilability.day} ${avilability.start} - ${avilability.end}`}</Typography>
+              <Stack key={idx} direction='row' justifyContent='space-between'>
+                <Typography>{avilability.day}</Typography>
+                <Typography>{`${avilability.start} - ${avilability.end}`}</Typography>
+                <IconButton
+                  size="small"
+                  onClick={() => handleDeleteAvailability(avilability.day, avilability.start, avilability.end)}>
+                    <CloseCircleOutlined />
+                </IconButton>
+              </Stack>
             ))}
           </Stack>
           <Box>
@@ -78,7 +93,6 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStuden
                   <InputLabel shrink>Day</InputLabel>
                   <Select
                     value={selectedDay}
-                    // label={selectedDay}
                     onChange={(e) => setSelectedDay(e.target.value)}
                   >
                     {days.map((day: string, idx: number) => (
@@ -90,7 +104,6 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, newStuden
                   <InputLabel shrink>Time Slot</InputLabel>
                   <Select
                     value={selectedTime}
-                    // label={selectedTime}
                     onChange={(e) => setSelectedTime(e.target.value)}
                   >
                     {timeSlots.map((timeSlot: {label: string, start: string, end: string}, idx: number) => (
