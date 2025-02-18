@@ -1,20 +1,18 @@
 /**
  * CohortsTable.tsx
- * 
- * Example of integrating tickets with data-grid
+ *
+ *  @copyright 2025 Digital Aid Seattle
+ *
  */
 import { useContext, useEffect, useState } from 'react';
 
 // material-ui
 import {
-    Box,
-    Button,
-    Stack
+    Typography
 } from '@mui/material';
 import {
     DataGrid,
     GridColDef,
-    GridRowSelectionModel,
     GridSortModel,
     useGridApiRef
 } from '@mui/x-data-grid';
@@ -22,10 +20,12 @@ import {
 // third-party
 
 // project import
+import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
+import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { useNavigate } from 'react-router';
 import { cohortService } from '../../api/ceCohortService';
-import {LoadingContext, RefreshContext } from '@digitalaidseattle/core';
-import { PageInfo, QueryModel } from  '@digitalaidseattle/supabase';
+import { Cohort, Plan } from '../../api/types';
+import { MainCard } from '@digitalaidseattle/mui';
 
 const PAGE_SIZE = 10;
 
@@ -37,14 +37,11 @@ const getColumns = (): GridColDef[] => {
             width: 150,
         },
         {
-            field: 'startDate',
-            headerName: 'Start Date',
-            width: 140,
-        },
-        {
-            field: 'endDate',
-            headerName: 'End Date',
-            width: 140,
+            field: 'plans',
+            headerName: 'Plans',
+            renderCell: (param: any) => {
+                return <Typography>{param.row.plans.map((p: Plan) => p.name).join(', ')}</Typography>
+            }
         }
     ];
 }
@@ -53,7 +50,6 @@ const getColumns = (): GridColDef[] => {
 export default function CohortsTable() {
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
-    const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
     const [pageInfo, setPageInfo] = useState<PageInfo<Cohort>>({ rows: [], totalRowCount: 0 });
     const apiRef = useGridApiRef();
     const { setLoading } = useContext(LoadingContext);
@@ -88,38 +84,12 @@ export default function CohortsTable() {
 
     }, [refresh])
 
-    const applyAction = () => {
-        alert(`Apply some action to ${rowSelectionModel ? rowSelectionModel.length : 0} items.`)
-    }
-
-    const newCohort = () => {
-        alert(`New Cohort not implemented`)
-    }
-
-    function handleRowClick(params: any, event: any, details: any): void {
-        console.log(params, event, details)
+    function handleRowClick(params: any, _event: any, _details: any): void {
         navigate(`/cohort/${params.row.id}`)
     }
 
-    return (
-        <Box>
-            <Stack margin="1" gap="1" direction="row" spacing={'1rem'}>
-                <Button
-                    title='Action'
-                    variant="contained"
-                    color="primary"
-                    onClick={newCohort}>
-                    {'New'}
-                </Button>
-                <Button
-                    title='Action'
-                    variant="contained"
-                    color="secondary"
-                    disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
-                    onClick={applyAction}>
-                    {'Action'}
-                </Button>
-            </Stack>
+    return (pageInfo.rows.length > 0 &&
+        <MainCard>
             <DataGrid
                 apiRef={apiRef}
                 rows={pageInfo.rows}
@@ -135,11 +105,10 @@ export default function CohortsTable() {
                 onSortModelChange={setSortModel}
 
                 pageSizeOptions={[5, 10, 25, 100]}
-                checkboxSelection
-                onRowSelectionModelChange={setRowSelectionModel}
+
                 disableRowSelectionOnClick={false}
                 onRowClick={handleRowClick}
             />
-        </Box>
+        </MainCard>
     );
 }
