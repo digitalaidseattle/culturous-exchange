@@ -1,6 +1,5 @@
-
 /**
- *  PlanCard.tsx
+ *  CohortCard.tsx
  *
  *  @copyright 2024 Digital Aid Seattle
  *
@@ -9,19 +8,38 @@
 import { MoreOutlined } from "@ant-design/icons";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { Card, CardContent, IconButton, Menu, MenuItem, Theme, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { planService } from "../api/cePlanService";
-import { Plan } from "../api/types";
+import { cohortService } from "../../api/ceCohortService";
+import { Cohort } from "../../api/types";
+import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
+import { enrollmentService } from "../../api/ceEnrollmentService";
 
 
-export const PlanCard = (props: { plan: Plan }) => {
+export const CohortCard = (props: { cohort: Cohort }) => {
+    const notifications = useNotifications();
+    const { refresh, setRefresh } = useContext(RefreshContext);
+    const [cohort, setCohort] = useState<Cohort>(props.cohort);
+
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const showMenu = Boolean(anchorEl);
 
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (props.cohort) {
+            enrollmentService.getStudents(props.cohort)
+                .then(students => {
+                    setCohort({
+                        ...cohort,
+                        enrolled: students
+                    })
+                })
+        }
+    }, [props]);
+
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -32,28 +50,28 @@ export const PlanCard = (props: { plan: Plan }) => {
     };
 
     const handleOpen = () => {
-        navigate(`/plan/${props.plan.id}`);
+        navigate(`/cohort/${cohort.id}`);
         setAnchorEl(null);
     };
 
-    const handleDuplicate = () => {
-        planService.duplicate(props.plan)
-        setAnchorEl(null);
-    };
-
-    const handleDelete  = () => {
+    const handleDelete = () => {
         setOpenDeleteDialog(true)
         setAnchorEl(null);
     };
 
-    const doDelete  = () => {
-        alert(' TODO delete plan')
-        setOpenDeleteDialog(false);
-        setAnchorEl(null);
+    const doDelete = () => {
+        cohortService.delete(cohort.id.toString())
+            .then(() => {
+                setRefresh(refresh + 1);
+                setOpenDeleteDialog(false);
+                setAnchorEl(null);
+                navigate(`/cohorts`);
+                notifications.success(`Cohort ${cohort.name} has been deleted.`);
+            })
     };
-    
-    return (
-        <Card
+
+    return (cohort && 
+        <Card key={cohort.id}
             sx={{
                 width: "240px",
                 height: "240px",
@@ -86,15 +104,14 @@ export const PlanCard = (props: { plan: Plan }) => {
                 }}
             >
                 <MenuItem onClick={handleOpen}>Open</MenuItem>
-                <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
                 <MenuItem onClick={handleDelete}>Delete...</MenuItem>
             </Menu>
             <CardContent>
-                <Typography fontWeight={600}>{props.plan.name}</Typography>
-                <Typography>Notes : {props.plan.notes}</Typography>
-                <Typography>Stats : # of students, groups, etc.</Typography>
+                <Typography fontWeight={600}>{cohort.name}</Typography>
+                <Typography>Students : {cohort.enrolled?.length} </Typography>
+                <Typography>Plans : {cohort.plans?.length} </Typography>
                 <ConfirmationDialog
-                    message={`Delete ${props.plan.name}?`}
+                    message={`Delete ${cohort.name}?`}
                     open={openDeleteDialog}
                     handleConfirm={() => doDelete()}
                     handleCancel={() => setOpenDeleteDialog(false)} />

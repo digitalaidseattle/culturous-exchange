@@ -5,17 +5,19 @@
  *
  */
 
+import { Placement, Plan } from "./types";
+
 const TEST_PLAN = {
-    id: 'plan1',
+    id: '1',
     name: 'Plan1',
-    numberOfGroups: 3,
     rating: 0,
     notes: '',
-    cohortId: "sess1",
-    enrollments: [
+    cohort_id: "sess1",
+    placements: [
         {
             id: '1',
-            studentId: 's1',
+            cohort_id: '1',
+            student_id: 's1',
             student: {
                 id: 's1',
                 name: 'Student 1',
@@ -29,10 +31,11 @@ const TEST_PLAN = {
             anchor: true,
             priority: true,
             availabilities: []
-        },
+        } ,
         {
             id: '2',
-            studentId: 's2',
+            cohort_id: '1',
+            student_id: 's2',
             student: {
                 id: 's2',
                 name: 'Student 2',
@@ -49,7 +52,8 @@ const TEST_PLAN = {
         },
         {
             id: '3',
-            studentId: 's3',
+            cohort_id: '1',
+            student_id: 's3',
             student: {
                 id: 's3',
                 name: 'Student 3',
@@ -64,7 +68,8 @@ const TEST_PLAN = {
             priority: false,
             availabilities: []
         }
-    ], groups: [
+    ]  as Placement[],
+    groups: [
         {
             id: undefined,
             groupNo: 'Group 1',
@@ -81,7 +86,7 @@ const TEST_PLAN = {
             studentIds: []
         }
     ],
-}
+} as Plan;
 
 class CEPlanService {
     async getById(_id: string): Promise<Plan> {

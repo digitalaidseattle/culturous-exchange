@@ -8,6 +8,7 @@
 import { useCallback, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 import { studentService } from "../../api/ceStudentService";
+import { Student } from "../../api/types";
 
 const baseStyle = {
     flex: 1,
@@ -49,10 +50,22 @@ function StudentUploader(props: any) {
                 })
                 const allSuccess = resps.map(resp => resp.successCount)
                     .reduce((p, v) => p + v, 0);
+
+                    props.onChange({
+                        failedStudents: allFailed,
+                        successCount: allSuccess,
+                        failedCount: allFailed.length,
+                        attemptedCount: allFailed.length + allSuccess
+                    });
+            })
+            .catch((err) => {
+                console.error('Unexpected Error: ', err)
                 props.onChange({
-                    failedStudents: allFailed,
-                    successCount: allSuccess
-                });
+                    failedStudents: [],
+                    successCount: 0,
+                    failedCount: studentFiles.length,
+                    attemptedCount: studentFiles.length
+                })
             });
     }, [])
 

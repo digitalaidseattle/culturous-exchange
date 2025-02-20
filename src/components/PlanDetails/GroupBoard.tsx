@@ -17,7 +17,9 @@ import {
     Stack,
     Typography
 } from "@mui/material";
-import { PlanProps } from "../../utils/props";
+import { DragAndDrop, DDCategory, DDType } from '@digitalaidseattle/draganddrop';
+import { Placement, Plan } from "../../api/types";
+
 
 export const StudentCard = (props: { enrollment: Enrollment }) => {
     const anchor = props.enrollment.anchor ? 'green' : 'gray;'
@@ -41,7 +43,7 @@ export const StudentCard = (props: { enrollment: Enrollment }) => {
     );
 }
 
-type EnrollmentWrapper = Enrollment & DDType
+type EnrollmentWrapper = Placement & DDType
 
 export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
     const [categories, setCategories] = useState<DDCategory<string>[]>();
@@ -52,7 +54,7 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
         }))
     }, [plan])
 
-    function handleChange(c: Map<string, unknown>, t: Enrollment) {
+    function handleChange(c: Map<string, unknown>, t: Placement) {
         console.log(c, t)
     }
 
@@ -65,7 +67,7 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
     }
 
     function cellRender(item: EnrollmentWrapper): ReactNode {
-        return <StudentCard enrollment={item} />
+        return <StudentCard placement={item} />
     }
 
     return (

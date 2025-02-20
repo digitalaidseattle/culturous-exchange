@@ -5,124 +5,75 @@
  *
  */
 
-import { PageInfo, QueryModel } from "@digitalaidseattle/supabase";
+import { v4 as uuidv4 } from 'uuid';
+import { enrollmentService } from './ceEnrollmentService';
+import { studentService } from './ceStudentService';
+import { EntityService } from "./entityService";
+import { Cohort, Enrollment } from "./types";
 
 
-const TEST_PLAN = {
-    id: 'xxyyzz',
-    cohortId: '',
-    name: 'Plan 1',
-    notes: 'Default',
-    numberOfGroups: 3,
-    enrollments: [
-        {
-            id: '1',
-            studentId: 's1',
-            student: {
-                id: '',
-                name: 'Student 1',
-                age: null,
-                email: '',
-                city: '',
-                state: '',
-                country: '',
-                availabilities: []
-            },
-            anchor: true,
-            priority: false,
-            availabilities: []
-        },
-        {
-            id: '2',
-            studentId: 's2',
-            student: {
-                id: '',
-                name: 'Student 2',
-                age: null,
-                email: '',
-                city: '',
-                state: '',
-                country: '',
-                availabilities: []
-            },
-            anchor: false,
-            priority: false,
-            availabilities: []
-        },
-        {
-            id: '3',
-            studentId: 's3',
-            student: {
-                id: '',
-                name: 'Student 3',
-                age: null,
-                email: '',
-                city: '',
-                state: '',
-                country: '',
-                availabilities: []
-            },
-            anchor: false,
-            priority: false,
-            availabilities: []
-        }
-    ],
-    groups: [
-        {
-            id: undefined,
-            groupNo: 'Group 1',
-            studentIds: ['s1']
-        },
-        {
-            id: undefined,
-            groupNo: 'Group 2',
-            studentIds: ['s2', 's3']
-        },
-        {
-            id: undefined,
-            groupNo: 'Group 3',
-            studentIds: []
-        }
-    ],
-    rating: 10,
-    comments: []
-}
+class CECohortService extends EntityService<Cohort> {
 
-const TEST_PLAN2 ={...TEST_PLAN,
-    name: 'Plan 2',
-    notes: 'shifted student X from group 1 to group 2'
-}
-class CECohortService {
+    async create(): Promise<Cohort> {
+        return studentService.findUnenrolled()
+            .then(students => {
+                return cohortService.insert(
+                    {
+                        id: uuidv4(),
+                        name: `(New) Cohort`,
+                    } as Cohort
+                )
+                    .then(cohort => {
+                        const enrollments = students.map(student => {
+                            return {
+                                cohort_id: cohort.id,
+                                student_id: student.id
+                            } as Enrollment
+                        });
+                        enrollmentService.batchInsert(enrollments)
+                        return cohort
+                    })
+            })
+    }
 
-    async find(_queryModel: QueryModel): Promise<PageInfo<Cohort>> {
-        return {
-            totalRowCount: 2,
-            rows: [
-                {
-                    id: 'cohort1',
-                    name: 'Cohort 1',
-                    plans: [TEST_PLAN, TEST_PLAN2]
-                },
-                {
-                    id: 'cohort2',
-                    name: 'Cohort 2',
-                    plans: []
+    async getById(entityId: string | number, select?: string): Promise<Cohort | null> {
+        try {
+            const cohort = await super.getById(entityId, select ?? '*, plan(*)')
+            if (cohort) {
+                console.log(cohort)
+                return {
+                    ...cohort,
+                    plans: []   // TODO join into plans
                 }
-            ]
+            } else {
+                return null
+            }
+        } catch (err) {
+            console.error('Unexpected error during select:', err);
+            throw err;
         }
     }
 
-    async getById(id: string): Promise<Cohort> {
-        console.log("get ", id);
-        return {
-            id: 'cohort1',
-            name: 'Cohort 1',
-            plans: [TEST_PLAN, TEST_PLAN2]
+    async update(entityId: string, updatedFields: Partial<Cohort>, select?: string): Promise<Cohort> {
+        try {
+            const cohort = await super.update(entityId, updatedFields, select)
+            if (cohort) {
+                return {
+                    ...cohort,
+                    plans: []   // TODO join into plans
+                }
+            } else {
+                throw new Error('Unexpected error during update:');
+            }
+        } catch (err) {
+            console.error('Unexpected error during select:', err);
+            throw err;
         }
+
     }
 
 }
 
-const cohortService = new CECohortService()
+const cohortService = new CECohortService('cohort')
 export { cohortService };
 
