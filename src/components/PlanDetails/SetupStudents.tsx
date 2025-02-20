@@ -27,6 +27,7 @@ import {
 import { ExclamationCircleFilled, StarFilled } from '@ant-design/icons';
 import { PageInfo } from '@digitalaidseattle/supabase';
 import { PlanProps } from '../../utils/props';
+import { Student } from '../../api/types';
 
 const PAGE_SIZE = 10;
 
@@ -42,13 +43,13 @@ export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
     const [pageInfo, setPageInfo] = useState<PageInfo<EnrolledStudent>>({ rows: [], totalRowCount: 0 });
 
     useEffect(() => {
-        const enrolledStudents = plan.enrollments.map(en => {
+        const enrolledStudents = plan.placements.map(placement => {
             return {
-                ...en.student,
-                enrollmentId: en.id,
-                anchor: en.anchor,
-                priority: en.priority,
-            }
+                ...placement.student,
+                enrollmentId: placement.id,
+                anchor: placement.anchor,
+                priority: placement.priority,
+            } as EnrolledStudent
         });
         setPageInfo({
             rows: enrolledStudents,

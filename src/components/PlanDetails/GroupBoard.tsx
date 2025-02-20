@@ -17,33 +17,33 @@ import {
     Stack,
     Typography
 } from "@mui/material";
-import { DragAndDrop, DDCategory, DDType } from '@digitalaidseattle/draganddrop';
-import { Placement, Plan } from "../../api/types";
+import { Placement } from "../../api/types";
+import { PlanProps } from "../../utils/props";
 
 
-export const StudentCard = (props: { enrollment: Enrollment }) => {
-    const anchor = props.enrollment.anchor ? 'green' : 'gray;'
-    const priority = props.enrollment.priority ? 'green' : 'gray;'
+export const StudentCard = (props: { placement: Placement }) => {
+    const anchor = props.placement.anchor ? 'green' : 'gray;'
+    const priority = props.placement.priority ? 'green' : 'gray;'
     return (
         <Card sx={{ pointerEvents: 'auto', margin: 0 }}>
             <CardContent>
                 <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
                     <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
-                        {props.enrollment.anchor &&
+                        {props.placement.anchor &&
                             <StarFilled style={{ fontSize: '150%', color: anchor }} />
                         }
-                        {props.enrollment.priority &&
+                        {props.placement.priority &&
                             <ExclamationCircleFilled style={{ fontSize: '150%', color: priority }} />
                         }
                     </Stack>
-                    <Typography>{props.enrollment.student.name}</Typography>
+                    <Typography>{props.placement.student.name}</Typography>
                 </Stack>
             </CardContent>
         </Card>
     );
 }
 
-type EnrollmentWrapper = Placement & DDType
+type PlacementWrapper = Placement & DDType
 
 export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
     const [categories, setCategories] = useState<DDCategory<string>[]>();
@@ -58,15 +58,15 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
         console.log(c, t)
     }
 
-    function isCategory(item: EnrollmentWrapper, category: DDCategory<any>): boolean {
+    function isCategory(item: PlacementWrapper, category: DDCategory<any>): boolean {
         if (plan) {
             const group = plan.groups.find(group => group.groupNo === category.value);
-            return group ? group.studentIds.includes(item.studentId) : false;
+            return group ? group.studentIds.includes(item.student_id) : false;
         }
         return false;
     }
 
-    function cellRender(item: EnrollmentWrapper): ReactNode {
+    function cellRender(item: PlacementWrapper): ReactNode {
         return <StudentCard placement={item} />
     }
 
@@ -75,8 +75,8 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
             <Box sx={{ marginTop: 1 }}  >
                 <>{plan && categories &&
                     <DragAndDrop
-                        onChange={(c: Map<string, unknown>, e: Enrollment) => handleChange(c, e)}
-                        items={plan.enrollments}
+                        onChange={(c: Map<string, unknown>, e: Placement) => handleChange(c, e)}
+                        items={plan.placements}
                         categories={categories}
                         isCategory={isCategory}
                         cardRenderer={cellRender}
