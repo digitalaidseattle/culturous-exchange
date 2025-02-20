@@ -16,6 +16,12 @@ type Availability = {
     endDate: Date;
 }
 
+type SelectAvailability = {
+    day: string;
+    start: string;
+    end: string;
+}
+
 type Student = Entity & {
     name: string;
     age: number | null;
@@ -23,11 +29,18 @@ type Student = Entity & {
     city: string;
     state: string;
     country: string;
-    availabilities: Availability[];
+    availabilities: SelectAvailability[];
 }
 
 type FailedStudent = Student & {
     failedError: string;
+}
+
+type StudentField = {
+    key: keyof Student;
+    label: string;
+    type: string;
+    required: boolean;
 }
 
 type Cohort = Entity & {
@@ -73,6 +86,8 @@ export type {
     FailedStudent,
     Identifier,
     Student,
+    StudentField,
+    SelectAvailability,
     Cohort,
     Group,
     Placement,

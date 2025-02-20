@@ -23,7 +23,9 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import FailedStudentsModal from './FailedStudentsModal';
-import { FailedStudent } from '../../api/types';
+import { FailedStudent, SelectAvailability, Student, StudentField } from '../../api/types';
+import AddStudentModal from './AddStudentModal';
+import { studentService } from '../../api/ceStudentService';
 
 const UploadSection = () => {
     const notifications = useNotifications();
@@ -31,6 +33,17 @@ const UploadSection = () => {
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
     const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
+    const [availabilities, setAvailabilities] = useState<SelectAvailability[]>([])
+
+    const studentField: StudentField[] = [
+        { key: 'name', label: 'Full Name', type: 'string', required: true },
+        { key: 'age', label: 'Age', type: 'number', required: true },
+        { key: 'email', label: 'Email', type: 'email', required: true },
+        { key: 'city', label: 'City', type: 'string', required: true },
+        { key: 'state', label: 'State', type: 'string', required: true },
+        { key: 'country', label: 'Country', type: 'string', required: true },
+    ];
 
 
     const handleUpdate = (resp: any) => {
@@ -49,6 +62,28 @@ const UploadSection = () => {
         }
     }
 
+    const handleCloseAddStudentModal = () => {
+        setAvailabilities([]);
+        setIsAddStudentModalOpen(false)
+    }
+
+    const handleAddStudent = async (event: any) => {
+        event.preventDefault();
+        setRefresh(refresh + 1);
+        const formData = new FormData(event.currentTarget);
+        const formJson = Object.fromEntries((formData).entries()) as Partial<Student>;
+        formJson.availabilities = availabilities;
+
+        try {
+            const resp = await studentService.insert(formJson);
+            notifications.success(`Success. Added student: - id ${resp.id} | - name: ${resp.name}`);
+            handleCloseAddStudentModal();
+        } catch (err: any) {
+            console.error(`Insertion failed: ${err.message}`);
+            notifications.error(`Insertion failed: ${err.message}`);
+        }
+    }
+
     return (
         <Stack>
             <Stack spacing={2} m={2} direction={'row'}>
@@ -59,6 +94,13 @@ const UploadSection = () => {
                     onClick={() => setShowDropzone(!showDropzone)}>
                     Upload
                 </Button>
+                <Button
+                    title='Add Student'
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setIsAddStudentModalOpen(true)}>
+                    Add Student
+                </Button>
             </Stack>
             {showDropzone &&
                 <StudentUploader onChange={handleUpdate} />
@@ -67,6 +109,14 @@ const UploadSection = () => {
                 isModalOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 failedStudents={failedStudents}
+            />
+            <AddStudentModal
+                isAddStudentModalOpen={isAddStudentModalOpen}
+                onClose={() => handleCloseAddStudentModal()}
+                handleAddStudent={handleAddStudent}
+                studentField={studentField}
+                availabilities={availabilities}
+                setAvailabilities={setAvailabilities}
             />
         </Stack>
     )
