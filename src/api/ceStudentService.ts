@@ -22,7 +22,7 @@ class CEStudentService extends EntityService<Student> {
           return resp.data?.map((row: any) => row.student_id)
         })
       return supabaseClient
-        .from('Student_legacy')
+        .from('student')
         .select('*')
         .not('id', 'in', `(${enrollment_ids})`)
         .then((resp: any) => {
@@ -100,5 +100,5 @@ class CEStudentService extends EntityService<Student> {
 
 }
 
-const studentService = new CEStudentService('Student_legacy');
+const studentService = new CEStudentService('student');
 export { studentService };
