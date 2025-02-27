@@ -63,6 +63,7 @@ type Placement = Entity &  {
     student_id: string;
     student: Student;
     anchor: boolean;
+    priority: boolean;
     availabilities: Availability[];
 }
 

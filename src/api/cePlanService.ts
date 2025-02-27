@@ -19,7 +19,7 @@ const TEST_PLAN = {
             cohort_id: '1',
             student_id: 's1',
             student: {
-                id: '',
+                id: 's1',
                 name: 'Student 1',
                 age: null,
                 email: '',
@@ -29,6 +29,7 @@ const TEST_PLAN = {
                 availabilities: []
             },
             anchor: true,
+            priority: true,
             availabilities: []
         } ,
         {
@@ -36,7 +37,7 @@ const TEST_PLAN = {
             cohort_id: '1',
             student_id: 's2',
             student: {
-                id: '',
+                id: 's2',
                 name: 'Student 2',
                 age: null,
                 email: '',
@@ -46,6 +47,7 @@ const TEST_PLAN = {
                 availabilities: []
             },
             anchor: false,
+            priority: true,
             availabilities: []
         },
         {
@@ -53,7 +55,7 @@ const TEST_PLAN = {
             cohort_id: '1',
             student_id: 's3',
             student: {
-                id: '',
+                id: 's3',
                 name: 'Student 3',
                 age: null,
                 email: '',
@@ -63,6 +65,7 @@ const TEST_PLAN = {
                 availabilities: []
             },
             anchor: false,
+            priority: false,
             availabilities: []
         }
     ]  as Placement[],
@@ -86,8 +89,7 @@ const TEST_PLAN = {
 } as Plan;
 
 class CEPlanService {
-    async getById(id: string): Promise<Plan> {
-        console.log("get plan", id);
+    async getById(_id: string): Promise<Plan> {
         return TEST_PLAN;
     }
 

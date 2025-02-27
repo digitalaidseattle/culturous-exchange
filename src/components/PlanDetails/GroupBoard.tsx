@@ -8,71 +8,80 @@
 
 import { ReactNode, useEffect, useState } from "react";
 
-import { StarFilled } from "@ant-design/icons";
+import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
+import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
 import {
     Box,
-    Button,
     Card,
     CardContent,
+    Stack,
     Typography
 } from "@mui/material";
-import { DragAndDrop, DDCategory, DDType } from '@digitalaidseattle/draganddrop';
-import { Placement, Plan } from "../../api/types";
+import { Placement } from "../../api/types";
+import { PlanProps } from "../../utils/props";
 
 
 export const StudentCard = (props: { placement: Placement }) => {
-
+    const anchor = props.placement.anchor ? 'green' : 'gray;'
+    const priority = props.placement.priority ? 'green' : 'gray;'
     return (
         <Card sx={{ pointerEvents: 'auto', margin: 0 }}>
             <CardContent>
-                <Typography>{props.placement.anchor && <StarFilled style={{ color: "red" }} />} {props.placement.student.name}</Typography>
+                <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
+                    <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
+                        {props.placement.anchor &&
+                            <StarFilled style={{ fontSize: '150%', color: anchor }} />
+                        }
+                        {props.placement.priority &&
+                            <ExclamationCircleFilled style={{ fontSize: '150%', color: priority }} />
+                        }
+                    </Stack>
+                    <Typography>{props.placement.student.name}</Typography>
+                </Stack>
             </CardContent>
         </Card>
     );
 }
 
-type EnrollmentWrapper = Placement & DDType
+type PlacementWrapper = Placement & DDType
 
-export const GroupBoard = (props: { plan: Plan | undefined }) => {
+export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
     const [categories, setCategories] = useState<DDCategory<string>[]>();
 
     useEffect(() => {
-        if (props.plan) {
-            setCategories(props.plan.groups.map(group => {
-                return { label: group.groupNo, value: group.groupNo }
-            }))
-        }
-    }, [props])
+        setCategories(plan.groups.map(group => {
+            return { label: group.groupNo, value: group.groupNo }
+        }))
+    }, [plan])
 
     function handleChange(c: Map<string, unknown>, t: Placement) {
         console.log(c, t)
     }
 
-    function isCategory(item: EnrollmentWrapper, category: DDCategory<any>): boolean {
-        if (props.plan) {
-            const group = props.plan.groups.find(group => group.groupNo === category.value);
+    function isCategory(item: PlacementWrapper, category: DDCategory<any>): boolean {
+        if (plan) {
+            const group = plan.groups.find(group => group.groupNo === category.value);
             return group ? group.studentIds.includes(item.student_id) : false;
         }
         return false;
     }
 
-    function cellRender(item: EnrollmentWrapper): ReactNode {
+    function cellRender(item: PlacementWrapper): ReactNode {
         return <StudentCard placement={item} />
     }
 
     return (
         <>
-            <Button variant='contained' onClick={() => alert('Placing Students')}>Place Students</Button>
             <Box sx={{ marginTop: 1 }}  >
-                <>{props.plan && categories &&
+                <>{plan && categories &&
                     <DragAndDrop
                         onChange={(c: Map<string, unknown>, e: Placement) => handleChange(c, e)}
-                        items={props.plan.placements}
+                        items={plan.placements}
                         categories={categories}
                         isCategory={isCategory}
                         cardRenderer={cellRender}
                     />}
-                    {!props.plan &&
+                    {!plan &&
                         <Typography>No plan found.</Typography>
                     }
                 </>
