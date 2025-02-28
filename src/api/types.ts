@@ -4,8 +4,10 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
+type Identifier = string | number;
+
 type Entity = {
-    id: string | number;
+    id: Identifier;
 }
 
 type Availability = {
@@ -47,24 +49,24 @@ type Cohort = Entity & {
     enrolled: Student[];
 }
 
-type Group = {
-    id: string | undefined;
-    groupNo: string;
-    studentIds: string[];
+type Group =  Entity & {
+    plan_id: Identifier;
+    country_count: number;
+    students: Student[];
 }
 
 type Enrollment = Entity & {
-    cohort_id: string | number;
-    student_id: string | number;
+    cohort_id: Identifier;
+    student_id: Identifier;
 }
 
 type Placement = Entity &  {
-    cohort_id: string;
-    student_id: string;
-    student: Student;
+    plan_id: Identifier;
+    student_id: Identifier;
+    student?: Student;
     anchor: boolean;
     priority: boolean;
-    availabilities: Availability[];
+    availabilities?: Availability[];
 }
 
 type Plan = Entity & {
@@ -72,7 +74,6 @@ type Plan = Entity & {
     cohort_id: string;
     placements: Placement[]
     groups: Group[];
-    rating: number;
     notes: string;
 }
 
@@ -81,6 +82,7 @@ export type {
     Enrollment,
     Entity,
     FailedStudent,
+    Identifier,
     Student,
     StudentField,
     SelectAvailability,

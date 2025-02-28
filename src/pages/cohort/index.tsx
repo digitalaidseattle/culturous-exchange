@@ -33,14 +33,13 @@ const CohortPage: React.FC = () => {
     function handleNameChange(newText: string) {
         if (cohort) {
             cohortService
-                .update(cohort.id.toString(), { name: newText }) // FIXME change ID to UUID
+                .update(cohort.id, { name: newText }) // FIXME change ID to UUID
                 .then(updated => {
                     setCohort(updated);
                     notifications.success(`Cohort ${updated.name} updated.`)
                 });
         }
     }
-
 
     function handleCreatePlan() {
         if (cohort) {

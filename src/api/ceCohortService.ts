@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { enrollmentService } from './ceEnrollmentService';
 import { studentService } from './ceStudentService';
 import { EntityService } from "./entityService";
-import { Cohort, Enrollment } from "./types";
+import { Cohort, Enrollment, Identifier } from "./types";
 
 
 class CECohortService extends EntityService<Cohort> {
@@ -54,7 +54,7 @@ class CECohortService extends EntityService<Cohort> {
         }
     }
 
-    async update(entityId: string, updatedFields: Partial<Cohort>, select?: string): Promise<Cohort> {
+    async update(entityId: Identifier, updatedFields: Partial<Cohort>, select?: string): Promise<Cohort> {
         try {
             const cohort = await super.update(entityId, updatedFields, select)
             if (cohort) {

@@ -7,10 +7,11 @@
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { v4 as uuidv4 } from 'uuid';
-import { placementService } from "./cePlacementService";
 import { EntityService } from "./entityService";
 import { Cohort, Identifier, Placement, Plan } from "./types";
 import { enrollmentService } from "./ceEnrollmentService";
+import { placementService } from "./cePlacementService";
+import { groupService } from "./ceGroupService";
 
 class CEPlanService extends EntityService<Plan> {
 
@@ -18,8 +19,10 @@ class CEPlanService extends EntityService<Plan> {
         const proposed: Plan = {
             id: uuidv4(),
             name: 'New Plan',
-            note: '',
-            cohort_id: cohort.id
+            cohort_id: cohort.id,
+            placements: [],
+            groups: [],
+            notes: ''
         } as Plan
         // 
         return enrollmentService.getStudents(cohort)
@@ -32,7 +35,7 @@ class CEPlanService extends EntityService<Plan> {
                                 student_id: student.id,
                                 anchor: false,
                                 priority: 0
-                            } as Placement
+                            } as unknown as Placement
                         })
                         return placementService
                             .batchInsert(placements)
@@ -48,10 +51,11 @@ class CEPlanService extends EntityService<Plan> {
         try {
             const plan = await super.getById(entityId, select ?? '*, placement(*)');
             if (plan) {
-                console.log(plan)
+                console.log('getById', plan)
                 return {
                     ...plan,
-                    placements: (plan as any).placement
+                    placements: (plan as any).placement,
+                    groups: []
                 }
             } else {
                 return null
@@ -65,15 +69,38 @@ class CEPlanService extends EntityService<Plan> {
     async duplicate(plan: Plan): Promise<Plan> {
         const proposed: Plan = {
             id: uuidv4(),
+            cohort_id: plan.cohort_id,
             name: plan.name + ' (copy)',
             note: '',
-            cohort_id: plan.cohort_id
-        } as Plan
+            placements: [],
+            groups: [],
+        } as unknown as Plan
         return this.insert(proposed)
-            .then(plan => {
-                // TODO copy placements
-                // TODO copy groups? 
-                return plan;
+            .then(async duplicatePlan => {
+                const duplicatePlacements = plan.placements
+                    .map(placement => {
+                        return {
+                            ...placement,
+                            plan_id: duplicatePlan.id
+                        }
+                    });
+                const duplicateGroups = plan.groups
+                    .map(group => {
+                        return {
+                            ...group,
+                            plan_id: duplicatePlan.id
+                        }
+                    });
+                return Promise
+                    .all([
+                        placementService.batchInsert(duplicatePlacements),
+                        groupService.batchInsert(duplicateGroups)
+                    ])
+                    .then(resps => {
+                        duplicatePlan.placements = resps[0];
+                        duplicatePlan.groups = resps[1];
+                        return duplicatePlan;
+                    })
             })
     }
 
@@ -87,6 +114,6 @@ class CEPlanService extends EntityService<Plan> {
 
 }
 
-const planService = new CEPlanService()
+const planService = new CEPlanService('plan')
 export { planService };
 
