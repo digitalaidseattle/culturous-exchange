@@ -38,12 +38,12 @@ class CECohortService extends EntityService<Cohort> {
 
     async getById(entityId: string | number, select?: string): Promise<Cohort | null> {
         try {
-            const cohort = await super.getById(entityId, select ?? '*, plan(*)')
+            const cohort = await super.getById(entityId, select ?? '*, enrollment(*), plan(*)');
             if (cohort) {
                 console.log(cohort)
                 return {
                     ...cohort,
-                    plans: []   // TODO join into plans
+                    plans: (cohort as any).plan
                 }
             } else {
                 return null

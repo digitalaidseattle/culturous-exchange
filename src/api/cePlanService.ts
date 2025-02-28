@@ -5,102 +5,84 @@
  *
  */
 
-import { Placement, Plan } from "./types";
+import { supabaseClient } from "@digitalaidseattle/supabase";
+import { v4 as uuidv4 } from 'uuid';
+import { placementService } from "./cePlacementService";
+import { EntityService } from "./entityService";
+import { Cohort, Identifier, Placement, Plan } from "./types";
+import { enrollmentService } from "./ceEnrollmentService";
 
-const TEST_PLAN = {
-    id: '1',
-    name: 'Plan1',
-    rating: 0,
-    notes: '',
-    cohort_id: "sess1",
-    placements: [
-        {
-            id: '1',
-            cohort_id: '1',
-            student_id: 's1',
-            student: {
-                id: 's1',
-                name: 'Student 1',
-                age: null,
-                email: '',
-                city: '',
-                state: '',
-                country: '',
-                availabilities: []
-            },
-            anchor: true,
-            priority: true,
-            availabilities: []
-        } ,
-        {
-            id: '2',
-            cohort_id: '1',
-            student_id: 's2',
-            student: {
-                id: 's2',
-                name: 'Student 2',
-                age: null,
-                email: '',
-                city: '',
-                state: '',
-                country: '',
-                availabilities: []
-            },
-            anchor: false,
-            priority: true,
-            availabilities: []
-        },
-        {
-            id: '3',
-            cohort_id: '1',
-            student_id: 's3',
-            student: {
-                id: 's3',
-                name: 'Student 3',
-                age: null,
-                email: '',
-                city: '',
-                state: '',
-                country: '',
-                availabilities: []
-            },
-            anchor: false,
-            priority: false,
-            availabilities: []
-        }
-    ]  as Placement[],
-    groups: [
-        {
-            id: undefined,
-            groupNo: 'Group 1',
-            studentIds: ['s1']
-        },
-        {
-            id: undefined,
-            groupNo: 'Group 2',
-            studentIds: ['s2', 's3']
-        },
-        {
-            id: undefined,
-            groupNo: 'Group 3',
-            studentIds: []
-        }
-    ],
-} as Plan;
+class CEPlanService extends EntityService<Plan> {
 
-class CEPlanService {
-    async getById(_id: string): Promise<Plan> {
-        return TEST_PLAN;
+    async create(cohort: Cohort): Promise<Plan> {
+        const proposed: Plan = {
+            id: uuidv4(),
+            name: 'New Plan',
+            note: '',
+            cohort_id: cohort.id
+        } as Plan
+        // 
+        return enrollmentService.getStudents(cohort)
+            .then(students => {
+                return this.insert(proposed)
+                    .then(plan => {
+                        const placements = students.map(student => {
+                            return {
+                                plan_id: plan.id,
+                                student_id: student.id,
+                                anchor: false,
+                                priority: 0
+                            } as Placement
+                        })
+                        return placementService
+                            .batchInsert(placements)
+                            .then(createdPlacements => {
+                                plan.placements = createdPlacements;
+                                return plan;
+                            })
+                    })
+            });
     }
 
-    async findByCohortId(cohortId: string): Promise<Plan[]> {
-        console.log("get plans for cohort ", cohortId);
-        return [TEST_PLAN]
+    async getById(entityId: string | number, select?: string): Promise<Plan | null> {
+        try {
+            const plan = await super.getById(entityId, select ?? '*, placement(*)');
+            if (plan) {
+                console.log(plan)
+                return {
+                    ...plan,
+                    placements: (plan as any).placement
+                }
+            } else {
+                return null
+            }
+        } catch (err) {
+            console.error('Unexpected error during select:', err);
+            throw err;
+        }
     }
 
-    async duplicate(plan: Plan): Promise<Plan[]> {
-        alert(`  '${plan.name}' would be duplicated  ${plan.name}`)
-        return [{ ...TEST_PLAN }]
+    async duplicate(plan: Plan): Promise<Plan> {
+        const proposed: Plan = {
+            id: uuidv4(),
+            name: plan.name + ' (copy)',
+            note: '',
+            cohort_id: plan.cohort_id
+        } as Plan
+        return this.insert(proposed)
+            .then(plan => {
+                // TODO copy placements
+                // TODO copy groups? 
+                return plan;
+            })
+    }
+
+    async findByCohortId(cohort_id: Identifier): Promise<Plan[]> {
+        return await supabaseClient
+            .from(this.tableName)
+            .select('*')
+            .eq('cohort_id', cohort_id)
+            .then(resp => resp.data as Plan[]);
     }
 
 }

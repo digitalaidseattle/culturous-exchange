@@ -3,7 +3,7 @@
  * 
  * Example of integrating tickets with data-grid
  */
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // material-ui
 import {
@@ -25,10 +25,8 @@ import {
 
 // project import
 import { StarFilled } from '@ant-design/icons';
-import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
-import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
-import { studentService } from '../../api/ceStudentService';
-import { Student } from '../../api/types';
+import { PageInfo } from '@digitalaidseattle/supabase';
+import { Placement, Plan } from '../../api/types';
 
 const PAGE_SIZE = 10;
 
@@ -79,41 +77,25 @@ const getColumns = (): GridColDef[] => {
     ];
 }
 
-export default function Setup() {
+export default function Setup(props: { plan: Plan }) {
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
-    const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
+    const [pageInfo, setPageInfo] = useState<PageInfo<Placement>>({ rows: [], totalRowCount: 0 });
     const apiRef = useGridApiRef();
-    const { setLoading } = useContext(LoadingContext);
-    const { refresh } = useContext(RefreshContext);
 
     useEffect(() => {
-        if (paginationModel && sortModel) {
-            const queryModel = {
-                page: paginationModel.page,
-                pageSize: paginationModel.pageSize,
-                sortField: sortModel.length === 0 ? 'created_at' : sortModel[0].field,
-                sortDirection: sortModel.length === 0 ? 'created_at' : sortModel[0].sort
-            } as QueryModel
-            studentService.find(queryModel)
-                .then((sess) => setPageInfo(sess))
+        if (props.plan) {
+            console.log(props.plan)
+            setPageInfo(
+                {
+                    ...pageInfo,
+                    rows: props.plan.placements,
+                    totalRowCount: props.plan.placements.length
+                }
+            )
         }
-    }, [paginationModel, sortModel])
-
-    useEffect(() => {
-        const queryModel = {
-            page: paginationModel.page,
-            pageSize: paginationModel.pageSize,
-            sortField: sortModel.length === 0 ? 'created_at' : sortModel[0].field,
-            sortDirection: sortModel.length === 0 ? 'created_at' : sortModel[0].sort
-        } as QueryModel
-        setLoading(true);
-        studentService.find(queryModel)
-            .then((pi) => setPageInfo(pi))
-            .finally(() => setLoading(false))
-
-    }, [refresh])
+    }, [props])
 
     const applyAction = () => {
         alert(`Apply some action to ${rowSelectionModel ? rowSelectionModel.length : 0} items.`)
@@ -155,12 +137,12 @@ export default function Setup() {
                 rows={pageInfo.rows}
                 columns={getColumns()}
 
-                paginationMode='server'
+                paginationMode='client'
                 paginationModel={paginationModel}
                 rowCount={pageInfo.totalRowCount}
                 onPaginationModelChange={setPaginationModel}
 
-                sortingMode='server'
+                sortingMode='client'
                 sortModel={sortModel}
                 onSortModelChange={setSortModel}
 
