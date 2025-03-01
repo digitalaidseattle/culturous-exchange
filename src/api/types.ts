@@ -51,6 +51,7 @@ type Cohort = Entity & {
 
 type Group =  Entity & {
     plan_id: Identifier;
+    groupNo?: string;
     country_count: number;
     students: Student[];
 }

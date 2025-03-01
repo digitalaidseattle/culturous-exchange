@@ -27,9 +27,9 @@ import {
 // project import
 import { ExclamationCircleFilled, StarFilled } from '@ant-design/icons';
 import { PageInfo } from '@digitalaidseattle/supabase';
-import { PlanProps } from '../../utils/props';
-import { Placement, Student } from '../../api/types';
 import { placementService } from '../../api/cePlacementService';
+import { Placement } from '../../api/types';
+import { PlanProps } from '../../utils/props';
 
 const PAGE_SIZE = 10;
 
