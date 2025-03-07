@@ -3,6 +3,7 @@ import TextField from '@mui/material/TextField';
 import { Box, IconButton, Typography, Stack, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, DialogContentText } from '@mui/material';
 import { SelectAvailability, StudentField } from '../../api/types';
 import { CloseCircleOutlined } from '@ant-design/icons';
+import { validateAge, validateEmail, validateName } from '../../utils/formValidation';
 
 interface Props {
   isAddStudentModalOpen: boolean;
@@ -16,6 +17,26 @@ interface Props {
 const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAddStudent, studentField, availabilities, setAvailabilities} ) => {
   const [selectedDay, setSelectedDay] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
+  const [dirtyFields, setDirtyFields] = useState<{ [key: string]: boolean }>({});
+  const [errors, setErrors] = useState<{ [key: string]: string | null }>({});
+
+  const handleFieldChange = (event: any) => {
+    const { name, value } = event.target;
+
+    console.log('name: ', name)
+    console.log('value: ', value)
+
+    setDirtyFields((prev) => ( {...prev, [name]: true } ));
+    console.log('diretyFields: ', dirtyFields)
+
+    let errorMessage: string | null = null;
+
+    if (name === 'name') errorMessage = validateName(errorMessage, value, 2, 25);
+    if (name === 'age') errorMessage = validateAge(errorMessage, value, 5, 100);
+    if (name === 'email') errorMessage = validateEmail(errorMessage, value);
+
+    setErrors((prev) => ( {...prev, [name]: errorMessage } ))
+  }
 
   const days = ['Friday', 'Saturday', 'Sunday'];
   const timeSlots = [
@@ -45,6 +66,12 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
     setAvailabilities(remainingAvailabilities)
   }
 
+  const handleClose = () => {
+    setErrors({});
+    setDirtyFields({});
+    onClose();
+  }
+
   return (
     <React.Fragment>
       <Dialog
@@ -58,19 +85,27 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
       >
         <DialogTitle>New Student Details</DialogTitle>
         <DialogContent>
-          {studentField.map(( {key, label, type, required} ) => (
-            <TextField
-              autoFocus
-              required={required}
-              key={key}
-              margin="dense"
-              id={key}
-              name={key}
-              label={label}
-              type={type}
-              fullWidth
-              variant="standard"
-            />
+          {studentField.map(({key, label, type, required}, idx ) => (
+            <Box key={idx}>
+              <TextField
+                autoFocus
+                required={required}
+                key={key}
+                margin="dense"
+                id={key}
+                name={key}
+                label={label}
+                type={type}
+                fullWidth
+                variant="standard"
+                onChange={handleFieldChange}
+                error={!!errors[key] && dirtyFields[key]}
+              />
+              {errors[key] && dirtyFields[key] && (
+                <Typography>{`${errors[key]}`}</Typography>
+              )}
+            </Box>
+
           ))}
           <Stack spacing={1} mt={1}>
             <DialogContentText>Current Availabilities</DialogContentText>
@@ -129,7 +164,7 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={handleClose}>Cancel</Button>
           <Button
             type="submit"
             color="primary"
