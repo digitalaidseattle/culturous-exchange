@@ -60,17 +60,19 @@ export const CohortCard = (props: { cohort: Cohort }) => {
     };
 
     const doDelete = () => {
-        cohortService.delete(cohort.id.toString())
-            .then(() => {
-                setRefresh(refresh + 1);
-                setOpenDeleteDialog(false);
-                setAnchorEl(null);
-                navigate(`/cohorts`);
-                notifications.success(`Cohort ${cohort.name} has been deleted.`);
-            })
+        if (cohort && cohort.id) {
+            cohortService.delete(cohort.id.toString())
+                .then(() => {
+                    setRefresh(refresh + 1);
+                    setOpenDeleteDialog(false);
+                    setAnchorEl(null);
+                    navigate(`/cohorts`);
+                    notifications.success(`Cohort ${cohort.name} has been deleted.`);
+                })
+        }
     };
 
-    return (cohort && 
+    return (cohort &&
         <Card key={cohort.id}
             sx={{
                 width: "240px",
