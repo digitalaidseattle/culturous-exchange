@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import { Box, IconButton, Typography, Stack, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, DialogContentText } from '@mui/material';
 import { SelectAvailability, StudentField } from '../../api/types';
@@ -20,14 +20,11 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
   const [dirtyFields, setDirtyFields] = useState<{ [key: string]: boolean }>({});
   const [errors, setErrors] = useState<{ [key: string]: string | null }>({});
 
+
   const handleFieldChange = (event: any) => {
     const { name, value } = event.target;
 
-    console.log('name: ', name)
-    console.log('value: ', value)
-
     setDirtyFields((prev) => ( {...prev, [name]: true } ));
-    console.log('diretyFields: ', dirtyFields)
 
     let errorMessage: string | null = null;
 
@@ -71,6 +68,10 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
     setDirtyFields({});
     onClose();
   }
+
+  useEffect(() => {
+    //call for timezone data
+  })
 
   return (
     <React.Fragment>

@@ -41,6 +41,20 @@ type StudentField = {
     required: boolean;
 }
 
+type TimeZone = {
+    timeZoneId: string;
+}
+
+type Country = {
+    country: string;
+    countryCode: string;
+}
+
+type CountryTimeZone = {
+    countryCode: string;
+    timeZones: TimeZone[];
+}
+
 type Cohort = Entity & {
     name: string;
     plans: Plan[];
@@ -83,6 +97,9 @@ export type {
     FailedStudent,
     Student,
     StudentField,
+    TimeZone,
+    Country,
+    CountryTimeZone,
     SelectAvailability,
     Cohort,
     Group,

@@ -16,6 +16,7 @@ const validateAge = (errorMessage: string | null = null, value: number, minLengt
 
 const validateEmail = (errorMessage: string | null = null, value: string) => {
   if (value.length >= 1) {
+    //allow common numbers and symbols and check for chars before @, @ itself, dot, chars following dot, and no additional chars at end
     const emailRegex = new RegExp("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
     !emailRegex.test(value) ? errorMessage = "Please enter a valid email" : null;
   }

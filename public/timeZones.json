@@ -1,0 +1,110 @@
+[
+  {
+    "countryCode": "US",
+    "timeZones": [
+      { "timeZoneId": "America/New_York" },
+      { "timeZoneId": "America/Chicago" },
+      { "timeZoneId": "America/Denver" },
+      { "timeZoneId": "America/Los_Angeles" }
+    ]
+  },
+  {
+    "countryCode": "CA",
+    "timeZones": [
+      { "timeZoneId": "America/Toronto" },
+      { "timeZoneId": "America/Vancouver" },
+      { "timeZoneId": "America/Edmonton" },
+      { "timeZoneId": "America/Winnipeg" }
+    ]
+  },
+  {
+    "countryCode": "GB",
+    "timeZones": [
+      { "timeZoneId": "Europe/London" }
+    ]
+  },
+  {
+    "countryCode": "AU",
+    "timeZones": [
+      { "timeZoneId": "Australia/Sydney" },
+      { "timeZoneId": "Australia/Melbourne" },
+      { "timeZoneId": "Australia/Brisbane" },
+      { "timeZoneId": "Australia/Perth" }
+    ]
+  },
+  {
+    "countryCode": "IN",
+    "timeZones": [
+      { "timeZoneId": "Asia/Kolkata" }
+    ]
+  },
+  {
+    "countryCode": "DE",
+    "timeZones": [
+      { "timeZoneId": "Europe/Berlin" }
+    ]
+  },
+  {
+    "countryCode": "JP",
+    "timeZones": [
+      { "timeZoneId": "Asia/Tokyo" }
+    ]
+  },
+  {
+    "countryCode": "BR",
+    "timeZones": [
+      { "timeZoneId": "America/Sao_Paulo" },
+      { "timeZoneId": "America/Manaus" },
+      { "timeZoneId": "America/Rio_Branco" }
+    ]
+  },
+  {
+    "countryCode": "FR",
+    "timeZones": [
+      { "timeZoneId": "Europe/Paris" },
+      { "timeZoneId": "Indian/Reunion" }
+    ]
+  },
+  {
+    "countryCode": "MX",
+    "timeZones": [
+      { "timeZoneId": "America/Mexico_City" },
+      { "timeZoneId": "America/Tijuana" },
+      { "timeZoneId": "America/Cancun" }
+    ]
+  },
+  {
+    "countryCode": "ZA",
+    "timeZones": [
+      { "timeZoneId": "Africa/Johannesburg" }
+    ]
+  },
+  {
+    "countryCode": "RU",
+    "timeZones": [
+      { "timeZoneId": "Europe/Moscow" },
+      { "timeZoneId": "Asia/Krasnoyarsk" },
+      { "timeZoneId": "Asia/Vladivostok" },
+      { "timeZoneId": "Asia/Yekaterinburg" }
+    ]
+  },
+  {
+    "countryCode": "CN",
+    "timeZones": [
+      { "timeZoneId": "Asia/Shanghai" }
+    ]
+  },
+  {
+    "countryCode": "IT",
+    "timeZones": [
+      { "timeZoneId": "Europe/Rome" }
+    ]
+  },
+  {
+    "countryCode": "ES",
+    "timeZones": [
+      { "timeZoneId": "Europe/Madrid" },
+      { "timeZoneId": "Africa/Ceuta" }
+    ]
+  }
+]
