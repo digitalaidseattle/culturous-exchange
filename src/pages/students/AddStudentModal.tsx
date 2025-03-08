@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import { Box, IconButton, Typography, Stack, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, DialogContentText } from '@mui/material';
-import { SelectAvailability, StudentField } from '../../api/types';
+import { Country, SelectAvailability, StudentField } from '../../api/types';
 import { CloseCircleOutlined } from '@ant-design/icons';
 import { validateAge, validateEmail, validateName } from '../../utils/formValidation';
+import timeZoneService from '../../api/ceTimeZoneService';
 
 interface Props {
   isAddStudentModalOpen: boolean;
@@ -19,7 +20,9 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [dirtyFields, setDirtyFields] = useState<{ [key: string]: boolean }>({});
   const [errors, setErrors] = useState<{ [key: string]: string | null }>({});
+  const [availbleCountries, setAvailableCountries] = useState<Country[]>([]);
 
+  console.log('availableCountries state: ', availbleCountries)
 
   const handleFieldChange = (event: any) => {
     const { name, value } = event.target;
@@ -71,7 +74,12 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
 
   useEffect(() => {
     //call for timezone data
-  })
+    if (isAddStudentModalOpen) {
+      timeZoneService.loadCountries()
+      const countries = timeZoneService.getCountries();
+      setAvailableCountries(countries)
+    }
+  }, [isAddStudentModalOpen])
 
   return (
     <React.Fragment>

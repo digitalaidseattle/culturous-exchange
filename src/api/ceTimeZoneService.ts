@@ -1,13 +1,14 @@
 import { Country, TimeZone, CountryTimeZone } from "./types";
-const countriesJson = require('./countries.json');
-const timeZonesJson = require('./timeZones.json')
+
+//automatically parsed on require below, but will need parsing when using actual API
+import countriesJson from '../assets/countries.json';
+import timeZonesJson from '../assets/timeZones.json';
 
 class ceTimeZoneService {
   private countries: Country[] = [];
   private timeZoneMap: Record<string, TimeZone[]> = {};
 
   async loadCountries(): Promise<void> {
-    //automatically parsed on require here, but will need parsing when using actual API
     this.countries = countriesJson;
   }
 
@@ -19,6 +20,7 @@ class ceTimeZoneService {
   }
 
   getCountries(): Country[] {
+    console.log('whoops!!')
     return this.countries;
   }
 
