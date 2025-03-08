@@ -22,7 +22,7 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
   const [errors, setErrors] = useState<{ [key: string]: string | null }>({});
   const [availbleCountries, setAvailableCountries] = useState<Country[]>([]);
 
-  console.log('availableCountries state: ', availbleCountries)
+  // console.log('availableCountries state: ', availbleCountries)
 
   const handleFieldChange = (event: any) => {
     const { name, value } = event.target;
@@ -73,7 +73,6 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
   }
 
   useEffect(() => {
-    //call for timezone data
     if (isAddStudentModalOpen) {
       timeZoneService.loadCountries()
       const countries = timeZoneService.getCountries();
