@@ -33,16 +33,18 @@ const UploadSection = () => {
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
     const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
-    const [availabilities, setAvailabilities] = useState<SelectAvailability[]>([])
+    const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false);
+    const [availabilities, setAvailabilities] = useState<SelectAvailability[]>([]);
 
     const studentField: StudentField[] = [
         { key: 'name', label: 'Full Name', type: 'string', required: true },
-        { key: 'age', label: 'Age', type: 'number', required: true },
         { key: 'email', label: 'Email', type: 'email', required: true },
-        { key: 'city', label: 'City', type: 'string', required: true },
-        { key: 'state', label: 'State', type: 'string', required: true },
+        { key: 'age', label: 'Age', type: 'number', required: true },
+        { key: 'gender', label: 'Gender', type: 'string', required: true },
+        // { key: 'city', label: 'City', type: 'string', required: true },
+        // { key: 'state', label: 'State', type: 'string', required: true },
         { key: 'country', label: 'Country', type: 'string', required: true },
+        { key: 'timeZone', label: 'TimeZone', type: 'string', required: true },
     ];
 
 

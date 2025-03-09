@@ -23,5 +23,9 @@ const validateEmail = (errorMessage: string | null = null, value: string) => {
   return errorMessage;
 }
 
+const validateGender = (errorMessage: string | null = null, value: string) => {
+  return !value.length ? errorMessage = 'Selection required' : null;
+}
 
-export { validateName, validateAge, validateEmail }
+
+export { validateName, validateAge, validateEmail, validateGender }

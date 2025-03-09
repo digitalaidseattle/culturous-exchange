@@ -1,6 +1,6 @@
 [
   {
-    "countryCode": "US",
+    "country": "United States",
     "timeZones": [
       { "timeZoneId": "America/New_York" },
       { "timeZoneId": "America/Chicago" },
@@ -9,7 +9,7 @@
     ]
   },
   {
-    "countryCode": "CA",
+    "country": "Canada",
     "timeZones": [
       { "timeZoneId": "America/Toronto" },
       { "timeZoneId": "America/Vancouver" },
@@ -18,13 +18,13 @@
     ]
   },
   {
-    "countryCode": "GB",
+    "country": "United Kingdom",
     "timeZones": [
       { "timeZoneId": "Europe/London" }
     ]
   },
   {
-    "countryCode": "AU",
+    "country": "Australia",
     "timeZones": [
       { "timeZoneId": "Australia/Sydney" },
       { "timeZoneId": "Australia/Melbourne" },
@@ -33,25 +33,25 @@
     ]
   },
   {
-    "countryCode": "IN",
+    "country": "India",
     "timeZones": [
       { "timeZoneId": "Asia/Kolkata" }
     ]
   },
   {
-    "countryCode": "DE",
+    "country": "Germany",
     "timeZones": [
       { "timeZoneId": "Europe/Berlin" }
     ]
   },
   {
-    "countryCode": "JP",
+    "country": "Japan",
     "timeZones": [
       { "timeZoneId": "Asia/Tokyo" }
     ]
   },
   {
-    "countryCode": "BR",
+    "country": "Brazil",
     "timeZones": [
       { "timeZoneId": "America/Sao_Paulo" },
       { "timeZoneId": "America/Manaus" },
@@ -59,14 +59,14 @@
     ]
   },
   {
-    "countryCode": "FR",
+    "country": "France",
     "timeZones": [
       { "timeZoneId": "Europe/Paris" },
       { "timeZoneId": "Indian/Reunion" }
     ]
   },
   {
-    "countryCode": "MX",
+    "country": "Mexico",
     "timeZones": [
       { "timeZoneId": "America/Mexico_City" },
       { "timeZoneId": "America/Tijuana" },
@@ -74,13 +74,13 @@
     ]
   },
   {
-    "countryCode": "ZA",
+    "country": "South Africa",
     "timeZones": [
       { "timeZoneId": "Africa/Johannesburg" }
     ]
   },
   {
-    "countryCode": "RU",
+    "country": "Russia",
     "timeZones": [
       { "timeZoneId": "Europe/Moscow" },
       { "timeZoneId": "Asia/Krasnoyarsk" },
@@ -89,22 +89,23 @@
     ]
   },
   {
-    "countryCode": "CN",
+    "country": "China",
     "timeZones": [
       { "timeZoneId": "Asia/Shanghai" }
     ]
   },
   {
-    "countryCode": "IT",
+    "country": "Italy",
     "timeZones": [
       { "timeZoneId": "Europe/Rome" }
     ]
   },
   {
-    "countryCode": "ES",
+    "country": "Spain",
     "timeZones": [
       { "timeZoneId": "Europe/Madrid" },
       { "timeZoneId": "Africa/Ceuta" }
     ]
   }
 ]
+

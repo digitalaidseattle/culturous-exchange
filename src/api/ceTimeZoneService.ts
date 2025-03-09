@@ -14,13 +14,12 @@ class ceTimeZoneService {
 
   async loadTimeZones(): Promise<void> {
     this.timeZoneMap = timeZonesJson.reduce((acc: Record<string, TimeZone[]>, curr: CountryTimeZone) => {
-      acc[curr.countryCode] = curr.timeZones;
+      acc[curr.country] = curr.timeZones;
       return acc;
     }, {})
   }
 
   getCountries(): Country[] {
-    console.log('whoops!!')
     return this.countries;
   }
 

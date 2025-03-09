@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import { Box, IconButton, Typography, Stack, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, DialogContentText } from '@mui/material';
-import { Country, SelectAvailability, StudentField } from '../../api/types';
+import { Country, SelectAvailability, StudentField, TimeZone } from '../../api/types';
 import { CloseCircleOutlined } from '@ant-design/icons';
-import { validateAge, validateEmail, validateName } from '../../utils/formValidation';
+import { validateAge, validateEmail, validateGender, validateName } from '../../utils/formValidation';
 import timeZoneService from '../../api/ceTimeZoneService';
 
 interface Props {
@@ -20,9 +20,11 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [dirtyFields, setDirtyFields] = useState<{ [key: string]: boolean }>({});
   const [errors, setErrors] = useState<{ [key: string]: string | null }>({});
+  const [gender, setGender] = useState<string>('');
   const [availbleCountries, setAvailableCountries] = useState<Country[]>([]);
-
-  // console.log('availableCountries state: ', availbleCountries)
+  const [selectedCountry, setSelectedCountry] = useState<string>('');
+  const [availableTimeZones, setAvailableTimeZones] = useState<TimeZone[]>([]);
+  const [selectedTimeZone, setSelectedTimeZone] = useState<string>('');
 
   const handleFieldChange = (event: any) => {
     const { name, value } = event.target;
@@ -34,6 +36,7 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
     if (name === 'name') errorMessage = validateName(errorMessage, value, 2, 25);
     if (name === 'age') errorMessage = validateAge(errorMessage, value, 5, 100);
     if (name === 'email') errorMessage = validateEmail(errorMessage, value);
+    if (name === 'gender') errorMessage = validateGender(errorMessage, value);
 
     setErrors((prev) => ( {...prev, [name]: errorMessage } ))
   }
@@ -44,6 +47,8 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
     { label: 'Afternoon', start: '12:00', end: '17:00' },
     { label: 'Evening', start: '17:00', end: '22:00' }
   ];
+
+  const genderOptions = ['female', 'male', 'other']
 
   const handleAddAvailability = () => {
     if (!selectedDay || !selectedTime) return;
@@ -69,7 +74,19 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
   const handleClose = () => {
     setErrors({});
     setDirtyFields({});
+    setGender('');
     onClose();
+  }
+
+  const handleSelectedCountry = (event: any) => {
+    setAvailableTimeZones([]);
+    setSelectedTimeZone('');
+    //when api chosen, make handler async and await fetches
+    const countryName = event.target.value;
+    setSelectedCountry(countryName);
+    timeZoneService.loadTimeZones();
+    const countryTimeZones = timeZoneService.getTimeZoneByCountry(countryName);
+    setAvailableTimeZones(countryTimeZones);
   }
 
   useEffect(() => {
@@ -95,25 +112,94 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
         <DialogContent>
           {studentField.map(({key, label, type, required}, idx ) => (
             <Box key={idx}>
-              <TextField
-                autoFocus
-                required={required}
-                key={key}
-                margin="dense"
-                id={key}
-                name={key}
-                label={label}
-                type={type}
-                fullWidth
-                variant="standard"
-                onChange={handleFieldChange}
-                error={!!errors[key] && dirtyFields[key]}
-              />
-              {errors[key] && dirtyFields[key] && (
-                <Typography>{`${errors[key]}`}</Typography>
+              {(key === 'name' || key === 'age' || key === 'email') && (
+                <Box>
+                  <TextField
+                    autoFocus
+                    required={required}
+                    key={key}
+                    margin="dense"
+                    id={key}
+                    name={key}
+                    label={label}
+                    type={type}
+                    fullWidth
+                    variant="standard"
+                    onChange={handleFieldChange}
+                    error={!!errors[key] && dirtyFields[key]}
+                  />
+                  {errors[key] && dirtyFields[key] && (
+                    <Typography>{`${errors[key]}`}</Typography>
+                  )}
+                </Box>
               )}
+              {(key === 'gender') && (
+                <Box my={2}>
+                  <FormControl required sx={{minWidth: '6rem'}}>
+                    <InputLabel>{label}</InputLabel>
+                    <Select
+                      name={key}
+                      label={label}
+                      defaultValue={gender}
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                    >
+                      {genderOptions.map((genderOption: string, idx: number) => (
+                        <MenuItem key={idx} value={genderOption}>{genderOption}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+              )}
+              <Stack direction={'row'} justifyContent='space-between' mt={1}>
+                {(key === 'country') && (
+                  <Box my={2}>
+                    <FormControl required sx={{minWidth: '6rem'}}>
+                      <InputLabel>{label}</InputLabel>
+                      <Select
+                      autoWidth
+                      name={key}
+                      label={label}
+                      defaultValue={selectedCountry}
+                      value={selectedCountry}
+                      onChange={handleSelectedCountry}
+                      MenuProps={{
+                        PaperProps: {
+                          style: {
+                            maxHeight: '10rem',
+                            overflowY: 'auto',
+                          },
+                        },
+                      }}
+                      >
+                        {availbleCountries.map((country: Country, idx: number) => (
+                          <MenuItem key={idx} value={country.country}>{country.country}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                )}
+                {(key === 'timeZone') && (
+                  <Box my={2}>
+                    <FormControl required sx={{minWidth: '7rem'}}>
+                    <InputLabel>{label}</InputLabel>
+                    <Select
+                    autoWidth
+                    name={key}
+                    label={label}
+                    value={selectedTimeZone}
+                    onChange={(e) => setSelectedTimeZone(e.target.value)}
+                    disabled={!selectedCountry}
+                    >
+                      {availableTimeZones?.map((timeZone: TimeZone, idx: number) => (
+                        <MenuItem key={idx} value={timeZone.timeZoneId}>{timeZone.timeZoneId}</MenuItem>
+                      ))}
+                    </Select>
+                    </FormControl>
+                  </Box>
+                )}
+              </Stack>
             </Box>
-
           ))}
           <Stack spacing={1} mt={1}>
             <DialogContentText>Current Availabilities</DialogContentText>
@@ -140,6 +226,7 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
                 <FormControl>
                   <InputLabel shrink>Day</InputLabel>
                   <Select
+                    autoWidth
                     value={selectedDay}
                     onChange={(e) => setSelectedDay(e.target.value)}
                   >
@@ -151,6 +238,7 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
                 <FormControl sx={{minWidth: '5rem'}}>
                   <InputLabel shrink>Time Slot</InputLabel>
                   <Select
+                    autoWidth
                     value={selectedTime}
                     onChange={(e) => setSelectedTime(e.target.value)}
                   >

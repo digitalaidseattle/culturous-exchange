@@ -24,8 +24,10 @@ type Student = Entity & {
     name: string;
     age: number | null;
     email: string;
-    city: string;
-    state: string;
+    // city: string;
+    // state: string;
+    timeZone: string;
+    gender: string;
     country: string;
     availabilities: SelectAvailability[];
 }
@@ -47,11 +49,11 @@ type TimeZone = {
 
 type Country = {
     country: string;
-    countryCode: string;
+    // countryCode: string;
 }
 
 type CountryTimeZone = {
-    countryCode: string;
+    country: string;
     timeZones: TimeZone[];
 }
 
