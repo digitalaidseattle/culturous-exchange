@@ -100,7 +100,7 @@ class CEStudentService extends EntityService<Student> {
 
   async insert(entity: Partial<Student>, select?: string ): Promise<Student> {
     console.log('entity: ', entity)
-    if (!entity.name || !entity.age || !entity.city || !entity.country || !entity.email || !entity.state) {
+    if (!entity.name || !entity.age || !entity.country || !entity.email || !entity.gender || !entity.timeZone) {
       throw new Error("Name and Email are required fields.");
     }
     const studentWithId: Student = {
@@ -108,12 +108,28 @@ class CEStudentService extends EntityService<Student> {
       name: entity.name,
       email: entity.email,
       age: entity.age,
-      city: entity.city,
-      state: entity.state,
+      gender: entity.gender,
+      timeZone: entity.timeZone,
       country: entity.country,
       availabilities: entity.availabilities?? []
     }
+    //Below data works with current db schema:
+    /*
+    const studentWithId: any = {
+      id: 1,
+      name: entity.name,
+      email: entity.email,
+      age: entity.age,
+      // gender: entity.gender,
+      city: entity.timeZone.split('/')[1],
+      state: 'CA',
+      // timeZone: entity.timeZone,
+      country: entity.country,
+      availabilities: entity.availabilities?? []
+    }
+    */
     return await super.insert(studentWithId, select);
+    //TODO: Add adjusted time window
   }
 
 }

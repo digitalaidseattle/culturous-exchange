@@ -13,18 +13,21 @@ interface Props {
   studentField: StudentField[];
   availabilities: SelectAvailability[];
   setAvailabilities: React.Dispatch<React.SetStateAction<SelectAvailability[]>>
+  gender: string;
+  setGender: React.Dispatch<React.SetStateAction<string>>
+  selectedCountry: string
+  setSelectedCountry: React.Dispatch<React.SetStateAction<string>>
+  selectedTimeZone: string
+  setSelectedTimeZone: React.Dispatch<React.SetStateAction<string>>
 }
 
-const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAddStudent, studentField, availabilities, setAvailabilities} ) => {
+const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAddStudent, studentField, availabilities, setAvailabilities, gender, setGender, selectedCountry, setSelectedCountry, selectedTimeZone, setSelectedTimeZone} ) => {
   const [selectedDay, setSelectedDay] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [dirtyFields, setDirtyFields] = useState<{ [key: string]: boolean }>({});
   const [errors, setErrors] = useState<{ [key: string]: string | null }>({});
-  const [gender, setGender] = useState<string>('');
   const [availbleCountries, setAvailableCountries] = useState<Country[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [availableTimeZones, setAvailableTimeZones] = useState<TimeZone[]>([]);
-  const [selectedTimeZone, setSelectedTimeZone] = useState<string>('');
 
   const handleFieldChange = (event: any) => {
     const { name, value } = event.target;

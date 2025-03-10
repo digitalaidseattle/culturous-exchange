@@ -3,7 +3,7 @@ const validateName = (errorMessage: string | null = null, value: string, minLeng
     value.length < minLength ? errorMessage = `Name must be at least ${minLength} characters` : null;
     value.length > maxLength ? errorMessage = `Name must be less than ${maxLength} characters` : null;
   }
-  return errorMessage
+  return errorMessage;
 }
 
 const validateAge = (errorMessage: string | null = null, value: number, minLength: number, maxLength: number) => {
@@ -11,7 +11,7 @@ const validateAge = (errorMessage: string | null = null, value: number, minLengt
     value <= minLength ? errorMessage = `Age must be greater than ${minLength}` : null;
     value >= maxLength ? errorMessage = `Age must be less than ${maxLength}` : null;
   }
-  return errorMessage
+  return errorMessage;
 }
 
 const validateEmail = (errorMessage: string | null = null, value: string) => {

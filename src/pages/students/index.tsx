@@ -35,6 +35,10 @@ const UploadSection = () => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false);
     const [availabilities, setAvailabilities] = useState<SelectAvailability[]>([]);
+    const [gender, setGender] = useState<string>('');
+    const [selectedCountry, setSelectedCountry] = useState<string>('');
+    const [selectedTimeZone, setSelectedTimeZone] = useState<string>('');
+
 
     const studentField: StudentField[] = [
         { key: 'name', label: 'Full Name', type: 'string', required: true },
@@ -75,8 +79,12 @@ const UploadSection = () => {
         const formData = new FormData(event.currentTarget);
         const formJson = Object.fromEntries((formData).entries()) as Partial<Student>;
         formJson.availabilities = availabilities;
+        formJson.gender = gender;
+        formJson.country = selectedCountry;
+        formJson.timeZone = selectedTimeZone;
 
         try {
+            console.log('formJson: ', formJson)
             const resp = await studentService.insert(formJson);
             notifications.success(`Success. Added student: - id ${resp.id} | - name: ${resp.name}`);
             handleCloseAddStudentModal();
@@ -119,6 +127,12 @@ const UploadSection = () => {
                 studentField={studentField}
                 availabilities={availabilities}
                 setAvailabilities={setAvailabilities}
+                gender={gender}
+                setGender={setGender}
+                selectedCountry={selectedCountry}
+                setSelectedCountry={setSelectedCountry}
+                selectedTimeZone={selectedTimeZone}
+                setSelectedTimeZone={setSelectedTimeZone}
             />
         </Stack>
     )
