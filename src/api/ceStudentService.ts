@@ -4,90 +4,41 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-import { PageInfo, QueryModel, supabaseClient } from "@digitalaidseattle/supabase";
 import { v4 as uuid } from 'uuid';
 import { read, utils } from "xlsx";
+import { EntityService } from "./entityService";
+import { FailedStudent, Student } from "./types";
+import { supabaseClient } from '@digitalaidseattle/supabase';
 
-interface Student {
-  id: string; // Adjust based on database schema
-  name: string;
-  age: number;
-  email: string;
-  city: string;
-  state: string;
-  country: string;
-  availabilities: any[]; // Adjust based on schema
-}
+class CEStudentService extends EntityService<Student> {
 
-class CEStudentService {
-  async find(_queryModel: QueryModel): Promise<PageInfo<Student>> {
+  async findUnenrolled(): Promise<Student[]> {
     try {
-      const { data, error } = await supabaseClient.from('student').select('*');
-
-      if (error) {
-        console.error('Error fetching students:', error.message);
-        throw new Error('Failed to fetch students');
-      }
-
-      if (data) {
-        return {
-          totalRowCount: data.length,
-          rows: data as Student[],
-        };
-      }
-
-      return { totalRowCount: 0, rows: [] };
+      // TODO Scaling this may require using edge function
+      const enrollment_ids = await supabaseClient
+        .from('enrollment')
+        .select('student_id')
+        .then(resp => {
+          return resp.data?.map((row: any) => row.student_id)
+        })
+      return supabaseClient
+        .from('student')
+        .select('*')
+        .not('id', 'in', `(${enrollment_ids})`)
+        .then((resp: any) => {
+          if (resp.data) {
+            return resp.data as Student[]
+          }
+          else {
+            throw new Error('Could not execute query.')
+          }
+        })
     } catch (err) {
       console.error('Unexpected error:', err);
       throw err;
     }
   }
 
-  async insert(student: Student): Promise<Student> {
-    try {
-      const { data, error } = await supabaseClient.from('student').insert([student]).single();
-
-      if (error) {
-        console.error('Error inserting student:', error.message);
-        throw new Error('Failed to insert student');
-      }
-
-      return data as Student;
-    } catch (err) {
-      console.error('Unexpected error during insertion:', err);
-      throw err;
-    }
-  }
-
-  async delete(studentId: string): Promise<void> {
-    try {
-      const { error } = await supabaseClient.from('student').delete().eq('id', studentId);
-
-      if (error) {
-        console.error('Error deleting student:', error.message);
-        throw new Error('Failed to delete student');
-      }
-    } catch (err) {
-      console.error('Unexpected error during deletion:', err);
-      throw err;
-    }
-  }
-
-  async modify(studentId: string, updatedFields: Partial<Student>): Promise<Student> {
-    try {
-      const { data, error } = await supabaseClient.from('student').update(updatedFields).eq('id', studentId).single();
-
-      if (error) {
-        console.error('Error updating student:', error.message);
-        throw new Error('Failed to update student');
-      }
-
-      return data as Student;
-    } catch (err) {
-      console.error('Unexpected error during update:', err);
-      throw err;
-    }
-  }
 
   async get_students_from_excel(excel_file: File): Promise<Student[]> {
     try {
@@ -112,18 +63,22 @@ class CEStudentService {
       throw new Error('Failed to parse Excel file');
     }
   }
-  async insert_from_excel(excel_file: File): Promise<{ successCount: number; failedStudents: Student[] }> {
+  async insert_from_excel(excel_file: File): Promise<{ successCount: number; failedStudents: FailedStudent[] }> {
     try {
       const students = await this.get_students_from_excel(excel_file);
       let successCount = 0;
-      const failedStudents: Student[] = [];
-  
+      const failedStudents: FailedStudent[] = [];
+
       for (const student of students) {
         try {
           await this.insert(student);
           successCount++;
         } catch (error) {
-          failedStudents.push(student);
+          const failedStudent: FailedStudent = {
+            ...student,
+            failedError: error instanceof Error ? error.message : 'Unknown error'
+          }
+          failedStudents.push(failedStudent);
           if (error instanceof Error) {
             console.error(`Failed to insert student with ID ${student.id}:`, error.message);
           } else {
@@ -131,7 +86,7 @@ class CEStudentService {
           }
         }
       }
-  
+
       return { successCount, failedStudents };
     } catch (error) {
       if (error instanceof Error) {
@@ -142,8 +97,26 @@ class CEStudentService {
       throw new Error('Failed to insert students from Excel file');
     }
   }
-  
+
+  async insert(entity: Partial<Student>, select?: string ): Promise<Student> {
+    console.log('entity: ', entity)
+    if (!entity.name || !entity.age || !entity.city || !entity.country || !entity.email || !entity.state) {
+      throw new Error("Name and Email are required fields.");
+    }
+    const studentWithId: Student = {
+      id: entity.id?? uuid(),
+      name: entity.name,
+      email: entity.email,
+      age: entity.age,
+      city: entity.city,
+      state: entity.state,
+      country: entity.country,
+      availabilities: entity.availabilities?? []
+    }
+    return await super.insert(studentWithId, select);
+  }
+
 }
 
-const studentService = new CEStudentService();
+const studentService = new CEStudentService('student');
 export { studentService };
