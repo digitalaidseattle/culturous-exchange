@@ -27,7 +27,7 @@ const CohortPage: React.FC = () => {
     }, [cohortId]);
 
     function handleNameChange(newText: string) {
-        if (cohort) {
+        if (cohort && cohort.id) {
             cohortService
                 .update(cohort.id.toString(), { name: newText }) // FIXME change ID to UUID
                 .then(updated => {
