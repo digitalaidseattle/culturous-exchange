@@ -78,6 +78,8 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
     setErrors({});
     setDirtyFields({});
     setGender('');
+    setSelectedCountry('');
+    setSelectedTimeZone('');
     onClose();
   }
 
