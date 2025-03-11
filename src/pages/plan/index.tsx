@@ -13,12 +13,14 @@ import { Plan } from '../../api/types';
 const PlanPage: React.FC = () => {
     const { id: planId } = useParams<string>();
     const [plan, setPlan] = useState<Plan>();
+
     useEffect(() => {
         if (planId) {
             planService.getById(planId)
-                .then(p => setPlan(p))
+                .then(p => setPlan(p!))
         }
-    }, [planId])
+    }, [planId]);
+    
     return (plan &&
         <Stack gap={1}>
             <PlanDetails plan={plan} />

@@ -49,9 +49,11 @@ type Cohort = Entity & {
     enrolled: Student[];
 }
 
-type Group = Entity & {
-    groupNo: string;
-    studentIds: Identifier[];
+type Group =  Entity & {
+    plan_id: Identifier;
+    groupNo?: string;
+    country_count: number;
+    students: Student[];
 }
 
 type Enrollment = Entity & {
@@ -59,13 +61,13 @@ type Enrollment = Entity & {
     student_id: Identifier;
 }
 
-type Placement = Entity & {
-    cohort_id: Identifier;
+type Placement = Entity &  {
+    plan_id: Identifier;
     student_id: Identifier;
-    student: Student;
+    student?: Student;
     anchor: boolean;
     priority: boolean;
-    availabilities: Availability[];
+    availabilities?: Availability[];
 }
 
 type Plan = Entity & {
@@ -73,7 +75,6 @@ type Plan = Entity & {
     cohort_id: Identifier;
     placements: Placement[]
     groups: Group[];
-    rating: number;
     notes: string;
 }
 
@@ -82,6 +83,7 @@ export type {
     Enrollment,
     Entity,
     FailedStudent,
+    Identifier,
     Student,
     StudentField,
     SelectAvailability,
