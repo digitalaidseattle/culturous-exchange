@@ -20,9 +20,7 @@ class CEPlanService extends EntityService<Plan> {
             id: uuidv4(),
             name: 'New Plan',
             cohort_id: cohort.id,
-            placements: [],
-            groups: [],
-            notes: ''
+            note: ''
         } as Plan
         // 
         return enrollmentService.getStudents(cohort)
@@ -71,9 +69,7 @@ class CEPlanService extends EntityService<Plan> {
             id: uuidv4(),
             cohort_id: plan.cohort_id,
             name: plan.name + ' (copy)',
-            note: '',
-            placements: [],
-            groups: [],
+            note: ''
         } as unknown as Plan
         return this.insert(proposed)
             .then(async duplicatePlan => {

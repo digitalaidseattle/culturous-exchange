@@ -109,7 +109,7 @@ export const PlanDetails: React.FC<PlanProps> = ({ plan }) => {
             <Stack spacing={{ xs: 1, sm: 4 }}>
                 <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
                     <TextEdit label={'Name'} value={plan.name} onChange={(text: string) => alert(`TODO  save : ${text} name`)} />
-                    <TextEdit label={'Notes'} value={plan.notes} onChange={(text: string) => alert(`TODO  note save : ${text}`)} />
+                    <TextEdit label={'Notes'} value={plan.note} onChange={(text: string) => alert(`TODO  note save : ${text}`)} />
                 </Stack>
 
                 {/* <TabbedDetails plan={plan} /> */}

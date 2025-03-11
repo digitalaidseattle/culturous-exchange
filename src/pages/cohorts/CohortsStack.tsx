@@ -30,7 +30,7 @@ export const CohortsStack = () => {
                 {/* Consider an alternate :  switch between selected plan and all plans */}
                 <Stack direction={'row'} gap={2}>
                     {cohorts.map(cohort =>
-                        <CohortCard cohort={cohort} />
+                        <CohortCard key={cohort.id} cohort={cohort} />
                     )}
                 </Stack>
             </Stack>
