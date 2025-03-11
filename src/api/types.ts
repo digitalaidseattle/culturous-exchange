@@ -4,7 +4,7 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-type Identifier = string | number;
+type Identifier = string | number | undefined;
 
 type Entity = {
     id: Identifier;
@@ -72,7 +72,7 @@ type Placement = Entity &  {
 
 type Plan = Entity & {
     name: string;
-    cohort_id: string;
+    cohort_id: Identifier;
     placements: Placement[]
     groups: Group[];
     notes: string;
