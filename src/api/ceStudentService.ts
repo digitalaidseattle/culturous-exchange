@@ -52,9 +52,10 @@ class CEStudentService extends EntityService<Student> {
         if (!student.id) {
           student.id = uuid();
         }
-        if (!student.availabilities) {
-          student.availabilities = []; // Initialize empty availabilities if missing
-        }
+        //FIX ME
+        // if (!student.availabilities) {
+        //   student.availabilities = []; // Initialize empty availabilities if missing
+        // }
       });
 
       return data;
@@ -98,9 +99,10 @@ class CEStudentService extends EntityService<Student> {
     }
   }
 
+  //FIX ME - temp static fields added for gender and time_zone
   async insert(entity: Partial<Student>, select?: string ): Promise<Student> {
     console.log('entity: ', entity)
-    if (!entity.name || !entity.age || !entity.city || !entity.country || !entity.email || !entity.state) {
+    if (!entity.name || !entity.age || !entity.country || !entity.email) {
       throw new Error("Name and Email are required fields.");
     }
     const studentWithId: Student = {
@@ -108,10 +110,10 @@ class CEStudentService extends EntityService<Student> {
       name: entity.name,
       email: entity.email,
       age: entity.age,
-      city: entity.city,
-      state: entity.state,
       country: entity.country,
-      availabilities: entity.availabilities?? []
+      //FIX THESE
+      gender: 'temp',
+      time_zone: 'temp'
     }
     return await super.insert(studentWithId, select);
   }
