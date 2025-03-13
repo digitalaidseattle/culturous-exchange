@@ -10,18 +10,12 @@ type Entity = {
     id: Identifier;
 }
 
-type Time_Window = Entity & {
-    student_id: Identifier;
+type TimeWindow = Entity & {
+    student_id: Identifier | null;
     group_id: Identifier | null;
     day_in_week: string;
     start_t: string;
     end_t: string;
-}
-
-type SelectAvailability = {
-    day: string;
-    start: string;
-    end: string;
 }
 
 type Student = Entity & {
@@ -68,7 +62,7 @@ type Placement = Entity &  {
     student?: Student;
     anchor: boolean;
     priority: boolean;
-    time_windows?: Time_Window[];
+    time_windows?: TimeWindow[];
 }
 
 type Plan = Entity & {
@@ -80,14 +74,13 @@ type Plan = Entity & {
 }
 
 export type {
-    Time_Window,
+    TimeWindow,
     Enrollment,
     Entity,
     FailedStudent,
     Identifier,
     Student,
     StudentField,
-    SelectAvailability,
     Cohort,
     Group,
     Placement,
