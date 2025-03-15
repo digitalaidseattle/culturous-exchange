@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 
 // material-ui
@@ -7,8 +7,8 @@ import { useParams } from 'react-router';
 import { Stack } from '@mui/material';
 
 import { planService } from '../../api/cePlanService';
-import { PlanDetails } from '../../components/PlanDetails';
 import { Plan } from '../../api/types';
+import { PlanDetails } from '../../components/PlanDetails';
 
 interface PlanContextType {
     plan: Plan,
