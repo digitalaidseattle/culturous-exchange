@@ -91,7 +91,7 @@ export const PlanCard = (props: { plan: Plan }) => {
             </Menu>
             <CardContent>
                 <Typography fontWeight={600}>{props.plan.name}</Typography>
-                <Typography>Notes : {props.plan.notes}</Typography>
+                <Typography>Notes : {props.plan.note}</Typography>
                 <Typography>Stats : # of students, groups, etc.</Typography>
                 <ConfirmationDialog
                     message={`Delete ${props.plan.name}?`}

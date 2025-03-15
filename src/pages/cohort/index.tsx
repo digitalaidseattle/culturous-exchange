@@ -60,7 +60,7 @@ const CohortPage: React.FC = () => {
             {/* Consider an alternate :  switch between selected plan and all plans */}
             <Stack direction={'row'} gap={2}>
                 {cohort.plans.map(plan =>
-                    <PlanCard plan={plan} />
+                    <PlanCard key={plan.id} plan={plan} />
                 )}
             </Stack>
         </Stack>

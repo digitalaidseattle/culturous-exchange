@@ -75,7 +75,7 @@ type Plan = Entity & {
     cohort_id: Identifier;
     placements: Placement[]
     groups: Group[];
-    notes: string;
+    note: string;
 }
 
 export type {
