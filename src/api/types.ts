@@ -24,7 +24,7 @@ type Student = Entity & {
     email: string;
     country: string;
     gender: string;
-    time_zone: string;
+    time_zone?: string;  // FIXME mark as optional until DB updated
 }
 
 type FailedStudent = Student & {
@@ -41,7 +41,8 @@ type StudentField = {
 type Cohort = Entity & {
     name: string;
     plans: Plan[];
-    enrolled: Student[];
+    enrollments: Enrollment[];
+    students: Student[];
 }
 
 type Group =  Entity & {
@@ -54,6 +55,7 @@ type Group =  Entity & {
 type Enrollment = Entity & {
     cohort_id: Identifier;
     student_id: Identifier;
+    student?: Student;
 }
 
 type Placement = Entity &  {
