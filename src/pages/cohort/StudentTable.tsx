@@ -34,7 +34,7 @@ const PAGE_SIZE = 10;
 export const StudentTable: React.FC = () => {
 
     const apiRef = useGridApiRef();
-    const { cohort, setCohort } = useContext(CohortContext);
+    const { cohort } = useContext(CohortContext);
 
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
