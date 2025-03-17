@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 import { Box, IconButton, Typography, Stack, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, DialogContentText } from '@mui/material';
-import { SelectAvailability, StudentField } from '../../api/types';
+import { StudentField, TimeWindow } from '../../api/types';
 import { CloseCircleOutlined } from '@ant-design/icons';
 
 interface Props {
@@ -9,8 +9,8 @@ interface Props {
   onClose: () => void;
   handleAddStudent: (event: any) => void;
   studentField: StudentField[];
-  availabilities: SelectAvailability[];
-  setAvailabilities: React.Dispatch<React.SetStateAction<SelectAvailability[]>>
+  availabilities: TimeWindow[];
+  setAvailabilities: React.Dispatch<React.SetStateAction<TimeWindow[]>>
 }
 
 const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAddStudent, studentField, availabilities, setAvailabilities} ) => {
@@ -28,11 +28,15 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
     if (!selectedDay || !selectedTime) return;
     const timeSlot = timeSlots.find(slot => slot.label === selectedTime);
 
+    //FIX ME -- id, student_id, group_id temp vals. Use partial type or create other for the form
     if (!timeSlot) return
-    const newAvailability: SelectAvailability = {
-      day: selectedDay,
-      start: timeSlot.start,
-      end: timeSlot.end
+    const newAvailability: TimeWindow = {
+      id: 0,
+      student_id: null,
+      group_id: null,
+      day_in_week: selectedDay,
+      start_t: timeSlot.start,
+      end_t: timeSlot.end
     }
     setAvailabilities([...availabilities, newAvailability]);
     setSelectedDay('');
@@ -40,7 +44,7 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
   }
   const handleDeleteAvailability = (day: string, start: string, end: string) => {
     const remainingAvailabilities = availabilities.filter((val) => (
-      !(val.day === day && val.start === start && val.end === end)
+      !(val.day_in_week === day && val.start_t === start && val.end_t === end)
     ))
     setAvailabilities(remainingAvailabilities)
   }
@@ -79,11 +83,11 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
             )}
             {availabilities.map((avilability, idx) => (
               <Stack key={idx} direction='row' justifyContent='space-between'>
-                <Typography>{avilability.day}</Typography>
-                <Typography>{`${avilability.start} - ${avilability.end}`}</Typography>
+                <Typography>{avilability.day_in_week}</Typography>
+                <Typography>{`${avilability.start_t} - ${avilability.end_t}`}</Typography>
                 <IconButton
                   size="small"
-                  onClick={() => handleDeleteAvailability(avilability.day, avilability.start, avilability.end)}>
+                  onClick={() => handleDeleteAvailability(avilability.day_in_week, avilability.start_t, avilability.end_t)}>
                     <CloseCircleOutlined />
                 </IconButton>
               </Stack>

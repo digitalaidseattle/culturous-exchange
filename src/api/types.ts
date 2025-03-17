@@ -10,26 +10,21 @@ type Entity = {
     id: Identifier;
 }
 
-type Availability = {
-    id: string;
-    startDate: Date;
-    endDate: Date;
-}
-
-type SelectAvailability = {
-    day: string;
-    start: string;
-    end: string;
+type TimeWindow = Entity & {
+    student_id: Identifier | null;
+    group_id: Identifier | null;
+    day_in_week: string;
+    start_t: string;
+    end_t: string;
 }
 
 type Student = Entity & {
     name: string;
     age: number | null;
     email: string;
-    city: string;
-    state: string;
     country: string;
-    availabilities: SelectAvailability[];
+    gender: string;
+    time_zone: string;
 }
 
 type FailedStudent = Student & {
@@ -67,7 +62,7 @@ type Placement = Entity &  {
     student?: Student;
     anchor: boolean;
     priority: boolean;
-    availabilities?: Availability[];
+    time_windows?: TimeWindow[];
 }
 
 type Plan = Entity & {
@@ -79,14 +74,13 @@ type Plan = Entity & {
 }
 
 export type {
-    Availability,
+    TimeWindow,
     Enrollment,
     Entity,
     FailedStudent,
     Identifier,
     Student,
     StudentField,
-    SelectAvailability,
     Cohort,
     Group,
     Placement,

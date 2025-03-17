@@ -23,7 +23,7 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import FailedStudentsModal from './FailedStudentsModal';
-import { FailedStudent, SelectAvailability, Student, StudentField } from '../../api/types';
+import { FailedStudent, Student, StudentField, TimeWindow } from '../../api/types';
 import AddStudentModal from './AddStudentModal';
 import { studentService } from '../../api/ceStudentService';
 
@@ -34,14 +34,12 @@ const UploadSection = () => {
     const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
-    const [availabilities, setAvailabilities] = useState<SelectAvailability[]>([])
+    const [availabilities, setAvailabilities] = useState<TimeWindow[]>([])
 
     const studentField: StudentField[] = [
         { key: 'name', label: 'Full Name', type: 'string', required: true },
         { key: 'age', label: 'Age', type: 'number', required: true },
         { key: 'email', label: 'Email', type: 'email', required: true },
-        { key: 'city', label: 'City', type: 'string', required: true },
-        { key: 'state', label: 'State', type: 'string', required: true },
         { key: 'country', label: 'Country', type: 'string', required: true },
     ];
 
@@ -67,12 +65,13 @@ const UploadSection = () => {
         setIsAddStudentModalOpen(false)
     }
 
+    //FIX ME, TimeWindow removed from form. Should be sent in separate API call to associate with the student in a service, i.e. Promise.all
     const handleAddStudent = async (event: any) => {
         event.preventDefault();
         setRefresh(refresh + 1);
         const formData = new FormData(event.currentTarget);
         const formJson = Object.fromEntries((formData).entries()) as Partial<Student>;
-        formJson.availabilities = availabilities;
+        // formJson.availabilities = availabilities;
 
         try {
             const resp = await studentService.insert(formJson);
