@@ -1,49 +1,92 @@
+/**
+ * types.ts
+ *
+ * @copyright 2025 Digital Aid Seattle
+ *
+ */
+type Identifier = string | number | undefined;
+
+type Entity = {
+    id: Identifier;
+}
+
 type Availability = {
     id: string;
     startDate: Date;
     endDate: Date;
 }
 
-type Student = {
-    id: string;
+type SelectAvailability = {
+    day: string;
+    start: string;
+    end: string;
+}
+
+type Student = Entity & {
     name: string;
     age: number | null;
     email: string;
     city: string;
     state: string;
     country: string;
-    availabilities: Availability[];
+    availabilities: SelectAvailability[];
 }
 
-type Session = {
-    id: string;
+type FailedStudent = Student & {
+    failedError: string;
+}
+
+type StudentField = {
+    key: keyof Student;
+    label: string;
+    type: string;
+    required: boolean;
+}
+
+type Cohort = Entity & {
     name: string;
-    startDate: Date;
-    endDate: Date;
     plans: Plan[];
+    enrolled: Student[];
 }
 
-type Group = {
-    id: string | undefined;
+type Group = Entity & {
     groupNo: string;
-    studentIds: string[];
+    studentIds: Identifier[];
 }
 
-type Enrollment = {
-    id: string;
-    studentId: string;
+type Enrollment = Entity & {
+    cohort_id: Identifier;
+    student_id: Identifier;
+}
+
+type Placement = Entity & {
+    cohort_id: Identifier;
+    student_id: Identifier;
     student: Student;
     anchor: boolean;
+    priority: boolean;
     availabilities: Availability[];
 }
 
-type Plan = {
-    id: string;
+type Plan = Entity & {
     name: string;
-    sessionId: string;
-    numberOfGroups: number;
-    enrollments: Enrollment[]
+    cohort_id: Identifier;
+    placements: Placement[]
     groups: Group[];
     rating: number;
-    comments: string[];
+    notes: string;
+}
+
+export type {
+    Availability,
+    Enrollment,
+    Entity,
+    FailedStudent,
+    Student,
+    StudentField,
+    SelectAvailability,
+    Cohort,
+    Group,
+    Placement,
+    Plan
 }

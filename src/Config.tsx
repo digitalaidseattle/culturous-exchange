@@ -10,14 +10,13 @@ import { MenuItem } from "@digitalaidseattle/mui";
 
 const pages = {
   id: 'main',
-  title: 'Culturous Exchange',
   type: 'group',
   children: [
     {
-      id: 'sessions',
-      title: 'Sessions',
+      id: 'cohorts',
+      title: 'Cohorts',
       type: 'item',
-      url: '/sessions',
+      url: '/cohorts',
       icon: <CalendarOutlined />
     } as MenuItem,
     {
@@ -31,7 +30,7 @@ const pages = {
 } as MenuItem;
 
 export const Config = {
-  appName: 'DAS',
+  appName: 'Culturous Exchange',
   logoUrl: logo,
   drawerWidth: 240,
   menuItems: [pages],
