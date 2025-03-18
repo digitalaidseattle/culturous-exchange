@@ -46,14 +46,12 @@ export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
     useEffect(() => {
         placementService.getStudents(plan)
             .then(students => {
-                console.log('students', students)
                 const placedStudents = plan.placements.map(placement => {
                     return {
                         ...placement,
                         student : students.find(student => student.id === placement.student_id)
                     } as Placement
                 });
-                console.log('placedStudents', placedStudents)
                 setPageInfo({
                     rows: placedStudents,
                     totalRowCount: placedStudents.length

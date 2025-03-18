@@ -40,7 +40,6 @@ class CECohortService extends EntityService<Cohort> {
         try {
             const cohort = await super.getById(entityId, select ?? '*, enrollment(*), plan(*)');
             if (cohort) {
-                console.log(cohort)
                 return {
                     ...cohort,
                     plans: (cohort as any).plan

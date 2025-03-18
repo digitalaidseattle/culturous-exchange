@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 // material-ui
@@ -10,7 +10,7 @@ import { MainCard } from '@digitalaidseattle/mui';
 import { cohortService } from '../../api/ceCohortService';
 import { PlanCard } from '../../components/PlanCard';
 import { TextEdit } from '../../components/TextEdit';
-import { useNotifications } from '@digitalaidseattle/core';
+import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { Cohort } from '../../api/types';
 import { planService } from '../../api/cePlanService';
 
@@ -18,6 +18,8 @@ const CohortPage: React.FC = () => {
     const { id: cohortId } = useParams<string>();
     const notifications = useNotifications();
     const navigate = useNavigate();
+
+    const { refresh } = useContext(RefreshContext);
 
     const [cohort, setCohort] = useState<Cohort | null>();
 
@@ -28,7 +30,7 @@ const CohortPage: React.FC = () => {
                     setCohort(cohort)
                 })
         }
-    }, [cohortId]);
+    }, [cohortId, refresh]);
 
     function handleNameChange(newText: string) {
         if (cohort && cohort.id) {
