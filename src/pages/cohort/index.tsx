@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 // material-ui
@@ -6,13 +6,10 @@ import { useNavigate, useParams } from 'react-router';
 // project import
 import { Box, Button, Stack, Tab, Tabs } from '@mui/material';
 
-import { useNotifications } from '@digitalaidseattle/core';
+import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { MainCard } from '@digitalaidseattle/mui';
 import { cohortService } from '../../api/ceCohortService';
-import { PlanCard } from '../../components/PlanCard';
-import { TextEdit } from '../../components/TextEdit';
-import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
-import { Cohort } from '../../api/types';
+import { enrollmentService } from '../../api/ceEnrollmentService';
 import { planService } from '../../api/cePlanService';
 import { Cohort } from '../../api/types';
 import { TabPanel } from '../../components/TabPanel';
