@@ -141,7 +141,7 @@ abstract class EntityService<T extends Entity> {
         }
     }
 
-    async delete(entityId: string): Promise<void> {
+    async delete(entityId: Identifier): Promise<void> {
         try {
             const { error } = await supabaseClient
                 .from(this.tableName)

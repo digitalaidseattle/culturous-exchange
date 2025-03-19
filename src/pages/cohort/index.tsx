@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 // material-ui
@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router';
 // project import
 import { Box, Button, Stack, Tab, Tabs } from '@mui/material';
 
-import { useNotifications } from '@digitalaidseattle/core';
+import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { MainCard } from '@digitalaidseattle/mui';
 import { cohortService } from '../../api/ceCohortService';
 import { enrollmentService } from '../../api/ceEnrollmentService';
@@ -32,6 +32,8 @@ const CohortPage: React.FC = () => {
     const notifications = useNotifications();
     const navigate = useNavigate();
 
+    const { refresh } = useContext(RefreshContext);
+
     const [cohort, setCohort] = useState<Cohort | null>();
     const [tabValue, setTabValue] = useState<number>(0);
 
@@ -50,7 +52,7 @@ const CohortPage: React.FC = () => {
                     }
                 })
         }
-    }, [cohortId]);
+    }, [cohortId, refresh]);
 
     function handleNameChange(newText: string) {
         if (cohort && cohort.id) {
