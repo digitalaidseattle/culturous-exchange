@@ -11,9 +11,7 @@ interface Props {
 }
 
 const StudentForm: React.FC<Props> = ( { availabilities, setAvailabilities } ) => {
-  const { student, setStudent } = useContext(StudentContext);
-
-  console.log('student: ', student)
+  const { setStudent } = useContext(StudentContext);
 
   const [selectedDay, setSelectedDay] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');

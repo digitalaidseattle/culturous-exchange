@@ -114,7 +114,6 @@ class CEStudentService extends EntityService<Student> {
 
   // FIXME - temp static fields added for gender and time_zone
   async insert(entity: Student, select?: string): Promise<Student> {
-    console.log('entity: ', entity)
 
     const studentWithId: Student = {
       id: entity.id ?? uuid(),
