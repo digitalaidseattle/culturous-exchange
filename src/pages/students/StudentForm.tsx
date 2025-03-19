@@ -1,16 +1,9 @@
-import TextField from '@mui/material/TextField';
-import { Box, IconButton, Typography, Stack, Button, MenuItem, Select, FormControl, InputLabel, DialogContentText } from '@mui/material';
-import { CloseCircleOutlined } from '@ant-design/icons';
-import { Student, StudentField, TimeWindow } from '../../api/types';
+import { Box, Stack, Button, MenuItem, Select, FormControl, InputLabel, DialogContentText } from '@mui/material';
+import { Student, TimeWindow } from '../../api/types';
 import { useContext, useState } from 'react';
 import { StudentContext } from '.';
-
-const studentField: StudentField[] = [
-  { key: 'name', label: 'Full Name', type: 'string', required: true },
-  { key: 'age', label: 'Age', type: 'number', required: true },
-  { key: 'email', label: 'Email', type: 'email', required: true },
-  { key: 'country', label: 'Country', type: 'string', required: true },
-];
+import StudentInfo from './StudentInfo';
+import DisplaySelectedTimeWindows from './DisplaySelectedTimeWindows';
 
 interface Props {
   availabilities: TimeWindow[];
@@ -58,51 +51,20 @@ const StudentForm: React.FC<Props> = ( { availabilities, setAvailabilities } ) =
     setSelectedDay('');
     setSelectedTime('');
   }
-  const handleDeleteAvailability = (day: string, start: string, end: string) => {
-    const remainingAvailabilities = availabilities.filter((val) => (
-      !(val.day_in_week === day && val.start_t === start && val.end_t === end)
-    ))
-    setAvailabilities(remainingAvailabilities)
-  }
 
   return (
     <Box>
-      {studentField.map(( {key, label, type, required} ) => (
-        <TextField
-          autoFocus
-          required={required}
-          key={key}
-          margin="dense"
-          id={key}
-          name={key}
-          label={label}
-          type={type}
-          fullWidth
-          variant="standard"
-          onChange={handleFieldChange}
-        />
-      ))}
-      <Stack spacing={1} mt={1}>
-        <DialogContentText>Current Availabilities</DialogContentText>
-        {!availabilities.length && (
-          <Typography>none</Typography>
-        )}
-        {availabilities.map((avilability, idx) => (
-          <Stack key={idx} direction='row' justifyContent='space-between'>
-            <Typography>{avilability.day_in_week}</Typography>
-            <Typography>{`${avilability.start_t} - ${avilability.end_t}`}</Typography>
-            <IconButton
-              size="small"
-              onClick={() => handleDeleteAvailability(avilability.day_in_week, avilability.start_t, avilability.end_t)}>
-                <CloseCircleOutlined />
-            </IconButton>
-          </Stack>
-        ))}
-      </Stack>
+      <StudentInfo
+        handleFieldChange={handleFieldChange}
+      />
+      <DisplaySelectedTimeWindows
+        availabilities={availabilities}
+        setAvailabilities={setAvailabilities}
+      />
       <Box my={4}>
-      <DialogContentText>
-        Select Availabilities
-      </DialogContentText>
+        <DialogContentText>
+          Select Availabilities
+        </DialogContentText>
         <Stack direction='row' my={2} spacing={2}>
             <FormControl>
               <InputLabel shrink>Day</InputLabel>
@@ -137,7 +99,6 @@ const StudentForm: React.FC<Props> = ( { availabilities, setAvailabilities } ) =
           </Button>
         </Stack>
       </Box>
-
     </Box>
   )
 }

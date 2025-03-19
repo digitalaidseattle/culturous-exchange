@@ -55,22 +55,15 @@ const getColumns = (): GridColDef[] => {
 
     },
     {
-      field: 'city',
-      headerName: 'City',
-      width: 150,
-      filterOperators: getGridStringOperators()
-        .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
-    },
-    {
-      field: 'state',
-      headerName: 'State',
-      width: 150,
-      filterOperators: getGridStringOperators()
-        .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
-    },
-    {
       field: 'country',
       headerName: 'Country',
+      width: 150,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
+    },
+    {
+      field: 'gender',
+      headerName: 'Gender',
       width: 150,
       filterOperators: getGridStringOperators()
         .filter((operator) => studentService.supportedStringFilters().includes(operator.value))

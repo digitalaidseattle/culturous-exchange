@@ -113,18 +113,16 @@ class CEStudentService extends EntityService<Student> {
   }
 
   // FIXME - temp static fields added for gender and time_zone
-  async insert(entity: Partial<Student>, select?: string): Promise<Student> {
+  async insert(entity: Student, select?: string): Promise<Student> {
     console.log('entity: ', entity)
-    if (!entity.name || !entity.age || !entity.country || !entity.email) {
-      throw new Error("Name and Email are required fields.");
-    }
+
     const studentWithId: Student = {
       id: entity.id ?? uuid(),
       name: entity.name,
       email: entity.email,
       age: entity.age,
       country: entity.country,
-      gender: 'temp',
+      gender: entity.gender,
       // FIX THESE
       // time_zone: 'temp'
     }
