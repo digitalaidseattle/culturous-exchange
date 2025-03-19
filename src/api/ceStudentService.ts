@@ -39,6 +39,17 @@ class CEStudentService extends EntityService<Student> {
     }
   }
 
+  changeToLowercase(object: any): any {
+    var key, keys = Object.keys(object);
+    var n = keys.length;
+    var lowered: { [key: string]: any } = {};
+    while (n--) {
+      key = keys[n];
+      lowered[key.toLowerCase()] = object[key];
+    }
+    console.log(object, lowered)
+    return lowered;
+  }
 
   async get_students_from_excel(excel_file: File): Promise<Student[]> {
     try {
@@ -48,22 +59,24 @@ class CEStudentService extends EntityService<Student> {
       const data: Student[] = utils.sheet_to_json(worksheet);
 
       // Modify data if necessary (e.g., ensure id is generated if not provided)
-      data.map((student) => {
-        if (!student.id) {
-          student.id = uuid();
-        }
-        //FIX ME
-        // if (!student.availabilities) {
-        //   student.availabilities = []; // Initialize empty availabilities if missing
-        // }
-      });
-
-      return data;
+      return data
+        .map(student => this.changeToLowercase(student))
+        .map((student) => {
+          if (!student.id) {
+            student.id = uuid();
+          }
+          //FIX ME
+          // if (!student.availabilities) {
+          //   student.availabilities = []; // Initialize empty availabilities if missing
+          // }
+          return student;
+        });
     } catch (error) {
       console.error('Error parsing Excel file:', error);
       throw new Error('Failed to parse Excel file');
     }
   }
+
   async insert_from_excel(excel_file: File): Promise<{ successCount: number; failedStudents: FailedStudent[] }> {
     try {
       const students = await this.get_students_from_excel(excel_file);
@@ -105,14 +118,14 @@ class CEStudentService extends EntityService<Student> {
       throw new Error("Name and Email are required fields.");
     }
     const studentWithId: Student = {
-      id: entity.id?? uuid(),
+      id: entity.id ?? uuid(),
       name: entity.name,
       email: entity.email,
       age: entity.age,
       country: entity.country,
-      //FIX THESE
       gender: 'temp',
-      time_zone: 'temp'
+      // FIX THESE
+      // time_zone: 'temp'
     }
     return await super.insert(studentWithId, select);
   }

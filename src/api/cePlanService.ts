@@ -45,6 +45,10 @@ class CEPlanService extends EntityService<Plan> {
             });
     }
 
+    async insert(entity: Plan, select?: string): Promise<Plan> {
+        return super.insert(entity, select ?? '*, placement(*)')
+    }
+
     async getById(entityId: string | number, select?: string): Promise<Plan | null> {
         try {
             const plan = await super.getById(entityId, select ?? '*, placement(*)');
@@ -72,6 +76,7 @@ class CEPlanService extends EntityService<Plan> {
         } as unknown as Plan
         return this.insert(proposed)
             .then(async duplicatePlan => {
+                console.log('duplicatePlan', duplicatePlan)
                 const duplicatePlacements = plan.placements
                     .map(placement => {
                         return {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 
 // material-ui
@@ -7,8 +7,19 @@ import { useParams } from 'react-router';
 import { Stack } from '@mui/material';
 
 import { planService } from '../../api/cePlanService';
-import { PlanDetails } from '../../components/PlanDetails';
 import { Plan } from '../../api/types';
+import { PlanDetails } from '../../components/PlanDetails';
+
+interface PlanContextType {
+    plan: Plan,
+    setPlan: (plan: Plan) => void
+}
+
+
+export const PlanContext = createContext<PlanContextType>({
+    plan: {} as Plan,
+    setPlan: () => { }
+});
 
 const PlanPage: React.FC = () => {
     const { id: planId } = useParams<string>();
@@ -20,11 +31,13 @@ const PlanPage: React.FC = () => {
                 .then(p => setPlan(p!))
         }
     }, [planId]);
-    
+
     return (plan &&
-        <Stack gap={1}>
-            <PlanDetails plan={plan} />
-        </Stack>
+        <PlanContext.Provider value={{ plan, setPlan }}>
+            <Stack gap={1}>
+                <PlanDetails />
+            </Stack>
+        </PlanContext.Provider>
     )
 };
 

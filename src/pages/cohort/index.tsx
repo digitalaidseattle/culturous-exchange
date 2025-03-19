@@ -4,8 +4,9 @@ import { useNavigate, useParams } from 'react-router';
 // material-ui
 
 // project import
-import { Button, Stack } from '@mui/material';
+import { Box, Button, Stack, Tab, Tabs } from '@mui/material';
 
+import { useNotifications } from '@digitalaidseattle/core';
 import { MainCard } from '@digitalaidseattle/mui';
 import { cohortService } from '../../api/ceCohortService';
 import { PlanCard } from '../../components/PlanCard';
@@ -13,6 +14,21 @@ import { TextEdit } from '../../components/TextEdit';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { Cohort } from '../../api/types';
 import { planService } from '../../api/cePlanService';
+import { Cohort } from '../../api/types';
+import { TabPanel } from '../../components/TabPanel';
+import { TextEdit } from '../../components/TextEdit';
+import { PlansStack } from './PlansStack';
+import { StudentTable } from './StudentTable';
+
+interface CohortContextType {
+    cohort: Cohort,
+    setCohort: (cohort: Cohort) => void
+}
+
+export const CohortContext = createContext<CohortContextType>({
+    cohort: {} as Cohort,
+    setCohort: () => { }
+});
 
 const CohortPage: React.FC = () => {
     const { id: cohortId } = useParams<string>();
@@ -22,12 +38,21 @@ const CohortPage: React.FC = () => {
     const { refresh } = useContext(RefreshContext);
 
     const [cohort, setCohort] = useState<Cohort | null>();
+    const [tabValue, setTabValue] = useState<number>(0);
 
     useEffect(() => {
         if (cohortId) {
             cohortService.getById(cohortId)
                 .then(cohort => {
-                    setCohort(cohort)
+                    if (cohort) {
+                        enrollmentService.getStudents(cohort)
+                            .then(students => {
+                                cohort.students = students;
+                                setCohort(cohort)
+                            })
+                    } else {
+                        console.error(`Cohort not found ${cohortId}`)
+                    }
                 })
         }
     }, [cohortId, refresh]);
@@ -53,20 +78,33 @@ const CohortPage: React.FC = () => {
         }
     }
 
+    const changeTab = (_event: React.SyntheticEvent, newValue: number) => {
+        setTabValue(newValue);
+    };
+
     return (cohort &&
-        <Stack gap={1}>
-            <MainCard>
-                <TextEdit label={'Name'} value={cohort.name} onChange={(val) => handleNameChange(val)} />
-                <Button sx={{ marginTop: 1 }} variant="contained" onClick={handleCreatePlan}>New Plan</Button>
-            </MainCard>
-            {/* Consider an alternate :  switch between selected plan and all plans */}
-            <Stack direction={'row'} gap={2}>
-                {cohort.plans.map(plan =>
-                    <PlanCard key={plan.id} plan={plan} />
-                )}
+        <CohortContext.Provider value={{ cohort, setCohort }}>
+            <Stack gap={1}>
+                <MainCard>
+                    <TextEdit label={'Name'} value={cohort.name} onChange={(val) => handleNameChange(val)} />
+                    <Button sx={{ marginTop: 1 }} variant="contained" onClick={handleCreatePlan}>New Plan</Button>
+                </MainCard>
+                <MainCard>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                        <Tabs value={tabValue} onChange={changeTab} aria-label="basic tabs example">
+                            <Tab label="Plans" />
+                            <Tab label="Students" />
+                        </Tabs>
+                    </Box>
+                    <TabPanel value={tabValue} index={0}>
+                        <PlansStack />
+                    </TabPanel>
+                    <TabPanel value={tabValue} index={1}>
+                        <StudentTable />
+                    </TabPanel>
+                </MainCard>
             </Stack>
-        </Stack>
-    )
+        </CohortContext.Provider>)
 };
 
 export default CohortPage;

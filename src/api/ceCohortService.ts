@@ -40,6 +40,7 @@ class CECohortService extends EntityService<Cohort> {
         try {
             const cohort = await super.getById(entityId, select ?? '*, enrollment(*), plan(*)');
             if (cohort) {
+                // TODO should we lookup students here?
                 return {
                     ...cohort,
                     plans: (cohort as any).plan
@@ -55,11 +56,11 @@ class CECohortService extends EntityService<Cohort> {
 
     async update(entityId: Identifier, updatedFields: Partial<Cohort>, select?: string): Promise<Cohort> {
         try {
-            const cohort = await super.update(entityId, updatedFields, select)
-            if (cohort) {
+            const dbCohort = await super.update(entityId, updatedFields, select ?? '*, enrollment(*), plan(*)')
+            if (dbCohort) {
                 return {
-                    ...cohort,
-                    plans: []   // TODO join into plans
+                    ...dbCohort,
+                    plans: (dbCohort as any).plan
                 }
             } else {
                 throw new Error('Unexpected error during update:');
