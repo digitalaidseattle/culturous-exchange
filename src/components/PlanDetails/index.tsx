@@ -7,12 +7,15 @@
 
 import { MainCard } from '@digitalaidseattle/mui';
 import { Box, Button, Stack, Step, StepLabel, Stepper } from '@mui/material';
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { PlanProps } from '../../utils/props';
 import { TextEdit } from "../TextEdit";
 import { GroupBoard } from "./GroupBoard";
 import { SetupStudents } from './SetupStudents';
 import { GroupSize } from './GroupSize';
+import { planService } from '../../api/cePlanService';
+import { useNotifications } from '@digitalaidseattle/core';
+import { PlanContext } from '../../pages/plan';
 
 // const TabbedDetails: React.FC<PlanProps> = ({ plan }) => {
 //     const [value, setValue] = useState<number>(0);
@@ -99,17 +102,33 @@ const SteppedDetails: React.FC<PlanProps> = ({ plan }) => {
         </>);
 }
 
+export const PlanDetails: React.FC = () => {
+    const notification = useNotifications();
+    const { plan, setPlan } = useContext(PlanContext);
 
+    function handleNameUpdate(text: string) {
+        planService.update(plan.id, { name: text })
+            .then(updated => {
+                notification.success('Plan updated.');
+                setPlan(updated)
+            })
+    }
 
-export const PlanDetails: React.FC<PlanProps> = ({ plan }) => {
+    function handleNoteUpdate(text: string) {
+        planService.update(plan.id, { note: text })
+            .then(updated => {
+                notification.success('Plan updated.');
+                setPlan(updated)
+            })
+    }
 
-        // TODO add breadcrumbs
+    // TODO add breadcrumbs
     return (
         <MainCard sx={{ width: '100%' }}>
             <Stack spacing={{ xs: 1, sm: 4 }}>
                 <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
-                    <TextEdit label={'Name'} value={plan.name} onChange={(text: string) => alert(`TODO  save : ${text} name`)} />
-                    <TextEdit label={'Notes'} value={plan.note} onChange={(text: string) => alert(`TODO  note save : ${text}`)} />
+                    <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
+                    <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
                 </Stack>
 
                 {/* <TabbedDetails plan={plan} /> */}
