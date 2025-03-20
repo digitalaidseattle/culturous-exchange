@@ -141,13 +141,10 @@ const StudentsDetailsTable: React.FC = () => {
       studentService
         .find(queryModel)
         .then((pi) => {
-          console.log('orignal data: ', pi.rows)
           const updatedRows = pi.rows.map(student => ({
             ...student,
             availabilities: timeWindows.filter(tw => tw.student_id === student.id)
           }));
-          console.log('updatedData: ', updatedRows)
-          console.log('timeWindows: ', timeWindows)
           setPageInfo({ rows: updatedRows, totalRowCount: pi.totalRowCount })
         })
         .catch((err) => console.error(err))
