@@ -6,7 +6,7 @@
  */
 import { useContext, useEffect, useState } from 'react';
 
-import Box from '@mui/material/Box';
+// import Box from '@mui/material/Box';
 import {
   DataGrid,
   getGridNumericOperators,
@@ -19,9 +19,45 @@ import {
 import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
-import { Student } from '../../api/types';
+import { Student, TimeWindow } from '../../api/types';
+import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 
 const PAGE_SIZE = 10;
+
+const timeWindows: TimeWindow[] = [
+  {
+    id: 1,
+    student_id: '32df5f0b-aacb-42cc-87a7-0d6d72c75b40',
+    group_id: null,
+    day_in_week: "Friday",
+    start_t: "09:00",
+    end_t: "15:00"
+  },
+  {
+    id: 2,
+    student_id: '32df5f0b-aacb-42cc-87a7-0d6d72c75b40',
+    group_id: null,
+    day_in_week: "Saturday",
+    start_t: "17:00",
+    end_t: "20:00"
+  },
+  {
+    id: 3,
+    student_id: '32df5f0b-aacb-42cc-87a7-0d6d72c75b40',
+    group_id: null,
+    day_in_week: "Sunday",
+    start_t: "07:00",
+    end_t: "12:00"
+  },
+  {
+    id: 4,
+    student_id: '084dd366-492f-4497-8a21-320d88b8b6c7',
+    group_id: null,
+    day_in_week: "Sunday",
+    start_t: "12:00",
+    end_t: "17:00"
+  }
+];
 
 const getColumns = (): GridColDef[] => {
   return [
@@ -73,19 +109,8 @@ const getColumns = (): GridColDef[] => {
       headerName: 'Availabilities',
       width: 150,
       renderCell: (params) => {
-        const availabilities = Array.isArray(params.value)
-          ? params.value
-          : typeof params.value === 'string'
-            ? params.value.split(",")
-            : [];
-
-        return (
-          <Box>
-            {availabilities.map((timeStamp: string, idx: number) => (
-              <Box key={idx}>{timeStamp}</Box>
-            ))}
-          </Box>
-        );
+        const timeWindows = Array.isArray(params.value) ? params.value : [];
+        return <DisplayTimeWindow timeWindows={timeWindows} />
       },
       filterable: false
     }
@@ -115,7 +140,16 @@ const StudentsDetailsTable: React.FC = () => {
       } as QueryModel;
       studentService
         .find(queryModel)
-        .then((pi) => setPageInfo(pi))
+        .then((pi) => {
+          console.log('orignal data: ', pi.rows)
+          const updatedRows = pi.rows.map(student => ({
+            ...student,
+            availabilities: timeWindows.filter(tw => tw.student_id === student.id)
+          }));
+          console.log('updatedData: ', updatedRows)
+          console.log('timeWindows: ', timeWindows)
+          setPageInfo({ rows: updatedRows, totalRowCount: pi.totalRowCount })
+        })
         .catch((err) => console.error(err))
         .finally(() => setLoading(false));
     }
