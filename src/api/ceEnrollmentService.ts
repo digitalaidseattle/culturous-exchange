@@ -18,9 +18,8 @@ class CEEnrollmentService extends EntityService<Enrollment> {
             .select('student(*)')
             .eq('cohort_id', cohort.id)
             .then(resp => {
-                console.log(resp.data)
                 const enrollments = resp.data as unknown as any[];
-                return enrollments.map(en => en.student);
+                return enrollments.map(en => en.student)
             });
     }
 }

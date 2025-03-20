@@ -9,15 +9,18 @@
 import { MoreOutlined } from "@ant-design/icons";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { Card, CardContent, IconButton, Menu, MenuItem, Theme, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import { planService } from "../api/cePlanService";
 import { Plan } from "../api/types";
+import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 
 
 export const PlanCard = (props: { plan: Plan }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const showMenu = Boolean(anchorEl);
+    const notifications = useNotifications();
+    const { refresh, setRefresh } = useContext(RefreshContext);
 
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
 
@@ -41,17 +44,21 @@ export const PlanCard = (props: { plan: Plan }) => {
         setAnchorEl(null);
     };
 
-    const handleDelete  = () => {
+    const handleDelete = () => {
         setOpenDeleteDialog(true)
         setAnchorEl(null);
     };
 
-    const doDelete  = () => {
-        alert(' TODO delete plan')
-        setOpenDeleteDialog(false);
-        setAnchorEl(null);
+    const doDelete = () => {
+        planService.delete(props.plan.id)
+            .then(() => {
+                setOpenDeleteDialog(false);
+                setAnchorEl(null);
+                setRefresh(refresh + 1);
+                notifications.success('Plan deleted.');
+            })
     };
-    
+
     return (
         <Card
             sx={{

@@ -53,7 +53,6 @@ class CEPlanService extends EntityService<Plan> {
         try {
             const plan = await super.getById(entityId, select ?? '*, placement(*)');
             if (plan) {
-                console.log('getById', plan)
                 return {
                     ...plan,
                     placements: (plan as any).placement,
