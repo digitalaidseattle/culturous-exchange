@@ -1,5 +1,5 @@
 import { TimeWindow } from "../api/types";
-import { Typography, Tooltip, Box } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 
 interface Props {
   timeWindows: TimeWindow[]
@@ -14,9 +14,8 @@ const DisplayTimeWindow: React.FC<Props> = ( { timeWindows } ) => {
   ));
 
   return (
-    <>
+    <Box py={2}>
       {timeWindows.length ? (
-        <Tooltip title={<Box py={2}>{timeWindowList}</Box>} placement='top-start'>
         <Box
           sx={{
             maxHeight: '100%',
@@ -27,14 +26,12 @@ const DisplayTimeWindow: React.FC<Props> = ( { timeWindows } ) => {
         >
           {timeWindowList}
         </Box>
-      </Tooltip>
       ) : (
         <Typography variant='body2'>
           not assigned
         </Typography>
       )}
-
-    </>
+    </Box>
   );
 }
 
