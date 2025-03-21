@@ -7,25 +7,34 @@ interface Props {
 
 const DisplayTimeWindow: React.FC<Props> = ( { timeWindows } ) => {
 
+  const timeWindowList = timeWindows.map((tw, index) => (
+    <Typography key={index} variant='body2'>
+      {tw.day_in_week}: {tw.start_t} - {tw.end_t}
+    </Typography>
+  ));
+
   return (
-    <Box>
-      <Tooltip
-        title={
-          <Box>
-            {timeWindows.map((tw) => (
-              <Typography key={tw.id}>
-                {tw.day_in_week}: {tw.start_t} - {tw.end_t}
-              </Typography>
-            ))}
-          </Box>
-        }
-        placement="top-start"
-      >
-        <Box sx={{ "&:hover": { cursor: "pointer" } }}>
-          <Typography>{`${timeWindows.length} Availability(s)`}</Typography>
+    <>
+      {timeWindows.length ? (
+        <Tooltip title={<Box py={2}>{timeWindowList}</Box>} placement='top-start'>
+        <Box
+          sx={{
+            maxHeight: '100%',
+            overflowY: 'auto',
+            py: 1,
+            width: '100%',
+          }}
+        >
+          {timeWindowList}
         </Box>
       </Tooltip>
-    </Box>
+      ) : (
+        <Typography variant='body2'>
+          not assigned
+        </Typography>
+      )}
+
+    </>
   );
 }
 

@@ -29,33 +29,33 @@ const timeWindows: TimeWindow[] = [
     id: 1,
     student_id: '32df5f0b-aacb-42cc-87a7-0d6d72c75b40',
     group_id: null,
-    day_in_week: "Friday",
-    start_t: "09:00",
-    end_t: "15:00"
+    day_in_week: 'Friday',
+    start_t: '09:00',
+    end_t: '15:00'
   },
   {
     id: 2,
     student_id: '32df5f0b-aacb-42cc-87a7-0d6d72c75b40',
     group_id: null,
-    day_in_week: "Saturday",
-    start_t: "17:00",
-    end_t: "20:00"
+    day_in_week: 'Saturday',
+    start_t: '17:00',
+    end_t: '20:00'
   },
   {
     id: 3,
     student_id: '32df5f0b-aacb-42cc-87a7-0d6d72c75b40',
     group_id: null,
-    day_in_week: "Sunday",
-    start_t: "07:00",
-    end_t: "12:00"
+    day_in_week: 'Sunday',
+    start_t: '07:00',
+    end_t: '12:00'
   },
   {
     id: 4,
-    student_id: '084dd366-492f-4497-8a21-320d88b8b6c7',
+    student_id: '32df5f0b-aacb-42cc-87a7-0d6d72c75b40',
     group_id: null,
-    day_in_week: "Sunday",
-    start_t: "12:00",
-    end_t: "17:00"
+    day_in_week: 'Sunday',
+    start_t: '12:00',
+    end_t: '17:00'
   }
 ];
 
