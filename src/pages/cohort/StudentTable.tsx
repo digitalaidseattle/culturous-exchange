@@ -26,11 +26,10 @@ import {
 // project import
 import { PageInfo } from '@digitalaidseattle/supabase';
 import { CohortContext } from '.';
-import { Enrollment, Student } from '../../api/types';
-import AddStudentModal from '../../components/AddStudentModal';
-import { studentService } from '../../api/ceStudentService';
-import { enrollmentService } from '../../api/ceEnrollmentService';
 import { cohortService } from '../../api/ceCohortService';
+import { studentService } from '../../api/ceStudentService';
+import { Student } from '../../api/types';
+import AddStudentModal from '../../components/AddStudentModal';
 
 const PAGE_SIZE = 10;
 

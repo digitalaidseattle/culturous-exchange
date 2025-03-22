@@ -5,17 +5,16 @@
  *
  */
 
+import { useNotifications } from '@digitalaidseattle/core';
 import { MainCard } from '@digitalaidseattle/mui';
 import { Box, Button, Stack, Step, StepLabel, Stepper } from '@mui/material';
 import { useContext, useState } from "react";
-import { PlanProps } from '../../utils/props';
+import { planService } from '../../api/cePlanService';
+import { PlanContext } from '../../pages/plan';
 import { TextEdit } from "../TextEdit";
 import { GroupBoard } from "./GroupBoard";
-import { SetupStudents } from './SetupStudents';
 import { GroupSize } from './GroupSize';
-import { planService } from '../../api/cePlanService';
-import { useNotifications } from '@digitalaidseattle/core';
-import { PlanContext } from '../../pages/plan';
+import { SetupStudents } from './SetupStudents';
 
 // const TabbedDetails: React.FC<PlanProps> = ({ plan }) => {
 //     const [value, setValue] = useState<number>(0);
@@ -96,7 +95,7 @@ const SteppedDetails: React.FC = () => {
                             Next
                         </Button>
                     </Box>
-                    {activeStep === 0 && <SetupStudents plan={plan} />}
+                    {activeStep === 0 && <SetupStudents />}
                     {activeStep === 1 && <GroupSize plan={plan} />}
                     {activeStep === 2 && <GroupBoard plan={plan} />}
                 </>
