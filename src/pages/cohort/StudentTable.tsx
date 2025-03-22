@@ -25,21 +25,29 @@ import {
 
 // project import
 import { PageInfo } from '@digitalaidseattle/supabase';
+import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
+import { ConfirmationDialog } from "@digitalaidseattle/mui";
+
 import { CohortContext } from '.';
-import { Student } from '../../api/types';
+import { Identifier, Student } from '../../api/types';
+import { cohortService } from '../../api/ceCohortService';
 
 const PAGE_SIZE = 10;
-
 
 export const StudentTable: React.FC = () => {
 
     const apiRef = useGridApiRef();
     const { cohort } = useContext(CohortContext);
+    const notifications = useNotifications();
+    const { refresh, setRefresh } = useContext(RefreshContext);
 
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
     const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
+
+    const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
+
 
     useEffect(() => {
         setPageInfo({
@@ -52,8 +60,16 @@ export const StudentTable: React.FC = () => {
         alert(`Add student not implemented yet`)
     }
 
+    const doDelete = () => {
+        cohortService.removeStudents(cohort, rowSelectionModel as Identifier[])
+            .then(() => {
+                notifications.success('Students removed.');
+                setRefresh(refresh + 1);
+            })
+    };
+
     const removeStudent = () => {
-        alert(`Remove student not implemented yet`)
+        setOpenDeleteDialog(true);
     }
 
     const getColumns = (): GridColDef[] => {
@@ -138,6 +154,11 @@ export const StudentTable: React.FC = () => {
                     disableRowSelectionOnClick={true}
                 />
             }
+            <ConfirmationDialog
+                message={`Delete selected students?`}
+                open={openDeleteDialog}
+                handleConfirm={() => doDelete()}
+                handleCancel={() => setOpenDeleteDialog(false)} />
         </Box>
     );
 }
