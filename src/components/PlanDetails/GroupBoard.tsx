@@ -71,20 +71,20 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
         return <StudentCard placement={item} />
     }
 
-    function seedGroups(): void {
-        alert('Not implemented yet')
-    }
+    // function seedGroups(): void {
+    //     alert('Not implemented yet')
+    // }
 
     return (
         <>
             <Box sx={{ marginTop: 1 }}  >
-                <Button
+                {/* <Button
                     color="primary"
                     variant="contained"
                     onClick={seedGroups}
                 >
                     Seed
-                </Button>
+                </Button> */}
                 <>{plan && categories &&
                     <DragAndDrop
                         onChange={(c: Map<string, unknown>, e: Placement) => handleChange(c, e)}
