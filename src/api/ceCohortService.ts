@@ -14,24 +14,37 @@ import { Cohort, Enrollment, Identifier } from "./types";
 
 class CECohortService extends EntityService<Cohort> {
 
+
+    private createEnrollments(cohort: Cohort, studentIds: Identifier[]): Enrollment[] {
+        return studentIds.map(id => {
+            return {
+                cohort_id: cohort.id,
+                student_id: id
+            } as Enrollment
+        })
+    }
+
+    async addStudents(cohort: Cohort, studentIds: string[]): Promise<any> {
+        try {
+            const enrollments = this.createEnrollments(cohort, studentIds);
+            return enrollmentService
+                .batchInsert(enrollments)
+        } catch (err) {
+            console.error('Unexpected error during select:', err);
+            throw err;
+        }
+    }
+
     async create(): Promise<Cohort> {
         return studentService.findUnenrolled()
             .then(students => {
-                return cohortService.insert(
-                    {
-                        id: uuidv4(),
-                        name: `(New) Cohort`,
-                    } as Cohort
-                )
+                return cohortService
+                    .insert({ id: uuidv4(), name: `(New) Cohort`, } as Cohort)
                     .then(cohort => {
-                        const enrollments = students.map(student => {
-                            return {
-                                cohort_id: cohort.id,
-                                student_id: student.id
-                            } as Enrollment
-                        });
-                        enrollmentService.batchInsert(enrollments)
-                        return cohort
+                        const studentIds = students.map(student => student.id?.toString());
+                        const enrollments = this.createEnrollments(cohort, studentIds)
+                        return enrollmentService.batchInsert(enrollments)
+                            .then(() => cohort)
                     })
             })
     }
@@ -71,6 +84,7 @@ class CECohortService extends EntityService<Cohort> {
         }
 
     }
+
 
 }
 

@@ -52,7 +52,7 @@ const CohortPage: React.FC = () => {
                     }
                 })
         }
-    }, [cohortId, refresh]);
+    }, [cohortId]);
 
     function handleNameChange(newText: string) {
         if (cohort && cohort.id) {

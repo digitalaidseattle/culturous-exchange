@@ -26,7 +26,11 @@ import {
 // project import
 import { PageInfo } from '@digitalaidseattle/supabase';
 import { CohortContext } from '.';
-import { Student } from '../../api/types';
+import { Enrollment, Student } from '../../api/types';
+import AddStudentModal from '../../components/AddStudentModal';
+import { studentService } from '../../api/ceStudentService';
+import { enrollmentService } from '../../api/ceEnrollmentService';
+import { cohortService } from '../../api/ceCohortService';
 
 const PAGE_SIZE = 10;
 
@@ -41,18 +45,35 @@ export const StudentTable: React.FC = () => {
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
     const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
 
+    const [showAddStudent, setShowAddStudent] = useState<boolean>(false);
+    const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
+
     useEffect(() => {
         setPageInfo({
             rows: cohort.students ?? [],
             totalRowCount: cohort.students ? cohort.students.length : 0
         })
+        studentService.findUnenrolled()
+            .then(students => setUnenrolled(students))
     }, [cohort])
 
     const addStudent = () => {
-        alert(`Add student not implemented yet`)
+        setShowAddStudent(true)
+    }
+
+    const handleCloseStudentModal = () => {
+        setShowAddStudent(false)
+    }
+
+    function handleSubmit(studentIds: string[]) {
+        cohortService.addStudents(cohort, studentIds)
+            .then((resp) => {
+                console.log(resp)
+            });
     }
 
     const removeStudent = () => {
+        // .deleteEnrollment(enrollments)
         alert(`Remove student not implemented yet`)
     }
 
@@ -138,6 +159,11 @@ export const StudentTable: React.FC = () => {
                     disableRowSelectionOnClick={true}
                 />
             }
+            <AddStudentModal
+                students={unEnrolled}
+                isOpen={showAddStudent}
+                onClose={handleCloseStudentModal}
+                onSubmit={handleSubmit} />
         </Box>
     );
 }

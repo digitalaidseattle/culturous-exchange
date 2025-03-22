@@ -45,7 +45,9 @@ import { PlanContext } from '../../pages/plan';
 //         </>);
 // }
 
-const SteppedDetails: React.FC<PlanProps> = ({ plan }) => {
+const SteppedDetails: React.FC = () => {
+    const {plan} = useContext(PlanContext);
+
     const steps = ['Setup Students', 'Group Size', 'Review'];
 
     const [activeStep, setActiveStep] = useState(0);
@@ -132,7 +134,7 @@ export const PlanDetails: React.FC = () => {
                 </Stack>
 
                 {/* <TabbedDetails plan={plan} /> */}
-                <SteppedDetails plan={plan} />
+                <SteppedDetails />
             </Stack>
         </MainCard>
     );
