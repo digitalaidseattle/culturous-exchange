@@ -7,8 +7,9 @@
 import { v4 as uuid } from 'uuid';
 import { read, utils } from "xlsx";
 import { EntityService } from "./entityService";
-import { FailedStudent, Student } from "./types";
+import { FailedStudent, Student, TimeWindow } from "./types";
 import { supabaseClient } from '@digitalaidseattle/supabase';
+import { timeWindowService } from './ceTimeWindowService';
 
 class CEStudentService extends EntityService<Student> {
 
@@ -40,15 +41,70 @@ class CEStudentService extends EntityService<Student> {
   }
 
   changeToLowercase(object: any): any {
-    var key, keys = Object.keys(object);
-    var n = keys.length;
-    var lowered: { [key: string]: any } = {};
-    while (n--) {
-      key = keys[n];
-      lowered[key.toLowerCase()] = object[key];
-    }
-    console.log(object, lowered)
+    const lowered: { [key: string]: any } = {};
+    Object.keys(object).forEach(key => {
+      lowered[key.toLowerCase().trim()] = object[key];
+    })
+
     return lowered;
+  }
+
+
+  mapTimeWindows(entries: string[]): Partial<TimeWindow>[] {
+    let timeWindows: Partial<TimeWindow>[] = [];
+    entries.forEach(entry => {
+      timeWindows = timeWindows.concat(this.createTimeWindows(entry))
+    });
+    return timeWindows;
+  }
+
+  createTimeWindows(entry: string): Partial<TimeWindow>[] {
+    switch (entry.trim()) {
+      case "All options work for me":
+        return [
+          { day_in_week: 'Friday', start_t: '07:00:00', end_t: '12:00:00' },
+          { day_in_week: 'Friday', start_t: '12:00:00', end_t: '17:00:00' },
+          { day_in_week: 'Friday', start_t: '17:00:00', end_t: '22:00:00' },
+          { day_in_week: 'Saturday', start_t: '07:00:00', end_t: '12:00:00' },
+          { day_in_week: 'Saturday', start_t: '12:00:00', end_t: '17:00:00' },
+          { day_in_week: 'Saturday', start_t: '17:00:00', end_t: '22:00:00' },
+          { day_in_week: 'Sunday', start_t: '07:00:00', end_t: '12:00:00' },
+          { day_in_week: 'Sunday', start_t: '12:00:00', end_t: '17:00:00' },
+          { day_in_week: 'Sunday', start_t: '17:00:00', end_t: '22:00:00' }
+        ];
+      case "Friday morning (7am-12pm)":
+        return [{ day_in_week: 'Friday', start_t: '07:00:00', end_t: '12:00:00' }];
+      case "Friday afternoon (12pm-5 pm)":
+        return [{ day_in_week: 'Friday', start_t: '12:00:00', end_t: '17:00:00' }];
+      case "Friday evening (5pm-10pm)":
+        return [{ day_in_week: 'Friday', start_t: '17:00:00', end_t: '22:00:00' }];
+      case "Saturday morning (7am-12pm)":
+        return [{ day_in_week: 'Saturday', start_t: '07:00:00', end_t: '12:00:00' }];
+      case "Saturday afternoon (12pm-5pm)":
+        return [{ day_in_week: 'Saturday', start_t: '12:00:00', end_t: '17:00:00' }];
+      case "Saturday evening (5pm-10pm)":
+        return [{ day_in_week: 'Saturday', start_t: '17:00:00', end_t: '22:00:00' }];
+      case "Sunday morning (7am-12pm)":
+        return [{ day_in_week: 'Sunday', start_t: '07:00:00', end_t: '12:00:00' }];
+      case "Sunday afternoon (12pm-5pm)":
+        return [{ day_in_week: 'Sunday', start_t: '12:00:00', end_t: '17:00:00' }];
+      case "Sunday evening (5pm-10pm)":
+        return [{ day_in_week: 'Sunday', start_t: '17:00:00', end_t: '22:00:00' }];
+      default:
+        return [];
+    }
+  }
+
+  createStudent(dict: any): Student {
+    const times = dict['please mark all times that would be possible for the online group session on the weekend (based in your time zone)'];
+    return {
+      name: dict['first/given name in english'].trim() + ' ' + dict['last/sur/family name in english'].trim(),
+      age: Number.parseInt(dict['your age (how old are you currently)']),
+      email: dict['email address'],
+      country: dict['home country:'].trim(),
+      gender: dict['gender'].trim(),
+      original: this.mapTimeWindows(times.split(','))
+    } as Student
   }
 
   async get_students_from_excel(excel_file: File): Promise<Student[]> {
@@ -56,21 +112,12 @@ class CEStudentService extends EntityService<Student> {
       const arrayBuffer = await excel_file.arrayBuffer();
       const workbook = read(arrayBuffer);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const data: Student[] = utils.sheet_to_json(worksheet);
+      const data: any[] = utils.sheet_to_json(worksheet);
 
       // Modify data if necessary (e.g., ensure id is generated if not provided)
       return data
-        .map(student => this.changeToLowercase(student))
-        .map((student) => {
-          if (!student.id) {
-            student.id = uuid();
-          }
-          //FIX ME
-          // if (!student.availabilities) {
-          //   student.availabilities = []; // Initialize empty availabilities if missing
-          // }
-          return student;
-        });
+        .map(dict => this.changeToLowercase(dict))
+        .map((dict) => this.createStudent(dict));
     } catch (error) {
       console.error('Error parsing Excel file:', error);
       throw new Error('Failed to parse Excel file');
@@ -82,7 +129,6 @@ class CEStudentService extends EntityService<Student> {
       const students = await this.get_students_from_excel(excel_file);
       let successCount = 0;
       const failedStudents: FailedStudent[] = [];
-
       for (const student of students) {
         try {
           await this.insert(student);
@@ -113,20 +159,30 @@ class CEStudentService extends EntityService<Student> {
   }
 
 
-  // FIXME - temp static fields added for gender and time_zone
-  async insert(entity: Student, select?: string): Promise<Student> {
-
-    const studentWithId: Student = {
-      id: entity.id ?? uuid(),
-      name: entity.name,
-      email: entity.email,
-      age: entity.age,
-      country: entity.country,
-      gender: entity.gender,
-      // FIX THESE
-      // time_zone: 'temp'
+  //FIX ME - temp static fields added for gender and time_zone
+  async insert(entity: Partial<Student>, select?: string): Promise<Student> {
+    if (!entity.name || !entity.age || !entity.country || !entity.email) {
+      throw new Error("Name and Email are required fields.");
     }
-    return await super.insert(studentWithId, select);
+    const studentWithId: Student = {
+      ...entity,
+      id: uuid()
+    } as Student;
+
+    delete studentWithId.original;
+    // FIXME remove when time_zone added
+    delete studentWithId.time_zone;
+    const timeWindows = entity.original!.map(orig => {
+      return {
+        ...orig,
+        id: uuid(),
+        student_id: studentWithId.id,
+      }
+    })
+
+    const updatedStudent = await super.insert(studentWithId, select);
+    await timeWindowService.batchInsert(timeWindows)
+    return updatedStudent;
   }
 
 }
