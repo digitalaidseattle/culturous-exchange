@@ -63,7 +63,7 @@ type Placement = Entity &  {
     student_id: Identifier;
     student?: Student;
     anchor: boolean;
-    priority: boolean;
+    priority: number; // review should be boolean?
     time_windows?: TimeWindow[];
 }
 
