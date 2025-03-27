@@ -9,6 +9,7 @@ import { useCallback, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 import { studentService } from "../../api/ceStudentService";
 import { Student } from "../../api/types";
+import { studentUploader } from "../../api/studentUploader";
 
 const baseStyle = {
     flex: 1,
@@ -42,7 +43,7 @@ function StudentUploader(props: any) {
 
     const onDrop = useCallback((studentFiles: File[]) => {
         Promise
-            .all(studentFiles.map(file => studentService.insert_from_excel(file)))
+            .all(studentFiles.map(file => studentUploader.insert_from_excel(file)))
             .then(resps => {
                 let allFailed: Student[] = [];
                 resps.forEach(resp => {
