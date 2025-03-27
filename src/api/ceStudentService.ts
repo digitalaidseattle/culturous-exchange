@@ -4,11 +4,11 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-import { v4 as uuid } from 'uuid';
-import { EntityService } from "./entityService";
-import { Student, TimeWindow } from "./types";
 import { supabaseClient } from '@digitalaidseattle/supabase';
+import { v4 as uuid } from 'uuid';
 import { timeWindowService } from './ceTimeWindowService';
+import { EntityService } from "./entityService";
+import { Student } from "./types";
 
 class CEStudentService extends EntityService<Student> {
 
