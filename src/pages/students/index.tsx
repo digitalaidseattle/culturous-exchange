@@ -38,15 +38,27 @@ export const StudentContext = createContext<StudentContextType>({
     setStudent: () => {}
 })
 
+interface TimeWindowContextType {
+    selection: Partial<TimeWindow>[],
+    setSelection: React.Dispatch<React.SetStateAction<Partial<TimeWindow>[]>>
+}
+
+export const TimeWindowSelectionContext = createContext<TimeWindowContextType>({
+    selection: [] as Partial<TimeWindow>[],
+    setSelection: () => []
+})
+
 const UploadSection = () => {
     const { student, setStudent } = useContext(StudentContext)
+    const { selection, setSelection } = useContext(TimeWindowSelectionContext)
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
     const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
-    const [availabilities, setAvailabilities] = useState<TimeWindow[]>([])
+
+    console.log('selection in index: ', selection)
 
     const handleUpdate = (resp: any) => {
         setRefresh(refresh + 1);
@@ -65,7 +77,7 @@ const UploadSection = () => {
     }
 
     const handleCloseAddStudentModal = () => {
-        setAvailabilities([]);
+        setSelection([]);
         setIsAddStudentModalOpen(false)
     }
 
@@ -115,20 +127,23 @@ const UploadSection = () => {
                 isAddStudentModalOpen={isAddStudentModalOpen}
                 onClose={() => handleCloseAddStudentModal()}
                 handleAddStudent={handleAddStudent}
-                availabilities={availabilities}
-                setAvailabilities={setAvailabilities}
+                availabilities={selection}
+                setAvailabilities={setSelection}
             />
         </Stack>
     )
 }
 const StudentsPage: React.FC = () => {
     const [student, setStudent] = useState<Student>({} as Student);
+    const [selection, setSelection] = useState<Partial<TimeWindow>[]>([]);
     return (
         <StudentContext.Provider value={{student, setStudent}}>
-            <MainCard title="Students Page">
-                <UploadSection />
-                <StudentsDetailsTable />
-            </MainCard>
+            <TimeWindowSelectionContext.Provider value={{selection, setSelection}}>
+                <MainCard title="Students Page">
+                    <UploadSection />
+                    <StudentsDetailsTable />
+                </MainCard>
+            </TimeWindowSelectionContext.Provider>
         </StudentContext.Provider>
     )
 };
