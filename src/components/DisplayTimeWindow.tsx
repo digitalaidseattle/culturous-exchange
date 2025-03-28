@@ -2,7 +2,7 @@ import { TimeWindow } from "../api/types";
 import { Typography, Box } from "@mui/material";
 
 interface Props {
-  timeWindows: TimeWindow[]
+  timeWindows: Partial<TimeWindow>[]
 }
 
 const DisplayTimeWindow: React.FC<Props> = ( { timeWindows } ) => {

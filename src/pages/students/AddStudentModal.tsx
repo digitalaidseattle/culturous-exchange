@@ -7,8 +7,8 @@ interface Props {
   isAddStudentModalOpen: boolean;
   onClose: () => void;
   handleAddStudent: (event: any) => void;
-  availabilities: TimeWindow[];
-  setAvailabilities: React.Dispatch<React.SetStateAction<TimeWindow[]>>
+  availabilities: Partial<TimeWindow>[];
+  setAvailabilities: React.Dispatch<React.SetStateAction<Partial<TimeWindow>[]>>
 }
 
 const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAddStudent, availabilities, setAvailabilities} ) => {
