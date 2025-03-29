@@ -1,24 +1,25 @@
 import { FormControl, ListItemText, MenuItem, Select } from '@mui/material';
 import { TIME_SLOTS } from '../constants';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { studentUploader } from '../api/studentUploader';
 import { TimeWindowSelectionContext } from '../pages/students';
 
 const SelectTimeWindow: React.FC = () => {
-  const { selection, setSelection } = useContext(TimeWindowSelectionContext)
-  // console.log('selection: ', selection)
+  const { setSelection } = useContext(TimeWindowSelectionContext)
+  const [localSelection, setLocalSelection] = useState<string[]>([]);
 
   const handleChange = (e: any) => {
     const newTimeWindow = e.target.value
       .map((entry: string) => studentUploader.createTimeWindows(entry))
       .flat();
-    setSelection(newTimeWindow);
+    setSelection((prev) => [...prev, ...newTimeWindow])
+    setLocalSelection([]);
   }
   return (
     <FormControl>
       <Select
         multiple
-        value={selection}
+        value={localSelection}
         onChange={handleChange}
       >
         {TIME_SLOTS.map((timeSlot, idx) => (
