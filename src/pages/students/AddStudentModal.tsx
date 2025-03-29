@@ -1,17 +1,14 @@
 import React, {} from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { TimeWindow } from '../../api/types';
 import StudentForm from './StudentForm';
 
 interface Props {
   isAddStudentModalOpen: boolean;
   onClose: () => void;
   handleAddStudent: (event: any) => void;
-  availabilities: Partial<TimeWindow>[];
-  setAvailabilities: React.Dispatch<React.SetStateAction<Partial<TimeWindow>[]>>
 }
 
-const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAddStudent, availabilities, setAvailabilities} ) => {
+const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAddStudent} ) => {
 
   return (
     <React.Fragment>
@@ -26,10 +23,7 @@ const AddStudent: React.FC<Props> = ( {isAddStudentModalOpen, onClose, handleAdd
       >
         <DialogTitle>New Student Details</DialogTitle>
         <DialogContent>
-          <StudentForm
-            availabilities={availabilities}
-            setAvailabilities={setAvailabilities}
-          />
+          <StudentForm />
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>

@@ -127,8 +127,6 @@ const UploadSection = () => {
                 isAddStudentModalOpen={isAddStudentModalOpen}
                 onClose={() => handleCloseAddStudentModal()}
                 handleAddStudent={handleAddStudent}
-                availabilities={selection}
-                setAvailabilities={setSelection}
             />
         </Stack>
     )

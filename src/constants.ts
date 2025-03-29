@@ -1,3 +1,5 @@
+import { StudentField } from "./api/types";
+
 const TIME_SLOTS: string[] = [
   "Friday morning (7am-12pm)",
   "Friday afternoon (12pm-5pm)",
@@ -11,4 +13,16 @@ const TIME_SLOTS: string[] = [
   "All options work for me"
 ]
 
-export { TIME_SLOTS }
+const STUDENT_FIELD: StudentField[] = [
+  { key: 'name', label: 'Full Name', type: 'string', required: true },
+  { key: 'email', label: 'Email', type: 'email', required: true },
+  { key: 'age', label: 'Age', type: 'number', required: true },
+  { key: 'gender', label: 'Gender', type: 'string', required: true },
+  { key: 'country', label: 'Country', type: 'string', required: true },
+];
+
+const GENDER_OPTION = ['female', 'male', 'other']
+
+
+
+export { TIME_SLOTS, STUDENT_FIELD, GENDER_OPTION }
