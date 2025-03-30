@@ -50,15 +50,13 @@ export const TimeWindowSelectionContext = createContext<TimeWindowContextType>({
 
 const UploadSection = () => {
     const { student, setStudent } = useContext(StudentContext)
-    const { selection, setSelection } = useContext(TimeWindowSelectionContext)
+    const { setSelection } = useContext(TimeWindowSelectionContext)
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
     const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
-
-    console.log('selection in index: ', selection)
 
     const handleUpdate = (resp: any) => {
         setRefresh(refresh + 1);
