@@ -1,14 +1,14 @@
 /**
- * cePlanService.ts
+ * ceStudentService.ts
  *
  * @copyright 2025 Digital Aid Seattle
  *
  */
-import { v4 as uuid } from 'uuid';
-import { read, utils } from "xlsx";
-import { EntityService } from "./entityService";
-import { FailedStudent, Student } from "./types";
 import { supabaseClient } from '@digitalaidseattle/supabase';
+import { v4 as uuid } from 'uuid';
+import { timeWindowService } from './ceTimeWindowService';
+import { EntityService } from "./entityService";
+import { Student } from "./types";
 
 class CEStudentService extends EntityService<Student> {
 
@@ -39,95 +39,30 @@ class CEStudentService extends EntityService<Student> {
     }
   }
 
-  changeToLowercase(object: any): any {
-    var key, keys = Object.keys(object);
-    var n = keys.length;
-    var lowered: { [key: string]: any } = {};
-    while (n--) {
-      key = keys[n];
-      lowered[key.toLowerCase()] = object[key];
-    }
-    console.log(object, lowered)
-    return lowered;
-  }
-
-  async get_students_from_excel(excel_file: File): Promise<Student[]> {
-    try {
-      const arrayBuffer = await excel_file.arrayBuffer();
-      const workbook = read(arrayBuffer);
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const data: Student[] = utils.sheet_to_json(worksheet);
-
-      // Modify data if necessary (e.g., ensure id is generated if not provided)
-      return data
-        .map(student => this.changeToLowercase(student))
-        .map((student) => {
-          if (!student.id) {
-            student.id = uuid();
-          }
-          //FIX ME
-          // if (!student.availabilities) {
-          //   student.availabilities = []; // Initialize empty availabilities if missing
-          // }
-          return student;
-        });
-    } catch (error) {
-      console.error('Error parsing Excel file:', error);
-      throw new Error('Failed to parse Excel file');
-    }
-  }
-
-  async insert_from_excel(excel_file: File): Promise<{ successCount: number; failedStudents: FailedStudent[] }> {
-    try {
-      const students = await this.get_students_from_excel(excel_file);
-      let successCount = 0;
-      const failedStudents: FailedStudent[] = [];
-
-      for (const student of students) {
-        try {
-          await this.insert(student);
-          successCount++;
-        } catch (error) {
-          const failedStudent: FailedStudent = {
-            ...student,
-            failedError: error instanceof Error ? error.message : 'Unknown error'
-          }
-          failedStudents.push(failedStudent);
-          if (error instanceof Error) {
-            console.error(`Failed to insert student with ID ${student.id}:`, error.message);
-          } else {
-            console.error(`Failed to insert student with ID ${student.id}:`, error);
-          }
-        }
-      }
-
-      return { successCount, failedStudents };
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error('Error processing Excel file:', error.message);
-      } else {
-        console.error('Error processing Excel file:', error);
-      }
-      throw new Error('Failed to insert students from Excel file');
-    }
-  }
-
   //FIX ME - temp static fields added for gender and time_zone
-  async insert(entity: Partial<Student>, select?: string ): Promise<Student> {
+  async insert(entity: Partial<Student>, select?: string): Promise<Student> {
     if (!entity.name || !entity.age || !entity.country || !entity.email) {
       throw new Error("Name and Email are required fields.");
     }
     const studentWithId: Student = {
-      id: entity.id ?? uuid(),
-      name: entity.name,
-      email: entity.email,
-      age: entity.age,
-      country: entity.country,
-      gender: 'temp',
-      // FIX THESE
-      // time_zone: 'temp'
-    }
-    return await super.insert(studentWithId, select);
+      ...entity,
+      id: uuid()
+    } as Student;
+
+    delete studentWithId.original;
+    // FIXME remove when time_zone added
+    delete studentWithId.time_zone;
+    const timeWindows = entity.original!.map(orig => {
+      return {
+        ...orig,
+        id: uuid(),
+        student_id: studentWithId.id,
+      }
+    })
+
+    const updatedStudent = await super.insert(studentWithId, select);
+    await timeWindowService.batchInsert(timeWindows)
+    return updatedStudent;
   }
 
 }

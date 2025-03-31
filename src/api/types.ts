@@ -25,6 +25,7 @@ type Student = Entity & {
     country: string;
     gender: string;
     time_zone?: string;  // FIXME mark as optional until DB updated
+    original?: TimeWindow[];
 }
 
 type FailedStudent = Student & {
@@ -45,7 +46,7 @@ type Cohort = Entity & {
     students: Student[];
 }
 
-type Group =  Entity & {
+type Group = Entity & {
     plan_id: Identifier;
     groupNo?: string;
     country_count: number;
@@ -58,12 +59,12 @@ type Enrollment = Entity & {
     student?: Student;
 }
 
-type Placement = Entity &  {
+type Placement = Entity & {
     plan_id: Identifier;
     student_id: Identifier;
     student?: Student;
     anchor: boolean;
-    priority: boolean;
+    priority: number; // review should be boolean?
     time_windows?: TimeWindow[];
 }
 

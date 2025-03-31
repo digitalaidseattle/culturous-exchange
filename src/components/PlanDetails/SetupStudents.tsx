@@ -3,7 +3,7 @@
  * 
  * Example of integrating tickets with data-grid
  */
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 // material-ui
 import {
@@ -28,16 +28,18 @@ import {
 import { ExclamationCircleFilled, StarFilled } from '@ant-design/icons';
 import { PageInfo } from '@digitalaidseattle/supabase';
 import { placementService } from '../../api/cePlacementService';
+import { planService } from '../../api/cePlanService';
 import { Placement } from '../../api/types';
-import { PlanProps } from '../../utils/props';
+import { PlanContext } from '../../pages/plan';
 
 const PAGE_SIZE = 10;
 
 
-export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
+export const SetupStudents: React.FC = () => {
 
     const apiRef = useGridApiRef();
 
+    const { plan, setPlan } = useContext(PlanContext);
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
@@ -49,7 +51,7 @@ export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
                 const placedStudents = plan.placements.map(placement => {
                     return {
                         ...placement,
-                        student : students.find(student => student.id === placement.student_id)
+                        student: students.find(student => student.id === placement.student_id)
                     } as Placement
                 });
                 setPageInfo({
@@ -67,6 +69,7 @@ export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
                 row.anchor = true;
             }
         })
+        // TODO save
         setPageInfo({ ...pageInfo });
     }
 
@@ -74,9 +77,10 @@ export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
         rowSelectionModel?.forEach((n: GridRowId) => {
             const row = pageInfo.rows.find(r => r.id === n)
             if (row) {
-                row.priority = true;
+                row.priority = 1;
             }
         })
+        // TODO save
         setPageInfo({ ...pageInfo });
     }
 
@@ -89,13 +93,21 @@ export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
     }
 
     const toggleAnchor = (placement: Placement) => {
-        placement.anchor = !placement.anchor;
-        setPageInfo({ ...pageInfo });
+        placementService.updatePlacement(placement.plan_id, placement.student_id, { anchor: !placement.anchor })
+            .then(() => {
+                // TODO be smarter about updating
+                planService.getById(plan.id!)
+                    .then(updated => setPlan({ ...updated! }))
+            })
     }
 
     const togglePriority = (placement: Placement) => {
-        placement.priority = !placement.priority
-        setPageInfo({ ...pageInfo });
+        placementService.updatePlacement(placement.plan_id, placement.student_id, { priority: placement.priority === 0 ? 1 : 0 })
+            .then(() => {
+                // TODO be smarter about updating
+                planService.getById(plan.id!)
+                    .then(updated => setPlan({ ...updated! }))
+            })
     }
 
     const getColumns = (): GridColDef[] => {
@@ -118,7 +130,7 @@ export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
                 type: 'boolean',
                 renderCell: (param: GridRenderCellParams) => {
                     return <ExclamationCircleFilled
-                        style={{ fontSize: '150%', color: param.row.priority ? "green" : "gray" }}
+                        style={{ fontSize: '150%', color: param.row.priority === 1 ? "green" : "gray" }}
                         onClick={() => togglePriority(param.row)} />
                 }
             },
