@@ -24,5 +24,6 @@ coverage
 *.sln
 *.sw?
 .firebase
-.env
-
+.env.production
+supabase/.branches/*
+supabase/.temp/*
