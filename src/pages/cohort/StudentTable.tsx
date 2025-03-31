@@ -66,12 +66,24 @@ export const StudentTable: React.FC = () => {
     const addStudent = () => {
         alert(`Add student not implemented yet`)
     }
+    
+    const handleCloseStudentModal = () => {
+        setShowAddStudent(false)
+    }
+    
+    function handleSubmit(studentIds: string[]) {
+        cohortService.addStudents(cohort, studentIds)
+            .then((resp) => {
+                console.log(resp)
+            });
+    }
 
     const doDelete = () => {
         cohortService.removeStudents(cohort, rowSelectionModel as Identifier[])
             .then(() => {
                 notifications.success('Students removed.');
                 setRefresh(refresh + 1);
+                setOpenDeleteDialog(false);
             })
     };
 
