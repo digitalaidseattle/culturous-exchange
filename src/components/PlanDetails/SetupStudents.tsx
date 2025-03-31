@@ -1,6 +1,6 @@
 /**
  * SetupPanel.tsx
- * 
+ *
  * Example of integrating tickets with data-grid
  */
 import { useContext, useEffect, useState } from 'react';
@@ -31,9 +31,15 @@ import { placementService } from '../../api/cePlacementService';
 import { planService } from '../../api/cePlanService';
 import { Placement } from '../../api/types';
 import { PlanContext } from '../../pages/plan';
+import AddStudentModal from '../../components/AddStudentModal';
+
+// TODO delete temp
+import { cohortService } from '../../api/ceCohortService';
+import { Student } from '../../api/types';
+import { CohortContext } from '../../pages/cohort';
+import { studentService } from '../../api/ceStudentService';
 
 const PAGE_SIZE = 10;
-
 
 export const SetupStudents: React.FC = () => {
 
@@ -44,6 +50,13 @@ export const SetupStudents: React.FC = () => {
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
     const [pageInfo, setPageInfo] = useState<PageInfo<Placement>>({ rows: [], totalRowCount: 0 });
+
+    // TODO : New
+    const [showAddStudent, setShowAddStudent] = useState<boolean>(false);
+    const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
+
+    // Temp
+    const { cohort } = useContext(CohortContext);
 
     useEffect(() => {
         placementService.getStudents(plan)
@@ -58,8 +71,10 @@ export const SetupStudents: React.FC = () => {
                     rows: placedStudents,
                     totalRowCount: placedStudents.length
                 })
-
             })
+            // TODO change this to get all students in cohort
+            studentService.findUnenrolled()
+                .then(students => setUnenrolled(students))
     }, [plan])
 
     const applyAnchor = () => {
@@ -85,12 +100,26 @@ export const SetupStudents: React.FC = () => {
     }
 
     const addStudent = () => {
-        alert(`Add student not implemented yet`)
+        setShowAddStudent(true)
     }
 
+    const handleCloseStudentModal = () => {
+      setShowAddStudent(false)
+  }
+
+  // TODO Change cohort to Plan
+  function handleSubmit(studentIds: string[]) {
+    cohortService.addStudents(cohort, studentIds)
+        .then((resp) => {
+            console.log(resp)
+        });
+}
+
     const removeStudent = () => {
-        alert(`Remove student not implemented yet`)
-    }
+      // .deleteEnrollment(enrollments)
+      alert(`Remove student not implemented yet`)
+  }
+
 
     const toggleAnchor = (placement: Placement) => {
         placementService.updatePlacement(placement.plan_id, placement.student_id, { anchor: !placement.anchor })
@@ -231,6 +260,11 @@ export const SetupStudents: React.FC = () => {
                     disableRowSelectionOnClick={true}
                 />
             }
+            <AddStudentModal
+                students={unEnrolled} // TODO change to all students in cohort ID
+                isOpen={showAddStudent}
+                onClose={handleCloseStudentModal}
+                onSubmit={handleSubmit} />
         </Box>
     );
 }
