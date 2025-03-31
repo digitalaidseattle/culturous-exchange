@@ -36,7 +36,7 @@ export const StudentCard = (props: { placement: Placement }) => {
                             <ExclamationCircleFilled style={{ fontSize: '150%', color: priority }} />
                         }
                     </Stack>
-                    <Typography>{props.placement.student.name}</Typography>
+                    <Typography>{props.placement.student!.name}</Typography>
                 </Stack>
             </CardContent>
         </Card>
@@ -50,7 +50,7 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
 
     useEffect(() => {
         setCategories(plan.groups.map(group => {
-            return { label: group.groupNo, value: group.groupNo }
+            return { label: group.groupNo!, value: group.groupNo! }
         }))
     }, [plan])
 
@@ -61,7 +61,7 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
     function isCategory(item: PlacementWrapper, category: DDCategory<any>): boolean {
         if (plan) {
             const group = plan.groups.find(group => group.groupNo === category.value);
-            return group ? group.studentIds.includes(item.student_id) : false;
+            return group ? group.students.find(student => student.id === item.student_id) ? true : false : false;
         }
         return false;
     }
@@ -70,9 +70,20 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
         return <StudentCard placement={item} />
     }
 
+    // function seedGroups(): void {
+    //     alert('Not implemented yet')
+    // }
+
     return (
         <>
             <Box sx={{ marginTop: 1 }}  >
+                {/* <Button
+                    color="primary"
+                    variant="contained"
+                    onClick={seedGroups}
+                >
+                    Seed
+                </Button> */}
                 <>{plan && categories &&
                     <DragAndDrop
                         onChange={(c: Map<string, unknown>, e: Placement) => handleChange(c, e)}

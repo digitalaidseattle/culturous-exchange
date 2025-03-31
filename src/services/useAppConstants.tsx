@@ -29,7 +29,6 @@ const useAppConstants = (type: string) => {
                 .select()
                 .eq('type', type)
                 .then(response => {
-                    console.log('response', response)
                     if (response.data) {
                         const data = response.data as AppConstant[];
                         cache[type] = data;

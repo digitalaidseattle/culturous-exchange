@@ -3,13 +3,14 @@
  * 
  * Example of integrating tickets with data-grid
  */
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 // material-ui
 import {
     Box,
     Button,
-    Stack
+    Stack,
+    Typography
 } from '@mui/material';
 import {
     DataGrid,
@@ -26,35 +27,39 @@ import {
 // project import
 import { ExclamationCircleFilled, StarFilled } from '@ant-design/icons';
 import { PageInfo } from '@digitalaidseattle/supabase';
-import { PlanProps } from '../../utils/props';
-import { Student } from '../../api/types';
+import { placementService } from '../../api/cePlacementService';
+import { planService } from '../../api/cePlanService';
+import { Placement } from '../../api/types';
+import { PlanContext } from '../../pages/plan';
 
 const PAGE_SIZE = 10;
 
-type EnrolledStudent = Student & { enrollmentId: string, anchor: boolean, priority: boolean }
 
-export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
+export const SetupStudents: React.FC = () => {
 
     const apiRef = useGridApiRef();
 
+    const { plan, setPlan } = useContext(PlanContext);
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
-    const [pageInfo, setPageInfo] = useState<PageInfo<EnrolledStudent>>({ rows: [], totalRowCount: 0 });
+    const [pageInfo, setPageInfo] = useState<PageInfo<Placement>>({ rows: [], totalRowCount: 0 });
 
     useEffect(() => {
-        const enrolledStudents = plan.placements.map(placement => {
-            return {
-                ...placement.student,
-                enrollmentId: placement.id,
-                anchor: placement.anchor,
-                priority: placement.priority,
-            } as EnrolledStudent
-        });
-        setPageInfo({
-            rows: enrolledStudents,
-            totalRowCount: enrolledStudents.length
-        })
+        placementService.getStudents(plan)
+            .then(students => {
+                const placedStudents = plan.placements.map(placement => {
+                    return {
+                        ...placement,
+                        student: students.find(student => student.id === placement.student_id)
+                    } as Placement
+                });
+                setPageInfo({
+                    rows: placedStudents,
+                    totalRowCount: placedStudents.length
+                })
+
+            })
     }, [plan])
 
     const applyAnchor = () => {
@@ -64,6 +69,7 @@ export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
                 row.anchor = true;
             }
         })
+        // TODO save
         setPageInfo({ ...pageInfo });
     }
 
@@ -71,9 +77,10 @@ export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
         rowSelectionModel?.forEach((n: GridRowId) => {
             const row = pageInfo.rows.find(r => r.id === n)
             if (row) {
-                row.priority = true;
+                row.priority = 1;
             }
         })
+        // TODO save
         setPageInfo({ ...pageInfo });
     }
 
@@ -85,14 +92,22 @@ export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
         alert(`Remove student not implemented yet`)
     }
 
-    const toggleAnchor = (student: EnrolledStudent) => {
-        student.anchor = !student.anchor;
-        setPageInfo({ ...pageInfo });
+    const toggleAnchor = (placement: Placement) => {
+        placementService.updatePlacement(placement.plan_id, placement.student_id, { anchor: !placement.anchor })
+            .then(() => {
+                // TODO be smarter about updating
+                planService.getById(plan.id!)
+                    .then(updated => setPlan({ ...updated! }))
+            })
     }
 
-    const togglePriority = (student: EnrolledStudent) => {
-        student.priority = !student.priority
-        setPageInfo({ ...pageInfo });
+    const togglePriority = (placement: Placement) => {
+        placementService.updatePlacement(placement.plan_id, placement.student_id, { priority: placement.priority === 0 ? 1 : 0 })
+            .then(() => {
+                // TODO be smarter about updating
+                planService.getById(plan.id!)
+                    .then(updated => setPlan({ ...updated! }))
+            })
     }
 
     const getColumns = (): GridColDef[] => {
@@ -115,29 +130,41 @@ export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
                 type: 'boolean',
                 renderCell: (param: GridRenderCellParams) => {
                     return <ExclamationCircleFilled
-                        style={{ fontSize: '150%', color: param.row.priority ? "green" : "gray" }}
+                        style={{ fontSize: '150%', color: param.row.priority === 1 ? "green" : "gray" }}
                         onClick={() => togglePriority(param.row)} />
                 }
             },
             {
-                field: 'name',
+                field: 'student.name',
                 headerName: 'Name',
                 width: 150,
+                renderCell: (param: GridRenderCellParams) => {
+                    return <Typography>{param.row.student.name}</Typography>
+                }
             },
             {
                 field: 'email',
                 headerName: 'Email',
                 width: 140,
+                renderCell: (param: GridRenderCellParams) => {
+                    return <Typography>{param.row.student.email}</Typography>
+                }
             },
             {
                 field: 'city',
                 headerName: 'City',
                 width: 140,
+                renderCell: (param: GridRenderCellParams) => {
+                    return <Typography>{param.row.student.city}</Typography>
+                }
             },
             {
                 field: 'country',
                 headerName: 'Country',
                 width: 140,
+                renderCell: (param: GridRenderCellParams) => {
+                    return <Typography>{param.row.student.country}</Typography>
+                }
             },
             {
                 field: 'availability',
@@ -184,6 +211,7 @@ export const SetupStudents: React.FC<PlanProps> = ({ plan }) => {
             </Stack>
             {plan &&
                 <DataGrid
+                    getRowId={row => row.plan_id + ':' + row.student_id}
                     apiRef={apiRef}
                     rows={pageInfo.rows}
                     columns={getColumns()}
