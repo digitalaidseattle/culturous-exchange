@@ -25,24 +25,31 @@ import {
 
 // project import
 import { PageInfo } from '@digitalaidseattle/supabase';
+import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
+import { ConfirmationDialog } from "@digitalaidseattle/mui";
+
 import { CohortContext } from '.';
 import { cohortService } from '../../api/ceCohortService';
 import { studentService } from '../../api/ceStudentService';
-import { Student } from '../../api/types';
+import { Identifier, Student } from '../../api/types';
 import AddStudentModal from '../../components/AddStudentModal';
 
 const PAGE_SIZE = 10;
-
 
 export const StudentTable: React.FC = () => {
 
     const apiRef = useGridApiRef();
     const { cohort } = useContext(CohortContext);
+    const notifications = useNotifications();
+    const { refresh, setRefresh } = useContext(RefreshContext);
 
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
     const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
+
+    const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
+
 
     const [showAddStudent, setShowAddStudent] = useState<boolean>(false);
     const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
@@ -57,13 +64,13 @@ export const StudentTable: React.FC = () => {
     }, [cohort])
 
     const addStudent = () => {
-        setShowAddStudent(true)
+        alert(`Add student not implemented yet`)
     }
-
+    
     const handleCloseStudentModal = () => {
         setShowAddStudent(false)
     }
-
+    
     function handleSubmit(studentIds: string[]) {
         cohortService.addStudents(cohort, studentIds)
             .then((resp) => {
@@ -71,9 +78,17 @@ export const StudentTable: React.FC = () => {
             });
     }
 
+    const doDelete = () => {
+        cohortService.removeStudents(cohort, rowSelectionModel as Identifier[])
+            .then(() => {
+                notifications.success('Students removed.');
+                setRefresh(refresh + 1);
+                setOpenDeleteDialog(false);
+            })
+    };
+
     const removeStudent = () => {
-        // .deleteEnrollment(enrollments)
-        alert(`Remove student not implemented yet`)
+        setOpenDeleteDialog(true);
     }
 
     const getColumns = (): GridColDef[] => {
@@ -158,6 +173,11 @@ export const StudentTable: React.FC = () => {
                     disableRowSelectionOnClick={true}
                 />
             }
+            <ConfirmationDialog
+                message={`Delete selected students?`}
+                open={openDeleteDialog}
+                handleConfirm={() => doDelete()}
+                handleCancel={() => setOpenDeleteDialog(false)} />
             <AddStudentModal
                 students={unEnrolled}
                 isOpen={showAddStudent}
