@@ -6,9 +6,10 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-import { studentService } from "./ceStudentService";
-import { FailedStudent, Student, TimeWindow } from "./types";
 import { read, utils } from "xlsx";
+import { timeWindowService } from "./ceTimeWindowService";
+import { FailedStudent, Student, TimeWindow } from "./types";
+import { studentService } from "./ceStudentService";
 
 class StudentUploader {
 
@@ -72,9 +73,10 @@ class StudentUploader {
             name: dict['first/given name in english'].trim() + ' ' + dict['last/sur/family name in english'].trim(),
             age: Number.parseInt(dict['your age (how old are you currently)']),
             email: dict['email address'],
+            city: dict['home city (and state if applicable)'],
             country: dict['home country:'].trim(),
             gender: dict['gender'].trim(),
-            original: this.mapTimeWindows(times.split(','))
+            timeWindows: this.mapTimeWindows(times.split(','))
         } as Student
     }
 
@@ -97,13 +99,23 @@ class StudentUploader {
 
     async insert_from_excel(excel_file: File): Promise<{ successCount: number; failedStudents: FailedStudent[] }> {
         try {
-            const students = await this.get_students_from_excel(excel_file);
             let successCount = 0;
             const failedStudents: FailedStudent[] = [];
-            for (const student of students) {
+            const students = await this.get_students_from_excel(excel_file);
+            students.forEach(student => {
                 try {
-                    await studentService.insert(student);
-                    successCount++;
+                    timeWindowService
+                        .getTimeZone(student.city!, student.country)
+                        .then(data => {
+                            if (data.timezone) {
+                                student.time_zone = data.timezone;
+                                timeWindowService.adjustTimeWindows(student, data.offset);
+                                studentService.insert(student)
+                                    .then(_updated => successCount++);
+                            } else {
+                                throw new Error(`Student ${student.name} has no time zone`);
+                            }
+                        })
                 } catch (error) {
                     const failedStudent: FailedStudent = {
                         ...student,
@@ -116,7 +128,7 @@ class StudentUploader {
                         console.error(`Failed to insert student with ID ${student.id}:`, error);
                     }
                 }
-            }
+            });
 
             return { successCount, failedStudents };
         } catch (error) {

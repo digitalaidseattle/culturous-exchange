@@ -16,16 +16,19 @@ type TimeWindow = Entity & {
     day_in_week: string;
     start_t: string;
     end_t: string;
+    start_date_time?: Date;  // FIXME mark as optional until DB updated
+    end_date_time?: Date;  // FIXME mark as optional until DB updated
 }
 
 type Student = Entity & {
     name: string;
     age: number | null;
     email: string;
+    city?: string; // FIXME mark as optional until DB updated
     country: string;
     gender: string;
-    time_zone?: string;  // FIXME mark as optional until DB updated
-    original?: TimeWindow[];
+    time_zone?: string; 
+    timeWindows?: TimeWindow[]; // FIXME mark as optional until DB updated
 }
 
 type FailedStudent = Student & {
