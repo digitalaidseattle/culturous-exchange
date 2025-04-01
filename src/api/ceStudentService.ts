@@ -8,7 +8,7 @@ import { supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
 import { timeWindowService } from './ceTimeWindowService';
 import { EntityService } from "./entityService";
-import { Student } from "./types";
+import { Student, TimeWindow } from "./types";
 
 class CEStudentService extends EntityService<Student> {
 
@@ -49,18 +49,20 @@ class CEStudentService extends EntityService<Student> {
       id: uuid()
     } as Student;
 
-    delete studentWithId.original;
     // FIXME remove when time_zone added
     delete studentWithId.time_zone;
-    const timeWindows = entity.original!.map(orig => {
+    const updatedStudent = await super.insert(studentWithId, select);
+
+    // FIXME remove when db updated
+    const timeWindows = entity.timeWindows!.map(orig => {
       return {
-        ...orig,
         id: uuid(),
         student_id: studentWithId.id,
-      }
+        start_t: orig.start_t,
+        end_t: orig.end_t,
+        day_in_week: orig.day_in_week
+      } as TimeWindow
     })
-
-    const updatedStudent = await super.insert(studentWithId, select);
     await timeWindowService.batchInsert(timeWindows)
     return updatedStudent;
   }
