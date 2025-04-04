@@ -8,7 +8,7 @@
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { v4 as uuidv4 } from 'uuid';
 import { EntityService } from "./entityService";
-import { Cohort, Identifier, Placement, Plan } from "./types";
+import { Cohort, Identifier, Placement, Plan, Student } from "./types";
 import { enrollmentService } from "./ceEnrollmentService";
 import { placementService } from "./cePlacementService";
 import { groupService } from "./ceGroupService";
@@ -22,7 +22,7 @@ class CEPlanService extends EntityService<Plan> {
             cohort_id: cohort.id,
             note: ''
         } as Plan
-        // 
+        //
         return enrollmentService.getStudents(cohort)
             .then(students => {
                 return this.insert(proposed)
@@ -116,4 +116,3 @@ class CEPlanService extends EntityService<Plan> {
 
 const planService = new CEPlanService('plan')
 export { planService };
-

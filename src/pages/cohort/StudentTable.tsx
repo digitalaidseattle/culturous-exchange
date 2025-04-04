@@ -1,6 +1,6 @@
 /**
  * SetupPanel.tsx
- * 
+ *
  * Example of integrating tickets with data-grid
  */
 import { useContext, useEffect, useState } from 'react';
@@ -64,13 +64,14 @@ export const StudentTable: React.FC = () => {
     }, [cohort])
 
     const addStudent = () => {
-        alert(`Add student not implemented yet`)
+        setShowAddStudent(true)
+        // alert(`Add student not implemented yet`)
     }
-    
+
     const handleCloseStudentModal = () => {
         setShowAddStudent(false)
     }
-    
+
     function handleSubmit(studentIds: string[]) {
         cohortService.addStudents(cohort, studentIds)
             .then((resp) => {

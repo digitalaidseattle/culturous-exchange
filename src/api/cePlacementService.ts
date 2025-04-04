@@ -7,7 +7,8 @@
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { EntityService } from "./entityService";
-import { Plan, Placement, Student, Identifier } from "./types";
+import { Plan, Placement, Student, Identifier, Cohort } from "./types";
+import { enrollmentService } from "./ceEnrollmentService";
 
 
 class CEPlacementService extends EntityService<Placement> {
@@ -20,6 +21,16 @@ class CEPlacementService extends EntityService<Placement> {
             .then(resp => {
                 return resp.data?.map(data => data.student) as unknown as Student[]
             });
+    }
+
+    // getUnplacedStudents : for the Add student Modal
+    async getUnplacedStudents(cohort: Cohort, plan: Plan): Promise<Student[]> {
+      const enrolledStudents = await enrollmentService.getStudents(cohort);
+      const placedStudents = await this.getStudents(plan);
+      console.log(placedStudents);
+      const placedStudentIds = new Set(placedStudents.map(student => student.id));
+      const unplacedStudents = enrolledStudents.filter(student => !placedStudentIds.has(student.id));
+      return unplacedStudents;
     }
 
     async updatePlacement(planId: Identifier, studentId: Identifier, updatedFields: Partial<Placement>, select?: string): Promise<Placement> {
@@ -44,4 +55,3 @@ class CEPlacementService extends EntityService<Placement> {
 
 const placementService = new CEPlacementService('placement')
 export { placementService };
-
