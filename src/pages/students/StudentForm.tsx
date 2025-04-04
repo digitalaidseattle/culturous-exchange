@@ -6,7 +6,6 @@ import StudentInfo from './StudentInfo';
 import SelectTimeWindow from '../../components/SelectTimeWindow';
 import DisplaySelectedTimeWindows from './DisplaySelectedTimeWindows';
 
-
 const StudentForm: React.FC = () => {
   const { setStudent } = useContext(StudentContext);
 

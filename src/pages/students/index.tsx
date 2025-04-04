@@ -77,6 +77,8 @@ const UploadSection = () => {
     const handleCloseAddStudentModal = () => {
         setStudent({} as Student)
         setSelection([]);
+        setStudent({} as Student)
+        setSelection([]);
         setIsAddStudentModalOpen(false)
     }
 
