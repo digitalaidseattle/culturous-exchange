@@ -23,7 +23,7 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import FailedStudentsModal from './FailedStudentsModal';
-import { FailedStudent, Student, TimeWindow } from '../../api/types';
+import { FailedStudent, Student } from '../../api/types';
 import AddStudentModal from './AddStudentModal';
 import { studentService } from '../../api/ceStudentService';
 import { createContext } from 'react';
@@ -39,12 +39,12 @@ export const StudentContext = createContext<StudentContextType>({
 })
 
 interface TimeWindowContextType {
-    selection: Partial<TimeWindow>[],
-    setSelection: React.Dispatch<React.SetStateAction<Partial<TimeWindow>[]>>
+    selection: string[],
+    setSelection: React.Dispatch<React.SetStateAction<string[]>>
 }
 
 export const TimeWindowSelectionContext = createContext<TimeWindowContextType>({
-    selection: [] as Partial<TimeWindow>[],
+    selection: [] as string[],
     setSelection: () => []
 })
 
@@ -132,7 +132,7 @@ const UploadSection = () => {
 }
 const StudentsPage: React.FC = () => {
     const [student, setStudent] = useState<Student>({} as Student);
-    const [selection, setSelection] = useState<Partial<TimeWindow>[]>([]);
+    const [selection, setSelection] = useState<string[]>([]);
     return (
         <StudentContext.Provider value={{student, setStudent}}>
             <TimeWindowSelectionContext.Provider value={{selection, setSelection}}>

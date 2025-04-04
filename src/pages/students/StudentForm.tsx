@@ -1,15 +1,14 @@
 import { Box, DialogContentText } from '@mui/material';
 import { Student } from '../../api/types';
 import { useContext } from 'react';
-import { StudentContext, TimeWindowSelectionContext } from '.';
+import { StudentContext } from '.';
 import StudentInfo from './StudentInfo';
 import SelectTimeWindow from '../../components/SelectTimeWindow';
-import DisplayTimeWindow from '../../components/DisplayTimeWindow';
+import DisplaySelectedTimeWindows from './DisplaySelectedTimeWindows';
 
 
 const StudentForm: React.FC = () => {
   const { setStudent } = useContext(StudentContext);
-  const { selection } = useContext(TimeWindowSelectionContext);
 
   const handleFieldChange = (event: any) => {
     const { name, value } = event.target;
@@ -25,11 +24,9 @@ const StudentForm: React.FC = () => {
         handleFieldChange={handleFieldChange}
       />
       <Box my={4}>
-        <DialogContentText>
-          Select Availabilities
-        </DialogContentText>
+        <DialogContentText>{'Time Slot(s)'}</DialogContentText>
         <SelectTimeWindow />
-        <DisplayTimeWindow timeWindows={selection} />
+        <DisplaySelectedTimeWindows />
       </Box>
     </Box>
   )
