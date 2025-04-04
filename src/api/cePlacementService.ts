@@ -27,9 +27,11 @@ class CEPlacementService extends EntityService<Placement> {
     async getUnplacedStudents(cohort: Cohort, plan: Plan): Promise<Student[]> {
       const enrolledStudents = await enrollmentService.getStudents(cohort);
       const placedStudents = await this.getStudents(plan);
-      console.log(placedStudents);
       const placedStudentIds = new Set(placedStudents.map(student => student.id));
+      console.log('placedStudentIds', placedStudentIds);
+      console.log('enrolledStudents', enrolledStudents);
       const unplacedStudents = enrolledStudents.filter(student => !placedStudentIds.has(student.id));
+      console.log('unplacedStudents', unplacedStudents);
       return unplacedStudents;
     }
 

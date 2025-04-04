@@ -36,6 +36,7 @@ import AddStudentModal from '../../components/AddStudentModal';
 // TODO delete temp
 import { cohortService } from '../../api/ceCohortService';
 import { Student } from '../../api/types';
+import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { CohortContext } from '../../pages/cohort';
 import { studentService } from '../../api/ceStudentService';
 
@@ -62,16 +63,31 @@ export const SetupStudents: React.FC = () => {
   // TODO : New
   const [showAddStudent, setShowAddStudent] = useState<boolean>(false);
   const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
+  const { refresh, setRefresh } = useContext(RefreshContext);
 
   // Temp
-  const { cohort } = useContext(CohortContext);
+  const [ cohort, setCohort ] = useState<Cohort | null>(null);
 
   // Whenever the plan changes, it grabs all the students assigned in that plan,
   //   and enriches the placements with the full student info
   //   — by matching placement.student_id to the actual Student object.
   useEffect(() => {
 
-    console.log(cohort);
+    if (plan?.cohort_id) { // Check if cohort_id is defined
+      cohortService.getById(plan.cohort_id).then((cohort) => {
+          if (cohort) {
+              setCohort(cohort); // Set the cohort if found
+              console.log(cohort); // Log the cohort if found
+          } else {
+              console.warn("Cohort not found for the given ID");
+          }
+      }).catch((error) => {
+          console.error("Error fetching cohort:", error); // Handle any errors
+      });
+    } else {
+        console.warn("Cohort ID is undefined");
+    }
+
 
     placementService.getStudents(plan).then((students) => {
       const placedStudents = plan.placements.map((placement) => {
@@ -82,14 +98,18 @@ export const SetupStudents: React.FC = () => {
           ),
         } as Placement;
       });
+      console.log(placedStudents);
       setPageInfo({
         rows: placedStudents,
         totalRowCount: placedStudents.length,
       });
     });
-    // TODO change this to get all students in cohort
-    placementService.getUnplacedStudents(cohort, plan).then((students) => setUnenrolled(students));
-  }, [plan]);
+    // TODO How to make this work without plan changing ?
+    if (cohort) {
+      placementService.getUnplacedStudents(cohort, plan).then((students) => setUnenrolled(students));
+      console.log(unEnrolled);
+    }
+  }, [plan, refresh]);
 
 
   const applyAnchor = () => {
@@ -124,11 +144,13 @@ export const SetupStudents: React.FC = () => {
   };
 
   // TODO Change cohort to Plan
-  // function handleSubmit(studentIds: string[]) {
-  //   cohortService.addStudents(cohort, studentIds).then((resp) => {
-  //     console.log(resp);
-  //   });
-  // }
+  function handleSubmit(studentIds: string[]) {
+    // if (cohort) {
+    //   cohortService.addStudents(cohort, studentIds).then((resp) => {
+    //     console.log(resp);
+    //   });
+    // }
+  }
 
   const removeStudent = () => {
     // .deleteEnrollment(enrollments)
