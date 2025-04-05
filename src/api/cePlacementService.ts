@@ -53,6 +53,25 @@ class CEPlacementService extends EntityService<Placement> {
             throw err;
         }
     }
+
+    async deletePlacement(placement: Placement): Promise<void> {
+      console.log('deletePlacement', placement);
+        try {
+            const { error } = await supabaseClient
+                .from(this.tableName)
+                .delete()
+                .eq('plan_id', placement.plan_id)
+                .eq('student_id', placement.student_id);
+            if (error) {
+                console.error('Error deleting entity:', error.message);
+                throw new Error('Failed to delete entity');
+            }
+        } catch (err) {
+            console.error('Unexpected error during deletion:', err);
+            throw err;
+        }
+    }
+
 }
 
 const placementService = new CEPlacementService('placement')

@@ -29,9 +29,10 @@ import { ExclamationCircleFilled, StarFilled } from '@ant-design/icons';
 import { PageInfo } from '@digitalaidseattle/supabase';
 import { placementService } from '../../api/cePlacementService';
 import { planService } from '../../api/cePlanService';
-import { Cohort, Placement } from '../../api/types';
-import { PlanContext } from '../../pages/plan';
+import { Cohort, Placement, Identifier } from '../../api/types';
+import plan, { PlanContext } from '../../pages/plan';
 import AddStudentModal from '../../components/AddStudentModal';
+import { ConfirmationDialog } from "@digitalaidseattle/mui";
 
 // TODO delete temp
 import { cohortService } from '../../api/ceCohortService';
@@ -44,6 +45,7 @@ const PAGE_SIZE = 10;
 
 export const SetupStudents: React.FC = () => {
   const apiRef = useGridApiRef();
+  const notifications = useNotifications();
 
   const { plan, setPlan } = useContext(PlanContext);
   const [paginationModel, setPaginationModel] = useState({
@@ -62,6 +64,7 @@ export const SetupStudents: React.FC = () => {
 
   // TODO : New
   const [showAddStudent, setShowAddStudent] = useState<boolean>(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
   const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
   const { refresh, setRefresh } = useContext(RefreshContext);
 
@@ -109,7 +112,7 @@ export const SetupStudents: React.FC = () => {
 
     }
 
-  }, [plan, cohort]);
+  }, [plan, cohort, refresh]);
 
 
   const applyAnchor = () => {
@@ -152,8 +155,21 @@ export const SetupStudents: React.FC = () => {
   }
 
   const removeStudent = () => {
-    // .deleteEnrollment(enrollments)
-    alert(`Remove student not implemented yet`);
+    setOpenDeleteDialog(true);
+}
+
+  const doDelete = () => {
+    if (!rowSelectionModel) return;
+
+    const studentIds = rowSelectionModel.map(id => (id as string).split(':')[1]);
+
+    planService
+      .removeStudents(plan, studentIds)
+      .then(() => {
+        notifications.success("Students removed.");
+        setRefresh(refresh + 1);
+        setOpenDeleteDialog(false);
+      });
   };
 
   const toggleAnchor = (placement: Placement) => {
@@ -316,6 +332,12 @@ export const SetupStudents: React.FC = () => {
           disableRowSelectionOnClick={true}
         />
       )}
+      <ConfirmationDialog
+        message={`Delete selected students?`}
+        open={openDeleteDialog}
+        handleConfirm={() => doDelete()}
+        handleCancel={() => setOpenDeleteDialog(false)}
+      />
       <AddStudentModal
         students={unEnrolled} // TODO change to all students in cohort ID
         isOpen={showAddStudent}
