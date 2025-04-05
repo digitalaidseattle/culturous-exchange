@@ -1,6 +1,6 @@
 /**
  * Uploader.ts
- * 
+ *
  * encapsulate excel interaction
  *
  * @copyright 2025 Digital Aid Seattle

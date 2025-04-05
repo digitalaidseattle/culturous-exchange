@@ -23,7 +23,7 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import FailedStudentsModal from './FailedStudentsModal';
-import { FailedStudent, Student, TimeWindow } from '../../api/types';
+import { FailedStudent, Student } from '../../api/types';
 import AddStudentModal from './AddStudentModal';
 import { studentService } from '../../api/ceStudentService';
 import { createContext } from 'react';
@@ -38,15 +38,25 @@ export const StudentContext = createContext<StudentContextType>({
     setStudent: () => {}
 })
 
+interface TimeWindowContextType {
+    selection: string[],
+    setSelection: React.Dispatch<React.SetStateAction<string[]>>
+}
+
+export const TimeWindowSelectionContext = createContext<TimeWindowContextType>({
+    selection: [] as string[],
+    setSelection: () => []
+})
+
 const UploadSection = () => {
     const { student, setStudent } = useContext(StudentContext)
+    const { setSelection } = useContext(TimeWindowSelectionContext)
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
     const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
-    const [availabilities, setAvailabilities] = useState<TimeWindow[]>([])
 
     const handleUpdate = (resp: any) => {
         setRefresh(refresh + 1);
@@ -65,7 +75,10 @@ const UploadSection = () => {
     }
 
     const handleCloseAddStudentModal = () => {
-        setAvailabilities([]);
+        setStudent({} as Student)
+        setSelection([]);
+        setStudent({} as Student)
+        setSelection([]);
         setIsAddStudentModalOpen(false)
     }
 
@@ -115,20 +128,21 @@ const UploadSection = () => {
                 isAddStudentModalOpen={isAddStudentModalOpen}
                 onClose={() => handleCloseAddStudentModal()}
                 handleAddStudent={handleAddStudent}
-                availabilities={availabilities}
-                setAvailabilities={setAvailabilities}
             />
         </Stack>
     )
 }
 const StudentsPage: React.FC = () => {
     const [student, setStudent] = useState<Student>({} as Student);
+    const [selection, setSelection] = useState<string[]>([]);
     return (
         <StudentContext.Provider value={{student, setStudent}}>
-            <MainCard title="Students Page">
-                <UploadSection />
-                <StudentsDetailsTable />
-            </MainCard>
+            <TimeWindowSelectionContext.Provider value={{selection, setSelection}}>
+                <MainCard title="Students Page">
+                    <UploadSection />
+                    <StudentsDetailsTable />
+                </MainCard>
+            </TimeWindowSelectionContext.Provider>
         </StudentContext.Provider>
     )
 };
