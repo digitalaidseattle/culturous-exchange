@@ -73,11 +73,11 @@ export const SetupStudents: React.FC = () => {
   //   — by matching placement.student_id to the actual Student object.
   useEffect(() => {
 
-    if (plan?.cohort_id) { // Check if cohort_id is defined
+    // ASK ? Set cohort here
+    if (plan?.cohort_id) {
       cohortService.getById(plan.cohort_id).then((cohort) => {
           if (cohort) {
-              setCohort(cohort); // Set the cohort if found
-              console.log(cohort); // Log the cohort if found
+              setCohort(cohort);
           } else {
               console.warn("Cohort not found for the given ID");
           }
@@ -88,28 +88,28 @@ export const SetupStudents: React.FC = () => {
         console.warn("Cohort ID is undefined");
     }
 
+    if (plan && cohort) {
+      placementService.getStudents(plan).then((students) => {
+        const placedStudents = plan.placements.map((placement) => {
+          return {
+            ...placement,
+            student: students.find(
+              (student) => student.id === placement.student_id
+            ),
+          } as Placement;
+        });
 
-    placementService.getStudents(plan).then((students) => {
-      const placedStudents = plan.placements.map((placement) => {
-        return {
-          ...placement,
-          student: students.find(
-            (student) => student.id === placement.student_id
-          ),
-        } as Placement;
+        setPageInfo({
+          rows: placedStudents,
+          totalRowCount: placedStudents.length,
+        });
       });
-      console.log(placedStudents);
-      setPageInfo({
-        rows: placedStudents,
-        totalRowCount: placedStudents.length,
-      });
-    });
-    // TODO How to make this work without plan changing ?
-    if (cohort) {
+
       placementService.getUnplacedStudents(cohort, plan).then((students) => setUnenrolled(students));
-      console.log(unEnrolled);
+
     }
-  }, [plan, refresh]);
+
+  }, [plan, cohort]);
 
 
   const applyAnchor = () => {
@@ -145,11 +145,10 @@ export const SetupStudents: React.FC = () => {
 
   // TODO Change cohort to Plan
   function handleSubmit(studentIds: string[]) {
-    // if (cohort) {
-    //   cohortService.addStudents(cohort, studentIds).then((resp) => {
-    //     console.log(resp);
-    //   });
-    // }
+    planService.addStudents(plan, studentIds).then((resp) => {
+      console.log(resp);
+    });
+
   }
 
   const removeStudent = () => {

@@ -112,6 +112,29 @@ class CEPlanService extends EntityService<Plan> {
             .then(resp => resp.data as Plan[]);
     }
 
+    private createPlacements(plan: Plan, studentIds: Identifier[]): Placement[] {
+        const placements = studentIds.map(studentId => {
+            return {
+                plan_id: plan.id,
+                student_id: studentId,
+                anchor: false,
+                priority: 0
+            } as Placement
+        });
+        return placements;
+    }
+
+    async addStudents(plan: Plan, studentIds: Identifier[]): Promise<any> {
+      try {
+          const placements = this.createPlacements(plan, studentIds);
+          return placementService
+              .batchInsert(placements)
+      } catch (err) {
+          console.error('Unexpected error during select:', err);
+          throw err;
+      }
+  }
+
 }
 
 const planService = new CEPlanService('plan')

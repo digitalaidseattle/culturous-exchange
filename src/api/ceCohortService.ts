@@ -30,7 +30,7 @@ class CECohortService extends EntityService<Cohort> {
             } as Enrollment
         })
     }
-    // TODO : change this to use placement for my case
+    
     async addStudents(cohort: Cohort, studentIds: string[]): Promise<any> {
         try {
             const enrollments = this.createEnrollments(cohort, studentIds);
