@@ -3,43 +3,38 @@
  *
  * Example of integrating tickets with data-grid
  */
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from "react";
 
 // material-ui
+import { Box, Button, Stack, Typography } from "@mui/material";
 import {
-    Box,
-    Button,
-    Stack,
-    Typography
-} from '@mui/material';
-import {
-    DataGrid,
-    GridColDef,
-    GridRenderCellParams,
-    GridRowId,
-    GridRowSelectionModel,
-    GridSortModel,
-    useGridApiRef
-} from '@mui/x-data-grid';
+  DataGrid,
+  GridColDef,
+  GridRenderCellParams,
+  GridRowId,
+  GridRowSelectionModel,
+  GridSortModel,
+  useGridApiRef,
+} from "@mui/x-data-grid";
 
 // third-party
 
 // project import
-import { ExclamationCircleFilled, StarFilled } from '@ant-design/icons';
-import { PageInfo } from '@digitalaidseattle/supabase';
-import { placementService } from '../../api/cePlacementService';
-import { planService } from '../../api/cePlanService';
-import { Cohort, Placement, Identifier } from '../../api/types';
-import plan, { PlanContext } from '../../pages/plan';
-import AddStudentModal from '../../components/AddStudentModal';
+import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
+import { PageInfo } from "@digitalaidseattle/supabase";
+import { placementService } from "../../api/cePlacementService";
+import { planService } from "../../api/cePlanService";
+import { Cohort, Placement, Identifier } from "../../api/types";
+import plan, { PlanContext } from "../../pages/plan";
+import AddStudentModal from "../../components/AddStudentModal";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 
 // TODO delete temp
-import { cohortService } from '../../api/ceCohortService';
-import { Student } from '../../api/types';
-import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
-import { CohortContext } from '../../pages/cohort';
-import { studentService } from '../../api/ceStudentService';
+import { cohortService } from "../../api/ceCohortService";
+import { Student } from "../../api/types";
+import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
+import { CohortContext } from "../../pages/cohort";
+import { studentService } from "../../api/ceStudentService";
 
 const PAGE_SIZE = 10;
 
@@ -67,29 +62,27 @@ export const SetupStudents: React.FC = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
   const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
   const { refresh, setRefresh } = useContext(RefreshContext);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Temp
-  const [ cohort, setCohort ] = useState<Cohort | null>(null);
+  const [cohort, setCohort] = useState<Cohort | null>(null);
 
   // Whenever the plan changes, it grabs all the students assigned in that plan,
   //   and enriches the placements with the full student info
   //   — by matching placement.student_id to the actual Student object.
   useEffect(() => {
+    if (!plan?.cohort_id) return;
 
-    // ASK ? Set cohort here
-    if (plan?.cohort_id) {
-      cohortService.getById(plan.cohort_id).then((cohort) => {
-          if (cohort) {
-              setCohort(cohort);
-          } else {
-              console.warn("Cohort not found for the given ID");
-          }
-      }).catch((error) => {
-          console.error("Error fetching cohort:", error); // Handle any errors
-      });
-    } else {
-        console.warn("Cohort ID is undefined");
-    }
+    cohortService.getById(plan.cohort_id)
+      .then((cohort) => {
+        if (cohort) setCohort(cohort);
+        else console.warn("Cohort not found");
+      })
+      .catch((error) => console.error("Error fetching cohort:", error));
+  }, [plan?.cohort_id]); // ✅ only run when cohort ID changes
+
+  useEffect(() => {
+    console.log('⏳ useEffect triggered:', { plan, cohort });
 
     if (plan && cohort) {
       placementService.getStudents(plan).then((students) => {
@@ -102,18 +95,20 @@ export const SetupStudents: React.FC = () => {
           } as Placement;
         });
 
+        console.log("Plan: ", plan);
+        console.log("Placed Students: ", placedStudents);
+
         setPageInfo({
           rows: placedStudents,
           totalRowCount: placedStudents.length,
         });
       });
 
-      placementService.getUnplacedStudents(cohort, plan).then((students) => setUnenrolled(students));
-
+      placementService
+        .getUnplacedStudents(cohort, plan)
+        .then((students) => setUnenrolled(students));
     }
-
-  }, [plan, cohort, refresh]);
-
+  }, [plan, cohort]);
 
   const applyAnchor = () => {
     rowSelectionModel?.forEach((n: GridRowId) => {
@@ -146,30 +141,46 @@ export const SetupStudents: React.FC = () => {
     setShowAddStudent(false);
   };
 
-  // TODO Change cohort to Plan
-  function handleSubmit(studentIds: string[]) {
-    planService.addStudents(plan, studentIds).then((resp) => {
-      console.log(resp);
-    });
+  async function handleSubmit(studentIds: string[]) {
+    if (isSubmitting) return;
 
+    try {
+      setIsSubmitting(true);
+      const resp = await planService.addStudents(plan, studentIds);
+      console.log(resp);
+
+      const updated = await planService.getById(plan.id!);
+      console.log("Updated plan: ", updated);
+      setRefresh(refresh + 1);
+      if (updated) {
+        setPlan(updated);
+      }
+
+    } catch (error) {
+      console.error("Error submitting students to plan:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const removeStudent = () => {
     setOpenDeleteDialog(true);
-}
+  };
 
   const doDelete = () => {
     if (!rowSelectionModel) return;
 
-    const studentIds = rowSelectionModel.map(id => (id as string).split(':')[1]);
+    const studentIds = rowSelectionModel.map(
+      (id) => (id as string).split(":")[1]
+    );
 
-    planService
-      .removeStudents(plan, studentIds)
-      .then(() => {
-        notifications.success("Students removed.");
-        setRefresh(refresh + 1);
-        setOpenDeleteDialog(false);
-      });
+    planService.removeStudents(plan, studentIds).then(() => {
+      notifications.success("Students removed.");
+      // Refresh the plan data
+      planService.getById(plan.id!).then((updated) => setPlan({ ...updated! }));
+    });
+    setRefresh(refresh + 1);
+    setOpenDeleteDialog(false);
   };
 
   const toggleAnchor = (placement: Placement) => {
@@ -206,6 +217,7 @@ export const SetupStudents: React.FC = () => {
         width: 100,
         type: "boolean",
         renderCell: (param: GridRenderCellParams) => {
+
           return (
             <StarFilled
               style={{
@@ -343,7 +355,8 @@ export const SetupStudents: React.FC = () => {
         isOpen={showAddStudent}
         onClose={handleCloseStudentModal}
         onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
       />
     </Box>
   );
-}
+};

@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, ListItemText, MenuItem, OutlinedInput, Select, SelectChangeEvent, Stack } from '@mui/material';
 import React, { useState } from 'react';
 import { Student } from '../api/types';
@@ -7,9 +9,10 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (studentIds: string[]) => void;
+  isSubmitting: boolean;
 }
 
-const AddStudentModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, students }) => {
+const AddStudentModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, students, isSubmitting }) => {
   const [seletedStudents, setSeletedStudents] = useState<string[]>([]);
 
   function handleChange(event: SelectChangeEvent<typeof seletedStudents>) {
@@ -17,8 +20,9 @@ const AddStudentModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, students 
     setSeletedStudents(ids);
   }
 
-  function handleSubmit() {
-    onSubmit(seletedStudents)
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault(); // prevent form from refreshing the page
+    onSubmit(seletedStudents);
   }
 
   function findStudent(id: string) {
@@ -65,8 +69,9 @@ const AddStudentModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, students 
             type="submit"
             color="primary"
             variant="contained"
+            disabled={isSubmitting}
           >
-            Submit
+            {isSubmitting ? 'Submitting...' : 'Submit'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -75,4 +80,3 @@ const AddStudentModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, students 
 }
 
 export default AddStudentModal;
-
