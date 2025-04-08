@@ -28,10 +28,7 @@ class CEPlacementService extends EntityService<Placement> {
       const enrolledStudents = await enrollmentService.getStudents(cohort);
       const placedStudents = await this.getStudents(plan);
       const placedStudentIds = new Set(placedStudents.map(student => student.id));
-      // console.log('placedStudentIds', placedStudentIds);
-      // console.log('enrolledStudents', enrolledStudents);
       const unplacedStudents = enrolledStudents.filter(student => !placedStudentIds.has(student.id));
-      // console.log('unplacedStudents', unplacedStudents);
       return unplacedStudents;
     }
 
@@ -55,7 +52,6 @@ class CEPlacementService extends EntityService<Placement> {
     }
 
     async deletePlacement(placement: Placement): Promise<void> {
-      console.log('deletePlacement', placement);
         try {
             const { error } = await supabaseClient
                 .from(this.tableName)

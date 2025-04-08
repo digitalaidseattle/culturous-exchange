@@ -24,17 +24,15 @@ import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
 import { PageInfo } from "@digitalaidseattle/supabase";
 import { placementService } from "../../api/cePlacementService";
 import { planService } from "../../api/cePlanService";
-import { Cohort, Placement, Identifier } from "../../api/types";
-import plan, { PlanContext } from "../../pages/plan";
+import { Placement } from "../../api/types";
+import { PlanContext } from "../../pages/plan";
 import AddStudentModal from "../../components/AddStudentModal";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 
 // TODO delete temp
-import { cohortService } from "../../api/ceCohortService";
 import { Student } from "../../api/types";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { CohortContext } from "../../pages/cohort";
-import { studentService } from "../../api/ceStudentService";
 
 const PAGE_SIZE = 10;
 
@@ -43,6 +41,13 @@ export const SetupStudents: React.FC = () => {
   const notifications = useNotifications();
 
   const { plan, setPlan } = useContext(PlanContext);
+  const { cohort } = useContext(CohortContext);
+  const { refresh, setRefresh } = useContext(RefreshContext);
+
+  const [showAddStudent, setShowAddStudent] = useState<boolean>(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
+  const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: PAGE_SIZE,
@@ -57,33 +62,10 @@ export const SetupStudents: React.FC = () => {
     totalRowCount: 0,
   });
 
-  // TODO : New
-  const [showAddStudent, setShowAddStudent] = useState<boolean>(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
-  const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
-  const { refresh, setRefresh } = useContext(RefreshContext);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Temp
-  const [cohort, setCohort] = useState<Cohort | null>(null);
-
   // Whenever the plan changes, it grabs all the students assigned in that plan,
   //   and enriches the placements with the full student info
   //   — by matching placement.student_id to the actual Student object.
   useEffect(() => {
-    if (!plan?.cohort_id) return;
-
-    cohortService.getById(plan.cohort_id)
-      .then((cohort) => {
-        if (cohort) setCohort(cohort);
-        else console.warn("Cohort not found");
-      })
-      .catch((error) => console.error("Error fetching cohort:", error));
-  }, [plan?.cohort_id]); // ✅ only run when cohort ID changes
-
-  useEffect(() => {
-    console.log('⏳ useEffect triggered:', { plan, cohort });
-
     if (plan && cohort) {
       placementService.getStudents(plan).then((students) => {
         const placedStudents = plan.placements.map((placement) => {
@@ -94,9 +76,6 @@ export const SetupStudents: React.FC = () => {
             ),
           } as Placement;
         });
-
-        console.log("Plan: ", plan);
-        console.log("Placed Students: ", placedStudents);
 
         setPageInfo({
           rows: placedStudents,
@@ -133,7 +112,6 @@ export const SetupStudents: React.FC = () => {
   };
 
   const addStudent = () => {
-    console.log(cohort);
     setShowAddStudent(true);
   };
 
@@ -142,25 +120,8 @@ export const SetupStudents: React.FC = () => {
   };
 
   async function handleSubmit(studentIds: string[]) {
-    if (isSubmitting) return;
-
-    try {
-      setIsSubmitting(true);
-      const resp = await planService.addStudents(plan, studentIds);
-      console.log(resp);
-
-      const updated = await planService.getById(plan.id!);
-      console.log("Updated plan: ", updated);
-      setRefresh(refresh + 1);
-      if (updated) {
-        setPlan(updated);
-      }
-
-    } catch (error) {
-      console.error("Error submitting students to plan:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    const resp = await planService.addStudents(plan, studentIds);
+    setRefresh(refresh + 1);
   }
 
   const removeStudent = () => {
@@ -176,10 +137,9 @@ export const SetupStudents: React.FC = () => {
 
     planService.removeStudents(plan, studentIds).then(() => {
       notifications.success("Students removed.");
-      // Refresh the plan data
-      planService.getById(plan.id!).then((updated) => setPlan({ ...updated! }));
+      setRowSelectionModel([]);
+      setRefresh(refresh + 1); // Only refresh after successful deletion
     });
-    setRefresh(refresh + 1);
     setOpenDeleteDialog(false);
   };
 
@@ -355,7 +315,6 @@ export const SetupStudents: React.FC = () => {
         isOpen={showAddStudent}
         onClose={handleCloseStudentModal}
         onSubmit={handleSubmit}
-        isSubmitting={isSubmitting}
       />
     </Box>
   );

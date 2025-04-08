@@ -130,7 +130,7 @@ class CEPlanService extends EntityService<Plan> {
   }
 
   async removeStudents(plan: Plan, studentIds: Identifier[]): Promise<any> {
-    console.log(studentIds);
+    // Loops over each id and returns a new array of placement objects
     return Promise.all(
       studentIds.map((id) =>
         placementService.deletePlacement({
