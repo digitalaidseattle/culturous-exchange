@@ -110,11 +110,11 @@ class StudentUploader {
                     })
                     .catch((err) => {
                         console.error(`Student ${student.name} could not be inserted`);
-                        return { success: false, student: { ...student, failedError: err.message } as FailedStudent };
+                        return { success: false, student: { ...student, failedError: err.message } };
                     });
             })
             .catch((err) => {
-                return { success: false, student: { ...student, failedError: err.message } as FailedStudent };
+                return { success: false, student: { ...student, failedError: err.message } };
             })
     }
 
@@ -122,7 +122,8 @@ class StudentUploader {
         try {
             return this.get_students_from_excel(excel_file)
                 .then(async students => {
-                    return Promise.all(students.map(student => this.insertStudent(student)))
+                    return Promise
+                        .all(students.map(student => this.insertStudent(student)))
                         .then((resps) => {
                             const successful = resps.filter(resp => resp.success);
                             const failed = resps.filter(resp => !resp.success);
