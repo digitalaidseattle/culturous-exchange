@@ -46,21 +46,17 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     async getTimeZone(city: string, country: string): Promise<{ timezone: string, offset: number }> {
         return fetch(`https://api.ipgeolocation.io/timezone?apiKey=${import.meta.env.VITE_IPGEOLOCATION_KEY}&location=${city},%20${country}`)
             .then(resp => {
-                console.log('Timezone data:', resp);
+                if (!resp.ok) {
+                    throw new Error(`Failed to fetch timezone city: ${city}, country: ${country}`);
+                }
                 return resp.json()
-            }
-            )
+            })
             .then(data => {
-                console.log('Timezone data:', data);
                 return {
                     timezone: data.timezone,
                     offset: data.timezone_offset
                 }
             })
-            .catch(err => {
-                console.error('Error fetching timezone:', err);
-                throw new Error('Failed to fetch timezone');
-            });
     }
 }
 

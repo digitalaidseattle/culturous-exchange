@@ -98,7 +98,7 @@ class StudentUploader {
         }
     }
 
-    async insertStudent(student: Student): Promise<{ success: boolean; student: Student }> {
+    async insertStudent(student: Student): Promise<{ success: boolean; student: Student | FailedStudent }> {
         return timeWindowService
             .getTimeZone(student.city!, student.country)
             .then(tzData => {
@@ -108,14 +108,13 @@ class StudentUploader {
                     .then(inserted => {
                         return { success: true, student: inserted };
                     })
-                    .catch(() => {
+                    .catch((err) => {
                         console.error(`Student ${student.name} could not be inserted`);
-                        return { success: false, student: student };
+                        return { success: false, student: { ...student, failedError: err.message } as FailedStudent };
                     });
             })
-            .catch(() => {
-                console.error(`Student ${student.name} has no time zone`);
-                return { success: false, student: student };
+            .catch((err) => {
+                return { success: false, student: { ...student, failedError: err.message } as FailedStudent };
             })
     }
 
