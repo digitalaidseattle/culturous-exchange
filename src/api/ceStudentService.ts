@@ -51,6 +51,8 @@ class CEStudentService extends EntityService<Student> {
 
     // FIXME remove when time_zone added
     delete studentWithId.time_zone;
+    //Remove timeWindow from the student before insert
+    delete studentWithId.timeWindows;
     const updatedStudent = await super.insert(studentWithId, select);
 
     // FIXME remove when db updated
