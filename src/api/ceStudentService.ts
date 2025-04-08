@@ -39,14 +39,14 @@ class CEStudentService extends EntityService<Student> {
     }
   }
 
-  //FIX ME - temp static fields added for gender and time_zone
   async insert(entity: Partial<Student>, select?: string): Promise<Student> {
     if (!entity.name || !entity.age || !entity.country || !entity.email) {
       throw new Error("Name and Email are required fields.");
     }
+    const studentId = uuid();
     const studentWithId: Student = {
       ...entity,
-      id: uuid()
+      id: studentId
     } as Student;
 
     // FIXME remove when time_zone added
@@ -55,14 +55,11 @@ class CEStudentService extends EntityService<Student> {
     delete studentWithId.timeWindows;
     const updatedStudent = await super.insert(studentWithId, select);
 
-    // FIXME remove when db updated
     const timeWindows = entity.timeWindows!.map(orig => {
       return {
+        ...orig,
         id: uuid(),
-        student_id: studentWithId.id,
-        start_t: orig.start_t,
-        end_t: orig.end_t,
-        day_in_week: orig.day_in_week
+        student_id: studentId
       } as TimeWindow
     })
     await timeWindowService.batchInsert(timeWindows)

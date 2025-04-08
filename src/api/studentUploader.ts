@@ -11,6 +11,7 @@ import { timeWindowService } from "./ceTimeWindowService";
 import { FailedStudent, Student, TimeWindow } from "./types";
 import { studentService } from "./ceStudentService";
 
+
 class StudentUploader {
 
     changeToLowercase(object: any): any {
@@ -97,40 +98,41 @@ class StudentUploader {
         }
     }
 
+    async insertStudent(student: Student): Promise<{ success: boolean; student: Student | FailedStudent }> {
+        return timeWindowService
+            .getTimeZone(student.city!, student.country)
+            .then(tzData => {
+                student.time_zone = tzData.timezone;
+                timeWindowService.adjustTimeWindows(student, tzData.offset);
+                return studentService.insert(student)
+                    .then(inserted => {
+                        return { success: true, student: inserted };
+                    })
+                    .catch((err) => {
+                        console.error(`Student ${student.name} could not be inserted`);
+                        return { success: false, student: { ...student, failedError: err.message } };
+                    });
+            })
+            .catch((err) => {
+                return { success: false, student: { ...student, failedError: err.message } };
+            })
+    }
+
     async insert_from_excel(excel_file: File): Promise<{ successCount: number; failedStudents: FailedStudent[] }> {
         try {
-            let successCount = 0;
-            const failedStudents: FailedStudent[] = [];
-            const students = await this.get_students_from_excel(excel_file);
-            students.forEach(student => {
-                try {
-                    timeWindowService
-                        .getTimeZone(student.city!, student.country)
-                        .then(data => {
-                            if (data.timezone) {
-                                student.time_zone = data.timezone;
-                                timeWindowService.adjustTimeWindows(student, data.offset);
-                                studentService.insert(student)
-                                    .then(_updated => successCount++);
-                            } else {
-                                throw new Error(`Student ${student.name} has no time zone`);
+            return this.get_students_from_excel(excel_file)
+                .then(async students => {
+                    return Promise
+                        .all(students.map(student => this.insertStudent(student)))
+                        .then((resps) => {
+                            const successful = resps.filter(resp => resp.success);
+                            const failed = resps.filter(resp => !resp.success);
+                            return {
+                                successCount: successful.length,
+                                failedStudents: failed.map(resp => resp.student as FailedStudent)
                             }
                         })
-                } catch (error) {
-                    const failedStudent: FailedStudent = {
-                        ...student,
-                        failedError: error instanceof Error ? error.message : 'Unknown error'
-                    }
-                    failedStudents.push(failedStudent);
-                    if (error instanceof Error) {
-                        console.error(`Failed to insert student with ID ${student.id}:`, error.message);
-                    } else {
-                        console.error(`Failed to insert student with ID ${student.id}:`, error);
-                    }
-                }
-            });
-
-            return { successCount, failedStudents };
+                })
         } catch (error) {
             if (error instanceof Error) {
                 console.error('Error processing Excel file:', error.message);
