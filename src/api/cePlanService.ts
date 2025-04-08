@@ -8,7 +8,7 @@
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { v4 as uuidv4 } from 'uuid';
 import { EntityService } from "./entityService";
-import { Cohort, Identifier, Placement, Plan } from "./types";
+import { Cohort, Group, Identifier, Placement, Plan } from "./types";
 import { enrollmentService } from "./ceEnrollmentService";
 import { placementService } from "./cePlacementService";
 import { groupService } from "./ceGroupService";
@@ -50,21 +50,34 @@ class CEPlanService extends EntityService<Plan> {
     }
 
     async getById(entityId: string | number, select?: string): Promise<Plan | null> {
-        try {
-            const plan = await super.getById(entityId, select ?? '*, placement(*)');
-            if (plan) {
-                return {
-                    ...plan,
-                    placements: (plan as any).placement,
-                    groups: []
+        return super.getById(entityId, select ?? '*, placement(*), grouptable(*)')
+            .then((dbPlan: any) => {
+                if (dbPlan) {
+                    return {
+                        id: dbPlan.id,
+                        cohort_id: dbPlan.cohort_id,
+                        name: dbPlan.name,
+                        note: dbPlan.note,
+                        placements: dbPlan.placement,
+                        groups:
+                            dbPlan.grouptable ? dbPlan.grouptable.map((group: any) => {
+                                return {
+                                    id: group.id,
+                                    plan_id: group.plan_id,
+                                    name: group.name,
+                                    country_count: group.country_count,
+                                    students: []
+                                } as unknown as Group
+                            }) : []
+                    };
+                } else {
+                    return null
                 }
-            } else {
-                return null
-            }
-        } catch (err) {
-            console.error('Unexpected error during select:', err);
-            throw err;
-        }
+            })
+            .catch(err => {
+                console.error('Unexpected error during select:', err);
+                throw err;
+            });
     }
 
     async duplicate(plan: Plan): Promise<Plan> {

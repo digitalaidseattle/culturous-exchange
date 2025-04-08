@@ -50,7 +50,6 @@ export const StudentTable: React.FC = () => {
 
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
 
-
     const [showAddStudent, setShowAddStudent] = useState<boolean>(false);
     const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
 
@@ -59,23 +58,32 @@ export const StudentTable: React.FC = () => {
             rows: cohort.students ?? [],
             totalRowCount: cohort.students ? cohort.students.length : 0
         })
-        studentService.findUnenrolled()
-            .then(students => setUnenrolled(students))
     }, [cohort])
 
     const addStudent = () => {
-        alert(`Add student not implemented yet`)
+        studentService.findUnenrolled()
+            .then(students => {
+                setUnenrolled(students);
+                setShowAddStudent(true);
+            })
     }
-    
+
     const handleCloseStudentModal = () => {
-        setShowAddStudent(false)
+        setShowAddStudent(false);
     }
-    
-    function handleSubmit(studentIds: string[]) {
+
+    const handleAddStudent = (studentIds: string[]) => {
         cohortService.addStudents(cohort, studentIds)
             .then((resp) => {
-                console.log(resp)
-            });
+                console.log(resp);
+                notifications.success('Students added.');
+                setRefresh(refresh + 1);
+                setShowAddStudent(false);
+            })
+            .catch((err) => {
+                notifications.error('Error adding students.');
+                console.error(err);
+            })
     }
 
     const doDelete = () => {
@@ -182,7 +190,7 @@ export const StudentTable: React.FC = () => {
                 students={unEnrolled}
                 isOpen={showAddStudent}
                 onClose={handleCloseStudentModal}
-                onSubmit={handleSubmit} />
+                onSubmit={handleAddStudent} />
         </Box>
     );
 }
