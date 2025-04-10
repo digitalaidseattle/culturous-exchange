@@ -32,8 +32,6 @@ const AddStudentModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, students 
         onClose={onClose}
         PaperProps={{
           sx: { width: '40rem', maxWidth: '90vw' },
-          component: 'form',
-          onSubmit: handleSubmit,
         }}
       >
         <DialogTitle>Add Student</DialogTitle>
@@ -65,9 +63,7 @@ const AddStudentModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, students 
             type="submit"
             color="primary"
             variant="contained"
-          >
-            Submit
-          </Button>
+            onClick={handleSubmit}>Submit</Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
