@@ -56,8 +56,7 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
     const [initialized, setInitialized] = useState<boolean>(false);
 
     useEffect(() => {
-        setInitialized(false);
-        if (plan) {
+        if (plan && !initialized) {
             placementService.findByPlanId(plan.id)
                 .then(placements => {
                     const allGroups = placements
@@ -75,7 +74,7 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
                     setInitialized(true);
                 })
         }
-    }, [plan])
+    }, [plan, initialized])
 
     function handleChange(container: Map<string, unknown>, placement: Placement) {
         const newGroupId = container.get('containerId') as Identifier;
@@ -104,7 +103,9 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
 
     function seedGroups(): void {
         planGenerator.seedPlan(plan)
-            .then((updated) => console.log(updated))
+            .then(() => {
+                setInitialized(false);
+            })
             .catch((err) => console.error(err));
     }
 

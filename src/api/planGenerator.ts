@@ -35,14 +35,14 @@ class PlanGenerator {
                 } as Plan;
             });
 
-        plan.placements.forEach((placement, index) => {
-            // FIXME use algorithm to place students in group
-            const group = updatedPlan.groups[index % nGroups];
-            placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id })
-                .then(resp => console.log(resp))
-        });
-
-        return updatedPlan;
+        return Promise
+            .all(plan.placements.map((placement, index) => {
+                const group = updatedPlan.groups[index % nGroups];
+                return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id })
+            }))
+            .then(() => {
+                return updatedPlan
+            });
     }
 
 }
