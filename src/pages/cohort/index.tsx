@@ -16,6 +16,7 @@ import { TabPanel } from '../../components/TabPanel';
 import { TextEdit } from '../../components/TextEdit';
 import { PlansStack } from './PlansStack';
 import { StudentTable } from './StudentTable';
+import { useSearchParams } from 'react-router-dom';
 
 interface CohortContextType {
     cohort: Cohort,
@@ -28,6 +29,7 @@ export const CohortContext = createContext<CohortContextType>({
 });
 
 const CohortPage: React.FC = () => {
+    const [searchParams] = useSearchParams();
     const { id: cohortId } = useParams<string>();
     const notifications = useNotifications();
     const navigate = useNavigate();
@@ -53,6 +55,13 @@ const CohortPage: React.FC = () => {
                 })
         }
     }, [cohortId, refresh]);
+
+    useEffect(() => {
+        if (searchParams && searchParams.get('tab')) {
+            setTabValue(Number(searchParams.get('tab')));
+        }
+    }, [searchParams]);
+
 
     function handleNameChange(newText: string) {
         if (cohort && cohort.id) {
