@@ -7,7 +7,7 @@
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { EntityService } from "./entityService";
-import { Plan, Placement, Student, Identifier, Cohort } from "./types";
+import { Plan, Placement, Student, Identifier, Cohort, Group } from "./types";
 import { enrollmentService } from "./ceEnrollmentService";
 
 
