@@ -62,11 +62,8 @@ export const SetupStudents: React.FC = () => {
     totalRowCount: 0,
   });
 
-  // Whenever the plan changes, it grabs all the students assigned in that plan,
-  //   and enriches the placements with the full student info
-  //   — by matching placement.student_id to the actual Student object.
+  // Enrich the pageInfo with the placement students data
   useEffect(() => {
-
     if (plan && cohort) {
       placementService.getStudents(plan).then((students) => {
         const placedStudents = plan.placements.map((placement) => {
@@ -121,10 +118,10 @@ export const SetupStudents: React.FC = () => {
   };
 
   async function handleSubmit(studentIds: string[]) {
-    const resp = await planService.addStudents(plan, studentIds);
+    await planService.addStudents(plan, studentIds);
     notifications.success("Students added.");
     setRefresh(refresh + 1);
-    setShowAddStudent(false)
+    setShowAddStudent(false);
   }
 
   const removeStudent = () => {
@@ -180,7 +177,6 @@ export const SetupStudents: React.FC = () => {
         width: 100,
         type: "boolean",
         renderCell: (param: GridRenderCellParams) => {
-
           return (
             <StarFilled
               style={{

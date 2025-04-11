@@ -6,7 +6,7 @@ import { useParams } from "react-router";
 // project import
 import { Stack } from "@mui/material";
 
-import { RefreshContext } from '@digitalaidseattle/core';
+import { RefreshContext } from "@digitalaidseattle/core";
 import { planService } from "../../api/cePlanService";
 import { Cohort, Plan } from "../../api/types";
 import { PlanDetails } from "../../components/PlanDetails";
@@ -37,8 +37,11 @@ const PlanPage: React.FC = () => {
           setPlan(p);
           if (p.cohort_id) {
             cohortService.getById(p.cohort_id).then((cohort) => {
-              if (cohort) setCohort(cohort);
-              else console.error(`Cohort not found ${p.cohort_id}`);
+              if (cohort) {
+                setCohort(cohort);
+              } else {
+                console.error(`Cohort not found ${p.cohort_id}`);
+              }
             });
           }
         }
@@ -47,7 +50,8 @@ const PlanPage: React.FC = () => {
   }, [planId, refresh]);
 
   return (
-    plan && cohort && (
+    plan &&
+    cohort && (
       <PlanContext.Provider value={{ plan, setPlan }}>
         <CohortContext.Provider value={{ cohort, setCohort }}>
           <Stack gap={1}>

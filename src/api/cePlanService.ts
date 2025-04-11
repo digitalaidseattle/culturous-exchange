@@ -21,7 +21,7 @@ class CEPlanService extends EntityService<Plan> {
       cohort_id: cohort.id,
       note: "",
     } as Plan;
-    //
+    
     return enrollmentService.getStudents(cohort).then((students) => {
       return this.insert(proposed).then((plan) => {
         const placements = students.map((student) => {
