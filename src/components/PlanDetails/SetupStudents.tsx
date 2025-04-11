@@ -118,10 +118,18 @@ export const SetupStudents: React.FC = () => {
   };
 
   async function handleSubmit(studentIds: string[]) {
-    await planService.addStudents(plan, studentIds);
-    notifications.success("Students added.");
-    setRefresh(refresh + 1);
-    setShowAddStudent(false);
+    planService
+      .addStudents(plan, studentIds)
+      .then((resp) => {
+        console.log(resp);
+        notifications.success("Students added.");
+        setRefresh(refresh + 1);
+        setShowAddStudent(false);
+      })
+      .catch((err) => {
+        notifications.error("Error adding students.");
+        console.error(err);
+      });
   }
 
   const removeStudent = () => {
