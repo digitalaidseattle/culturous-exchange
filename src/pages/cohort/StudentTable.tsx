@@ -56,26 +56,38 @@ export const StudentTable: React.FC = () => {
   const [showAddStudent, setShowAddStudent] = useState<boolean>(false);
   const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
 
+
   useEffect(() => {
-    setPageInfo({
-      rows: cohort.students ?? [],
-      totalRowCount: cohort.students ? cohort.students.length : 0,
-    });
-    studentService.findUnenrolled().then((students) => setUnenrolled(students));
-  }, [cohort]);
+      setPageInfo({
+          rows: cohort.students ?? [],
+          totalRowCount: cohort.students ? cohort.students.length : 0
+      })
+  }, [cohort])
 
   const addStudent = () => {
-    setShowAddStudent(true);
-  };
+      studentService.findUnenrolled()
+          .then(students => {
+              setUnenrolled(students);
+              setShowAddStudent(true);
+          })
+  }
 
   const handleCloseStudentModal = () => {
-    setShowAddStudent(false);
-  };
+      setShowAddStudent(false);
+  }
 
-  function handleSubmit(studentIds: string[]) {
-    cohortService.addStudents(cohort, studentIds).then((resp) => {
-      console.log(resp);
-    });
+  const handleAddStudent = (studentIds: string[]) => {
+      cohortService.addStudents(cohort, studentIds)
+          .then((resp) => {
+              console.log(resp);
+              notifications.success('Students added.');
+              setRefresh(refresh + 1);
+              setShowAddStudent(false);
+          })
+          .catch((err) => {
+              notifications.error('Error adding students.');
+              console.error(err);
+          })
   }
 
   const doDelete = () => {
@@ -135,56 +147,55 @@ export const StudentTable: React.FC = () => {
   };
 
   return (
-    <Box>
-      <Stack margin={1} gap={1} direction="row" spacing={"1rem"}>
-        <Button
-          title="Add Student"
-          variant="contained"
-          color="primary"
-          onClick={addStudent}
-        >
-          {"Add Student"}
-        </Button>
-        <Button
-          title="RemoveStudent"
-          variant="contained"
-          color="primary"
-          disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
-          onClick={removeStudent}
-        >
-          {"Remove student"}
-        </Button>
-      </Stack>
-      {cohort && (
-        <DataGrid
-          apiRef={apiRef}
-          rows={pageInfo.rows}
-          columns={getColumns()}
-          paginationMode="client"
-          paginationModel={paginationModel}
-          rowCount={pageInfo.totalRowCount}
-          onPaginationModelChange={setPaginationModel}
-          sortingMode="client"
-          sortModel={sortModel}
-          onSortModelChange={setSortModel}
-          pageSizeOptions={[5, 10, 25, 100]}
-          checkboxSelection
-          onRowSelectionModelChange={setRowSelectionModel}
-          disableRowSelectionOnClick={true}
-        />
-      )}
-      <ConfirmationDialog
-        message={`Delete selected students?`}
-        open={openDeleteDialog}
-        handleConfirm={() => doDelete()}
-        handleCancel={() => setOpenDeleteDialog(false)}
-      />
-      <AddStudentModal
-        students={unEnrolled}
-        isOpen={showAddStudent}
-        onClose={handleCloseStudentModal}
-        onSubmit={handleSubmit}
-      />
-    </Box>
+      <Box>
+          <Stack margin={1} gap={1} direction="row" spacing={'1rem'}>
+              <Button
+                  title='Add Student'
+                  variant="contained"
+                  color="primary"
+                  onClick={addStudent}>
+                  {'Add Student'}
+              </Button>
+              <Button
+                  title='RemoveStudent'
+                  variant="contained"
+                  color="primary"
+                  disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
+                  onClick={removeStudent}>
+                  {'Remove student'}
+              </Button>
+          </Stack>
+          {cohort &&
+              <DataGrid
+                  apiRef={apiRef}
+                  rows={pageInfo.rows}
+                  columns={getColumns()}
+
+                  paginationMode='client'
+                  paginationModel={paginationModel}
+                  rowCount={pageInfo.totalRowCount}
+                  onPaginationModelChange={setPaginationModel}
+
+                  sortingMode='client'
+                  sortModel={sortModel}
+                  onSortModelChange={setSortModel}
+
+                  pageSizeOptions={[5, 10, 25, 100]}
+                  checkboxSelection
+                  onRowSelectionModelChange={setRowSelectionModel}
+                  disableRowSelectionOnClick={true}
+              />
+          }
+          <ConfirmationDialog
+              message={`Delete selected students?`}
+              open={openDeleteDialog}
+              handleConfirm={() => doDelete()}
+              handleCancel={() => setOpenDeleteDialog(false)} />
+          <AddStudentModal
+              students={unEnrolled}
+              isOpen={showAddStudent}
+              onClose={handleCloseStudentModal}
+              onSubmit={handleAddStudent} />
+      </Box>
   );
-};
+}
