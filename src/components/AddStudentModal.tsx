@@ -10,17 +10,17 @@ interface Props {
 }
 
 const AddStudentModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, students }) => {
-  const [seletedStudents, setSeletedStudents] = useState<string[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
 
-  function handleChange(event: SelectChangeEvent<typeof seletedStudents>) {
+  function handleChange(event: SelectChangeEvent<typeof selectedStudents>) {
     const ids = event.target.value as unknown as string[];
-    setSeletedStudents(ids);
+    setSelectedStudents(ids);
   }
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault(); // prevent form from refreshing the page
-    onSubmit([...seletedStudents]);
-    setSeletedStudents([]);
+    onSubmit([...selectedStudents]);
+    setSelectedStudents([]);
   }
 
   function findStudent(id: string) {
@@ -46,14 +46,14 @@ const AddStudentModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, students 
               <Select
                 sx={{ m: 1, width: '100%' }}
                 multiple
-                value={seletedStudents}
+                value={selectedStudents}
                 onChange={handleChange}
                 input={<OutlinedInput label="Tag" />}
                 renderValue={(selected) => selected.map(s_id => findStudent(s_id)!.name).join(', ')}
               >
                 {students.map(student => (
                   <MenuItem key={student.id} value={student.id}>
-                    <Checkbox checked={seletedStudents.find(s_id => s_id === student.id) !== undefined} />
+                    <Checkbox checked={selectedStudents.find(s_id => s_id === student.id) !== undefined} />
                     <ListItemText primary={student.name} />
                   </MenuItem>
                 ))}

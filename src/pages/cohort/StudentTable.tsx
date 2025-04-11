@@ -65,7 +65,6 @@ export const StudentTable: React.FC = () => {
 
     const addStudent = () => {
         setShowAddStudent(true)
-        // alert(`Add student not implemented yet`)
     }
 
     const handleCloseStudentModal = () => {

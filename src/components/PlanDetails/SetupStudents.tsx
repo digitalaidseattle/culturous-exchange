@@ -66,6 +66,7 @@ export const SetupStudents: React.FC = () => {
   //   and enriches the placements with the full student info
   //   — by matching placement.student_id to the actual Student object.
   useEffect(() => {
+
     if (plan && cohort) {
       placementService.getStudents(plan).then((students) => {
         const placedStudents = plan.placements.map((placement) => {
@@ -121,7 +122,9 @@ export const SetupStudents: React.FC = () => {
 
   async function handleSubmit(studentIds: string[]) {
     const resp = await planService.addStudents(plan, studentIds);
+    notifications.success("Students added.");
     setRefresh(refresh + 1);
+    setShowAddStudent(false)
   }
 
   const removeStudent = () => {
