@@ -13,11 +13,7 @@ CREATE TABLE student_tbl (
     availabilities JSONB DEFAULT '[]' -- Storing availabilities as a JSON array
 );
 
-<<<<<<< HEAD
--- -- Insert the first student
-=======
 -- Insert the first student
->>>>>>> 2820e7995195fee90c3a0846d217f3854c16fad2
 -- INSERT INTO student_tbl (first_name, last_name, age, email, city, state, country, availabilities)
 -- VALUES ('Student1', 17, 's1@gmail.com', 'Seattle', 'Washington', 'US', '[]');
 
