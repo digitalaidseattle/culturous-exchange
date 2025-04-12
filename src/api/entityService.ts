@@ -24,12 +24,12 @@ abstract class EntityService<T extends Entity> {
         return ['=', '>', '<']
     }
 
-    async find(queryModel: QueryModel): Promise<PageInfo<T>> {
+    async find(queryModel: QueryModel, select?: string): Promise<PageInfo<T>> {
         try {
             const fModel = queryModel as any;
             let query: any = supabaseClient
                 .from(this.tableName)
-                .select('*', { count: 'exact' })
+                .select(select ?? '*', { count: 'exact' })
                 .range(queryModel.page, queryModel.page + queryModel.pageSize - 1)
                 .order(queryModel.sortField, { ascending: queryModel.sortDirection === 'asc' });
             if (fModel.filterField && fModel.filterOperator && fModel.filterValue) {

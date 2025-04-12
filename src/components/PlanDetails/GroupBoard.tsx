@@ -6,7 +6,7 @@
  *
  */
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 
 import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
 import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
@@ -18,10 +18,12 @@ import {
     Stack,
     Typography
 } from "@mui/material";
+import { format } from "date-fns";
 import { placementService } from "../../api/cePlacementService";
+import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
 import { Identifier, Placement } from "../../api/types";
-import { PlanProps } from "../../utils/props";
+import { PlanContext } from "../../pages/plan";
 
 export const StudentCard: React.FC<{ placement: Placement }> = ({ placement }) => {
     const anchor = placement.anchor ? 'green' : 'gray;'
@@ -50,7 +52,9 @@ export const StudentCard: React.FC<{ placement: Placement }> = ({ placement }) =
 
 type PlacementWrapper = Placement & DDType
 
-export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
+export const GroupBoard: React.FC = () => {
+    const { plan, setPlan } = useContext(PlanContext);
+
     const [placements, setPlacements] = useState<Placement[]>([]);
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
     const [initialized, setInitialized] = useState<boolean>(false);
@@ -94,17 +98,27 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
     }
 
     const headerRenderer = (cat: DDCategory<string>): ReactNode => {
+        const group = plan.groups.find(g => g.id === cat.value);
+        const timeWindows = group ? group.time_windows ?? undefined : undefined;
         return (
-            <Box>
+            <Stack>
                 <Typography variant="h6">Group: {cat.label}</Typography>
-            </Box>
+                {timeWindows && timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography> )}
+            </Stack>
         )
     };
 
     function seedGroups(): void {
         planGenerator.seedPlan(plan)
-            .then(() => {
-                setInitialized(false);
+            .then(() => setInitialized(false))
+            .catch((err) => console.error(err));
+    }
+
+    function calculate(): void {
+        planEvaluator.evaluate(plan)
+            .then(evaluated => {
+                setPlan(evaluated);
+                setInitialized(false)
             })
             .catch((err) => console.error(err));
     }
@@ -112,13 +126,23 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
     return (
         <>
             <Box sx={{ marginTop: 1 }}  >
-                <Button
-                    color="primary"
-                    variant="contained"
-                    onClick={seedGroups}
-                >
-                    Seed (WIP)
-                </Button>
+                <Stack direction={'row'} spacing={1} >
+                    <Typography variant="h5">Group Board</Typography>
+
+                    <Button
+                        color="primary"
+                        variant="contained"
+                        onClick={seedGroups}
+                    >
+                        Seed (WIP)
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="inherit"
+                        onClick={calculate}>
+                        Calculate (WIP)
+                    </Button>
+                </Stack>
                 <>{initialized &&
                     <DragAndDrop
                         onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}

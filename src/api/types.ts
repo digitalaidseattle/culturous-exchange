@@ -78,6 +78,8 @@ type Group = Entity & {
     plan_id: Identifier;
     name: string;
     country_count: number;
+    placements?: Placement[];
+    time_windows?: TimeWindow[];
 }
 
 export type {

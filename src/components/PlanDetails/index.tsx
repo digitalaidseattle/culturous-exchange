@@ -1,5 +1,5 @@
 /**
- *  App.tsx
+ *  PlanDetails/index.tsx
  *
  *  @copyright 2025 Digital Aid Seattle
  *
@@ -8,7 +8,7 @@
 import { useNotifications } from '@digitalaidseattle/core';
 import { MainCard } from '@digitalaidseattle/mui';
 import { Box, Button, Stack, Step, StepLabel, Stepper } from '@mui/material';
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { planService } from '../../api/cePlanService';
 import { PlanContext } from '../../pages/plan';
 import { TextEdit } from "../TextEdit";
@@ -16,46 +16,22 @@ import { GroupBoard } from "./GroupBoard";
 import { GroupSize } from './GroupSize';
 import { SetupStudents } from './SetupStudents';
 
-// const TabbedDetails: React.FC<PlanProps> = ({ plan }) => {
-//     const [value, setValue] = useState<number>(0);
-
-//     const changeTab = (_event: React.SyntheticEvent, newValue: number) => {
-//         setValue(newValue);
-//     };
-
-//     return (
-//         <>
-//             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-//                 <Tabs value={value} onChange={changeTab} aria-label="basic tabs example">
-//                     <Tab label="Setup Students" />
-//                     <Tab label="Number of groups" />
-//                     <Tab label="Review" />
-//                 </Tabs>
-//             </Box>
-//             <TabPanel value={value} index={0}>
-//                 <SetupStudents plan={plan} />
-//             </TabPanel>
-//             <TabPanel value={value} index={1}>
-//                 <GroupCount plan={plan} />
-//             </TabPanel>
-//             <TabPanel value={value} index={2}>
-//                 <GroupBoard plan={plan} />
-//             </TabPanel>
-//         </>);
-// }
-
 const SteppedDetails: React.FC = () => {
-    const {plan} = useContext(PlanContext);
-
+    const { plan } = useContext(PlanContext);
     const steps = ['Setup Students', 'Group Size', 'Review'];
-
     const [activeStep, setActiveStep] = useState(0);
 
-    const handleBack = () => {
+    useEffect(() => {
+        if (plan && plan.groups.length) {
+            setActiveStep(2);
+        }
+    }, [plan])
+
+    function handleBack() {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
 
-    const handleNext = () => {
+    function handleNext() {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
 
@@ -97,7 +73,7 @@ const SteppedDetails: React.FC = () => {
                     </Box>
                     {activeStep === 0 && <SetupStudents />}
                     {activeStep === 1 && <GroupSize plan={plan} />}
-                    {activeStep === 2 && <GroupBoard plan={plan} />}
+                    {activeStep === 2 && <GroupBoard />}
                 </>
             </Box>
         </>);
@@ -126,13 +102,11 @@ export const PlanDetails: React.FC = () => {
     // TODO add breadcrumbs
     return (
         <MainCard sx={{ width: '100%' }}>
-                <Stack spacing={{ xs: 1, sm: 4 }}>
+            <Stack spacing={{ xs: 1, sm: 4 }}>
                 <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
                     <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
                     <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
                 </Stack>
-
-                {/* <TabbedDetails plan={plan} /> */}
                 <SteppedDetails />
             </Stack>
         </MainCard>
