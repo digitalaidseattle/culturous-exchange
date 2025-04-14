@@ -58,27 +58,27 @@ export const StudentTable: React.FC = () => {
 
 
   useEffect(() => {
-      setPageInfo({
-          rows: cohort.students ?? [],
-          totalRowCount: cohort.students ? cohort.students.length : 0
-      })
+    setPageInfo({
+      rows: cohort.students ?? [],
+      totalRowCount: cohort.students ? cohort.students.length : 0
+    })
   }, [cohort])
 
   const addStudent = () => {
-      studentService.findUnenrolled()
-          .then(students => {
-              setUnenrolled(students);
-              setShowAddStudent(true);
-          })
+    studentService.findUnenrolled()
+      .then(students => {
+        setUnenrolled(students);
+        setShowAddStudent(true);
+      })
   }
 
   const handleCloseStudentModal = () => {
-      setShowAddStudent(false);
+    setShowAddStudent(false);
   }
 
   const handleAddStudent = (studentIds: string[]) => {
       cohortService.addStudents(cohort, studentIds)
-          .then((resp) => {
+          .then(() => {
               notifications.success('Students added.');
               setRefresh(refresh + 1);
               setShowAddStudent(false);
@@ -146,55 +146,55 @@ export const StudentTable: React.FC = () => {
   };
 
   return (
-      <Box>
-          <Stack margin={1} gap={1} direction="row" spacing={'1rem'}>
-              <Button
-                  title='Add Student'
-                  variant="contained"
-                  color="primary"
-                  onClick={addStudent}>
-                  {'Add Student'}
-              </Button>
-              <Button
-                  title='RemoveStudent'
-                  variant="contained"
-                  color="primary"
-                  disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
-                  onClick={removeStudent}>
-                  {'Remove student'}
-              </Button>
-          </Stack>
-          {cohort &&
-              <DataGrid
-                  apiRef={apiRef}
-                  rows={pageInfo.rows}
-                  columns={getColumns()}
+    <Box>
+      <Stack margin={1} gap={1} direction="row" spacing={'1rem'}>
+        <Button
+          title='Add Student'
+          variant="contained"
+          color="primary"
+          onClick={addStudent}>
+          {'Add Student'}
+        </Button>
+        <Button
+          title='RemoveStudent'
+          variant="contained"
+          color="primary"
+          disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
+          onClick={removeStudent}>
+          {'Remove student'}
+        </Button>
+      </Stack>
+      {cohort &&
+        <DataGrid
+          apiRef={apiRef}
+          rows={pageInfo.rows}
+          columns={getColumns()}
 
-                  paginationMode='client'
-                  paginationModel={paginationModel}
-                  rowCount={pageInfo.totalRowCount}
-                  onPaginationModelChange={setPaginationModel}
+          paginationMode='client'
+          paginationModel={paginationModel}
+          rowCount={pageInfo.totalRowCount}
+          onPaginationModelChange={setPaginationModel}
 
-                  sortingMode='client'
-                  sortModel={sortModel}
-                  onSortModelChange={setSortModel}
+          sortingMode='client'
+          sortModel={sortModel}
+          onSortModelChange={setSortModel}
 
-                  pageSizeOptions={[5, 10, 25, 100]}
-                  checkboxSelection
-                  onRowSelectionModelChange={setRowSelectionModel}
-                  disableRowSelectionOnClick={true}
-              />
-          }
-          <ConfirmationDialog
-              message={`Delete selected students?`}
-              open={openDeleteDialog}
-              handleConfirm={() => doDelete()}
-              handleCancel={() => setOpenDeleteDialog(false)} />
-          <AddStudentModal
-              students={unEnrolled}
-              isOpen={showAddStudent}
-              onClose={handleCloseStudentModal}
-              onSubmit={handleAddStudent} />
-      </Box>
+          pageSizeOptions={[5, 10, 25, 100]}
+          checkboxSelection
+          onRowSelectionModelChange={setRowSelectionModel}
+          disableRowSelectionOnClick={true}
+        />
+      }
+      <ConfirmationDialog
+        message={`Delete selected students?`}
+        open={openDeleteDialog}
+        handleConfirm={() => doDelete()}
+        handleCancel={() => setOpenDeleteDialog(false)} />
+      <AddStudentModal
+        students={unEnrolled}
+        isOpen={showAddStudent}
+        onClose={handleCloseStudentModal}
+        onSubmit={handleAddStudent} />
+    </Box>
   );
 }

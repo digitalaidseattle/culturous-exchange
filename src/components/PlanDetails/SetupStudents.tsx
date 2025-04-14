@@ -111,7 +111,7 @@ export const SetupStudents: React.FC = () => {
   async function handleSubmit(studentIds: string[]) {
     planService
       .addStudents(plan, studentIds)
-      .then((resp) => {
+      .then(() => {
         notifications.success("Students added.");
         setRefresh(refresh + 1);
         setShowAddStudent(false);
