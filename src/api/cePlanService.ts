@@ -79,15 +79,10 @@ class CEPlanService extends EntityService<Plan> {
             note: dbPlan.note,
             placements: dbPlan.placement,
             groups:
-              dbPlan.grouptable ? dbPlan.grouptable.map((group: any) => {
-                return {
-                  id: group.id,
-                  plan_id: group.plan_id,
-                  name: group.name,
-                  country_count: group.country_count,
-                  students: []
-                } as unknown as Group
-              }) : []
+              dbPlan.grouptable ? dbPlan.grouptable.map((group: any) => ({
+                ...group,
+                students: []
+              } as Group)) : []
           };
         } else {
           return null
@@ -108,7 +103,6 @@ class CEPlanService extends EntityService<Plan> {
     } as unknown as Plan
     return this.insert(proposed)
       .then(async duplicatePlan => {
-        console.log('duplicatePlan', duplicatePlan)
         const duplicatePlacements = plan.placements
           .map(placement => {
             return {

@@ -65,19 +65,10 @@ export const SetupStudents: React.FC = () => {
   // Enrich the pageInfo with the placement students data
   useEffect(() => {
     if (plan && cohort) {
-      placementService.getStudents(plan).then((students) => {
-        const placedStudents = plan.placements.map((placement) => {
-          return {
-            ...placement,
-            student: students.find(
-              (student) => student.id === placement.student_id
-            ),
-          } as Placement;
-        });
-
+      placementService.getEnrichedPlacements(plan).then((enrichedPlacements) => {
         setPageInfo({
-          rows: placedStudents,
-          totalRowCount: placedStudents.length,
+          rows: enrichedPlacements,
+          totalRowCount: enrichedPlacements.length,
         });
       });
 
@@ -121,7 +112,6 @@ export const SetupStudents: React.FC = () => {
     planService
       .addStudents(plan, studentIds)
       .then((resp) => {
-        console.log(resp);
         notifications.success("Students added.");
         setRefresh(refresh + 1);
         setShowAddStudent(false);
