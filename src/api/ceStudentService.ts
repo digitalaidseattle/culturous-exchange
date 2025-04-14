@@ -8,7 +8,8 @@ import { supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
 import { timeWindowService } from './ceTimeWindowService';
 import { EntityService } from "./entityService";
-import { Student, TimeWindow } from "./types";
+import { FailedStudent, Student, TimeWindow } from "./types";
+import { studentUploader } from './studentUploader';
 
 class CEStudentService extends EntityService<Student> {
 
@@ -43,6 +44,7 @@ class CEStudentService extends EntityService<Student> {
     if (!entity.name || !entity.age || !entity.country || !entity.email) {
       throw new Error("Name and Email are required fields.");
     }
+    console.log('entity: ', entity)
     const studentId = uuid();
     const studentWithId: Student = {
       ...entity,
@@ -50,7 +52,7 @@ class CEStudentService extends EntityService<Student> {
     } as Student;
 
     // FIXME remove when time_zone added
-    delete studentWithId.time_zone;
+    // delete studentWithId.time_zone;
     //Remove timeWindow from the student before insert
     delete studentWithId.timeWindows;
     const updatedStudent = await super.insert(studentWithId, select);
@@ -64,6 +66,21 @@ class CEStudentService extends EntityService<Student> {
     })
     await timeWindowService.batchInsert(timeWindows)
     return updatedStudent;
+  }
+
+  async insertSingle(student: Student, selection: string[]): Promise<{ success: boolean, student: Student | FailedStudent }> {
+    try {
+      const partialWindows = studentUploader.mapTimeWindows(selection);
+      student.timeWindows = partialWindows as TimeWindow[];
+      const tzData = await timeWindowService.getTimeZone(student.city!, student.country);
+      student.time_zone = tzData.timezone;
+      timeWindowService.adjustTimeWindows(student, tzData.offset);
+      const inserted = await this.insert(student);
+      return { success: true, student: inserted}
+    } catch (err: any) {
+      console.error(`Failed to insert student ${student.name}`, err);
+      return { success: false, student: {...student, failedError:  err.message} }
+    }
   }
 
 }
