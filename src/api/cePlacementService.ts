@@ -34,6 +34,17 @@ class CEPlacementService extends EntityService<Placement> {
       });
   }
 
+  // TODO : NEW, there's something wrong with original findByPlanId need FIX.
+  async findByPlan(planId: Identifier): Promise<Placement[]> {
+    return await supabaseClient
+      .from('placement')
+      .select('*')
+      .eq('plan_id', planId)
+      .then(resp => {
+        return resp.data as Placement[] || [];
+      });
+  }
+
   async getStudents(plan: Plan): Promise<Student[]> {
     return await supabaseClient
       .from('placement')
