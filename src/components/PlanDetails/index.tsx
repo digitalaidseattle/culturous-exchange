@@ -21,12 +21,6 @@ const SteppedDetails: React.FC = () => {
     const steps = ['Setup Students', 'Group Size', 'Review'];
     const [activeStep, setActiveStep] = useState(0);
 
-    useEffect(() => {
-        if (plan && plan.groups.length) {
-            setActiveStep(2);
-        }
-    }, [plan])
-
     function handleBack() {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
