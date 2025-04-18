@@ -13,25 +13,24 @@ import {
   GridRenderCellParams,
   GridRowId,
   GridRowSelectionModel,
-  GridSortModel,
-  useGridApiRef,
+  useGridApiRef
 } from "@mui/x-data-grid";
 
 // third-party
 
 // project import
 import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
+import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { PageInfo } from "@digitalaidseattle/supabase";
 import { placementService } from "../../api/cePlacementService";
 import { planService } from "../../api/cePlanService";
 import { Placement } from "../../api/types";
-import { PlanContext } from "../../pages/plan";
 import AddStudentModal from "../../components/AddStudentModal";
-import { ConfirmationDialog } from "@digitalaidseattle/mui";
+import { PlanContext } from "../../pages/plan";
 
 // TODO delete temp
-import { Student } from "../../api/types";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
+import { Student } from "../../api/types";
 import { CohortContext } from "../../pages/cohort";
 
 const PAGE_SIZE = 10;
