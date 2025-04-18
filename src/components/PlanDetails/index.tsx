@@ -8,7 +8,7 @@
 import { useNotifications } from '@digitalaidseattle/core';
 import { MainCard } from '@digitalaidseattle/mui';
 import { Box, Button, Stack, Step, StepLabel, Stepper } from '@mui/material';
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { planService } from '../../api/cePlanService';
 import { PlanContext } from '../../pages/plan';
 import { TextEdit } from "../TextEdit";
