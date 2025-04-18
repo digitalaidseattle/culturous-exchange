@@ -48,6 +48,8 @@ export const SetupStudents: React.FC = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
   const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
 
+  const [columns, setColumns] = useState<GridColDef[]>([]);
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: PAGE_SIZE,
@@ -59,6 +61,11 @@ export const SetupStudents: React.FC = () => {
     rows: [],
     totalRowCount: 0,
   });
+
+  useEffect(() => {
+    setColumns(getColumns());
+  }, []);
+
 
   // Enrich the pageInfo with the placement students data
   useEffect(() => {
@@ -291,7 +298,7 @@ export const SetupStudents: React.FC = () => {
           getRowId={(row) => row.plan_id + ":" + row.student_id}
           apiRef={apiRef}
           rows={pageInfo.rows}
-          columns={getColumns()}
+          columns={columns}
           paginationModel={paginationModel}
           rowCount={pageInfo.totalRowCount}
           onPaginationModelChange={setPaginationModel}
