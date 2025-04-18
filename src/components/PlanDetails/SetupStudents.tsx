@@ -52,9 +52,7 @@ export const SetupStudents: React.FC = () => {
     page: 0,
     pageSize: PAGE_SIZE,
   });
-  const [sortModel, setSortModel] = useState<GridSortModel>([
-    { field: "created_at", sort: "desc" },
-  ]);
+
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>();
   const [pageInfo, setPageInfo] = useState<PageInfo<Placement>>({
@@ -210,6 +208,7 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.name}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.name} ${params.row.student.name}`,
       },
       {
         field: "email",
@@ -218,6 +217,7 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.email}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.email} ${params.row.student.email}`,
       },
       {
         field: "city",
@@ -226,6 +226,7 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.city}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.city} ${params.row.student.city}`,
       },
       {
         field: "country",
@@ -234,11 +235,14 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.country}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.country} ${params.row.student.country}`,
       },
       {
         field: "availability",
         headerName: "Availability",
         width: 140,
+        sortable: false,
+        filterable: false
       },
     ];
   };
@@ -288,14 +292,10 @@ export const SetupStudents: React.FC = () => {
           apiRef={apiRef}
           rows={pageInfo.rows}
           columns={getColumns()}
-          paginationMode="server"
           paginationModel={paginationModel}
           rowCount={pageInfo.totalRowCount}
           onPaginationModelChange={setPaginationModel}
-          sortingMode="server"
-          sortModel={sortModel}
-          onSortModelChange={setSortModel}
-          pageSizeOptions={[5, 10, 25, 100]}
+          pageSizeOptions={[10, 25, 50, 100]}
           checkboxSelection
           onRowSelectionModelChange={setRowSelectionModel}
           disableRowSelectionOnClick={true}
