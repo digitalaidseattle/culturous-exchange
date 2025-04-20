@@ -9,41 +9,61 @@ import { v4 as uuidv4 } from 'uuid';
 import { enrollmentService } from './ceEnrollmentService';
 import { studentService } from './ceStudentService';
 import { EntityService } from "./entityService";
-import { Cohort, Enrollment } from "./types";
+import { Cohort, Enrollment, Identifier } from "./types";
 
 
 class CECohortService extends EntityService<Cohort> {
 
+    async removeStudents(cohort: Cohort, studentIds: Identifier[]): Promise<boolean> {
+        return Promise.all(
+            studentIds.map(id => enrollmentService
+                .deleteEnrollment({ cohort_id: cohort.id, student_id: id } as Enrollment)))
+            .then(() => true)
+    }
+
+
+    private createEnrollments(cohort: Cohort, studentIds: Identifier[]): Enrollment[] {
+        return studentIds.map(id => {
+            return {
+                cohort_id: cohort.id,
+                student_id: id
+            } as Enrollment
+        })
+    }
+    
+    async addStudents(cohort: Cohort, studentIds: string[]): Promise<any> {
+        try {
+            const enrollments = this.createEnrollments(cohort, studentIds);
+            return enrollmentService
+                .batchInsert(enrollments)
+        } catch (err) {
+            console.error('Unexpected error during select:', err);
+            throw err;
+        }
+    }
+
     async create(): Promise<Cohort> {
         return studentService.findUnenrolled()
             .then(students => {
-                return cohortService.insert(
-                    {
-                        id: uuidv4(),
-                        name: `(New) Cohort`,
-                    } as Cohort
-                )
+                return cohortService
+                    .insert({ id: uuidv4(), name: `(New) Cohort`, } as Cohort)
                     .then(cohort => {
-                        const enrollments = students.map(student => {
-                            return {
-                                cohort_id: cohort.id,
-                                student_id: student.id
-                            } as Enrollment
-                        });
-                        enrollmentService.batchInsert(enrollments)
-                        return cohort
+                        const studentIds = students.map(student => student.id?.toString());
+                        const enrollments = this.createEnrollments(cohort, studentIds)
+                        return enrollmentService.batchInsert(enrollments)
+                            .then(() => cohort)
                     })
             })
     }
 
     async getById(entityId: string | number, select?: string): Promise<Cohort | null> {
         try {
-            const cohort = await super.getById(entityId, select ?? '*, plan(*)')
+            const cohort = await super.getById(entityId, select ?? '*, enrollment(*), plan(*)');
             if (cohort) {
-                console.log(cohort)
+                // TODO should we lookup students here?
                 return {
                     ...cohort,
-                    plans: []   // TODO join into plans
+                    plans: (cohort as any).plan
                 }
             } else {
                 return null
@@ -54,13 +74,13 @@ class CECohortService extends EntityService<Cohort> {
         }
     }
 
-    async update(entityId: string, updatedFields: Partial<Cohort>, select?: string): Promise<Cohort> {
+    async update(entityId: Identifier, updatedFields: Partial<Cohort>, select?: string): Promise<Cohort> {
         try {
-            const cohort = await super.update(entityId, updatedFields, select)
-            if (cohort) {
+            const dbCohort = await super.update(entityId, updatedFields, select ?? '*, enrollment(*), plan(*)')
+            if (dbCohort) {
                 return {
-                    ...cohort,
-                    plans: []   // TODO join into plans
+                    ...dbCohort,
+                    plans: (dbCohort as any).plan
                 }
             } else {
                 throw new Error('Unexpected error during update:');
@@ -72,8 +92,8 @@ class CECohortService extends EntityService<Cohort> {
 
     }
 
+
 }
 
 const cohortService = new CECohortService('cohort')
 export { cohortService };
-

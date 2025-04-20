@@ -50,7 +50,7 @@ const FailedStudentsModal: React.FC<Props> = ( { isModalOpen, onClose, failedStu
               <List key={idx}>
                 <ListItem>
                   <ListItemText>
-                    {`ID: ${student.id} | Name: ${student.name} | Error: ${student.failedError}` }
+                    {`Name: ${student.name} | Error: ${student.failedError}` }
                   </ListItemText>
                 </ListItem>
               </List>

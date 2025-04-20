@@ -10,26 +10,25 @@ type Entity = {
     id: Identifier;
 }
 
-type Availability = {
-    id: string;
-    startDate: Date;
-    endDate: Date;
-}
-
-type SelectAvailability = {
-    day: string;
-    start: string;
-    end: string;
+type TimeWindow = Entity & {
+    student_id: Identifier | null;
+    group_id: Identifier | null;
+    day_in_week: string;
+    start_t: string;
+    end_t: string;
+    start_date_time?: Date;  // FIXME mark as optional until DB updated
+    end_date_time?: Date;  // FIXME mark as optional until DB updated
 }
 
 type Student = Entity & {
     name: string;
     age: number | null;
     email: string;
-    city: string;
-    state: string;
+    city?: string; // FIXME mark as optional until DB updated
     country: string;
-    availabilities: SelectAvailability[];
+    gender: string;
+    time_zone?: string; 
+    timeWindows?: TimeWindow[]; // FIXME mark as optional until DB updated
 }
 
 type FailedStudent = Student & {
@@ -46,26 +45,14 @@ type StudentField = {
 type Cohort = Entity & {
     name: string;
     plans: Plan[];
-    enrolled: Student[];
-}
-
-type Group = Entity & {
-    groupNo: string;
-    studentIds: Identifier[];
+    enrollments: Enrollment[];
+    students: Student[];
 }
 
 type Enrollment = Entity & {
     cohort_id: Identifier;
     student_id: Identifier;
-}
-
-type Placement = Entity & {
-    cohort_id: Identifier;
-    student_id: Identifier;
-    student: Student;
-    anchor: boolean;
-    priority: boolean;
-    availabilities: Availability[];
+    student?: Student;
 }
 
 type Plan = Entity & {
@@ -73,18 +60,34 @@ type Plan = Entity & {
     cohort_id: Identifier;
     placements: Placement[]
     groups: Group[];
-    rating: number;
-    notes: string;
+    note: string;
+}
+
+type Placement = Entity & {
+    plan_id: Identifier;
+    student_id: Identifier;
+    group_id?: Identifier; // will be null when unassigned
+    student?: Student;
+    group?: Group;
+    anchor: boolean;
+    priority: number; // review should be boolean?
+    time_windows?: TimeWindow[];
+}
+
+type Group = Entity & {
+    plan_id: Identifier;
+    name: string;
+    country_count: number;
 }
 
 export type {
-    Availability,
+    TimeWindow,
     Enrollment,
     Entity,
     FailedStudent,
+    Identifier,
     Student,
     StudentField,
-    SelectAvailability,
     Cohort,
     Group,
     Placement,

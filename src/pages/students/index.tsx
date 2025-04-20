@@ -23,28 +23,40 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import FailedStudentsModal from './FailedStudentsModal';
-import { FailedStudent, SelectAvailability, Student, StudentField } from '../../api/types';
+import { FailedStudent, Student } from '../../api/types';
 import AddStudentModal from './AddStudentModal';
 import { studentService } from '../../api/ceStudentService';
+import { createContext } from 'react';
+
+interface StudentContextType {
+    student: Student,
+    setStudent: React.Dispatch<React.SetStateAction<Student>>
+}
+
+export const StudentContext = createContext<StudentContextType>({
+    student: {} as Student,
+    setStudent: () => {}
+})
+
+interface TimeWindowContextType {
+    selection: string[],
+    setSelection: React.Dispatch<React.SetStateAction<string[]>>
+}
+
+export const TimeWindowSelectionContext = createContext<TimeWindowContextType>({
+    selection: [] as string[],
+    setSelection: () => []
+})
 
 const UploadSection = () => {
+    const { student, setStudent } = useContext(StudentContext)
+    const { setSelection } = useContext(TimeWindowSelectionContext)
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
     const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
-    const [availabilities, setAvailabilities] = useState<SelectAvailability[]>([])
-
-    const studentField: StudentField[] = [
-        { key: 'name', label: 'Full Name', type: 'string', required: true },
-        { key: 'age', label: 'Age', type: 'number', required: true },
-        { key: 'email', label: 'Email', type: 'email', required: true },
-        { key: 'city', label: 'City', type: 'string', required: true },
-        { key: 'state', label: 'State', type: 'string', required: true },
-        { key: 'country', label: 'Country', type: 'string', required: true },
-    ];
-
 
     const handleUpdate = (resp: any) => {
         setRefresh(refresh + 1);
@@ -63,19 +75,21 @@ const UploadSection = () => {
     }
 
     const handleCloseAddStudentModal = () => {
-        setAvailabilities([]);
+        setStudent({} as Student)
+        setSelection([]);
+        setStudent({} as Student)
+        setSelection([]);
         setIsAddStudentModalOpen(false)
     }
 
+    //FIX ME, TimeWindow removed from form. Should be sent in separate API call to associate with the student in a service, i.e. Promise.all
     const handleAddStudent = async (event: any) => {
         event.preventDefault();
         setRefresh(refresh + 1);
-        const formData = new FormData(event.currentTarget);
-        const formJson = Object.fromEntries((formData).entries()) as Partial<Student>;
-        formJson.availabilities = availabilities;
 
         try {
-            const resp = await studentService.insert(formJson);
+            const resp = await studentService.insert(student);
+            setStudent({} as Student);
             notifications.success(`Success. Added student: - id ${resp.id} | - name: ${resp.name}`);
             handleCloseAddStudentModal();
         } catch (err: any) {
@@ -114,19 +128,22 @@ const UploadSection = () => {
                 isAddStudentModalOpen={isAddStudentModalOpen}
                 onClose={() => handleCloseAddStudentModal()}
                 handleAddStudent={handleAddStudent}
-                studentField={studentField}
-                availabilities={availabilities}
-                setAvailabilities={setAvailabilities}
             />
         </Stack>
     )
 }
 const StudentsPage: React.FC = () => {
+    const [student, setStudent] = useState<Student>({} as Student);
+    const [selection, setSelection] = useState<string[]>([]);
     return (
-        <MainCard title="Students Page">
-            <UploadSection />
-            <StudentsDetailsTable />
-        </MainCard>
+        <StudentContext.Provider value={{student, setStudent}}>
+            <TimeWindowSelectionContext.Provider value={{selection, setSelection}}>
+                <MainCard title="Students Page">
+                    <UploadSection />
+                    <StudentsDetailsTable />
+                </MainCard>
+            </TimeWindowSelectionContext.Provider>
+        </StudentContext.Provider>
     )
 };
 

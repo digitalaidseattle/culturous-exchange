@@ -6,7 +6,7 @@
  */
 
 import { PageInfo, QueryModel, supabaseClient } from "@digitalaidseattle/supabase";
-import { Entity } from "./types";
+import { Entity, Identifier } from "./types";
 
 abstract class EntityService<T extends Entity> {
 
@@ -88,17 +88,17 @@ abstract class EntityService<T extends Entity> {
         }
     }
 
-    async batchInsert(entities: T[], select?: string): Promise<T> {
+    async batchInsert(entities: T[], select?: string): Promise<T[]> {
         try {
             const { data, error } = await supabaseClient
                 .from(this.tableName)
                 .insert(entities)
-                .select(select ?? '*')
+                .select(select ?? '*');
             if (error) {
-                console.error('Error inserting entity:', error.message);
-                throw new Error('Failed to insert entity');
+                console.error('Error inserting entity:', error);
+                throw new Error('Failed to insert entity: ' + error.message);
             }
-            return data as unknown as T;
+            return data as unknown as T[];
         } catch (err) {
             console.error('Unexpected error during insertion:', err);
             throw err;
@@ -123,7 +123,7 @@ abstract class EntityService<T extends Entity> {
         }
     }
 
-    async update(entityId: string, updatedFields: Partial<T>, select?: string): Promise<T> {
+    async update(entityId: Identifier, updatedFields: Partial<T>, select?: string): Promise<T> {
         try {
             const { data, error } = await supabaseClient.from(this.tableName)
                 .update(updatedFields)
@@ -141,7 +141,7 @@ abstract class EntityService<T extends Entity> {
         }
     }
 
-    async delete(entityId: string): Promise<void> {
+    async delete(entityId: Identifier): Promise<void> {
         try {
             const { error } = await supabaseClient
                 .from(this.tableName)
