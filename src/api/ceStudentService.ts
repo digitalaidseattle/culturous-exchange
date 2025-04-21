@@ -9,7 +9,6 @@ import { v4 as uuid } from 'uuid';
 import { timeWindowService } from './ceTimeWindowService';
 import { EntityService } from "./entityService";
 import { FailedStudent, Student, TimeWindow } from "./types";
-import { studentUploader } from './studentUploader';
 
 class CEStudentService extends EntityService<Student> {
 
@@ -69,7 +68,7 @@ class CEStudentService extends EntityService<Student> {
 
   async insertSingle(student: Student, selection: string[]): Promise<{ success: boolean, student: Student | FailedStudent }> {
     try {
-      const partialWindows = studentUploader.mapTimeWindows(selection);
+      const partialWindows = timeWindowService.mapTimeWindows(selection);
       student.timeWindows = partialWindows as TimeWindow[];
       const tzData = await timeWindowService.getTimeZone(student.city!, student.country);
       student.time_zone = tzData.timezone;
