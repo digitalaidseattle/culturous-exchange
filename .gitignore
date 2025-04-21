@@ -29,3 +29,4 @@ coverage
 .env.production
 supabase/.branches/_current_branch
 supabase/.temp/cli-latest
+.temp/*

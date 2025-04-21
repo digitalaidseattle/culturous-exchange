@@ -44,7 +44,6 @@ class CEStudentService extends EntityService<Student> {
     if (!entity.name || !entity.age || !entity.country || !entity.email) {
       throw new Error("Name and Email are required fields.");
     }
-    console.log('entity: ', entity)
     const studentId = uuid();
     const studentWithId: Student = {
       ...entity,
