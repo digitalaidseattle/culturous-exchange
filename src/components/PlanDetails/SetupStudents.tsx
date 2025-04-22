@@ -270,7 +270,7 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.name}</Typography>;
         },
-        valueGetter: (params) => `${params.row.student.name} ${params.row.student.name}`,
+        valueGetter: (params) => `${params.row.student.name}`,
       },
       {
         field: "email",
@@ -279,7 +279,7 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.email}</Typography>;
         },
-        valueGetter: (params) => `${params.row.student.email} ${params.row.student.email}`,
+        valueGetter: (params) => `${params.row.student.email}`,
       },
       {
         field: "city",
@@ -288,7 +288,7 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.city}</Typography>;
         },
-        valueGetter: (params) => `${params.row.student.city} ${params.row.student.city}`,
+        valueGetter: (params) => `${params.row.student.city}`,
       },
       {
         field: "country",
@@ -297,7 +297,7 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.country}</Typography>;
         },
-        valueGetter: (params) => `${params.row.student.country} ${params.row.student.country}`,
+        valueGetter: (params) => `${params.row.student.country}`,
       },
       {
         field: "availability",
