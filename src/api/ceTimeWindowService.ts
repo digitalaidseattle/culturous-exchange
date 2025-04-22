@@ -93,6 +93,50 @@ class CETimeWindowService extends EntityService<TimeWindow> {
         return intersect;
     }
 
+    mapTimeWindows(entries: string[]): Partial<TimeWindow>[] {
+        let timeWindows: Partial<TimeWindow>[] = [];
+        entries.forEach(entry => {
+            timeWindows = timeWindows.concat(this.createTimeWindows(entry))
+        });
+        return timeWindows;
+    }
+
+    createTimeWindows(entry: string): Partial<TimeWindow>[] {
+        switch (entry.trim()) {
+            case "All options work for me":
+                return [
+                    { day_in_week: 'Friday', start_t: '07:00:00', end_t: '12:00:00' },
+                    { day_in_week: 'Friday', start_t: '12:00:00', end_t: '17:00:00' },
+                    { day_in_week: 'Friday', start_t: '17:00:00', end_t: '22:00:00' },
+                    { day_in_week: 'Saturday', start_t: '07:00:00', end_t: '12:00:00' },
+                    { day_in_week: 'Saturday', start_t: '12:00:00', end_t: '17:00:00' },
+                    { day_in_week: 'Saturday', start_t: '17:00:00', end_t: '22:00:00' },
+                    { day_in_week: 'Sunday', start_t: '07:00:00', end_t: '12:00:00' },
+                    { day_in_week: 'Sunday', start_t: '12:00:00', end_t: '17:00:00' },
+                    { day_in_week: 'Sunday', start_t: '17:00:00', end_t: '22:00:00' }
+                ];
+            case "Friday morning (7am-12pm)":
+                return [{ day_in_week: 'Friday', start_t: '07:00:00', end_t: '12:00:00' }];
+            case "Friday afternoon (12pm-5 pm)":
+                return [{ day_in_week: 'Friday', start_t: '12:00:00', end_t: '17:00:00' }];
+            case "Friday evening (5pm-10pm)":
+                return [{ day_in_week: 'Friday', start_t: '17:00:00', end_t: '22:00:00' }];
+            case "Saturday morning (7am-12pm)":
+                return [{ day_in_week: 'Saturday', start_t: '07:00:00', end_t: '12:00:00' }];
+            case "Saturday afternoon (12pm-5pm)":
+                return [{ day_in_week: 'Saturday', start_t: '12:00:00', end_t: '17:00:00' }];
+            case "Saturday evening (5pm-10pm)":
+                return [{ day_in_week: 'Saturday', start_t: '17:00:00', end_t: '22:00:00' }];
+            case "Sunday morning (7am-12pm)":
+                return [{ day_in_week: 'Sunday', start_t: '07:00:00', end_t: '12:00:00' }];
+            case "Sunday afternoon (12pm-5pm)":
+                return [{ day_in_week: 'Sunday', start_t: '12:00:00', end_t: '17:00:00' }];
+            case "Sunday evening (5pm-10pm)":
+                return [{ day_in_week: 'Sunday', start_t: '17:00:00', end_t: '22:00:00' }];
+            default:
+                return [];
+        }
+    }
 
     toDateTime(day: number, time: string, offset: number): Date {
         const sTimes = time
