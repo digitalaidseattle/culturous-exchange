@@ -50,7 +50,7 @@ export const TimeWindowSelectionContext = createContext<TimeWindowContextType>({
 
 const UploadSection = () => {
     const { student, setStudent } = useContext(StudentContext)
-    const { setSelection } = useContext(TimeWindowSelectionContext)
+    const { selection, setSelection } = useContext(TimeWindowSelectionContext)
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
@@ -82,15 +82,14 @@ const UploadSection = () => {
         setIsAddStudentModalOpen(false)
     }
 
-    //FIX ME, TimeWindow removed from form. Should be sent in separate API call to associate with the student in a service, i.e. Promise.all
     const handleAddStudent = async (event: any) => {
         event.preventDefault();
         setRefresh(refresh + 1);
-
         try {
-            const resp = await studentService.insert(student);
+            const resp = await studentService.insertSingle(student, selection);
             setStudent({} as Student);
-            notifications.success(`Success. Added student: - id ${resp.id} | - name: ${resp.name}`);
+            setSelection([]);
+            notifications.success(`Success. Added student: - id ${resp.student.id} | - name: ${resp.student.name}`);
             handleCloseAddStudentModal();
         } catch (err: any) {
             console.error(`Insertion failed: ${err.message}`);
