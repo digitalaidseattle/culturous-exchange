@@ -46,7 +46,7 @@ class CECohortService extends EntityService<Cohort> {
     async create(): Promise<Cohort> {
         return studentService.findUnenrolled()
             .then(students => {
-                return cohortService
+                return this
                     .insert({ id: uuidv4(), name: `(New) Cohort`, } as Cohort)
                     .then(cohort => {
                         const studentIds = students.map(student => student.id?.toString());
@@ -97,9 +97,9 @@ class CECohortService extends EntityService<Cohort> {
         try {
             return supabaseClient
                 .from(this.tableName)
-                .select('*, student(*), enrollment(*), plan(*)')
-                .single()
-                .then(resp => resp.data)
+                .select('*, student(*), plan(*), enrollment(*)')
+                .order('created_at', {ascending: false})
+                .then(resp => resp.data ? resp.data[0] : null)
         } catch (err) {
             console.error('Unexpected error during select:', err);
             throw err;
