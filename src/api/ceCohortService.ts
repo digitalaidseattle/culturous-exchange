@@ -99,7 +99,9 @@ class CECohortService extends EntityService<Cohort> {
                 .from(this.tableName)
                 .select('*, student(*), plan(*), enrollment(*)')
                 .order('created_at', {ascending: false})
-                .then(resp => resp.data ? resp.data[0] : null)
+                .limit(1)
+                .single()
+                .then(resp => resp.data)
         } catch (err) {
             console.error('Unexpected error during select:', err);
             throw err;
