@@ -8,7 +8,7 @@ import { supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
 import { timeWindowService } from './ceTimeWindowService';
 import { EntityService } from "./entityService";
-import { Student } from "./types";
+import { FailedStudent, Student, TimeWindow } from "./types";
 
 class CEStudentService extends EntityService<Student> {
 
@@ -39,30 +39,46 @@ class CEStudentService extends EntityService<Student> {
     }
   }
 
-  //FIX ME - temp static fields added for gender and time_zone
   async insert(entity: Partial<Student>, select?: string): Promise<Student> {
     if (!entity.name || !entity.age || !entity.country || !entity.email) {
       throw new Error("Name and Email are required fields.");
     }
+    const studentId = uuid();
     const studentWithId: Student = {
       ...entity,
-      id: uuid()
+      id: studentId
     } as Student;
 
-    delete studentWithId.original;
     // FIXME remove when time_zone added
-    delete studentWithId.time_zone;
-    const timeWindows = entity.original!.map(orig => {
+    // delete studentWithId.time_zone;
+    //Remove timeWindow from the student before insert
+    delete studentWithId.timeWindows;
+    const updatedStudent = await super.insert(studentWithId, select);
+
+    const timeWindows = entity.timeWindows!.map(orig => {
       return {
         ...orig,
         id: uuid(),
-        student_id: studentWithId.id,
-      }
+        student_id: studentId
+      } as TimeWindow
     })
-
-    const updatedStudent = await super.insert(studentWithId, select);
     await timeWindowService.batchInsert(timeWindows)
     return updatedStudent;
+  }
+
+  async insertSingle(student: Student, selection: string[]): Promise<{ success: boolean, student: Student | FailedStudent }> {
+    try {
+      const partialWindows = timeWindowService.mapTimeWindows(selection);
+      student.timeWindows = partialWindows as TimeWindow[];
+      const tzData = await timeWindowService.getTimeZone(student.city!, student.country);
+      student.time_zone = tzData.timezone;
+      timeWindowService.adjustTimeWindows(student, tzData.offset);
+      const inserted = await this.insert(student);
+      return { success: true, student: inserted}
+    } catch (err: any) {
+      console.error(`Failed to insert student ${student.name}`, err);
+      return { success: false, student: {...student, failedError:  err.message} }
+    }
   }
 
 }

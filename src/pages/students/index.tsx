@@ -23,7 +23,7 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import FailedStudentsModal from './FailedStudentsModal';
-import { FailedStudent, Student, TimeWindow } from '../../api/types';
+import { FailedStudent, Student } from '../../api/types';
 import AddStudentModal from './AddStudentModal';
 import { studentService } from '../../api/ceStudentService';
 import { createContext } from 'react';
@@ -38,15 +38,25 @@ export const StudentContext = createContext<StudentContextType>({
     setStudent: () => {}
 })
 
+interface TimeWindowContextType {
+    selection: string[],
+    setSelection: React.Dispatch<React.SetStateAction<string[]>>
+}
+
+export const TimeWindowSelectionContext = createContext<TimeWindowContextType>({
+    selection: [] as string[],
+    setSelection: () => []
+})
+
 const UploadSection = () => {
     const { student, setStudent } = useContext(StudentContext)
+    const { selection, setSelection } = useContext(TimeWindowSelectionContext)
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
     const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
-    const [availabilities, setAvailabilities] = useState<TimeWindow[]>([])
 
     const handleUpdate = (resp: any) => {
         setRefresh(refresh + 1);
@@ -65,19 +75,21 @@ const UploadSection = () => {
     }
 
     const handleCloseAddStudentModal = () => {
-        setAvailabilities([]);
+        setStudent({} as Student)
+        setSelection([]);
+        setStudent({} as Student)
+        setSelection([]);
         setIsAddStudentModalOpen(false)
     }
 
-    //FIX ME, TimeWindow removed from form. Should be sent in separate API call to associate with the student in a service, i.e. Promise.all
     const handleAddStudent = async (event: any) => {
         event.preventDefault();
         setRefresh(refresh + 1);
-
         try {
-            const resp = await studentService.insert(student);
+            const resp = await studentService.insertSingle(student, selection);
             setStudent({} as Student);
-            notifications.success(`Success. Added student: - id ${resp.id} | - name: ${resp.name}`);
+            setSelection([]);
+            notifications.success(`Success. Added student: - id ${resp.student.id} | - name: ${resp.student.name}`);
             handleCloseAddStudentModal();
         } catch (err: any) {
             console.error(`Insertion failed: ${err.message}`);
@@ -115,20 +127,21 @@ const UploadSection = () => {
                 isAddStudentModalOpen={isAddStudentModalOpen}
                 onClose={() => handleCloseAddStudentModal()}
                 handleAddStudent={handleAddStudent}
-                availabilities={availabilities}
-                setAvailabilities={setAvailabilities}
             />
         </Stack>
     )
 }
 const StudentsPage: React.FC = () => {
     const [student, setStudent] = useState<Student>({} as Student);
+    const [selection, setSelection] = useState<string[]>([]);
     return (
         <StudentContext.Provider value={{student, setStudent}}>
-            <MainCard title="Students Page">
-                <UploadSection />
-                <StudentsDetailsTable />
-            </MainCard>
+            <TimeWindowSelectionContext.Provider value={{selection, setSelection}}>
+                <MainCard title="Students Page">
+                    <UploadSection />
+                    <StudentsDetailsTable />
+                </MainCard>
+            </TimeWindowSelectionContext.Provider>
         </StudentContext.Provider>
     )
 };

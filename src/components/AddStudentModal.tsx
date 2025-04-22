@@ -1,6 +1,20 @@
-import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, ListItemText, MenuItem, OutlinedInput, Select, SelectChangeEvent, Stack } from '@mui/material';
-import React, { useState } from 'react';
-import { Student } from '../api/types';
+import {
+  Button,
+  Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  ListItemText,
+  MenuItem,
+  OutlinedInput,
+  Select,
+  SelectChangeEvent,
+  Stack,
+} from "@mui/material";
+import React, { useState } from "react";
+import { Student } from "../api/types";
 
 interface Props {
   students: Student[];
@@ -9,20 +23,27 @@ interface Props {
   onSubmit: (studentIds: string[]) => void;
 }
 
-const AddStudentModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, students }) => {
-  const [seletedStudents, setSeletedStudents] = useState<string[]>([]);
+const AddStudentModal: React.FC<Props> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  students,
+}) => {
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
 
-  function handleChange(event: SelectChangeEvent<typeof seletedStudents>) {
+  function handleChange(event: SelectChangeEvent<typeof selectedStudents>) {
     const ids = event.target.value as unknown as string[];
-    setSeletedStudents(ids);
+    setSelectedStudents(ids);
   }
 
-  function handleSubmit() {
-    onSubmit(seletedStudents)
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault(); // prevent form from refreshing the page
+    onSubmit([...selectedStudents]);
+    setSelectedStudents([]);
   }
 
   function findStudent(id: string) {
-    return students.find(student => id === student.id)
+    return students.find((student) => id === student.id);
   }
 
   return (
@@ -32,26 +53,30 @@ const AddStudentModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, students 
         onClose={onClose}
         PaperProps={{
           sx: { width: '40rem', maxWidth: '90vw' },
-          component: 'form',
-          onSubmit: handleSubmit,
         }}
       >
         <DialogTitle>Add Student</DialogTitle>
         <DialogContent>
-          <Stack sx={{ display: 'flex', flexWrap: 'wrap' }}>
-
+          <Stack sx={{ display: "flex", flexWrap: "wrap" }}>
             <FormControl sx={{ m: 1, minWidth: 120 }}>
               <Select
-                sx={{ m: 1, width: '100%' }}
+                sx={{ m: 1, width: "100%" }}
                 multiple
-                value={seletedStudents}
+                value={selectedStudents}
                 onChange={handleChange}
                 input={<OutlinedInput label="Tag" />}
-                renderValue={(selected) => selected.map(s_id => findStudent(s_id)!.name).join(', ')}
+                renderValue={(selected) =>
+                  selected.map((s_id) => findStudent(s_id)!.name).join(", ")
+                }
               >
-                {students.map(student => (
+                {students.map((student) => (
                   <MenuItem key={student.id} value={student.id}>
-                    <Checkbox checked={seletedStudents.find(s_id => s_id === student.id) !== undefined} />
+                    <Checkbox
+                      checked={
+                        selectedStudents.find((s_id) => s_id === student.id) !==
+                        undefined
+                      }
+                    />
                     <ListItemText primary={student.name} />
                   </MenuItem>
                 ))}
@@ -65,14 +90,11 @@ const AddStudentModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, students 
             type="submit"
             color="primary"
             variant="contained"
-          >
-            Submit
-          </Button>
+            onClick={handleSubmit}>Submit</Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
   );
-}
+};
 
 export default AddStudentModal;
-

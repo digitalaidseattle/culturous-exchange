@@ -26,3 +26,6 @@ coverage
 .firebase
 .env
 
+.env.production
+supabase/.branches/_current_branch
+supabase.temp/
