@@ -69,8 +69,18 @@ type Placement = Entity & {
     group_id?: Identifier; // will be null when unassigned
     student?: Student;
     group?: Group;
+    /**
+     * Whether this student is an anchor student for the plan.
+     * Anchor students are key participants that should be prioritized in group assignments.
+     */
     anchor: boolean;
-    priority: number; // review should be boolean?
+
+    /**
+     * Priority level of the student in this plan.
+     * 0 = normal priority
+     * 1 = high priority
+     */
+    priority: number;
     time_windows?: TimeWindow[];
 }
 
