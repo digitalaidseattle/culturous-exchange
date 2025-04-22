@@ -8,7 +8,7 @@
  */
 import { read, utils } from "xlsx";
 import { timeWindowService } from "./ceTimeWindowService";
-import { FailedStudent, Student, TimeWindow } from "./types";
+import { FailedStudent, Student } from "./types";
 import { studentService } from "./ceStudentService";
 
 
@@ -23,51 +23,6 @@ class StudentUploader {
         return lowered;
     }
 
-    mapTimeWindows(entries: string[]): Partial<TimeWindow>[] {
-        let timeWindows: Partial<TimeWindow>[] = [];
-        entries.forEach(entry => {
-            timeWindows = timeWindows.concat(this.createTimeWindows(entry))
-        });
-        return timeWindows;
-    }
-
-    createTimeWindows(entry: string): Partial<TimeWindow>[] {
-        switch (entry.trim()) {
-            case "All options work for me":
-                return [
-                    { day_in_week: 'Friday', start_t: '07:00:00', end_t: '12:00:00' },
-                    { day_in_week: 'Friday', start_t: '12:00:00', end_t: '17:00:00' },
-                    { day_in_week: 'Friday', start_t: '17:00:00', end_t: '22:00:00' },
-                    { day_in_week: 'Saturday', start_t: '07:00:00', end_t: '12:00:00' },
-                    { day_in_week: 'Saturday', start_t: '12:00:00', end_t: '17:00:00' },
-                    { day_in_week: 'Saturday', start_t: '17:00:00', end_t: '22:00:00' },
-                    { day_in_week: 'Sunday', start_t: '07:00:00', end_t: '12:00:00' },
-                    { day_in_week: 'Sunday', start_t: '12:00:00', end_t: '17:00:00' },
-                    { day_in_week: 'Sunday', start_t: '17:00:00', end_t: '22:00:00' }
-                ];
-            case "Friday morning (7am-12pm)":
-                return [{ day_in_week: 'Friday', start_t: '07:00:00', end_t: '12:00:00' }];
-            case "Friday afternoon (12pm-5 pm)":
-                return [{ day_in_week: 'Friday', start_t: '12:00:00', end_t: '17:00:00' }];
-            case "Friday evening (5pm-10pm)":
-                return [{ day_in_week: 'Friday', start_t: '17:00:00', end_t: '22:00:00' }];
-            case "Saturday morning (7am-12pm)":
-                return [{ day_in_week: 'Saturday', start_t: '07:00:00', end_t: '12:00:00' }];
-            case "Saturday afternoon (12pm-5pm)":
-                return [{ day_in_week: 'Saturday', start_t: '12:00:00', end_t: '17:00:00' }];
-            case "Saturday evening (5pm-10pm)":
-                return [{ day_in_week: 'Saturday', start_t: '17:00:00', end_t: '22:00:00' }];
-            case "Sunday morning (7am-12pm)":
-                return [{ day_in_week: 'Sunday', start_t: '07:00:00', end_t: '12:00:00' }];
-            case "Sunday afternoon (12pm-5pm)":
-                return [{ day_in_week: 'Sunday', start_t: '12:00:00', end_t: '17:00:00' }];
-            case "Sunday evening (5pm-10pm)":
-                return [{ day_in_week: 'Sunday', start_t: '17:00:00', end_t: '22:00:00' }];
-            default:
-                return [];
-        }
-    }
-
     createStudent(dict: any): Student {
         const times = dict['please mark all times that would be possible for the online group session on the weekend (based in your time zone)'];
         return {
@@ -77,7 +32,7 @@ class StudentUploader {
             city: dict['home city (and state if applicable)'],
             country: dict['home country:'].trim(),
             gender: dict['gender'].trim(),
-            timeWindows: this.mapTimeWindows(times.split(','))
+            timeWindows: timeWindowService.mapTimeWindows(times.split(','))
         } as Student
     }
 
