@@ -3,7 +3,7 @@
  *
  * Example of integrating tickets with data-grid
  */
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 // material-ui
 import { Box, Button, Stack, Typography } from "@mui/material";
@@ -40,7 +40,7 @@ export const SetupStudents: React.FC = () => {
   const apiRef = useGridApiRef();
   const notifications = useNotifications();
 
-  const { plan, setPlan } = useContext(PlanContext);
+  const { plan } = useContext(PlanContext);
   const { cohort } = useContext(CohortContext);
   const { refresh, setRefresh } = useContext(RefreshContext);
 
@@ -78,26 +78,56 @@ export const SetupStudents: React.FC = () => {
     }
   }, [plan, cohort]);
 
-  const applyAnchor = () => {
-    rowSelectionModel?.forEach((n: GridRowId) => {
-      const row = pageInfo.rows.find((r) => r.id === n);
-      if (row) {
-        row.anchor = true;
-      }
-    });
-    // TODO save
-    setPageInfo({ ...pageInfo });
+  const applyAnchor = async () => {
+    if (!rowSelectionModel?.length) return;
+
+    try {
+      const promises = rowSelectionModel.map((n: GridRowId) => {
+        const [planId, studentId] = (n as string).split(':');
+        return placementService.updatePlacement(planId, studentId, { anchor: true });
+      });
+
+      await Promise.all(promises);
+      notifications.success('Students set as anchors');
+      
+      // Optimistic update
+      const updatedRows = pageInfo.rows.map((row: Placement) => {
+        if (rowSelectionModel.includes(`${row.plan_id}:${row.student_id}`)) {
+          return { ...row, anchor: true };
+        }
+        return row;
+      });
+      setPageInfo({ ...pageInfo, rows: updatedRows });
+    } catch (error) {
+      console.error('Error setting anchors:', error);
+      notifications.error('Failed to set students as anchors');
+    }
   };
 
-  const applyPriority = () => {
-    rowSelectionModel?.forEach((n: GridRowId) => {
-      const row = pageInfo.rows.find((r) => r.id === n);
-      if (row) {
-        row.priority = 1;
-      }
-    });
-    // TODO save
-    setPageInfo({ ...pageInfo });
+  const applyPriority = async () => {
+    if (!rowSelectionModel?.length) return;
+
+    try {
+      const promises = rowSelectionModel.map((n: GridRowId) => {
+        const [planId, studentId] = (n as string).split(':');
+        return placementService.updatePlacement(planId, studentId, { priority: 1 });
+      });
+
+      await Promise.all(promises);
+      notifications.success('Students set as priority');
+      
+      // Optimistic update
+      const updatedRows = pageInfo.rows.map((row: Placement) => {
+        if (rowSelectionModel.includes(`${row.plan_id}:${row.student_id}`)) {
+          return { ...row, priority: 1 };
+        }
+        return row;
+      });
+      setPageInfo({ ...pageInfo, rows: updatedRows });
+    } catch (error) {
+      console.error('Error setting priorities:', error);
+      notifications.error('Failed to set students as priority');
+    }
   };
 
   const addStudent = () => {
@@ -141,30 +171,56 @@ export const SetupStudents: React.FC = () => {
     setOpenDeleteDialog(false);
   };
 
-  const toggleAnchor = (placement: Placement) => {
-    placementService
-      .updatePlacement(placement.plan_id, placement.student_id, {
-        anchor: !placement.anchor,
-      })
-      .then(() => {
-        // TODO be smarter about updating
-        planService
-          .getById(plan.id!)
-          .then((updated) => setPlan({ ...updated! }));
-      });
+  const toggleAnchor = async (placement: Placement) => {
+    // Optimistic update
+    const updatedRows = pageInfo.rows.map((row: Placement) => {
+      if (row.id === placement.id) {
+        return { ...row, anchor: !placement.anchor };
+      }
+      return row;
+    });
+    setPageInfo({ ...pageInfo, rows: updatedRows });
+
+    try {
+      await placementService.updatePlacement(
+        placement.plan_id,
+        placement.student_id,
+        { anchor: !placement.anchor }
+      );
+      notifications.success(`Student ${placement.anchor ? 'removed from' : 'set as'} anchor`);
+    } catch (error) {
+      console.error('Error toggling anchor:', error);
+      notifications.error('Failed to update student anchor status');
+      // Revert optimistic update
+      setPageInfo({ ...pageInfo });
+    }
   };
 
-  const togglePriority = (placement: Placement) => {
-    placementService
-      .updatePlacement(placement.plan_id, placement.student_id, {
-        priority: placement.priority === 0 ? 1 : 0,
-      })
-      .then(() => {
-        // TODO be smarter about updating
-        planService
-          .getById(plan.id!)
-          .then((updated) => setPlan({ ...updated! }));
-      });
+  const togglePriority = async (placement: Placement) => {
+    const newPriority = placement.priority === 0 ? 1 : 0;
+    
+    // Optimistic update
+    const updatedRows = pageInfo.rows.map((row: Placement) => {
+      if (row.id === placement.id) {
+        return { ...row, priority: newPriority };
+      }
+      return row;
+    });
+    setPageInfo({ ...pageInfo, rows: updatedRows });
+
+    try {
+      await placementService.updatePlacement(
+        placement.plan_id,
+        placement.student_id,
+        { priority: newPriority }
+      );
+      notifications.success(`Student ${newPriority === 1 ? 'set as' : 'removed from'} priority`);
+    } catch (error) {
+      console.error('Error toggling priority:', error);
+      notifications.error('Failed to update student priority status');
+      // Revert optimistic update
+      setPageInfo({ ...pageInfo });
+    }
   };
 
   const getColumns = (): GridColDef[] => {
