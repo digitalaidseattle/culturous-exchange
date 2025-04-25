@@ -54,6 +54,7 @@ class StudentUploader {
     }
 
     async insertStudent(student: Student): Promise<{ success: boolean; student: Student | FailedStudent }> {
+        // const resp = { success: null, student: null }; consider building out this object and reassignined for the reutnr statements. The validation logic would go here, and if the student passes, they would get put through to the timewinow service below
         return timeWindowService
             .getTimeZone(student.city!, student.country)
             .then(tzData => {
