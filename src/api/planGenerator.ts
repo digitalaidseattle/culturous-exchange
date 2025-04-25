@@ -14,39 +14,58 @@ const MAX_SIZE = 10;
 
 class PlanGenerator {
 
-    async seedPlan(plan: Plan): Promise<Plan> {
-        // FIXME: should use info from the plan to determine the number of groups
-        const nGroups = plan.placements ? Math.ceil(plan.placements.length / MAX_SIZE) : 0;
+  async seedPlan(plan: Plan, groupSize: number): Promise<Plan> {
+    const nGroups = groupSize;
 
-        const groups = Array.from({ length: nGroups }, (_, groupNo) => {
-            return {
-                id: uuid(),
-                plan_id: plan.id,
-                name: `Group ${groupNo}`,
-                country_count: 0
-            } as Group;
-        });
+    // create groups arrays that has group objects.
+    const groups = Array.from({ length: nGroups }, (_, groupNo) => {
+      return {
+        id: uuid(),
+        plan_id: plan.id,
+        name: `Group ${groupNo}`,
+        country_count: 0
+      } as Group;
+    });
 
-        const updatedPlan = await groupService.batchInsert(groups)
-            .then(() => {
-                return {
-                    ...plan,
-                    groups: groups
-                } as Plan;
-            });
+    console.log('Created groups:', groups);
+    console.log('Plan:', plan);
 
-        return Promise
-            .all(plan.placements.map((placement, index) => {
-                const group = updatedPlan.groups[index % nGroups];
-                return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id })
-            }))
-            .then(() => {
-                return updatedPlan
-            });
-    }
+    // Insert into groups table
+    const updatedPlan = await groupService.batchInsert(groups)
+      .then(() => {
+        return {
+          ...plan,
+          groups: groups
+        } as Plan;
+      });
+
+    // First, handle anchor students
+    const anchorPlacements = plan.placements.filter(p => p.anchor);
+    console.log('Anchor students:', anchorPlacements);
+
+    // Distribute anchor students evenly across groups
+    const anchorPromises = anchorPlacements.map((placement, index) => {
+      const group = updatedPlan.groups[index % nGroups];
+      return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
+    });
+
+    // Then handle remaining students
+    const nonAnchorPlacements = plan.placements.filter(p => !p.anchor);
+    console.log('Non-anchor students:', nonAnchorPlacements);
+
+    const nonAnchorPromises = nonAnchorPlacements.map((placement, index) => {
+      const group = updatedPlan.groups[index % nGroups];
+      return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
+    });
+
+    // Execute all placement updates
+    return Promise.all([...anchorPromises, ...nonAnchorPromises])
+      .then(() => {
+        return updatedPlan;
+      });
+  }
 
 }
 
 const planGenerator = new PlanGenerator()
 export { planGenerator };
-

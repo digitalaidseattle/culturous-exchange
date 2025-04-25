@@ -1,4 +1,3 @@
-
 /**
  *  GroupCount.tsx
  *
@@ -6,58 +5,58 @@
  *
  */
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import {
-    Box,
-    Card,
-    CardContent,
-    Slider,
-    Stack,
-    Typography
+  Box,
+  Card,
+  CardContent,
+  Slider,
+  Stack,
+  Typography
 } from "@mui/material";
-import { PlanProps } from "../../utils/props";
+import { PlanContext } from "../../pages/plan";
+import { StepperContext } from "./index";
 
-export const GroupSize: React.FC<PlanProps> = ({ plan }) => {
-    const [values, setValues] = useState<number[]>([0, 10]);
+export const GroupSize: React.FC = () => {
+  const { plan } = useContext(PlanContext);
+  const { groupSize, setGroupSize } = useContext(StepperContext);
+  const [min, setMin] = useState<number>(2);
+  const [max, setMax] = useState<number>(10);
 
-    const [min, setMin] = useState<number>(5);
-    const [max, setMax] = useState<number>(10);
+  useEffect(() => {
+    // TODO base min & max on student counts
+    setMin(2);
+    setMax(10);
+    setGroupSize(5);
+  }, [plan, setGroupSize]);
 
-    useEffect(() => {
-        // TODO base values, min, & max on student counts
-        setValues([5, 10])
-        setMin(5);
-        setMax(10);
-    }, [plan])
+  function handleChange(_event: Event, newValue: number | number[]): void {
+    setGroupSize(newValue as number);
+  }
 
-    function handleChange(_event: Event, newValue: number | number[]): void {
-        console.log(newValue)
-        setValues(newValue as number[]);
-    }
-
-    return (
-        <>
-            <Card>
-                <CardContent>
-                    <Stack direction={'row'} padding={5} spacing={5}>
-                        <Typography gutterBottom sx={{ color: 'text.primary', fontSize: 14 }}>
-                            Group Size
-                        </Typography>
-                        <Box sx={{ width: 400 }}>
-                            <Slider
-                                aria-label="Always visible"
-                                value={values}
-                                step={1}
-                                min={min}
-                                max={max}
-                                valueLabelDisplay="on"
-                                onChange={handleChange}
-                            />
-                        </Box>
-                    </Stack>
-                </CardContent>
-            </Card>
-        </>
-    )
+  return (
+    <>
+      <Card>
+        <CardContent>
+          <Stack direction={'row'} padding={5} spacing={5}>
+            <Typography gutterBottom sx={{ color: 'text.primary', fontSize: 14 }}>
+              Group Size: {groupSize}
+            </Typography>
+            <Box sx={{ width: 400 }}>
+              <Slider
+                aria-label="Group size"
+                value={groupSize}
+                step={1}
+                min={min}
+                max={max}
+                valueLabelDisplay="auto"
+                onChange={handleChange}
+              />
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
+    </>
+  )
 };
