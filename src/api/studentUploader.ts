@@ -10,9 +10,11 @@ import { read, utils } from "xlsx";
 import { timeWindowService } from "./ceTimeWindowService";
 import { FailedStudent, Student } from "./types";
 import { studentService } from "./ceStudentService";
+import { SpeadsheetValidationService } from "./spreadsheetValidationService";
 
 
 class StudentUploader {
+    private validationService = new SpeadsheetValidationService();
 
     changeToLowercase(object: any): any {
         const lowered: { [key: string]: any } = {};
@@ -54,7 +56,14 @@ class StudentUploader {
     }
 
     async insertStudent(student: Student): Promise<{ success: boolean; student: Student | FailedStudent }> {
-        // const resp = { success: null, student: null }; consider building out this object and reassignined for the reutnr statements. The validation logic would go here, and if the student passes, they would get put through to the timewinow service below
+        const errors = this.validationService.validateStudent(student);
+        // console.log('student: ', student)
+        // console.log('errors: ', errors)
+        if (errors && Object.keys(errors).length > 0) {
+            console.error(`Spreadsheet validation failed for student ${student}: `, errors)
+            //FIX ME: failedError: errors is not recievable as an array on the front end notification system. The front-end is currently set up to display a single error string for each failed student.
+            return { success: false, student: { ...student, failedError: errors } };
+        }
         return timeWindowService
             .getTimeZone(student.city!, student.country)
             .then(tzData => {
