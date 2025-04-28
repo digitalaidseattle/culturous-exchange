@@ -1,8 +1,4 @@
-import { Student, TimeWindow } from "./types";
-
-type Errors = {
-  [key: string]: string[]
-}
+import { Student, TimeWindow, ValidationErrors } from "./types";
 
 export class SpeadsheetValidationService {
 
@@ -31,7 +27,7 @@ export class SpeadsheetValidationService {
     //uncomment when timeWindows is required
    if (timeWindows && !timeWindows.length) return false;
 
-   const validDays = ['Friday, Saturday, Sunday'];
+   const validDays = ['Friday', 'Saturday', 'Sunday'];
    const validTimeFormatRegExp = new RegExp('^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$')
 
    for (const tw of timeWindows) {
@@ -50,20 +46,20 @@ export class SpeadsheetValidationService {
    return true;
   }
 
-  validateStudent(student: Student): Errors {
+  validateStudent(student: Student): ValidationErrors {
     //in using an array to hold multiple errors if needed later
     const errors: { [key: string]: string[] } = {};
     if (!this.validateName(student.name)) {
-      errors['name'] = [...errors['name'], 'Name must be at least four characters'];
+      errors['name'] = [...errors['name'] || [], 'Name must be at least four characters'];
     }
     if (!this.validateEmail(student.email)) {
-      errors['email'] = ['Invalid email format'];
+      errors['email'] =  [...errors['email'] || [], 'Invalid email format'];
     }
     if (!this.validateCity(student.city)) {
-      errors['city'] = ['City is required'];
+      errors['city'] = [...errors['city'] || [], 'City is required'];
     }
     if (!this.validateCountry(student.country)) {
-      errors['country'] = ['Country is required'];
+      errors['country'] = [...errors['country'] || [], 'Country is required'];
     }
     if (student.timeWindows && !this.validateTimeWindows(student.timeWindows!)) {
       errors['timeWindows'] = ['TimeWindows contain invalid format']

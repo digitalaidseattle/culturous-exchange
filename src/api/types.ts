@@ -27,13 +27,17 @@ type Student = Entity & {
     city?: string; // FIXME mark as optional until DB updated
     country: string;
     gender: string;
-    time_zone?: string; 
+    time_zone?: string;
     timeWindows?: TimeWindow[]; // FIXME mark as optional until DB updated
 }
 
 type FailedStudent = Student & {
-    failedError: string;
+    failedError: string | ValidationErrors;
 }
+
+type ValidationErrors = {
+    [key: string]: string[]
+  }
 
 type StudentField = {
     key: keyof Student;
@@ -97,6 +101,7 @@ export type {
     Enrollment,
     Entity,
     FailedStudent,
+    ValidationErrors,
     Identifier,
     Student,
     StudentField,
