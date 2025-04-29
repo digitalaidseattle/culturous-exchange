@@ -19,9 +19,10 @@ class PlanEvaluator {
         // fix time windows
         // place students in groups
 
+        console.log('0', plan.groups.length)
         plan.placements
             .filter(placement => placement.student_id !== null)
-            .forEach(async placement => {
+            .forEach(placement => {
                 // place students in groups
                 const group = plan.groups.find(group => group.id === placement.group_id);
                 if (group) {
@@ -31,8 +32,10 @@ class PlanEvaluator {
                     placement.group = group;
                     placement.group_id = group.id;
                     group.placements.push(placement);
+                    // plan.groups.push()
                 }
             });
+        console.log('1', plan)
 
         for (const placement of plan.placements) {
             if (placement.student_id !== null) {
@@ -47,13 +50,16 @@ class PlanEvaluator {
                 }
             }
         }
-        return plan;
+        console.log(plan)
+        return { ...plan };
     }
 
     async evaluate(plan: Plan): Promise<Plan> {
         return this.hydrate(plan)
             .then(hydrated => {
                 hydrated.groups.forEach(group => {
+                    console.log(group)
+
                     group.placements!.forEach(placement => {
                         if (placement.student !== undefined && placement.student.timeWindows) {
                             const tws = placement.student.timeWindows;

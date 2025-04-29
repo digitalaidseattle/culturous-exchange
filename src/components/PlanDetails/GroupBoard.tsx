@@ -108,6 +108,12 @@ export const GroupBoard: React.FC = () => {
         )
     };
 
+    function emptyPlan(): void {
+        planGenerator.emptyPlan(plan)
+            .then(() => setInitialized(false))
+            .catch((err) => console.error(err));
+    }
+
     function seedGroups(): void {
         planGenerator.seedPlan(plan)
             .then(() => setInitialized(false))
@@ -128,7 +134,13 @@ export const GroupBoard: React.FC = () => {
             <Box sx={{ marginTop: 1 }}  >
                 <Stack direction={'row'} spacing={1} >
                     <Typography variant="h5">Group Board</Typography>
-
+                    <Button
+                        color="primary"
+                        variant="contained"
+                        onClick={emptyPlan}
+                    >
+                        EMPTY (WIP)
+                    </Button>
                     <Button
                         color="primary"
                         variant="contained"

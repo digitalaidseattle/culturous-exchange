@@ -20,7 +20,7 @@ interface PlanContextType {
 
 export const PlanContext = createContext<PlanContextType>({
   plan: {} as Plan,
-  setPlan: () => {},
+  setPlan: () => { },
 });
 
 const PlanPage: React.FC = () => {
@@ -28,7 +28,6 @@ const PlanPage: React.FC = () => {
   const [plan, setPlan] = useState<Plan>();
   const [cohort, setCohort] = useState<Cohort>();
 
-  const { refresh } = useContext(RefreshContext);
 
   useEffect(() => {
     if (planId) {
@@ -36,18 +35,19 @@ const PlanPage: React.FC = () => {
         if (p) {
           setPlan(p);
           if (p.cohort_id) {
-            cohortService.getById(p.cohort_id).then((cohort) => {
-              if (cohort) {
-                setCohort(cohort);
-              } else {
-                console.error(`Cohort not found ${p.cohort_id}`);
-              }
-            });
+            cohortService.getById(p.cohort_id)
+              .then((cohort) => {
+                if (cohort) {
+                  setCohort(cohort);
+                } else {
+                  console.error(`Cohort not found ${p.cohort_id}`);
+                }
+              });
           }
         }
       });
     }
-  }, [planId, refresh]);
+  }, [planId]);
 
   return (
     plan &&

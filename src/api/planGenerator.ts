@@ -14,14 +14,31 @@ const MAX_SIZE = 10;
 
 class PlanGenerator {
 
+    async emptyPlan(plan: Plan): Promise<Plan> {
+        for (const placement of plan.placements) {
+            await placementService.updatePlacement(plan.id, placement.student_id, { group_id: null });
+            placement.group = undefined;
+            placement.group_id = undefined;
+        }
+
+        for (const group of plan.groups) {
+            await groupService.delete(group.id);
+        }
+        plan.groups = [];
+
+        // REVIEW could requery for a plan
+        return { ...plan };
+    }
+
     async seedPlan(plan: Plan): Promise<Plan> {
-        // FIXME: should use info from the plan to determine the number of groups
-        const nGroups = plan.placements ? Math.ceil(plan.placements.length / MAX_SIZE) : 0;
+        const cleaned = await this.emptyPlan(plan)
+
+        const nGroups = cleaned.placements ? Math.ceil(cleaned.placements.length / MAX_SIZE) : 0;
 
         const groups = Array.from({ length: nGroups }, (_, groupNo) => {
             return {
                 id: uuid(),
-                plan_id: plan.id,
+                plan_id: cleaned.id,
                 name: `Group ${groupNo}`,
                 country_count: 0
             } as Group;
@@ -30,19 +47,20 @@ class PlanGenerator {
         const updatedPlan = await groupService.batchInsert(groups)
             .then(() => {
                 return {
-                    ...plan,
+                    ...cleaned,
                     groups: groups
                 } as Plan;
             });
 
         return Promise
-            .all(plan.placements.map((placement, index) => {
+            .all(cleaned.placements.map((placement, index) => {
                 const group = updatedPlan.groups[index % nGroups];
                 return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id })
             }))
             .then(() => {
                 return updatedPlan
             });
+
     }
 
 }
