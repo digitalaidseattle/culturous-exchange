@@ -117,6 +117,7 @@ export const GroupBoard: React.FC = () => {
       .catch((err) => console.error(err));
   }
 
+  // TODO : This function will call to add the time window
   function calculate(): void {
     console.log(plan);
     planEvaluator.evaluate(plan)

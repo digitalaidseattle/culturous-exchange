@@ -42,7 +42,6 @@ class PlanEvaluator {
         // Get all fields on the student (*), and also join in all related timewindow records.
         const student: any = await studentService.getById(placement.student_id!, "*, timewindow(*)");
         if (student !== null) {
-          console.log('student', student);
           student.timewindow.forEach((tw: TimeWindow) => {
             if (tw.start_date_time) {
               tw.start_date_time = parseISO(tw.start_date_time as unknown as string);

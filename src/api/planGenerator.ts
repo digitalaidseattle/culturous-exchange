@@ -51,7 +51,6 @@ class PlanGenerator {
 
     // Then handle remaining students
     const nonAnchorPlacements = plan.placements.filter(p => !p.anchor);
-    console.log('Non-anchor students:', nonAnchorPlacements);
 
     const nonAnchorPromises = nonAnchorPlacements.map((placement, index) => {
       const group = updatedPlan.groups[index % nGroups];
