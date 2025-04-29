@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useContext } from "react";
+import { createContext, useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 // material-ui
@@ -6,12 +6,11 @@ import { useParams } from "react-router";
 // project import
 import { Stack } from "@mui/material";
 
-import { RefreshContext } from "@digitalaidseattle/core";
+import { cohortService } from "../../api/ceCohortService";
 import { planService } from "../../api/cePlanService";
 import { Cohort, Plan } from "../../api/types";
 import { PlanDetails } from "../../components/PlanDetails";
 import { CohortContext } from "../cohort";
-import { cohortService } from "../../api/ceCohortService";
 
 interface PlanContextType {
   plan: Plan;

@@ -70,7 +70,7 @@ const AddStudentModal: React.FC<Props> = ({
                 }
               >
                 {students.map((student) => (
-                  <MenuItem key={student.id} value={student.id}>
+                  <MenuItem key={student.id as string | undefined} value={student.id as string | undefined}>
                     <Checkbox
                       checked={
                         selectedStudents.find((s_id) => s_id === student.id) !==
