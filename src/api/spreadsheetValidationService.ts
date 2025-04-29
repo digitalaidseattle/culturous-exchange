@@ -28,6 +28,7 @@ export class SpeadsheetValidationService {
    if (timeWindows && !timeWindows.length) return false;
 
    const validDays = ['Friday', 'Saturday', 'Sunday'];
+   //made from '^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$' ensure failure for testing
    const validTimeFormatRegExp = new RegExp('^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$')
 
    for (const tw of timeWindows) {
