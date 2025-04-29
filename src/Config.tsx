@@ -1,6 +1,7 @@
 
 import {
   CalendarOutlined,
+  HomeOutlined,
   UserOutlined
 } from '@ant-design/icons';
 
@@ -8,8 +9,22 @@ import logo from "./assets/images/culturous.jpg";
 
 import { MenuItem } from "@digitalaidseattle/mui";
 
-const pages = {
-  id: 'main',
+const home = {
+  id: 'home',
+  type: 'group',
+  children: [
+    {
+      id: 'home',
+      title: 'Home',
+      type: 'item',
+      url: '/home',
+      icon: <HomeOutlined />
+    } as MenuItem
+  ]
+} as MenuItem;
+
+const entities = {
+  id: 'data',
   type: 'group',
   children: [
     {
@@ -33,7 +48,7 @@ export const Config = {
   appName: 'Culturous Exchange',
   logoUrl: logo,
   drawerWidth: 240,
-  menuItems: [pages],
+  menuItems: [home, entities],
   toolbarItems: [],
   authProviders: ["google"]
 }

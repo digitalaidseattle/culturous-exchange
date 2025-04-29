@@ -76,18 +76,18 @@ export const StudentTable: React.FC = () => {
     setShowAddStudent(false);
   }
 
-  const handleAddStudent = (studentIds: string[]) => {
-      cohortService.addStudents(cohort, studentIds)
-          .then(() => {
-              notifications.success('Students added.');
-              setRefresh(refresh + 1);
-              setShowAddStudent(false);
-          })
-          .catch((err) => {
-              notifications.error('Error adding students.');
-              console.error(err);
-          })
-  }
+    const handleAddStudent = (studentIds: string[]) => {
+        cohortService.addStudents(cohort, studentIds)
+            .then(() => {
+                notifications.success('Students added.');
+                setRefresh(refresh + 1);
+                setShowAddStudent(false);
+            })
+            .catch((err) => {
+                notifications.error('Error adding students.');
+                console.error(err);
+            })
+    }
 
   const doDelete = () => {
     cohortService
