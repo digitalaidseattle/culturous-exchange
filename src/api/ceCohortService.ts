@@ -10,6 +10,7 @@ import { enrollmentService } from './ceEnrollmentService';
 import { studentService } from './ceStudentService';
 import { EntityService } from "./entityService";
 import { Cohort, Enrollment, Identifier } from "./types";
+import { supabaseClient } from '@digitalaidseattle/supabase';
 
 
 class CECohortService extends EntityService<Cohort> {
@@ -45,7 +46,7 @@ class CECohortService extends EntityService<Cohort> {
     async create(): Promise<Cohort> {
         return studentService.findUnenrolled()
             .then(students => {
-                return cohortService
+                return this
                     .insert({ id: uuidv4(), name: `(New) Cohort`, } as Cohort)
                     .then(cohort => {
                         const studentIds = students.map(student => student.id?.toString());
@@ -92,6 +93,20 @@ class CECohortService extends EntityService<Cohort> {
 
     }
 
+    async getLatest(): Promise<Cohort | null> {
+        try {
+            return supabaseClient
+                .from(this.tableName)
+                .select('*, student(*), plan(*), enrollment(*)')
+                .order('created_at', {ascending: false})
+                .limit(1)
+                .single()
+                .then(resp => resp.data)
+        } catch (err) {
+            console.error('Unexpected error during select:', err);
+            throw err;
+        }
+    }
 
 }
 
