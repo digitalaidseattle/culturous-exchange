@@ -27,3 +27,4 @@ coverage
 .env.production
 supabase/.branches/*
 supabase/.temp/*
+.env

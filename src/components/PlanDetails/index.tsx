@@ -126,7 +126,7 @@ export const PlanDetails: React.FC = () => {
     // TODO add breadcrumbs
     return (
         <MainCard sx={{ width: '100%' }}>
-            <Stack spacing={{ xs: 1, sm: 4 }}>
+                <Stack spacing={{ xs: 1, sm: 4 }}>
                 <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
                     <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
                     <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />

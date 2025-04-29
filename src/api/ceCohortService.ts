@@ -14,6 +14,13 @@ import { Cohort, Enrollment, Identifier } from "./types";
 
 class CECohortService extends EntityService<Cohort> {
 
+    async removeStudents(cohort: Cohort, studentIds: Identifier[]): Promise<boolean> {
+        return Promise.all(
+            studentIds.map(id => enrollmentService
+                .deleteEnrollment({ cohort_id: cohort.id, student_id: id } as Enrollment)))
+            .then(() => true)
+    }
+
 
     private createEnrollments(cohort: Cohort, studentIds: Identifier[]): Enrollment[] {
         return studentIds.map(id => {
@@ -23,7 +30,7 @@ class CECohortService extends EntityService<Cohort> {
             } as Enrollment
         })
     }
-
+    
     async addStudents(cohort: Cohort, studentIds: string[]): Promise<any> {
         try {
             const enrollments = this.createEnrollments(cohort, studentIds);
@@ -90,4 +97,3 @@ class CECohortService extends EntityService<Cohort> {
 
 const cohortService = new CECohortService('cohort')
 export { cohortService };
-

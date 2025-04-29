@@ -88,11 +88,12 @@ abstract class EntityService<T extends Entity> {
         }
     }
 
-    async batchInsert(entities: T[]): Promise<T[]> {
+    async batchInsert(entities: T[], select?: string): Promise<T[]> {
         try {
             const { data, error } = await supabaseClient
                 .from(this.tableName)
                 .insert(entities)
+                .select(select ?? '*');
             if (error) {
                 console.error('Error inserting entity:', error);
                 throw new Error('Failed to insert entity: ' + error.message);

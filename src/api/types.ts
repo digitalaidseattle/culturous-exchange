@@ -16,16 +16,19 @@ type TimeWindow = Entity & {
     day_in_week: string;
     start_t: string;
     end_t: string;
+    start_date_time?: Date;  // FIXME mark as optional until DB updated
+    end_date_time?: Date;  // FIXME mark as optional until DB updated
 }
 
 type Student = Entity & {
     name: string;
     age: number | null;
     email: string;
+    city?: string; // FIXME mark as optional until DB updated
     country: string;
     gender: string;
-    time_zone?: string;  // FIXME mark as optional until DB updated
-    original?: TimeWindow[];
+    time_zone?: string; 
+    timeWindows?: TimeWindow[]; // FIXME mark as optional until DB updated
 }
 
 type FailedStudent = Student & {
@@ -46,26 +49,10 @@ type Cohort = Entity & {
     students: Student[];
 }
 
-type Group = Entity & {
-    plan_id: Identifier;
-    groupNo?: string;
-    country_count: number;
-    students: Student[];
-}
-
 type Enrollment = Entity & {
     cohort_id: Identifier;
     student_id: Identifier;
     student?: Student;
-}
-
-type Placement = Entity & {
-    plan_id: Identifier;
-    student_id: Identifier;
-    student?: Student;
-    anchor: boolean;
-    priority: number; // review should be boolean?
-    time_windows?: TimeWindow[];
 }
 
 type Plan = Entity & {
@@ -74,6 +61,33 @@ type Plan = Entity & {
     placements: Placement[]
     groups: Group[];
     note: string;
+}
+
+type Placement = Entity & {
+    plan_id: Identifier;
+    student_id: Identifier;
+    group_id?: Identifier; // will be null when unassigned
+    student?: Student;
+    group?: Group;
+    /**
+     * Whether this student is an anchor student for the plan.
+     * Anchor students are key participants that should be prioritized in group assignments.
+     */
+    anchor: boolean;
+
+    /**
+     * Priority level of the student in this plan.
+     * 0 = normal priority
+     * 1 = high priority
+     */
+    priority: number;
+    time_windows?: TimeWindow[];
+}
+
+type Group = Entity & {
+    plan_id: Identifier;
+    name: string;
+    country_count: number;
 }
 
 export type {
