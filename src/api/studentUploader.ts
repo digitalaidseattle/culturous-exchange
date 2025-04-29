@@ -57,8 +57,6 @@ class StudentUploader {
 
     async insertStudent(student: Student): Promise<{ success: boolean; student: Student | FailedStudent }> {
         const errors = this.validationService.validateStudent(student);
-        // console.log('student: ', student)
-        // console.log('errors: ', errors)
         if (errors && Object.keys(errors).length > 0) {
             console.error(`Spreadsheet validation failed for student ${student}: `, errors)
             //FIX ME: failedError: errors is not recievable as an array on the front end notification system. The front-end is currently set up to display a single error string for each failed student.
