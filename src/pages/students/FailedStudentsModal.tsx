@@ -7,7 +7,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';;
 import { CloseCircleOutlined } from '@ant-design/icons';
-import { List, ListItem, ListItemText, Stack, Box } from '@mui/material';
+import { List, ListItem, ListItemText, Stack } from '@mui/material';
 import { FailedStudent, ValidationErrors } from '../../api/types';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
