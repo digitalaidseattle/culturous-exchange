@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';;
 import { CloseCircleOutlined } from '@ant-design/icons';
 import { List, ListItem, ListItemText, Stack } from '@mui/material';
-import { FailedStudent, ValidationErrors } from '../../api/types';
+import { FailedStudent } from '../../api/types';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialogContent-root': {
@@ -55,12 +55,10 @@ const FailedStudentsModal: React.FC<Props> = ( { isModalOpen, onClose, failedStu
                   <ListItemText secondary={`Error: ${student.failedError}`} style={{ marginLeft: '10%' }}/>
                 )}
                 {typeof student.failedError === 'object' && student.failedError !== null && (
-                  Object.keys(student.failedError).map((fieldName) => (
-                    (student.failedError as ValidationErrors)[fieldName].map((errorMessage, index) => (
-                      <ListItem key={`${idx}-${fieldName}-${index}`}>
-                        <ListItemText secondary={`${fieldName}: ${errorMessage}`} style={{ marginLeft: '10%' }}/>
+                  student.failedError.map((error, idx) => (
+                    <ListItem key={`${idx}-${error.field}-${idx}`}>
+                        <ListItemText secondary={`${error.field}: ${error.message}`} style={{ marginLeft: '10%' }}/>
                       </ListItem>
-                    ))
                   ))
                 )}
               </List>

@@ -32,12 +32,14 @@ type Student = Entity & {
 }
 
 type FailedStudent = Student & {
-    failedError: string | ValidationErrors;
+    failedError: string | ValidationError[];
 }
 
-type ValidationErrors = {
-    [key: string]: string[]
-  }
+type ValidationError = {
+    isValid?: boolean;
+    field?: string;
+    message?: string;
+}
 
 type StudentField = {
     key: keyof Student;
@@ -101,7 +103,7 @@ export type {
     Enrollment,
     Entity,
     FailedStudent,
-    ValidationErrors,
+    ValidationError,
     Identifier,
     Student,
     StudentField,
