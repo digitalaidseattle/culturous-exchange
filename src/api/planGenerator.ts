@@ -10,8 +10,6 @@ import { groupService } from './ceGroupService';
 import { placementService } from './cePlacementService';
 import { Group, Plan } from "./types";
 
-const MAX_SIZE = 10;
-
 class PlanGenerator {
 
   async seedPlan(plan: Plan, groupSize: number): Promise<Plan> {
@@ -41,7 +39,6 @@ class PlanGenerator {
 
     // First, handle anchor students
     const anchorPlacements = plan.placements.filter(p => p.anchor);
-    console.log('Anchor students:', anchorPlacements);
 
     // Distribute anchor students evenly across groups
     const anchorPromises = anchorPlacements.map((placement, index) => {

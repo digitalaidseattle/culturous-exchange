@@ -55,18 +55,21 @@ class PlanEvaluator {
         }
       }
     }
-    console.log('plan placements', plan);
+
     return plan;
   }
 
   // TODO fix error in the time_window WIP
   async evaluate(plan: Plan): Promise<Plan> {
-    return this.hydrate(plan)
+    return this.hydrate(plan) // a plan with timeWindows
       .then(hydrated => {
+
+        // Only filter the groups that has placements with time_windows
         hydrated.groups
           .filter(group => group.placements && group.placements.length > 0)
           .forEach(group => {
-          console.log('group', group);
+          console.log('Hydrated group in Eval', group);
+
           group.placements!.forEach(placement => {
             if (placement.student !== undefined && placement.student.timeWindows) {
               const tws = placement.student.timeWindows;
@@ -74,7 +77,6 @@ class PlanEvaluator {
                 group.time_windows = [...tws];
               } else {
                 const intersection = timeWindowService.intersectionTimeWindowsMultiple(group.time_windows, tws);
-                console.log('group', intersection)
                 group.time_windows = [...intersection];
               }
             } else {
@@ -82,6 +84,8 @@ class PlanEvaluator {
             }
           })
         })
+        
+        console.log('hydrated groups', hydrated.groups);
         return hydrated;
       })
   }

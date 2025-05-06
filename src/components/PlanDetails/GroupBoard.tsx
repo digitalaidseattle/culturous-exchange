@@ -55,20 +55,22 @@ type PlacementWrapper = Placement & DDType
 export const GroupBoard: React.FC = () => {
   const { plan, setPlan } = useContext(PlanContext);
   const { groupSize } = useContext(StepperContext);
+
   const [placements, setPlacements] = useState<Placement[]>([]);
   const [categories, setCategories] = useState<DDCategory<string>[]>([]);
   const [initialized, setInitialized] = useState<boolean>(false);
 
   useEffect(() => {
+    console.log('initialized', initialized);
     if (plan && !initialized) {
       placementService.findByPlanId(plan.id)
         .then(placements => {
+          // all groups in the placement students might contain duplicates
           const allGroups = placements
             .filter(placement => placement.group !== null)
             .map(placement => placement.group);
 
-          console.log('Target group size:', groupSize);
-
+          // get unique group id and name
           const groupIds = Array.from(new Set(allGroups.map(group => group!.id)));
           const groupCategories = groupIds
             .map(groupId => {
@@ -79,9 +81,11 @@ export const GroupBoard: React.FC = () => {
           setCategories(groupCategories);
           setPlacements(placements);
           setInitialized(true);
+
+          console.log('Plan', plan);
         })
     }
-  }, [plan, initialized, groupSize])
+  }, [plan, initialized])
 
   function handleChange(container: Map<string, unknown>, placement: Placement) {
     const newGroupId = container.get('containerId') as Identifier;
@@ -100,9 +104,21 @@ export const GroupBoard: React.FC = () => {
     return <StudentCard placement={item} />
   }
 
+  // TODO : Add the time window to the group when initiate it.
   const headerRenderer = (cat: DDCategory<string>): ReactNode => {
+    console.log('Eval 2', plan.groups);
     const group = plan.groups.find(g => g.id === cat.value);
-    const timeWindows = group ? group.time_windows ?? undefined : undefined;
+
+    // TODO : Remove Test time window
+    const testTimeWindow = {
+      day_in_week: 'Friday',
+      start_date_time: new Date('2024-03-15T09:00:00'),
+      end_date_time: new Date('2024-03-15T12:00:00')
+    };
+    const timeWindows = group?.time_windows && group.time_windows.length > 0
+      ? group.time_windows
+      : undefined;
+
     return (
       <Stack>
         <Typography variant="h6">Group: {cat.label}</Typography>
@@ -119,11 +135,13 @@ export const GroupBoard: React.FC = () => {
 
   // TODO : This function will call to add the time window
   function calculate(): void {
-    console.log(plan);
     planEvaluator.evaluate(plan)
       .then(evaluated => {
         setPlan(evaluated);
+        console.log('Evaluated plan', evaluated);
+
         setInitialized(false)
+        console.log('initialized is False');
       })
       .catch((err) => console.error(err));
   }
@@ -148,6 +166,7 @@ export const GroupBoard: React.FC = () => {
             Calculate (WIP)
           </Button>
         </Stack>
+
         <>{initialized &&
           <DragAndDrop
             onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
