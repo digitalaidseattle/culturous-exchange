@@ -7,11 +7,11 @@
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { v4 as uuidv4 } from 'uuid';
+import { enrollmentService } from "./ceEnrollmentService";
+import { groupService } from "./ceGroupService";
+import { placementService } from "./cePlacementService";
 import { EntityService } from "./entityService";
 import { Cohort, Group, Identifier, Placement, Plan } from "./types";
-import { enrollmentService } from "./ceEnrollmentService";
-import { placementService } from "./cePlacementService";
-import { groupService } from "./ceGroupService";
 
 class CEPlanService extends EntityService<Plan> {
   async create(cohort: Cohort): Promise<Plan> {
@@ -68,7 +68,7 @@ class CEPlanService extends EntityService<Plan> {
     return super.insert(entity, select ?? '*, placement(*)')
   }
 
-  async getById(entityId: string | number, select?: string): Promise<Plan | null> {
+  async getById(entityId: Identifier, select?: string): Promise<Plan | null> {
     return super.getById(entityId, select ?? '*, placement(*), grouptable(*)')
       .then((dbPlan: any) => {
         if (dbPlan) {
@@ -80,8 +80,7 @@ class CEPlanService extends EntityService<Plan> {
             placements: dbPlan.placement,
             groups:
               dbPlan.grouptable ? dbPlan.grouptable.map((group: any) => ({
-                ...group,
-                students: []
+                ...group
               } as Group)) : []
           };
         } else {

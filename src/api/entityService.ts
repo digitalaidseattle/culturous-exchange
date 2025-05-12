@@ -75,7 +75,7 @@ abstract class EntityService<T extends Entity> {
             .then((resp: any) => resp.data ?? [])
     }
 
-    async getById(entityId: string | number, select?: string): Promise<T | null> {
+    async getById(entityId: Identifier, select?: string): Promise<T | null> {
         try {
             return supabaseClient.from(this.tableName)
                 .select(select ?? '*')

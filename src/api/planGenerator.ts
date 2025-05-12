@@ -8,7 +8,10 @@
 import { v4 as uuid } from 'uuid';
 import { groupService } from './ceGroupService';
 import { placementService } from './cePlacementService';
-import { Group, Plan } from "./types";
+import { Group, Identifier, Plan, TimeWindow } from "./types";
+import { planService } from './cePlanService';
+import { studentService } from './ceStudentService';
+import { parseISO } from 'date-fns';
 
 const MAX_SIZE = 10;
 
@@ -24,10 +27,9 @@ class PlanGenerator {
         for (const group of plan.groups) {
             await groupService.delete(group.id);
         }
-        plan.groups = [];
 
-        // REVIEW could requery for a plan
-        return { ...plan };
+        // requery the plan
+        return await this.hydratePlan(plan.id);
     }
 
     async seedPlan(plan: Plan): Promise<Plan> {
@@ -61,6 +63,50 @@ class PlanGenerator {
                 return updatedPlan
             });
 
+    }
+
+    // Review: consider moving to planService as getById
+    async hydratePlan(planId: Identifier): Promise<Plan> {
+        // lookup student
+        // lookup time windows for each student
+        // fix time windows
+        // place students in groups
+
+        //get a recent version of the plan
+        const latest = await planService.getById(planId);
+        if (latest !== null) {
+            latest.placements
+                .filter(placement => placement.student_id !== null)
+                .forEach(placement => {
+                    // place students in groups
+                    const group = latest.groups.find(group => group.id === placement.group_id);
+                    if (group) {
+                        if (group.placements === undefined) {
+                            group.placements = [];
+                        }
+                        placement.group = group;
+                        placement.group_id = group.id;
+                        group.placements.push(placement);
+                    }
+                });
+
+            for (const placement of latest.placements) {
+                if (placement.student_id !== null) {
+                    const student: any = await studentService.getById(placement.student_id!, "*, timewindow(*)");
+                    if (student !== null) {
+                        student.timewindow.forEach((tw: TimeWindow) => {
+                            tw.start_date_time = parseISO(tw.start_date_time! as unknown as string);
+                            tw.end_date_time = parseISO(tw.end_date_time! as unknown as string);
+                        });
+                        student.timeWindows = student.timewindow;
+                        placement.student = student;
+                       
+                    }
+                }
+            }
+            return latest;
+        }
+        throw new Error("Plan not found");
     }
 
 }
