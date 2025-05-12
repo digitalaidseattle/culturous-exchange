@@ -98,10 +98,14 @@ export const GroupBoard: React.FC = () => {
         const group = plan.groups.find(g => g.id === cat.value);
         const timeWindows = group ? group.time_windows ?? undefined : undefined;
         return (
-            <Stack>
-                <Typography variant="h6">Group: {cat.label}</Typography>
-                {timeWindows && timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
-            </Stack>
+            <Card>
+                 <CardContent>
+                    <Typography variant="h6">{cat.label}</Typography>
+                 </CardContent>
+                <Stack>
+                    {timeWindows && timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                </Stack>
+            </Card>
         )
     };
 
@@ -113,7 +117,10 @@ export const GroupBoard: React.FC = () => {
 
     function seedGroups(): void {
         planGenerator.seedPlan(plan)
-            .then(() => setInitialized(false))
+            .then((seeded) => {
+                setPlan(seeded);
+                setInitialized(false);
+            })
             .catch((err) => console.error(err));
     }
 
