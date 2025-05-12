@@ -59,9 +59,7 @@ class PlanGenerator {
                 const group = updatedPlan.groups[index % nGroups];
                 return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id })
             }))
-            .then(() => {
-                return updatedPlan
-            });
+            .then(() => this.hydratePlan(updatedPlan.id));
 
     }
 

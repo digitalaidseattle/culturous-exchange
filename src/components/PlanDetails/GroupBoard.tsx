@@ -55,28 +55,25 @@ type PlacementWrapper = Placement & DDType
 export const GroupBoard: React.FC = () => {
     const { plan, setPlan } = useContext(PlanContext);
 
-    const [placements, setPlacements] = useState<Placement[]>([]);
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
+    const [placementWrappers, setPlacementWrappers] = useState<PlacementWrapper[]>([]);
     const [initialized, setInitialized] = useState<boolean>(false);
 
     useEffect(() => {
         if (plan && !initialized) {
-            placementService.findByPlanId(plan.id)
-                .then(placements => {
-                    const allGroups = placements
-                        .filter(placement => placement.group !== null)
-                        .map(placement => placement.group);
-                    const groupIds = Array.from(new Set(allGroups.map(group => group!.id)));
-                    const groupCategories = groupIds
-                        .map(groupId => {
-                            const found = allGroups.find(group => group!.id === groupId)!;
-                            return { label: found.name, value: found.id! as string }
-                        })
-                        .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label));
-                    setCategories(groupCategories);
-                    setPlacements(placements);
-                    setInitialized(true);
+            setPlacementWrappers(plan.placements
+                .map(placement => {
+                    return {
+                        ...placement,
+                        id: `${placement.plan_id}:${placement.student_id}`,
+                    } as PlacementWrapper
+                }));
+            setCategories(plan.groups
+                .map(group => {
+                    return { label: group.name, value: group.id! as string }
                 })
+                .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label)));
+            setInitialized(true);
         }
     }, [plan, initialized])
 
@@ -103,7 +100,7 @@ export const GroupBoard: React.FC = () => {
         return (
             <Stack>
                 <Typography variant="h6">Group: {cat.label}</Typography>
-                {timeWindows && timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography> )}
+                {timeWindows && timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
             </Stack>
         )
     };
@@ -158,7 +155,7 @@ export const GroupBoard: React.FC = () => {
                 <>{initialized &&
                     <DragAndDrop
                         onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
-                        items={placements}
+                        items={placementWrappers}
                         categories={categories}
                         isCategory={isCategory}
                         cardRenderer={cellRender}

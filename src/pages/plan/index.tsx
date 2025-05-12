@@ -40,7 +40,6 @@ const PlanPage: React.FC = () => {
 
   useEffect(() => {
     if (plan) {
-      console.log("Plan", plan);
       if (plan.cohort_id) {
         cohortService.getById(plan.cohort_id)
           .then((cohort) => {

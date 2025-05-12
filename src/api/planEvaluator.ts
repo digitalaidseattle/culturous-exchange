@@ -11,10 +11,7 @@ import { Plan } from "./types";
 
 class PlanEvaluator {
     async evaluate(plan: Plan): Promise<Plan> {
-        console.log('evaluate', plan)
-
         plan.groups.forEach(group => {
-
             group.placements!.forEach(placement => {
                 if (placement.student !== undefined && placement.student.timeWindows) {
                     const tws = placement.student.timeWindows;
@@ -22,7 +19,6 @@ class PlanEvaluator {
                         group.time_windows = [...tws];
                     } else {
                         const intersection = timeWindowService.intersectionTimeWindowsMultiple(group.time_windows, tws);
-                        console.log('group', intersection)
                         group.time_windows = [...intersection];
                     }
                 } else {
