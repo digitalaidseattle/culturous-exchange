@@ -25,6 +25,7 @@ class PlanGenerator {
         }
 
         for (const group of plan.groups) {
+            // TODO check if there is a batch delete
             await groupService.delete(group.id);
         }
 

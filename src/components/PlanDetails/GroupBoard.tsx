@@ -99,9 +99,9 @@ export const GroupBoard: React.FC = () => {
         const timeWindows = group ? group.time_windows ?? undefined : undefined;
         return (
             <Card>
-                 <CardContent>
+                <CardContent>
                     <Typography variant="h6">{cat.label}</Typography>
-                 </CardContent>
+                </CardContent>
                 <Stack>
                     {timeWindows && timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
                 </Stack>
@@ -111,7 +111,10 @@ export const GroupBoard: React.FC = () => {
 
     function emptyPlan(): void {
         planGenerator.emptyPlan(plan)
-            .then(() => setInitialized(false))
+            .then((emptied) => {
+                setPlan(emptied);
+                setInitialized(false);
+            })
             .catch((err) => console.error(err));
     }
 
