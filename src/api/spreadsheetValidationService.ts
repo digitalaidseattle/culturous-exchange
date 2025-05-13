@@ -1,11 +1,11 @@
 import { Student, ValidationError } from "./types";
 
 
-interface FieldValidator {
-  validate(student: Student): ValidationError[];
+interface FieldValidator<T> {
+  validate(data: T): ValidationError[];
 }
 
-class NameValidator implements FieldValidator {
+class NameValidator implements FieldValidator<Student> {
   minLength = 3;
 
   validate(student: Student): ValidationError[] {
@@ -16,7 +16,7 @@ class NameValidator implements FieldValidator {
   }
 }
 
-class EmailValidator implements FieldValidator {
+class EmailValidator implements FieldValidator<Student> {
   regExp = new RegExp('^[a-zA-Z0-9._]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9]+)+$');
 
   validate(student: Student): ValidationError[] {
@@ -27,7 +27,7 @@ class EmailValidator implements FieldValidator {
   }
 }
 
-class CityValidator implements FieldValidator {
+class CityValidator implements FieldValidator<Student> {
   validate(student: Student): ValidationError[] {
     if (student.city?.trim().length === 0) {
       return [{ isValid: false, field: 'city', message: 'City is required' }]
@@ -36,7 +36,7 @@ class CityValidator implements FieldValidator {
   }
 }
 
-class CountryValidator implements FieldValidator {
+class CountryValidator implements FieldValidator<Student> {
   validate(student: Student): ValidationError[] {
     if (student.country.trim().length === 0) {
       return [{ isValid: false, field: 'country', message: 'Country is required' }]
@@ -45,7 +45,7 @@ class CountryValidator implements FieldValidator {
   }
 }
 
-class TimeWindowValidator implements FieldValidator {
+class TimeWindowValidator implements FieldValidator<Student> {
   validate(student: Student): ValidationError[] {
     const timeWindowErrors: ValidationError[] = [];
     //FIXME: uncomment when timeWindows is required
