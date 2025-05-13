@@ -6,7 +6,7 @@
  *
  */
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 
 import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
 import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
@@ -18,10 +18,12 @@ import {
     Stack,
     Typography
 } from "@mui/material";
+import { format } from "date-fns";
 import { placementService } from "../../api/cePlacementService";
+import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
 import { Identifier, Placement } from "../../api/types";
-import { PlanProps } from "../../utils/props";
+import { PlanContext } from "../../pages/plan";
 
 export const StudentCard: React.FC<{ placement: Placement }> = ({ placement }) => {
     const anchor = placement.anchor ? 'green' : 'gray;'
@@ -50,29 +52,28 @@ export const StudentCard: React.FC<{ placement: Placement }> = ({ placement }) =
 
 type PlacementWrapper = Placement & DDType
 
-export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
-    const [placements, setPlacements] = useState<Placement[]>([]);
+export const GroupBoard: React.FC = () => {
+    const { plan, setPlan } = useContext(PlanContext);
+
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
+    const [placementWrappers, setPlacementWrappers] = useState<PlacementWrapper[]>([]);
     const [initialized, setInitialized] = useState<boolean>(false);
 
     useEffect(() => {
         if (plan && !initialized) {
-            placementService.findByPlanId(plan.id)
-                .then(placements => {
-                    const allGroups = placements
-                        .filter(placement => placement.group !== null)
-                        .map(placement => placement.group);
-                    const groupIds = Array.from(new Set(allGroups.map(group => group!.id)));
-                    const groupCategories = groupIds
-                        .map(groupId => {
-                            const found = allGroups.find(group => group!.id === groupId)!;
-                            return { label: found.name, value: found.id! as string }
-                        })
-                        .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label));
-                    setCategories(groupCategories);
-                    setPlacements(placements);
-                    setInitialized(true);
+            setPlacementWrappers(plan.placements
+                .map(placement => {
+                    return {
+                        ...placement,
+                        id: `${placement.plan_id}:${placement.student_id}`,
+                    } as PlacementWrapper
+                }));
+            setCategories(plan.groups
+                .map(group => {
+                    return { label: group.name, value: group.id! as string }
                 })
+                .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label)));
+            setInitialized(true);
         }
     }, [plan, initialized])
 
@@ -94,17 +95,43 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
     }
 
     const headerRenderer = (cat: DDCategory<string>): ReactNode => {
+        const group = plan.groups.find(g => g.id === cat.value);
+        const timeWindows = group ? group.time_windows ?? undefined : undefined;
         return (
-            <Box>
-                <Typography variant="h6">Group: {cat.label}</Typography>
-            </Box>
+            <Card>
+                <CardContent>
+                    <Typography variant="h6">{cat.label}</Typography>
+                </CardContent>
+                <Stack>
+                    {timeWindows && timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                </Stack>
+            </Card>
         )
     };
 
+    function emptyPlan(): void {
+        planGenerator.emptyPlan(plan)
+            .then((emptied) => {
+                setPlan(emptied);
+                setInitialized(false);
+            })
+            .catch((err) => console.error(err));
+    }
+
     function seedGroups(): void {
         planGenerator.seedPlan(plan)
-            .then(() => {
+            .then((seeded) => {
+                setPlan(seeded);
                 setInitialized(false);
+            })
+            .catch((err) => console.error(err));
+    }
+
+    function calculate(): void {
+        planEvaluator.evaluate(plan)
+            .then(evaluated => {
+                setPlan(evaluated);
+                setInitialized(false)
             })
             .catch((err) => console.error(err));
     }
@@ -112,17 +139,33 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
     return (
         <>
             <Box sx={{ marginTop: 1 }}  >
-                <Button
-                    color="primary"
-                    variant="contained"
-                    onClick={seedGroups}
-                >
-                    Seed (WIP)
-                </Button>
+                <Stack direction={'row'} spacing={1} >
+                    <Typography variant="h5">Group Board</Typography>
+                    <Button
+                        color="primary"
+                        variant="contained"
+                        onClick={emptyPlan}
+                    >
+                        EMPTY (WIP)
+                    </Button>
+                    <Button
+                        color="primary"
+                        variant="contained"
+                        onClick={seedGroups}
+                    >
+                        Seed (WIP)
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="inherit"
+                        onClick={calculate}>
+                        Calculate (WIP)
+                    </Button>
+                </Stack>
                 <>{initialized &&
                     <DragAndDrop
                         onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
-                        items={placements}
+                        items={placementWrappers}
                         categories={categories}
                         isCategory={isCategory}
                         cardRenderer={cellRender}

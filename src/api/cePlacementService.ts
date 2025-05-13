@@ -7,32 +7,11 @@
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { EntityService } from "./entityService";
-import { Plan, Placement, Student, Identifier, Cohort, Group } from "./types";
+import { Plan, Placement, Student, Identifier, Cohort } from "./types";
 import { enrollmentService } from "./ceEnrollmentService";
 
 
 class CEPlacementService extends EntityService<Placement> {
-  async findByPlanId(planId: Identifier): Promise<Placement[]> {
-    return await supabaseClient
-      .from('placement')
-      .select('*, student(*), grouptable(*)')
-      .eq('plan_id', planId)
-      .then(resp => {
-        if (resp.data) {
-          return resp.data.map(db => {
-            const grouptable = db['grouptable'] as Group[];
-            const student = db['student'] as Student[];
-            return {
-              ...db,
-              id: `${db.plan_id}:${db.student_id}`,
-              group: grouptable,
-              student: student
-            } as unknown as Placement;
-          });
-        }
-        return []
-      });
-  }
 
   async getStudents(plan: Plan): Promise<Student[]> {
     return await supabaseClient

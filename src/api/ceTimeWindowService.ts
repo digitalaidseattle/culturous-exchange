@@ -8,10 +8,90 @@
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { EntityService } from "./entityService";
 import { Student, TimeWindow } from "./types";
-import { addHours } from "date-fns";
+import { addHours, isEqual } from "date-fns";
 
+function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// function areTimeWindowsOverlapping(timeWindowsA: TimeWindow, timeWindowsB: TimeWindow): boolean {
+//     return (isAfter(timeWindowsA.start_date_time!, timeWindowsB.start_date_time!) && isBefore(timeWindowsA.start_date_time!, timeWindowsB.end_date_time!)) ||
+//         (isAfter(timeWindowsB.start_date_time!, timeWindowsA.start_date_time!) && isBefore(timeWindowsB.start_date_time!, timeWindowsA.end_date_time!));
+// }
 
 class CETimeWindowService extends EntityService<TimeWindow> {
+
+    intersectionTimeWindows(timeWindowsA: TimeWindow, timeWindowsB: TimeWindow): TimeWindow | null {
+        const timeArray = [
+            { name: 'AS', date: timeWindowsA.start_date_time! },
+            { name: 'AE', date: timeWindowsA.end_date_time! },
+            { name: 'BS', date: timeWindowsB.start_date_time! },
+            { name: 'BE', date: timeWindowsB.end_date_time! }
+        ]
+        const sortedTimeArray = timeArray.sort((a, b) => a.date.getTime() - b.date.getTime()).map((t) => t.name);
+        if (areStringArraysEqual(sortedTimeArray, ['AS', 'AE', 'BS', 'BE'])) {
+            return null;
+        } else if (areStringArraysEqual(sortedTimeArray, ['AS', 'BS', 'AE', 'BE'])) {
+            if (!isEqual(timeWindowsB.start_date_time!, timeWindowsA.end_date_time!)) {
+                return {
+                    day_in_week: timeWindowsA.day_in_week,
+                    start_date_time: timeWindowsB.start_date_time,
+                    end_date_time: timeWindowsA.end_date_time
+                } as TimeWindow;
+            }
+        } else if (areStringArraysEqual(sortedTimeArray, ['AS', 'BS', 'BE', 'AE'])) {
+            if (!isEqual(timeWindowsB.start_date_time!, timeWindowsB.end_date_time!)) {
+                return {
+                    day_in_week: timeWindowsA.day_in_week,
+                    start_date_time: timeWindowsB.start_date_time,
+                    end_date_time: timeWindowsB.end_date_time
+                } as TimeWindow;
+            }
+        } else if (areStringArraysEqual(sortedTimeArray, ['BS', 'AS', 'BE', 'AE'])) {
+            if (!isEqual(timeWindowsA.start_date_time!, timeWindowsB.end_date_time!)) {
+                return {
+                    day_in_week: timeWindowsA.day_in_week,
+                    start_date_time: timeWindowsA.start_date_time,
+                    end_date_time: timeWindowsB.end_date_time
+                } as TimeWindow;
+            }
+        } else if (areStringArraysEqual(sortedTimeArray, ['BS', 'AS', 'AE', 'BE'])) {
+            if (!isEqual(timeWindowsA.start_date_time!, timeWindowsA.end_date_time!)) {
+                return {
+                    day_in_week: timeWindowsA.day_in_week,
+                    start_date_time: timeWindowsA.start_date_time,
+                    end_date_time: timeWindowsA.end_date_time
+                } as TimeWindow;
+            }
+        } else if (areStringArraysEqual(sortedTimeArray, ['BS', 'BE', 'AS', 'AE'])) {
+            return null;
+        } else {
+            console.error('Unexpected time window intersection:', timeWindowsA, timeWindowsB, sortedTimeArray);
+            return null;
+        }
+        return null
+    }
+
+    intersectionTimeWindowsMultiple(timeWindowsA: TimeWindow[], timeWindowsB: TimeWindow[]): TimeWindow[] {
+        const intersect: TimeWindow[] = [];
+        timeWindowsA.forEach(twA => {
+            timeWindowsB.forEach(twB => {
+                const intersection = this.intersectionTimeWindows(twA, twB);
+                if (intersection) {
+                    intersect.push(intersection);
+                }
+            });
+        });
+        return intersect;
+    }
 
     mapTimeWindows(entries: string[]): Partial<TimeWindow>[] {
         let timeWindows: Partial<TimeWindow>[] = [];

@@ -4,7 +4,7 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-type Identifier = string | number | undefined;
+type Identifier = string | number | undefined | null;
 
 type Entity = {
     id: Identifier;
@@ -88,6 +88,8 @@ type Group = Entity & {
     plan_id: Identifier;
     name: string;
     country_count: number;
+    placements?: Placement[];
+    time_windows?: TimeWindow[];
 }
 
 export type {
