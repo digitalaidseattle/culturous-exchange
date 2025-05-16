@@ -8,12 +8,35 @@
 import { v4 as uuid } from 'uuid';
 import { groupService } from './ceGroupService';
 import { placementService } from './cePlacementService';
-import { Group, Plan } from "./types";
+import { Group, Identifier, Plan, TimeWindow } from "./types";
+import { planService } from './cePlanService';
+import { studentService } from './ceStudentService';
+import { parseISO } from 'date-fns';
+
+const MAX_SIZE = 10;
 
 class PlanGenerator {
 
-  async seedPlan(plan: Plan, groupSize: number): Promise<Plan> {
-    const nGroups = groupSize;
+    async emptyPlan(plan: Plan): Promise<Plan> {
+        for (const placement of plan.placements) {
+            await placementService.updatePlacement(plan.id, placement.student_id, { group_id: null });
+            placement.group = undefined;
+            placement.group_id = undefined;
+        }
+
+        for (const group of plan.groups) {
+            // TODO check if there is a batch delete
+            await groupService.delete(group.id);
+        }
+
+        // requery the plan
+        return await this.hydratePlan(plan.id);
+    }
+
+    async seedPlan(plan: Plan): Promise<Plan> {
+        const cleaned = await this.emptyPlan(plan)
+
+        const nGroups = cleaned.placements ? Math.ceil(cleaned.placements.length / MAX_SIZE) : 0;
 
     // create groups arrays that has group objects.
     const groups = Array.from({ length: nGroups }, (_, groupNo) => {

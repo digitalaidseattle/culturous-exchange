@@ -5,13 +5,29 @@
  *
  */
 
-import { parseISO } from "date-fns";
-import { studentService } from "./ceStudentService";
 import { timeWindowService } from "./ceTimeWindowService";
-import { Plan, TimeWindow } from "./types";
+import { Plan } from "./types";
 
 
 class PlanEvaluator {
+    async evaluate(plan: Plan): Promise<Plan> {
+        plan.groups.forEach(group => {
+            group.placements!.forEach(placement => {
+                if (placement.student !== undefined && placement.student.timeWindows) {
+                    const tws = placement.student.timeWindows;
+                    if (group.time_windows === undefined || group.time_windows.length === 0) {
+                        group.time_windows = [...tws];
+                    } else {
+                        const intersection = timeWindowService.intersectionTimeWindowsMultiple(group.time_windows, tws);
+                        group.time_windows = [...intersection];
+                    }
+                } else {
+                    console.error("no time windows", placement.student);
+                }
+            })
+        })
+        return {...plan};
+    }
 
   async hydrate(plan: Plan): Promise<Plan> {
     // lookup student

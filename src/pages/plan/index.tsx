@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useContext } from "react";
+import { createContext, useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 // material-ui
@@ -6,12 +6,12 @@ import { useParams } from "react-router";
 // project import
 import { Stack } from "@mui/material";
 
-import { RefreshContext } from "@digitalaidseattle/core";
-import { planService } from "../../api/cePlanService";
+import { useNotifications } from "@digitalaidseattle/core";
+import { cohortService } from "../../api/ceCohortService";
+import { planGenerator } from "../../api/planGenerator";
 import { Cohort, Plan } from "../../api/types";
 import { PlanDetails } from "../../components/PlanDetails";
 import { CohortContext } from "../cohort";
-import { cohortService } from "../../api/ceCohortService";
 
 interface PlanContextType {
   plan: Plan;
@@ -20,34 +20,38 @@ interface PlanContextType {
 
 export const PlanContext = createContext<PlanContextType>({
   plan: {} as Plan,
-  setPlan: () => {},
+  setPlan: () => { },
 });
+
+
 
 const PlanPage: React.FC = () => {
   const { id: planId } = useParams<string>();
   const [plan, setPlan] = useState<Plan>();
   const [cohort, setCohort] = useState<Cohort>();
 
-  const { refresh } = useContext(RefreshContext);
+  const notifications = useNotifications();;
 
   useEffect(() => {
-    if (planId) {
-      planService.getById(planId).then((p) => {
-        if (p) {
-          setPlan(p);
-          if (p.cohort_id) {
-            cohortService.getById(p.cohort_id).then((cohort) => {
-              if (cohort) {
-                setCohort(cohort);
-              } else {
-                console.error(`Cohort not found ${p.cohort_id}`);
-              }
-            });
-          }
-        }
-      });
+    planGenerator.hydratePlan(planId)
+      .then((p) => setPlan(p))
+      .catch((err) => notifications.error(`Error reading ${planId} : ${err}`));;
+  }, [planId]);
+
+  useEffect(() => {
+    if (plan) {
+      if (plan.cohort_id) {
+        cohortService.getById(plan.cohort_id)
+          .then((cohort) => {
+            if (cohort) {
+              setCohort(cohort);
+            } else {
+              console.error(`Cohort not found ${plan.cohort_id}`);
+            }
+          });
+      }
     }
-  }, [planId, refresh]);
+  }, [plan]);
 
   return (
     plan &&
