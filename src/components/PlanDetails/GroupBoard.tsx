@@ -10,12 +10,12 @@ import { ReactNode, useContext, useEffect, useState } from "react";
 import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
 import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Stack,
-  Typography
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Stack,
+    Typography
 } from "@mui/material";
 import { format } from "date-fns";
 import { placementService } from "../../api/cePlacementService";
@@ -26,35 +26,34 @@ import { PlanContext } from "../../pages/plan";
 import { StepperContext } from "./index";
 
 export const StudentCard: React.FC<{ placement: Placement }> = ({ placement }) => {
-  const anchor = placement.anchor ? 'green' : 'gray;'
-  const priority = placement.priority ? 'green' : 'gray;'
-  return (
-    placement &&
-    <div id={`${placement.plan_id}.${placement.student_id}`} >
-      <Card key={placement.student_id} sx={{ pointerEvents: 'auto', margin: 0 }}>
-        <CardContent>
-          <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
-            <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
-              {placement.anchor &&
-                <StarFilled style={{ fontSize: '150%', color: anchor }} />
-              }
-              {placement.priority === 1 &&
-                <ExclamationCircleFilled style={{ fontSize: '150%', color: priority }} />
-              }
-            </Stack>
-            <Typography>{placement.student!.name}</Typography>
-          </Stack>
-        </CardContent>
-      </Card>
-    </div>
-  );
+    const anchor = placement.anchor ? 'green' : 'gray;'
+    const priority = placement.priority ? 'green' : 'gray;'
+    return (
+        placement &&
+        <div id={`${placement.plan_id}.${placement.student_id}`} >
+            <Card key={placement.student_id} sx={{ pointerEvents: 'auto', margin: 0 }}>
+                <CardContent>
+                    <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
+                        <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
+                            {placement.anchor &&
+                                <StarFilled style={{ fontSize: '150%', color: anchor }} />
+                            }
+                            {placement.priority === 1 &&
+                                <ExclamationCircleFilled style={{ fontSize: '150%', color: priority }} />
+                            }
+                        </Stack>
+                        <Typography>{placement.student!.name}</Typography>
+                    </Stack>
+                </CardContent>
+            </Card>
+        </div>
+    );
 }
 
 type PlacementWrapper = Placement & DDType
 
 export const GroupBoard: React.FC = () => {
-  const { plan, setPlan } = useContext(PlanContext);
-  const { groupSize } = useContext(StepperContext);
+    const { plan, setPlan } = useContext(PlanContext);
 
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
     const [placementWrappers, setPlacementWrappers] = useState<PlacementWrapper[]>([]);
@@ -78,22 +77,22 @@ export const GroupBoard: React.FC = () => {
         }
     }, [plan, initialized])
 
-  function handleChange(container: Map<string, unknown>, placement: Placement) {
-    const newGroupId = container.get('containerId') as Identifier;
-    // find old group; iterate over groups looking for the student
-    placementService
-      .updatePlacement(placement.plan_id, placement.student_id, { group_id: newGroupId })
-      .then(resp => console.log(resp))
-  }
+    function handleChange(container: Map<string, unknown>, placement: Placement) {
+        const newGroupId = container.get('containerId') as Identifier;
+        // find old group; iterate over groups looking for the student
+        placementService
+            .updatePlacement(placement.plan_id, placement.student_id, { group_id: newGroupId })
+            .then(resp => console.log(resp))
+    }
 
-  function isCategory(item: PlacementWrapper, category: DDCategory<any>): boolean {
-    // console.log('isCategory', item, category);
-    return category.value === item.group_id;
-  }
+    function isCategory(item: PlacementWrapper, category: DDCategory<any>): boolean {
+        // console.log('isCategory', item, category);
+        return category.value === item.group_id;
+    }
 
-  function cellRender(item: PlacementWrapper): ReactNode {
-    return <StudentCard placement={item} />
-  }
+    function cellRender(item: PlacementWrapper): ReactNode {
+        return <StudentCard placement={item} />
+    }
 
     const headerRenderer = (cat: DDCategory<string>): ReactNode => {
         const group = plan.groups.find(g => g.id === cat.value);
@@ -128,18 +127,18 @@ export const GroupBoard: React.FC = () => {
             .catch((err) => console.error(err));
     }
 
-  // TODO : This function will call to add the time window
-  function calculate(): void {
-    planEvaluator.evaluate(plan)
-      .then(evaluated => {
-        setPlan(evaluated);
-        console.log('Evaluated plan', evaluated);
+    // TODO : This function will call to add the time window
+    function calculate(): void {
+        planEvaluator.evaluate(plan)
+            .then(evaluated => {
+                setPlan(evaluated);
+                console.log('Evaluated plan', evaluated);
 
-        setInitialized(false)
-        console.log('initialized is False');
-      })
-      .catch((err) => console.error(err));
-  }
+                setInitialized(false)
+                console.log('initialized is False');
+            })
+            .catch((err) => console.error(err));
+    }
 
     return (
         <>
