@@ -8,7 +8,7 @@
 import { v4 as uuid } from 'uuid';
 import { groupService } from './ceGroupService';
 import { placementService } from './cePlacementService';
-import { Group, Identifier, Plan, TimeWindow } from "./types";
+import { Group, Identifier, Placement, Plan, TimeWindow } from "./types";
 import { planService } from './cePlanService';
 import { studentService } from './ceStudentService';
 import { parseISO } from 'date-fns';
@@ -33,10 +33,49 @@ class PlanGenerator {
     return await this.hydratePlan(plan.id);
   }
 
-  async seedPlan(plan: Plan): Promise<Plan> {
+  async overlapDuration(timeWindows: TimeWindow[]): Promise<number> {
+    // get the total overlapping hours
+    return timeWindows.reduce((acc, tw) => acc +
+      ((tw.end_date_time?.getTime() ?? 0) - (tw.start_date_time?.getTime() ?? 0)) / (1000 * 60 * 60), 0);
+  }
+
+  async getTotalAvailableHours(timeWindows: TimeWindow[]): Promise<number> {
+    if (!timeWindows || timeWindows.length === 0) return 0;
+    return timeWindows.reduce((sum, tw) => {
+      if (!tw.start_date_time || !tw.end_date_time) return sum;
+      return sum + (new Date(tw.end_date_time).getTime() - new Date(tw.start_date_time).getTime()) / (1000 * 60 * 60);
+    }, 0);
+  }
+
+  async getBestGroup(groups: Group[], placement: Placement): Promise<Group | null> {
+    // get the best overlapping group from all groups and return bestGroup and bestIntersect
+    let bestGroup = null;
+    let bestOverlap = 0;
+    let bestIntersect: TimeWindow[] = [];
+
+    for (const group of groups) {
+      // get the time windows for the group
+      const intersect = groupService.intersectionTimeWindowsMultiple(groups, placement);
+      const overlapDuration = await this.overlapDuration(intersect);
+
+      if (overlapDuration > bestOverlap) {
+        bestOverlap = overlapDuration;
+        bestGroup = group;
+        bestIntersect = intersect;
+      }
+    }
+
+    return bestGroup, bestIntersect;
+  }
+
+  async seedPlan(plan: Plan, nGroup: number): Promise<Plan> {
     const cleaned = await this.emptyPlan(plan)
 
-    const nGroups = cleaned.placements ? Math.ceil(cleaned.placements.length / MAX_SIZE) : 0;
+    console.log('Number nG:', nGroup);
+
+    const nGroups = nGroup || Math.ceil(cleaned.placements.length / MAX_SIZE);
+
+    console.log('Number of groups:', nGroups);
 
     // create groups arrays that has group objects.
     const groups = Array.from({ length: nGroups }, (_, groupNo) => {
@@ -63,22 +102,54 @@ class PlanGenerator {
     // First, handle anchor students
     const anchorPlacements = plan.placements.filter(p => p.anchor);
 
-    // Distribute anchor students evenly across groups
-    const anchorPromises = anchorPlacements.map((placement, index) => {
+    // REMOVE : Distribute anchor students evenly across groups
+    // const anchorPromises = anchorPlacements.map((placement, index) => {
+    //   const group = updatedPlan.groups[index % nGroups];
+    //   return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
+    // });
+
+    // TODO
+    // 1. Place anchor student first for the first row.
+    for (let i = 0; i < nGroup; i++) {
+      const placement = anchorPlacements.pop();
+      if (placement) {
+        placementService.updatePlacement(
+          placement.plan_id,
+          placement.student_id,
+          { group_id: updatedPlan.groups[i].id });
+      }
+    }
+
+    let remainingPlacements = [
+      ...anchorPlacements, // left-over anchors if more than nGroup
+      ...plan.placements.filter(p => !p.anchor)
+    ];
+    console.log('Remaining placements:', remainingPlacements);
+
+    // Sort students by their max available time windows
+    const placementsWithHours = await Promise.all(
+      remainingPlacements.map(async (placement) => ({
+        placement,
+        hours: await this.getTotalAvailableHours(placement.student?.timeWindows ?? [])
+      }))
+    );
+
+    placementsWithHours.sort((a, b) => b.hours - a.hours);
+    remainingPlacements = placementsWithHours.map(p => p.placement); //replace with sorted placements but exclude hours
+
+    const remainingPromises = remainingPlacements.map((placement, index) => {
       const group = updatedPlan.groups[index % nGroups];
       return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
     });
 
-    // Then handle remaining students
-    const nonAnchorPlacements = plan.placements.filter(p => !p.anchor);
+    // 2. Get the best group for each student.
+    // 3. Place the student in the best group.
+    // 4. If the group is full, place the student in the next group.
+    //getBestGroup(groups, placement) for non anchor
 
-    const nonAnchorPromises = nonAnchorPlacements.map((placement, index) => {
-      const group = updatedPlan.groups[index % nGroups];
-      return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
-    });
-
+    // TODO : Test up to here first
     // Execute all placement updates
-    return Promise.all([...anchorPromises, ...nonAnchorPromises])
+    return Promise.all([...remainingPromises])
       .then(() => {
         return this.hydratePlan(plan.id);
       });
@@ -109,6 +180,8 @@ class PlanGenerator {
           }
         });
 
+      // TODO : Test the code up to here first
+      // TODO : Understand this how to place students in groups and put the most overlap
       for (const placement of latest.placements) {
         if (placement.student_id !== null) {
           const student: any = await studentService.getById(placement.student_id!, "*, timewindow(*)");

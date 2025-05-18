@@ -28,8 +28,8 @@ export const GroupSize: React.FC = () => {
     // TODO base min & max on student counts
     setMin(2);
     setMax(10);
-    setGroupSize(5);
-  }, [plan, setGroupSize]);
+    console.log('Group size changed:', groupSize);
+  }, [plan, groupSize]);
 
   function handleChange(_event: Event, newValue: number | number[]): void {
     setGroupSize(newValue as number);

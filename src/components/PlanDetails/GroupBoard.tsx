@@ -54,6 +54,7 @@ type PlacementWrapper = Placement & DDType
 
 export const GroupBoard: React.FC = () => {
     const { plan, setPlan } = useContext(PlanContext);
+    const { groupSize, setGroupSize } = useContext(StepperContext);
 
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
     const [placementWrappers, setPlacementWrappers] = useState<PlacementWrapper[]>([]);
@@ -119,9 +120,11 @@ export const GroupBoard: React.FC = () => {
     }
 
     function seedGroups(): void {
-        planGenerator.seedPlan(plan)
+        planGenerator.seedPlan(plan, groupSize)
             .then((seeded) => {
                 setPlan(seeded);
+                console.log('Plan seed success');
+                console.log('Seeded plan', seeded);
                 setInitialized(false);
             })
             .catch((err) => console.error(err));

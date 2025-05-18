@@ -82,6 +82,8 @@ class CETimeWindowService extends EntityService<TimeWindow> {
   }
 
   intersectionTimeWindowsMultiple(timeWindowsA: TimeWindow[], timeWindowsB: TimeWindow[]): TimeWindow[] {
+    // This function computes all pairwise intersections between the TimeWindow[] arrays timeWindowsA and timeWindowsB
+
     const intersect: TimeWindow[] = [];
     timeWindowsA.forEach(twA => {
       timeWindowsB.forEach(twB => {
