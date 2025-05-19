@@ -33,39 +33,12 @@ class PlanGenerator {
     return await this.hydratePlan(plan.id);
   }
 
-  async overlapDuration(timeWindows: TimeWindow[]): Promise<number> {
-    // get the total overlapping hours
-    return timeWindows.reduce((acc, tw) => acc +
-      ((tw.end_date_time?.getTime() ?? 0) - (tw.start_date_time?.getTime() ?? 0)) / (1000 * 60 * 60), 0);
-  }
-
   async getTotalAvailableHours(timeWindows: TimeWindow[]): Promise<number> {
     if (!timeWindows || timeWindows.length === 0) return 0;
     return timeWindows.reduce((sum, tw) => {
       if (!tw.start_date_time || !tw.end_date_time) return sum;
       return sum + (new Date(tw.end_date_time).getTime() - new Date(tw.start_date_time).getTime()) / (1000 * 60 * 60);
     }, 0);
-  }
-
-  async getBestGroup(groups: Group[], placement: Placement): Promise<Group | null> {
-    // get the best overlapping group from all groups and return bestGroup and bestIntersect
-    let bestGroup = null;
-    let bestOverlap = 0;
-    let bestIntersect: TimeWindow[] = [];
-
-    for (const group of groups) {
-      // get the time windows for the group
-      const intersect = groupService.intersectionTimeWindowsMultiple(groups, placement);
-      const overlapDuration = await this.overlapDuration(intersect);
-
-      if (overlapDuration > bestOverlap) {
-        bestOverlap = overlapDuration;
-        bestGroup = group;
-        bestIntersect = intersect;
-      }
-    }
-
-    return bestGroup, bestIntersect;
   }
 
   async seedPlan(plan: Plan, nGroup: number): Promise<Plan> {
@@ -99,31 +72,33 @@ class PlanGenerator {
         } as Plan;
       });
 
-    // First, handle anchor students
+    // First, handle anchor students and assign first row students
+    // TODO or use updated plan?
     const anchorPlacements = plan.placements.filter(p => p.anchor);
+    const nonAnchorPlacements = plan.placements.filter(p => !p.anchor);
+    const firstRowStudents: Placement[] = [];
 
-    // REMOVE : Distribute anchor students evenly across groups
-    // const anchorPromises = anchorPlacements.map((placement, index) => {
-    //   const group = updatedPlan.groups[index % nGroups];
-    //   return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
-    // });
-
-    // TODO
-    // 1. Place anchor student first for the first row.
-    for (let i = 0; i < nGroup; i++) {
-      const placement = anchorPlacements.pop();
-      if (placement) {
-        placementService.updatePlacement(
-          placement.plan_id,
-          placement.student_id,
-          { group_id: updatedPlan.groups[i].id });
-      }
-    }
+    const numAnchorsToUse = Math.min(anchorPlacements.length, nGroups);
+    firstRowStudents.push(...anchorPlacements.splice(0, numAnchorsToUse));
+    const remainingSlots = nGroups - numAnchorsToUse;
+    firstRowStudents.push(...nonAnchorPlacements.splice(0, remainingSlots));
 
     let remainingPlacements = [
       ...anchorPlacements, // left-over anchors if more than nGroup
-      ...plan.placements.filter(p => !p.anchor)
+      ...nonAnchorPlacements // non-anchor students
     ];
+
+    console.log('--- First row students:', [...firstRowStudents]);
+
+    // 1. Place anchor student first for the first row.
+    // TODO : Chang this to use AWAIT
+    const firstRowStudentsPromises = firstRowStudents.map((placement, index) => {
+      const group = updatedPlan.groups[index % nGroups];
+      return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
+    });
+    await Promise.all(firstRowStudentsPromises);
+
+
     console.log('Remaining placements:', remainingPlacements);
 
     // Sort students by their max available time windows
@@ -133,36 +108,34 @@ class PlanGenerator {
         hours: await this.getTotalAvailableHours(placement.student?.timeWindows ?? [])
       }))
     );
-
     placementsWithHours.sort((a, b) => b.hours - a.hours);
     remainingPlacements = placementsWithHours.map(p => p.placement); //replace with sorted placements but exclude hours
 
-    const remainingPromises = remainingPlacements.map((placement, index) => {
-      const group = updatedPlan.groups[index % nGroups];
-      return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
-    });
+    // TODO: Fix there is a bug. dont get all students in groups
+    // 2. Assign best group for each student.
+    // ? : Do load balancing here either by Row-by-row group iteration or Student-priority greedy
+    const maxGroupSize = Math.floor(updatedPlan.placements.length / updatedPlan.groups.length);
+    updatedPlan.groups = await groupService.greedyGrouping(updatedPlan.groups, maxGroupSize, remainingPlacements);
 
-    // 2. Get the best group for each student.
-    // 3. Place the student in the best group.
     // 4. If the group is full, place the student in the next group.
     //getBestGroup(groups, placement) for non anchor
 
-    // TODO : Test up to here first
-    // Execute all placement updates
-    return Promise.all([...remainingPromises])
-      .then(() => {
-        return this.hydratePlan(plan.id);
-      });
+    // Update the plan to have the updated groups, attach placements to the group objects
+    //fetch students+timewindows and attach each enriched students to its placements
+    return this.hydratePlan(plan.id);
   }
 
   // Review: consider moving to planService as getById
   async hydratePlan(planId: Identifier): Promise<Plan> {
-    // lookup student
-    // lookup time windows for each student
-    // fix time windows
-    // place students in groups
+    // Get latest plan
+    // Attach placements to the latest plan's group objects
+    // Fetch full students' schedules
+    // Attach the enriched student to their placement
+    // Output :
+    // - Each placement has a full student object attached.
+    // - Each student has real timeWindows as Date objects
+    // - Each group has real placements.
 
-    //get a recent version of the plan
     const latest = await planService.getById(planId);
     if (latest !== null) {
       latest.placements
@@ -180,8 +153,7 @@ class PlanGenerator {
           }
         });
 
-      // TODO : Test the code up to here first
-      // TODO : Understand this how to place students in groups and put the most overlap
+      // Students have real timeWindows as Date objects
       for (const placement of latest.placements) {
         if (placement.student_id !== null) {
           const student: any = await studentService.getById(placement.student_id!, "*, timewindow(*)");
@@ -191,8 +163,7 @@ class PlanGenerator {
               tw.end_date_time = parseISO(tw.end_date_time! as unknown as string);
             });
             student.timeWindows = student.timewindow;
-            placement.student = student;
-
+            placement.student = student; // update placement with student with multiple timewindows
           }
         }
       }

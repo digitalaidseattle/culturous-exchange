@@ -186,6 +186,13 @@ class CETimeWindowService extends EntityService<TimeWindow> {
         }
       })
   }
+
+  async overlapDuration(timeWindows: TimeWindow[]): Promise<number> {
+    // get the total overlapping hours
+    return timeWindows.reduce((acc, tw) => acc +
+      ((tw.end_date_time?.getTime() ?? 0) - (tw.start_date_time?.getTime() ?? 0)) / (1000 * 60 * 60), 0);
+  }
+
 }
 
 const timeWindowService = new CETimeWindowService('timewindow')
