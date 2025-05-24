@@ -247,26 +247,9 @@ export const SetupStudents: React.FC = () => {
         },
       },
       {
-        field: "priority",
-        headerName: "Priority",
-        width: 100,
-        type: "boolean",
-        renderCell: (param: GridRenderCellParams) => {
-          return (
-            <ExclamationCircleFilled
-              style={{
-                fontSize: "150%",
-                color: param.row.priority === 1 ? "green" : "gray",
-              }}
-              onClick={() => togglePriority(param.row)}
-            />
-          );
-        },
-      },
-      {
         field: "student.name",
         headerName: "Name",
-        width: 150,
+        width: 200,
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.name}</Typography>;
         },
@@ -275,7 +258,7 @@ export const SetupStudents: React.FC = () => {
       {
         field: "email",
         headerName: "Email",
-        width: 140,
+        width: 300,
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.email}</Typography>;
         },
