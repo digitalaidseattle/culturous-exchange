@@ -19,7 +19,7 @@ import {
 // third-party
 
 // project import
-import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
+import { StarFilled } from "@ant-design/icons";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { PageInfo } from "@digitalaidseattle/supabase";
 import { placementService } from "../../api/cePlacementService";
@@ -195,33 +195,6 @@ export const SetupStudents: React.FC = () => {
     } catch (error) {
       console.error('Error toggling anchor:', error);
       notifications.error('Failed to update student anchor status');
-      // Revert optimistic update
-      setPageInfo({ ...pageInfo });
-    }
-  };
-
-  const togglePriority = async (placement: Placement) => {
-    const newPriority = placement.priority === 0 ? 1 : 0;
-    
-    // Optimistic update
-    const updatedRows = pageInfo.rows.map((row: Placement) => {
-      if (row.id === placement.id) {
-        return { ...row, priority: newPriority };
-      }
-      return row;
-    });
-    setPageInfo({ ...pageInfo, rows: updatedRows });
-
-    try {
-      await placementService.updatePlacement(
-        placement.plan_id,
-        placement.student_id,
-        { priority: newPriority }
-      );
-      notifications.success(`Student ${newPriority === 1 ? 'set as' : 'removed from'} priority`);
-    } catch (error) {
-      console.error('Error toggling priority:', error);
-      notifications.error('Failed to update student priority status');
       // Revert optimistic update
       setPageInfo({ ...pageInfo });
     }
