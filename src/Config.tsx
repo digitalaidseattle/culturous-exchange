@@ -8,6 +8,8 @@ import {
 import logo from "./assets/images/culturous.jpg";
 
 import { MenuItem } from "@digitalaidseattle/mui";
+import packageJson from '../package.json';
+
 
 const home = {
   id: 'home',
@@ -50,5 +52,6 @@ export const Config = {
   drawerWidth: 240,
   menuItems: [home, entities],
   toolbarItems: [],
-  authProviders: ["google"]
+  authProviders: ["google"],
+  version: packageJson.version
 }
