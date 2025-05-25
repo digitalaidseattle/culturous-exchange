@@ -35,11 +35,9 @@ type FailedStudent = Student & {
     failedError: string | ValidationError[];
 }
 
-type ValidationError = {
-    isValid?: boolean;
-    field?: string;
-    message?: string;
-}
+type ValidationError =
+    { isValid: true } |
+    { isValid?: boolean; field?: string; message?: string; }
 
 type StudentField = {
     key: keyof Student;

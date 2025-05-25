@@ -1,31 +1,47 @@
-import { Student, TimeWindow, ValidationError } from "./types";
+// import { Student, TimeWindow, ValidationError } from "./types";
+import { Student, ValidationError } from "./types";
+
+type ValidationResult = {}
+
+interface Validator<T> {
+  valdiate(data: T): ValidationError[];
+}
+
+class NameValidator implements Validator<Student> {
+  minLength = 3;
+  valdiate(student: Student): ValidationError[] {
+    if (student.name.trim().length <= this.minLength) {
+      return [{ isValid: false, field: 'name', message: 'Name must be at least four characters' }]
+    }
+    return [{ isValid: true }]
+  }
+}
+
+class EmailValidator implements Validator<Student> {
+  regExp = new RegExp('^[a-zA-Z0-9._]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9]+)+$');
+  valdiate(student: Student): ValidationError[] {
+    if (!student.email || !this.regExp.test(student.email)) {
+      return [{ isValid: false, field: 'email', message: 'Invalid email format' }]
+    }
+    return [{ isValid: true }]
+  }
+}
+
+class
+
 
 export class SpeadsheetValidationService {
 
-  validateName(name: string): null | ValidationError {
-    if (name.trim().length <= 3) {
-      return { isValid: false, field: 'name', message: 'Name must be at least four characters' }
-    }
-    return null;
-  }
-
-  validateEmail(email: string): null | ValidationError {
-    const regExp = new RegExp('^[a-zA-Z0-9._]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9]+)+$');
-    if (!email || !regExp.test(email)) {
-      return { isValid: false, field: 'email', message: 'Invalid email format' }
-    }
-    return null;
-  }
 
   validateCity(city: string | undefined): null | ValidationError {
-    if (city?.trim().length === 0) {
+    if (city!.trim().length <= 2) {
       return { isValid: false, field: 'city', message: 'City is required' }
     }
     return null;
   }
 
   validateCountry(country: string): null | ValidationError {
-    if (country.trim().length === 0) {
+    if (country.trim().length <= 2) {
       return { isValid: false, field: 'country', message: 'Country is required' }
     }
     return null;
