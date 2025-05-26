@@ -24,8 +24,11 @@ import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
 import { Group, Identifier, Placement } from "../../api/types";
 import { PlanContext } from "../../pages/plan";
+import { planExporter } from "../../api/planExporter";
+import { useNotifications } from "@digitalaidseattle/core";
+import { timeWindowService } from "../../api/ceTimeWindowService";
 
-export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails}) => {
+export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails }) => {
 
     const anchor = placement.anchor ? 'green' : 'gray;';
     const timeWindows = placement.student!.timeWindows ? placement.student!.timeWindows ?? [] : [];
@@ -45,7 +48,7 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
                     {showDetails &&
                         <CardContent>
                             <Typography fontWeight={600}>Time Windows</Typography>
-                            {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                            {timeWindows.map(tw => <Typography>{timeWindowService.toString(tw)}</Typography>)}
                         </CardContent>
                     }
                 </CardContent>
@@ -71,7 +74,7 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
                     </CardContent>
                     <CardContent>
                         <Typography fontWeight={600}>Time Windows</Typography>
-                        {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                        {timeWindows.map(tw => <Typography>{timeWindowService.toString(tw)}</Typography>)}
                     </CardContent>
                 </>
             }
@@ -88,6 +91,8 @@ export const GroupBoard: React.FC = () => {
     const [initialized, setInitialized] = useState<boolean>(false);
     const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
     const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
+
+    const notifications = useNotifications();
 
     useEffect(() => {
         if (plan && !initialized) {
@@ -130,6 +135,21 @@ export const GroupBoard: React.FC = () => {
             <GroupCard group={group} showDetails={showGroupDetails} />
         )
     };
+
+    function exportPlan(): void {
+        planExporter.exportPlan(plan)
+            .then((exported) => {
+                if (exported) {
+                    notifications.success('Plan exported successfully');
+                } else {
+                    notifications.error('Failed to export plan');
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                notifications.error('Error exporting plan');
+            });
+    }
 
     function emptyPlan(): void {
         planGenerator.emptyPlan(plan)
@@ -203,7 +223,13 @@ export const GroupBoard: React.FC = () => {
                         variant="outlined"
                         color="inherit"
                         onClick={handleStudentDetails}>
-                            {showStudentDetails ? 'Hide Student Details' : 'Show Student Details'}
+                        {showStudentDetails ? 'Hide Student Details' : 'Show Student Details'}
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="inherit"
+                        onClick={exportPlan}>
+                        Export Plan
                     </Button>
                 </Stack>
                 <>{initialized &&
