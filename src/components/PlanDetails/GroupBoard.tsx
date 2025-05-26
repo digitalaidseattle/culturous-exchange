@@ -18,7 +18,6 @@ import {
     Stack,
     Typography
 } from "@mui/material";
-import { format } from "date-fns";
 import { placementService } from "../../api/cePlacementService";
 import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
