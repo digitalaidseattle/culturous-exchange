@@ -9,7 +9,6 @@ import { supabaseClient } from "@digitalaidseattle/supabase";
 import { EntityService } from "./entityService";
 import { Student, TimeWindow } from "./types";
 import { addHours, isEqual } from "date-fns";
-import { v4 as uuid } from 'uuid';
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
   if (arr1.length !== arr2.length) {
