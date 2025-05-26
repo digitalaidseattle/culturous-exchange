@@ -24,7 +24,10 @@ class PlanEvaluator {
                 } else {
                     console.error("no time windows", placement.student);
                 }
-            })
+            });
+            group.country_count =  new Set(group.placements!.map(p => p.student?.country.toLocaleUpperCase())).size;
+
+            // TODO: save the group
         })
         return {...plan};
     }

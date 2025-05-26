@@ -7,7 +7,7 @@
 
 import { ReactNode, useContext, useEffect, useState } from "react";
 
-import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
+import { StarFilled } from "@ant-design/icons";
 import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
 import {
     Box,
@@ -21,35 +21,63 @@ import { format } from "date-fns";
 import { placementService } from "../../api/cePlacementService";
 import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
-import { Identifier, Placement } from "../../api/types";
+import { Group, Identifier, Placement } from "../../api/types";
 import { PlanContext } from "../../pages/plan";
 import { StepperContext } from "./index";
 
-export const StudentCard: React.FC<{ placement: Placement }> = ({ placement }) => {
-    const anchor = placement.anchor ? 'green' : 'gray;'
-    const priority = placement.priority ? 'green' : 'gray;'
-    return (
-        placement &&
+export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails}) => {
+
+    const anchor = placement.anchor ? 'green' : 'gray;';
+    const timeWindows = placement.student!.timeWindows ? placement.student!.timeWindows ?? [] : [];
+
+    return (placement &&
         <div id={`${placement.plan_id}.${placement.student_id}`} >
             <Card key={placement.student_id} sx={{ pointerEvents: 'auto', margin: 0 }}>
                 <CardContent>
                     <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
-                        <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
-                            {placement.anchor &&
-                                <StarFilled style={{ fontSize: '150%', color: anchor }} />
-                            }
-                            {placement.priority === 1 &&
-                                <ExclamationCircleFilled style={{ fontSize: '150%', color: priority }} />
-                            }
-                        </Stack>
-                        <Typography>{placement.student!.name}</Typography>
+                        {
+                            placement.anchor &&
+                            <StarFilled style={{ fontSize: '150%', color: anchor }} />
+                        }
+                        <Typography fontWeight={600}>{placement.student!.name}</Typography>
                     </Stack>
+                    <Typography>{placement.student!.country}</Typography>
+                    {showDetails &&
+                        <CardContent>
+                            <Typography fontWeight={600}>Time Windows</Typography>
+                            {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                        </CardContent>
+                    }
                 </CardContent>
             </Card>
         </div>
     );
 }
 
+export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
+    const timeWindows = group ? group.time_windows ?? [] : [];
+    return (group &&
+        <Card sx={{ alignContent: "top" }}>
+            <CardContent>
+                <Typography variant="h6" fontWeight={600}>{group.name}</Typography>
+            </CardContent>
+            {showDetails &&
+                <>
+                    <CardContent>
+                        <Stack direction={'row'} spacing={1} >
+                            <Typography fontWeight={600}>Countries: </Typography>
+                            <Typography>{group.country_count}</Typography>
+                        </Stack>
+                    </CardContent>
+                    <CardContent>
+                        <Typography fontWeight={600}>Time Windows</Typography>
+                        {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                    </CardContent>
+                </>
+            }
+        </Card>
+    );
+}
 type PlacementWrapper = Placement & DDType
 
 export const GroupBoard: React.FC = () => {
@@ -59,6 +87,8 @@ export const GroupBoard: React.FC = () => {
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
     const [placementWrappers, setPlacementWrappers] = useState<PlacementWrapper[]>([]);
     const [initialized, setInitialized] = useState<boolean>(false);
+    const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
+    const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
 
     useEffect(() => {
         if (plan && !initialized) {
@@ -92,21 +122,13 @@ export const GroupBoard: React.FC = () => {
     }
 
     function cellRender(item: PlacementWrapper): ReactNode {
-        return <StudentCard placement={item} />
+        return <StudentCard placement={item} showDetails={showStudentDetails} />
     }
 
     const headerRenderer = (cat: DDCategory<string>): ReactNode => {
         const group = plan.groups.find(g => g.id === cat.value);
-        const timeWindows = group ? group.time_windows ?? undefined : undefined;
-        return (
-            <Card>
-                <CardContent>
-                    <Typography variant="h6">{cat.label}</Typography>
-                </CardContent>
-                <Stack>
-                    {timeWindows && timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
-                </Stack>
-            </Card>
+        return (group &&
+            <GroupCard group={group} showDetails={showGroupDetails} />
         )
     };
 
@@ -115,6 +137,7 @@ export const GroupBoard: React.FC = () => {
             .then((emptied) => {
                 setPlan(emptied);
                 setInitialized(false);
+                setShowGroupDetails(false);
             })
             .catch((err) => console.error(err));
     }
@@ -134,6 +157,7 @@ export const GroupBoard: React.FC = () => {
     function calculate(): void {
         planEvaluator.evaluate(plan)
             .then(evaluated => {
+                setShowGroupDetails(true);
                 setPlan(evaluated);
                 console.log('Evaluated plan', evaluated);
 
@@ -143,10 +167,18 @@ export const GroupBoard: React.FC = () => {
             .catch((err) => console.error(err));
     }
 
+    function handleGroupDetails(): void {
+        setShowGroupDetails(!showGroupDetails);
+    }
+
+    function handleStudentDetails(): void {
+        setStudentDetails(!showStudentDetails);
+    }
+
     return (
         <>
             <Box sx={{ marginTop: 1 }}  >
-                <Stack direction={'row'} spacing={1} >
+                <Stack direction={'row'} spacing={1} margin={1} >
                     <Typography variant="h5">Group Board</Typography>
                     <Button
                         color="primary"
@@ -167,6 +199,18 @@ export const GroupBoard: React.FC = () => {
                         color="inherit"
                         onClick={calculate}>
                         Calculate (WIP)
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="inherit"
+                        onClick={handleGroupDetails}>
+                        {showGroupDetails ? 'Hide Group Details' : 'Show Group Details'}
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="inherit"
+                        onClick={handleStudentDetails}>
+                            {showStudentDetails ? 'Hide Student Details' : 'Show Student Details'}
                     </Button>
                 </Stack>
                 <>{initialized &&

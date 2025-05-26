@@ -13,25 +13,24 @@ import {
   GridRenderCellParams,
   GridRowId,
   GridRowSelectionModel,
-  GridSortModel,
-  useGridApiRef,
+  useGridApiRef
 } from "@mui/x-data-grid";
 
 // third-party
 
 // project import
 import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
+import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { PageInfo } from "@digitalaidseattle/supabase";
 import { placementService } from "../../api/cePlacementService";
 import { planService } from "../../api/cePlanService";
 import { Placement } from "../../api/types";
-import { PlanContext } from "../../pages/plan";
 import AddStudentModal from "../../components/AddStudentModal";
-import { ConfirmationDialog } from "@digitalaidseattle/mui";
+import { PlanContext } from "../../pages/plan";
 
 // TODO delete temp
-import { Student } from "../../api/types";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
+import { Student } from "../../api/types";
 import { CohortContext } from "../../pages/cohort";
 
 const PAGE_SIZE = 10;
@@ -48,19 +47,24 @@ export const SetupStudents: React.FC = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
   const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
 
+  const [columns, setColumns] = useState<GridColDef[]>([]);
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: PAGE_SIZE,
   });
-  const [sortModel, setSortModel] = useState<GridSortModel>([
-    { field: "created_at", sort: "desc" },
-  ]);
+
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>();
   const [pageInfo, setPageInfo] = useState<PageInfo<Placement>>({
     rows: [],
     totalRowCount: 0,
   });
+
+  useEffect(() => {
+    setColumns(getColumns());
+  }, []);
+
 
   // Enrich the pageInfo with the placement students data
   useEffect(() => {
@@ -266,6 +270,7 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.name}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.name}`,
       },
       {
         field: "email",
@@ -274,6 +279,7 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.email}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.email}`,
       },
       {
         field: "city",
@@ -282,6 +288,7 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.city}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.city}`,
       },
       {
         field: "country",
@@ -290,11 +297,14 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.country}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.country}`,
       },
       {
         field: "availability",
         headerName: "Availability",
         width: 140,
+        sortable: false,
+        filterable: false
       },
     ];
   };
@@ -343,15 +353,11 @@ export const SetupStudents: React.FC = () => {
           getRowId={(row) => row.plan_id + ":" + row.student_id}
           apiRef={apiRef}
           rows={pageInfo.rows}
-          columns={getColumns()}
-          paginationMode="server"
+          columns={columns}
           paginationModel={paginationModel}
           rowCount={pageInfo.totalRowCount}
           onPaginationModelChange={setPaginationModel}
-          sortingMode="server"
-          sortModel={sortModel}
-          onSortModelChange={setSortModel}
-          pageSizeOptions={[5, 10, 25, 100]}
+          pageSizeOptions={[10, 25, 50, 100]}
           checkboxSelection
           onRowSelectionModelChange={setRowSelectionModel}
           disableRowSelectionOnClick={true}
