@@ -16,7 +16,7 @@
     "@ant-design/colors": "^7.0.2",
     "@ant-design/icons": "^5.3.0",
     "@digitalaidseattle/core": "^1.0.7",
-    "@digitalaidseattle/draganddrop": "^1.0.4",
+    "@digitalaidseattle/draganddrop": "^1.0.5",
     "@digitalaidseattle/mui": "^1.0.15",
     "@digitalaidseattle/supabase": "^1.0.5",
     "@mui/x-data-grid": "^6.19.6",
