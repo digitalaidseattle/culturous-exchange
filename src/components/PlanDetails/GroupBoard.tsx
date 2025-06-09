@@ -24,6 +24,7 @@ import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
 import { Group, Identifier, Placement } from "../../api/types";
 import { PlanContext } from "../../pages/plan";
+import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 
 export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails}) => {
 
