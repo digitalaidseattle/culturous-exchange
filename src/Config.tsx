@@ -52,5 +52,5 @@ export const Config = {
   menuItems: [home, entities],
   toolbarItems: [],
   authProviders: ["google"],
-  version: packageJson.version
+  version: packageJson.version,
 }
