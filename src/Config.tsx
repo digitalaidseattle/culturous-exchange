@@ -6,7 +6,6 @@ import {
 } from '@ant-design/icons';
 
 import logo from "./assets/images/culturous.jpg";
-
 import { MenuItem } from "@digitalaidseattle/mui";
 import packageJson from "../package.json";
 
