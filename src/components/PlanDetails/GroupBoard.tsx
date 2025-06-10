@@ -8,24 +8,29 @@
 
 import { ReactNode, useContext, useEffect, useState } from "react";
 
-import { StarFilled } from "@ant-design/icons";
-import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
+import { CalculatorOutlined, ClockCircleOutlined, ExperimentOutlined, ExportOutlined, StarFilled, UserOutlined } from "@ant-design/icons";
 import {
     Box,
-    Button,
     Card,
     CardContent,
+    IconButton,
     Stack,
+    Toolbar,
+    Tooltip,
     Typography
 } from "@mui/material";
+
 import { format } from "date-fns";
+import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
+
+import { Group, Identifier, Placement } from "../../api/types";
 import { placementService } from "../../api/cePlacementService";
 import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
-import { Group, Identifier, Placement } from "../../api/types";
 import { PlanContext } from "../../pages/plan";
+import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 
-export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails}) => {
+export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails }) => {
 
     const anchor = placement.anchor ? 'green' : 'gray;';
     const timeWindows = placement.student!.timeWindows ? placement.student!.timeWindows ?? [] : [];
@@ -131,16 +136,6 @@ export const GroupBoard: React.FC = () => {
         )
     };
 
-    function emptyPlan(): void {
-        planGenerator.emptyPlan(plan)
-            .then((emptied) => {
-                setPlan(emptied);
-                setInitialized(false);
-                setShowGroupDetails(false);
-            })
-            .catch((err) => console.error(err));
-    }
-
     function seedGroups(): void {
         planGenerator.seedPlan(plan)
             .then((seeded) => {
@@ -160,6 +155,10 @@ export const GroupBoard: React.FC = () => {
             .catch((err) => console.error(err));
     }
 
+    function exportPlan(): void {
+        alert('plan export not implemented yet');
+    }
+
     function handleGroupDetails(): void {
         setShowGroupDetails(!showGroupDetails);
     }
@@ -171,41 +170,43 @@ export const GroupBoard: React.FC = () => {
     return (
         <>
             <Box sx={{ marginTop: 1 }}  >
-                <Stack direction={'row'} spacing={1} margin={1} >
-                    <Typography variant="h5">Group Board</Typography>
-                    <Button
-                        color="primary"
-                        variant="contained"
-                        onClick={emptyPlan}
-                    >
-                        EMPTY (WIP)
-                    </Button>
-                    <Button
-                        color="primary"
-                        variant="contained"
-                        onClick={seedGroups}
-                    >
-                        Seed (WIP)
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="inherit"
-                        onClick={calculate}>
-                        Calculate (WIP)
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="inherit"
-                        onClick={handleGroupDetails}>
-                        {showGroupDetails ? 'Hide Group Details' : 'Show Group Details'}
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="inherit"
-                        onClick={handleStudentDetails}>
-                            {showStudentDetails ? 'Hide Student Details' : 'Show Student Details'}
-                    </Button>
-                </Stack>
+                <Toolbar>
+
+                    <Typography variant="h3" component="div" sx={{ flexGrow: 1 }}>
+                        Groups
+                    </Typography>
+
+                    <Tooltip title="Seed groups">
+                        <IconButton color="inherit" onClick={seedGroups}>
+                            <ExperimentOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Calculate plan">
+                        <IconButton color="inherit" onClick={calculate}>
+                            <CalculatorOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Export plan">
+                        <IconButton color="inherit" onClick={exportPlan}>
+                            <ExportOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Toggle group details">
+                        <IconButton color="inherit" onClick={handleGroupDetails}>
+                            <UserOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Toggle student details">
+                        <IconButton color="inherit" onClick={handleStudentDetails}>
+                            <ClockCircleOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                </Toolbar>
                 <>{initialized &&
                     <DragAndDrop
                         onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
