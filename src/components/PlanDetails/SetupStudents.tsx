@@ -142,9 +142,10 @@ export const SetupStudents: React.FC = () => {
     setShowAddStudent(false);
   };
 
-  async function handleSubmit(studentIds: string[]) {
+  async function handleSubmit(students: Student[]) {
+    // FIXME change student
     planService
-      .addStudents(plan, studentIds)
+      .addStudents(plan, students)
       .then(() => {
         notifications.success("Students added.");
         setRefresh(refresh + 1);
