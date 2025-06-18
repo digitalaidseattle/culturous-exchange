@@ -8,6 +8,7 @@
 import { v4 as uuid } from 'uuid';
 import { groupService } from './ceGroupService';
 import { placementService } from './cePlacementService';
+import { planEvaluator } from './planEvaluator';
 import { Group, Identifier, Placement, Plan, TimeWindow } from "./types";
 import { planService } from './cePlanService';
 import { studentService } from './ceStudentService';
@@ -44,85 +45,41 @@ class PlanGenerator {
   async seedPlan(plan: Plan, nGroup: number): Promise<Plan> {
     const cleaned = await this.emptyPlan(plan)
 
-    console.log('Number nG:', nGroup);
-
     const nGroups = nGroup || Math.ceil(cleaned.placements.length / MAX_SIZE);
 
-    console.log('Number of groups:', nGroups);
-
-    // create groups arrays that has group objects.
     const groups = Array.from({ length: nGroups }, (_, groupNo) => {
-      return {
-        id: uuid(),
-        plan_id: plan.id,
-        name: `Group ${groupNo}`,
-        country_count: 0
-      } as Group;
-    });
-
-    console.log('Created groups:', groups);
-    console.log('Plan:', plan);
-
-    // Insert into groups table
-    const updatedPlan = await groupService.batchInsert(groups)
-      .then(() => {
         return {
-          ...plan,
-          groups: groups
-        } as Plan;
-      });
-
-    // First, handle anchor students and assign first row students
-    // TODO or use updated plan?
-    const anchorPlacements = plan.placements.filter(p => p.anchor);
-    const nonAnchorPlacements = plan.placements.filter(p => !p.anchor);
-    const firstRowStudents: Placement[] = [];
-
-    const numAnchorsToUse = Math.min(anchorPlacements.length, nGroups);
-    firstRowStudents.push(...anchorPlacements.splice(0, numAnchorsToUse));
-    const remainingSlots = nGroups - numAnchorsToUse;
-    firstRowStudents.push(...nonAnchorPlacements.splice(0, remainingSlots));
-
-    let remainingPlacements = [
-      ...anchorPlacements, // left-over anchors if more than nGroup
-      ...nonAnchorPlacements // non-anchor students
-    ];
-
-    console.log('--- First row students:', [...firstRowStudents]);
-
-    // 1. Place anchor student first for the first row.
-    // TODO : Chang this to use AWAIT
-    const firstRowStudentsPromises = firstRowStudents.map((placement, index) => {
-      const group = updatedPlan.groups[index % nGroups];
-      return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
+            id: uuid(),
+            plan_id: cleaned.id,
+            name: `Group ${groupNo}`,
+            country_count: 0
+        } as Group;
     });
-    await Promise.all(firstRowStudentsPromises);
 
+    const updatedPlan = await groupService.batchInsert(groups)
+        .then(() => {
+            return {
+                ...cleaned,  // <- placements here still have group_id: null
+                groups: groups
+            } as Plan;
+        });
+    
+    // Assign first row students to groups
+    const sortedPlacements = [...cleaned.placements].sort((a,b) => {
+      if (a.anchor && !b.anchor) return -1; // a is anchor, b is not
+      if (!a.anchor && b.anchor) return 1; // b is anchor, 
+      return 0; // both are anchors or neither is an anchor
+    })
+    const firstRowStudents = sortedPlacements.slice(0, nGroups);
+    const remainingPlacements = sortedPlacements.slice(nGroups);
 
-    console.log('Remaining placements:', remainingPlacements);
+    // Fetch DB and update plan
+    const firstrowPlan = await planGenerator.assignToGroup(updatedPlan, nGroups, firstRowStudents);
+    const firstrowUpdatedPlan = await planEvaluator.evaluate(firstrowPlan); // to update group.time_windows and country counts
+    const finalPlan = await planGenerator.assignedByTimewindow(firstrowUpdatedPlan, nGroups, remainingPlacements);
 
-    // Sort students by their max available time windows
-    const placementsWithHours = await Promise.all(
-      remainingPlacements.map(async (placement) => ({
-        placement,
-        hours: await this.getTotalAvailableHours(placement.student?.timeWindows ?? [])
-      }))
-    );
-    placementsWithHours.sort((a, b) => b.hours - a.hours);
-    remainingPlacements = placementsWithHours.map(p => p.placement); //replace with sorted placements but exclude hours
-
-    // TODO: Fix there is a bug. dont get all students in groups
-    // 2. Assign best group for each student.
-    // ? : Do load balancing here either by Row-by-row group iteration or Student-priority greedy
-    const maxGroupSize = Math.floor(updatedPlan.placements.length / updatedPlan.groups.length);
-    updatedPlan.groups = await groupService.greedyGrouping(updatedPlan.groups, maxGroupSize, remainingPlacements);
-
-    // 4. If the group is full, place the student in the next group.
-    //getBestGroup(groups, placement) for non anchor
-
-    // Update the plan to have the updated groups, attach placements to the group objects
-    //fetch students+timewindows and attach each enriched students to its placements
-    return this.hydratePlan(plan.id);
+    
+    return finalPlan;
   }
 
   // Review: consider moving to planService as getById
@@ -171,6 +128,70 @@ class PlanGenerator {
     }
     throw new Error("Plan not found");
   }
+
+  async assignToGroup(plan: Plan, nGroups: number, students: Placement[]): Promise<Plan> {
+    // Greedy algorithm to assign students to groups
+
+    // 1. Place anchor students in the first row
+    const firstRowStudentsPromises = students.map((placement, index) => {
+      const group = plan.groups[index % nGroups];
+      return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
+    });
+    
+    plan = await Promise.all(firstRowStudentsPromises)
+        .then(() => this.hydratePlan(plan.id));
+    
+    console.log("plan student has group_id", plan);
+    
+    return plan
+  }
+
+  async assignedByTimewindow(plan: Plan, nGroups: number, remainingPlacements: Placement[]): Promise<Plan> {
+    // Greedy algorithm to assign students to groups by time windows
+
+    if (remainingPlacements.length === 0) {
+      return plan; // No placements to assign
+    }
+
+    const groups = plan.groups;
+    const maxGroupSize = Math.ceil(plan.placements.length / nGroups);
+
+    // Assign each placement to the best group based on time windows
+    for (const placement of remainingPlacements) {
+      let { bestOverlap, bestGroup, bestIntersect } = await groupService.getBestOverlap(placement, groups, maxGroupSize);
+      
+      // Assign studnets that has no overlap to the first group
+      if (!bestGroup || bestOverlap <= 0) {
+        console.log("No suitable group found for placement", placement.student_id);
+        bestGroup = plan.groups[0]; // Assign to the first group if no suitable group found
+        bestIntersect = [];
+      }
+
+      // Assign the best group to the placement students
+      if (bestGroup) {
+        placement.group_id = bestGroup.id;
+        placement.group = bestGroup;
+        bestGroup.time_windows = bestIntersect;
+
+        // Update the group in the plan
+        const groupIndex = groups.findIndex(g => g.id === bestGroup.id);
+        if (groupIndex !== -1) {
+          groups[groupIndex].placements = groups[groupIndex].placements || [];
+          groups[groupIndex].placements.push(placement);
+          groups[groupIndex].time_windows = bestIntersect;
+        }
+        
+        // Update the placement in the database
+        await placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: bestGroup.id });
+      }
+    }
+
+    const updatedPlan = await this.hydratePlan(plan.id);
+
+    // Rehydrate the plan to reflect changes
+    return this.hydratePlan(updatedPlan.id);
+  }
+
 }
 
 const planGenerator = new PlanGenerator()
