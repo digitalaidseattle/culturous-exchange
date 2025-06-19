@@ -5,14 +5,14 @@
  *
  */
 
-import { Plan } from "./types";
+import { Plan, Student } from "./types";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { timeWindowService } from "./ceTimeWindowService";
 
 class PlanExporter {
 
-    async exportPlan(plan: Plan): Promise<boolean> {
+    verticalGroups(plan: Plan): any[] {
         const data: any[] = [];
 
         data.push(plan.groups.map(group => group.name));
@@ -39,6 +39,33 @@ class PlanExporter {
                 done = true;
             }
         }
+        return data;
+    }
+
+    studentRows(plan: Plan): any[] {
+        const data: any[] = [];
+        for (const group of plan.groups) {
+            for (const placement of group.placements || []) {
+                let student: Student = placement.student! || {};
+                const row: any = {
+                    "Group": group.name,
+                    "Group Times (PST)": group.time_windows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
+                    "Group Times (Student TZ)": group.time_windows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
+                    "Name": student.name || "",
+                    "Anchor": student.anchor ? "yes" : "",
+                    "Email": student.email || "",
+                    "Country": student.country,
+                    "Time Zone": student.time_zone,
+                    "Student Times": student.timeWindows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
+                };
+                data.push(row);
+            }
+        }
+        return data;
+    }
+
+    async exportPlan(plan: Plan): Promise<boolean> {
+        const data = this.studentRows(plan);
         console.log('Exporting plan', plan.name, 'with data:', data);
 
         const worksheet = XLSX.utils.json_to_sheet(data);

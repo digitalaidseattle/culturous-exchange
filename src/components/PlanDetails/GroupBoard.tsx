@@ -29,6 +29,8 @@ import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
 import { PlanContext } from "../../pages/plan";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
+import { planExporter } from "../../api/planExporter";
+import { useNotifications } from "@digitalaidseattle/core";
 
 export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails }) => {
 
@@ -94,6 +96,8 @@ export const GroupBoard: React.FC = () => {
     const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
     const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
 
+    const notifications = useNotifications();
+
     useEffect(() => {
         if (plan && !initialized) {
             setPlacementWrappers(plan.placements
@@ -156,7 +160,14 @@ export const GroupBoard: React.FC = () => {
     }
 
     function exportPlan(): void {
-        alert('plan export not implemented yet');
+        planExporter.exportPlan(plan)
+            .then((exported) => {
+                if (exported) {
+                    notifications.success(`${plan.name} exported successfully`);
+                } else {
+                    notifications.error('Plan export failed');
+                }
+            })
     }
 
     function handleGroupDetails(): void {
