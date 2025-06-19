@@ -8,20 +8,25 @@
 
 import { ReactNode, useContext, useEffect, useState } from "react";
 
-import { StarFilled } from "@ant-design/icons";
-import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
+import { CalculatorOutlined, ClockCircleOutlined, ExperimentOutlined, ExportOutlined, StarFilled, UserOutlined } from "@ant-design/icons";
 import {
     Box,
-    Button,
     Card,
     CardContent,
+    IconButton,
     Stack,
+    Toolbar,
+    Tooltip,
     Typography
 } from "@mui/material";
+
+import { format } from "date-fns";
+import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
+
+import { Group, Identifier, Placement } from "../../api/types";
 import { placementService } from "../../api/cePlacementService";
 import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
-import { Group, Identifier, Placement } from "../../api/types";
 import { PlanContext } from "../../pages/plan";
 import { planExporter } from "../../api/planExporter";
 import { useNotifications } from "@digitalaidseattle/core";
@@ -177,6 +182,10 @@ export const GroupBoard: React.FC = () => {
                 setInitialized(false)
             })
             .catch((err) => console.error(err));
+    }
+
+    function exportPlan(): void {
+        alert('plan export not implemented yet');
     }
 
     function handleGroupDetails(): void {

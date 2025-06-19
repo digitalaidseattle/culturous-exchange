@@ -28,7 +28,8 @@ type Student = Entity & {
     country: string;
     gender: string;
     time_zone?: string; 
-    timeWindows?: TimeWindow[]; // FIXME mark as optional until DB updated
+    timeWindows?: TimeWindow[]; 
+    anchor: boolean
 }
 
 type FailedStudent = Student & {
