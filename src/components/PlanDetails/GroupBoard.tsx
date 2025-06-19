@@ -28,9 +28,7 @@ import { placementService } from "../../api/cePlacementService";
 import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
 import { PlanContext } from "../../pages/plan";
-import { planExporter } from "../../api/planExporter";
-import { useNotifications } from "@digitalaidseattle/core";
-import { timeWindowService } from "../../api/ceTimeWindowService";
+import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 
 export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails }) => {
 
@@ -52,7 +50,7 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
                     {showDetails &&
                         <CardContent>
                             <Typography fontWeight={600}>Time Windows</Typography>
-                            {timeWindows.map(tw => <Typography>{timeWindowService.toString(tw)}</Typography>)}
+                            {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
                         </CardContent>
                     }
                 </CardContent>
@@ -78,7 +76,7 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
                     </CardContent>
                     <CardContent>
                         <Typography fontWeight={600}>Time Windows</Typography>
-                        {timeWindows.map(tw => <Typography>{timeWindowService.toString(tw)}</Typography>)}
+                        {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
                     </CardContent>
                 </>
             }
@@ -95,8 +93,6 @@ export const GroupBoard: React.FC = () => {
     const [initialized, setInitialized] = useState<boolean>(false);
     const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
     const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
-
-    const notifications = useNotifications();
 
     useEffect(() => {
         if (plan && !initialized) {
@@ -140,31 +136,6 @@ export const GroupBoard: React.FC = () => {
         )
     };
 
-    function exportPlan(): void {
-        planExporter.exportPlan(plan)
-            .then((exported) => {
-                if (exported) {
-                    notifications.success('Plan exported successfully');
-                } else {
-                    notifications.error('Failed to export plan');
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-                notifications.error('Error exporting plan');
-            });
-    }
-
-    function emptyPlan(): void {
-        planGenerator.emptyPlan(plan)
-            .then((emptied) => {
-                setPlan(emptied);
-                setInitialized(false);
-                setShowGroupDetails(false);
-            })
-            .catch((err) => console.error(err));
-    }
-
     function seedGroups(): void {
         planGenerator.seedPlan(plan)
             .then((seeded) => {
@@ -199,47 +170,43 @@ export const GroupBoard: React.FC = () => {
     return (
         <>
             <Box sx={{ marginTop: 1 }}  >
-                <Stack direction={'row'} spacing={1} margin={1} >
-                    <Typography variant="h5">Group Board</Typography>
-                    <Button
-                        color="primary"
-                        variant="contained"
-                        onClick={emptyPlan}
-                    >
-                        EMPTY (WIP)
-                    </Button>
-                    <Button
-                        color="primary"
-                        variant="contained"
-                        onClick={seedGroups}
-                    >
-                        Seed (WIP)
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="inherit"
-                        onClick={calculate}>
-                        Calculate (WIP)
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="inherit"
-                        onClick={handleGroupDetails}>
-                        {showGroupDetails ? 'Hide Group Details' : 'Show Group Details'}
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="inherit"
-                        onClick={handleStudentDetails}>
-                        {showStudentDetails ? 'Hide Student Details' : 'Show Student Details'}
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="inherit"
-                        onClick={exportPlan}>
-                        Export Plan
-                    </Button>
-                </Stack>
+                <Toolbar>
+
+                    <Typography variant="h3" component="div" sx={{ flexGrow: 1 }}>
+                        Groups
+                    </Typography>
+
+                    <Tooltip title="Seed groups">
+                        <IconButton color="inherit" onClick={seedGroups}>
+                            <ExperimentOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Calculate plan">
+                        <IconButton color="inherit" onClick={calculate}>
+                            <CalculatorOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Export plan">
+                        <IconButton color="inherit" onClick={exportPlan}>
+                            <ExportOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Toggle group details">
+                        <IconButton color="inherit" onClick={handleGroupDetails}>
+                            <UserOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Toggle student details">
+                        <IconButton color="inherit" onClick={handleStudentDetails}>
+                            <ClockCircleOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                </Toolbar>
                 <>{initialized &&
                     <DragAndDrop
                         onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
