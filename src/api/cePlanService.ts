@@ -11,7 +11,7 @@ import { enrollmentService } from "./ceEnrollmentService";
 import { groupService } from "./ceGroupService";
 import { placementService } from "./cePlacementService";
 import { EntityService } from "./entityService";
-import { Cohort, Group, Identifier, Placement, Plan } from "./types";
+import { Cohort, Group, Identifier, Placement, Plan, Student } from "./types";
 
 class CEPlanService extends EntityService<Plan> {
   async create(cohort: Cohort): Promise<Plan> {
@@ -28,7 +28,7 @@ class CEPlanService extends EntityService<Plan> {
           return {
             plan_id: plan.id,
             student_id: student.id,
-            anchor: false,
+            anchor: student.anchor || false,
             priority: 0,
           } as unknown as Placement;
         });
@@ -42,21 +42,21 @@ class CEPlanService extends EntityService<Plan> {
     });
   }
 
-  private createPlacements(plan: Plan, studentIds: Identifier[]): Placement[] {
-    const placements = studentIds.map((studentId) => {
+  createPlacements(plan: Plan, students: Student[]): Placement[] {
+    const placements = students.map((student) => {
       return {
         plan_id: plan.id,
-        student_id: studentId,
-        anchor: false,
+        student_id: student.id,
+        anchor: student.anchor || false,
         priority: 0,
       } as Placement;
     });
     return placements;
   }
 
-  async addStudents(plan: Plan, studentIds: Identifier[]): Promise<any> {
+  async addStudents(plan: Plan, students: Student[]): Promise<any> {
     try {
-      const placements = this.createPlacements(plan, studentIds);
+      const placements = this.createPlacements(plan, students);
       return placementService.batchInsert(placements);
     } catch (err) {
       console.error("Unexpected error during select:", err);

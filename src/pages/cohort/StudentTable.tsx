@@ -76,8 +76,8 @@ export const StudentTable: React.FC = () => {
     setShowAddStudent(false);
   }
 
-    const handleAddStudent = (studentIds: string[]) => {
-        cohortService.addStudents(cohort, studentIds)
+    const handleAddStudent = (students: Student[]) => {
+        cohortService.addStudents(cohort, students)
             .then(() => {
                 notifications.success('Students added.');
                 setRefresh(refresh + 1);
