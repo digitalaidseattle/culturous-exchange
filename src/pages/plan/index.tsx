@@ -12,7 +12,7 @@ import { cohortService } from "../../api/ceCohortService";
 import { planService } from "../../api/cePlanService";
 import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
-import { Cohort, Plan } from "../../api/types";
+import { Cohort, Identifier, Plan } from "../../api/types";
 import { TextEdit } from "../../components/TextEdit";
 import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
@@ -28,7 +28,6 @@ export const PlanContext = createContext<PlanContextType>({
 });
 
 
-
 const PlanPage: React.FC = () => {
   const { id: planId } = useParams<string>();
   const [plan, setPlan] = useState<Plan>();
@@ -37,6 +36,25 @@ const PlanPage: React.FC = () => {
   const notifications = useNotifications();;
 
   useEffect(() => {
+    refreshPlan(planId);
+  }, [planId]);
+
+  useEffect(() => {
+    if (plan) {
+      if (plan.cohort_id) {
+        cohortService.getById(plan.cohort_id)
+          .then((cohort) => {
+            if (cohort) {
+              setCohort(cohort);
+            } else {
+              console.error(`Cohort not found ${plan.cohort_id}`);
+            }
+          });
+      }
+    }
+  }, [plan]);
+
+  function refreshPlan(planId: Identifier) {
     planGenerator.hydratePlan(planId)
       .then((hydrated) => {
         if (hydrated) {
@@ -59,36 +77,25 @@ const PlanPage: React.FC = () => {
         }
       })
       .catch((err) => notifications.error(`Error reading ${planId} : ${err}`));;
-  }, [planId]);
-
-  useEffect(() => {
-    if (plan) {
-      if (plan.cohort_id) {
-        cohortService.getById(plan.cohort_id)
-          .then((cohort) => {
-            if (cohort) {
-              setCohort(cohort);
-            } else {
-              console.error(`Cohort not found ${plan.cohort_id}`);
-            }
-          });
-      }
-    }
-  }, [plan]);
+  }
 
   function handleNameUpdate(text: string) {
     planService.update(plan!.id, { name: text })
       .then(updated => {
-        notifications.success('Plan updated.');
-        setPlan(updated)
+        if (updated) {
+          notifications.success('Plan updated.');
+          refreshPlan(updated.id);
+        }
       })
   }
 
   function handleNoteUpdate(text: string) {
     planService.update(plan!.id, { note: text })
       .then(updated => {
-        notifications.success('Plan updated.');
-        setPlan(updated)
+        if (updated) {
+          notifications.success('Plan updated.');
+          refreshPlan(updated.id);
+        }
       })
   }
 
