@@ -65,7 +65,10 @@ export const GroupBoard: React.FC = () => {
     const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
 
     useEffect(() => {
-        if (plan && !initialized) {
+        console.log('GroupBoard useEffect', plan, initialized);
+        // If plan is not defined, we don't want to initialize
+        if (plan) {
+            setInitialized(false);
             setPlacementWrappers(plan.placements
                 .map(placement => {
                     return {
@@ -125,7 +128,6 @@ export const GroupBoard: React.FC = () => {
                     <Typography variant="h3" component="div" sx={{ flexGrow: 1 }}>
                         Groups
                     </Typography>
-
 
                     <Tooltip title="Export plan">
                         <IconButton color="inherit" onClick={exportPlan}>
