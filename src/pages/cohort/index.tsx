@@ -30,9 +30,9 @@ export const CohortContext = createContext<CohortContextType>({
 
 const CohortPage: React.FC = () => {
     const [searchParams] = useSearchParams();
-    const { id: cohortId } = useParams<string>();
-    const notifications = useNotifications();
-    const navigate = useNavigate();
+  const { id: cohortId } = useParams<string>();
+  const notifications = useNotifications();
+  const navigate = useNavigate();
 
   const { refresh } = useContext(RefreshContext);
 

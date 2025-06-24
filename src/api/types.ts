@@ -4,7 +4,7 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-type Identifier = string | number | undefined;
+type Identifier = string | number | undefined | null;
 
 type Entity = {
     id: Identifier;
@@ -32,14 +32,10 @@ type Student = Entity & {
 }
 
 type FailedStudent = Student & {
-    failedError: string | ValidationError[];
+    failedError: string;
 }
 
-type ValidationError = {
-    isValid?: boolean;
-    field?: string;
-    message?: string;
-}
+type ValidationError = { isValid?: boolean; field?: string; message?: string; }
 
 type StudentField = {
     key: keyof Student;
@@ -94,6 +90,8 @@ type Group = Entity & {
     plan_id: Identifier;
     name: string;
     country_count: number;
+    placements?: Placement[];
+    time_windows?: TimeWindow[];
 }
 
 export type {
