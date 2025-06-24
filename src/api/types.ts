@@ -33,8 +33,10 @@ type Student = Entity & {
 }
 
 type FailedStudent = Student & {
-    failedError: string;
+    failedError: ValidationError[];
 }
+
+type ValidationError = { isValid?: boolean; field?: string; message?: string; }
 
 type StudentField = {
     key: keyof Student;
@@ -98,6 +100,7 @@ export type {
     Enrollment,
     Entity,
     FailedStudent,
+    ValidationError,
     Identifier,
     Student,
     StudentField,
