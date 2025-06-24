@@ -46,13 +46,21 @@ const FailedStudentsModal: React.FC<Props> = ( { isModalOpen, onClose, failedStu
           </IconButton>
         </Stack>
         <DialogContent dividers>
-          {failedStudents.map((student: FailedStudent, idx: number) => (
+        {failedStudents.map((student: FailedStudent, idx: number) => (
               <List key={idx}>
                 <ListItem>
-                  <ListItemText>
-                    {`Name: ${student.name} | Error: ${student.failedError}` }
-                  </ListItemText>
+                  <ListItemText primary={`Name: ${student.name}`} />
                 </ListItem>
+                {typeof student.failedError === 'string' && (
+                  <ListItemText secondary={`Error: ${student.failedError}`} style={{ marginLeft: '10%' }}/>
+                )}
+                {typeof student.failedError === 'object' && student.failedError !== null && (
+                  student.failedError.map((error, idx) => (
+                    <ListItem key={`${idx}-${error.field}-${idx}`}>
+                        <ListItemText secondary={`${error.field}: ${error.message}`} style={{ marginLeft: '10%' }}/>
+                      </ListItem>
+                  ))
+                )}
               </List>
           ))}
         </DialogContent>

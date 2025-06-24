@@ -97,8 +97,9 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     mapTimeWindows(entries: string[]): Partial<TimeWindow>[] {
         let timeWindows: Partial<TimeWindow>[] = [];
         entries.forEach(entry => {
-            timeWindows = timeWindows.concat(this.createTimeWindows(entry))
-        });
+            const newWindows = this.createTimeWindows(entry);
+            timeWindows.concat(newWindows);
+        })
         return timeWindows;
     }
 
@@ -106,15 +107,9 @@ class CETimeWindowService extends EntityService<TimeWindow> {
         switch (entry.trim()) {
             case "All options work for me":
                 return [
-                    { day_in_week: 'Friday', start_t: '07:00:00', end_t: '12:00:00' },
-                    { day_in_week: 'Friday', start_t: '12:00:00', end_t: '17:00:00' },
-                    { day_in_week: 'Friday', start_t: '17:00:00', end_t: '22:00:00' },
-                    { day_in_week: 'Saturday', start_t: '07:00:00', end_t: '12:00:00' },
-                    { day_in_week: 'Saturday', start_t: '12:00:00', end_t: '17:00:00' },
-                    { day_in_week: 'Saturday', start_t: '17:00:00', end_t: '22:00:00' },
-                    { day_in_week: 'Sunday', start_t: '07:00:00', end_t: '12:00:00' },
-                    { day_in_week: 'Sunday', start_t: '12:00:00', end_t: '17:00:00' },
-                    { day_in_week: 'Sunday', start_t: '17:00:00', end_t: '22:00:00' }
+                    { day_in_week: 'Friday', start_t: '07:00:00', end_t: '22:00:00' },
+                    { day_in_week: 'Saturday', start_t: '07:00:00', end_t: '22:00:00' },
+                    { day_in_week: 'Sunday', start_t: '07:00:00', end_t: '22:00:00' },
                 ];
             case "Friday morning (7am-12pm)":
                 return [{ day_in_week: 'Friday', start_t: '07:00:00', end_t: '12:00:00' }];
@@ -139,23 +134,30 @@ class CETimeWindowService extends EntityService<TimeWindow> {
         }
     }
 
-    toDateTime(day: number, time: string, offset: number): Date {
+    // dayOffset is 0 for Friday, 1 for Saturday, and 2 for Sunday
+    toDateTime(dayOffset: number, time: string, offset: number): Date {
         const sTimes = time
             .split(':')
             .map((s) => Number.parseInt(s));
-        const dateTime = new Date(0, 1, day, sTimes[0], sTimes[1], sTimes[2])
-        addHours(dateTime, offset);
-        return dateTime;
+        const dateTime = new Date(2000, 8, dayOffset + 1, sTimes[0], sTimes[1], sTimes[2])
+        return addHours(dateTime, offset);
     }
 
-    adjustTimeWindows(student: Student, offset: number) {
+    toTimeWindowDate(dateTime: Date, offset: number): { day: number, time: string } {
+        const local = addHours(dateTime, -offset);
+        const day = local.getDay();
+        const time = local.toTimeString().split(' ')[0]; // Get time in HH:MM:SS format
+        return { day: day, time: time };
+    }
+
+    adjustTimeWindows(student: Student) {
         if (student.timeWindows) {
             student.timeWindows
                 .forEach(timeWindow => {
-                    const day = timeWindow.day_in_week === 'Friday' ? 1
-                        : timeWindow.day_in_week === 'Saturday' ? 2 : 3;
-                    timeWindow.start_date_time = this.toDateTime(day, timeWindow.start_t, offset);
-                    timeWindow.end_date_time = this.toDateTime(day, timeWindow.end_t, offset);
+                    const dayOffset = timeWindow.day_in_week === 'Friday' ? 0
+                        : timeWindow.day_in_week === 'Saturday' ? 1 : 2;
+                    timeWindow.start_date_time = this.toDateTime(dayOffset, timeWindow.start_t, student.tz_offset);
+                    timeWindow.end_date_time = this.toDateTime(dayOffset, timeWindow.end_t, student.tz_offset);
                 });
         }
     }

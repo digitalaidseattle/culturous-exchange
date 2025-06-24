@@ -86,7 +86,8 @@ class CEStudentService extends EntityService<Student> {
       student.timeWindows = partialWindows as TimeWindow[];
       const tzData = await timeWindowService.getTimeZone(student.city!, student.country);
       student.time_zone = tzData.timezone;
-      timeWindowService.adjustTimeWindows(student, tzData.offset);
+      student.tz_offset = tzData.offset;
+      timeWindowService.adjustTimeWindows(student);   
       const inserted = await this.insert(student);
       return { success: true, student: inserted}
     } catch (err: any) {
