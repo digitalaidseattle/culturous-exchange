@@ -63,6 +63,8 @@ const UploadSection = () => {
         setShowDropzone(false);
         if (resp.failedCount === resp.attemptedCount) {
             notifications.error(`Error uploading spreadsheet. Failed to add ${resp.successCount} of ${resp.attemptedCount}`)
+            setFailedStudents(resp.failedStudents)
+            setIsModalOpen(true);
         } else if (resp.failedCount > 0) {
             setFailedStudents(resp.failedStudents)
             setIsModalOpen(true);
