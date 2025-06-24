@@ -1,6 +1,6 @@
 
 /**
- *  GroupBoard.tsx
+ *  SprintPanel.tsx
  *
  *  @copyright 2024 Digital Aid Seattle
  *
@@ -8,31 +8,55 @@
 
 import { ReactNode, useContext, useEffect, useState } from "react";
 
-import { CalculatorOutlined, ClockCircleOutlined, ExperimentOutlined, ExportOutlined, UserOutlined } from "@ant-design/icons";
+import { ExportOutlined, UserOutlined, UserSwitchOutlined } from "@ant-design/icons";
 import {
     Box,
+    Card,
+    CardContent,
     IconButton,
+    Stack,
     Toolbar,
     Tooltip,
     Typography
 } from "@mui/material";
 
 import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
+import { format } from "date-fns";
 
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
+import { Group, Identifier, Placement } from "../../api/types";
 import { placementService } from "../../api/cePlacementService";
-import { planEvaluator } from "../../api/planEvaluator";
-import { planGenerator } from "../../api/planGenerator";
-import { Identifier, Placement } from "../../api/types";
-import { PlanContext } from "../../pages/plan";
-import { StudentCard } from "../StudentCard";
-import { GroupCard } from "../GroupCard";
+import { StudentCard } from "../../components/StudentCard";
+import { PlanContext } from ".";
 
-
+export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
+    const timeWindows = group ? group.time_windows ?? [] : [];
+    return (group &&
+        <Card sx={{ alignContent: "top" }}>
+            <CardContent>
+                <Typography variant="h6" fontWeight={600}>{group.name}</Typography>
+            </CardContent>
+            {showDetails &&
+                <>
+                    <CardContent>
+                        <Stack direction={'row'} spacing={1} >
+                            <Typography fontWeight={600}>Countries: </Typography>
+                            <Typography>{group.country_count}</Typography>
+                        </Stack>
+                    </CardContent>
+                    <CardContent>
+                        <Typography fontWeight={600}>Time Windows</Typography>
+                        {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                    </CardContent>
+                </>
+            }
+        </Card>
+    );
+}
 type PlacementWrapper = Placement & DDType
 
 export const GroupBoard: React.FC = () => {
-    const { plan, setPlan } = useContext(PlanContext);
+    const { plan } = useContext(PlanContext);
 
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
     const [placementWrappers, setPlacementWrappers] = useState<PlacementWrapper[]>([]);
@@ -41,7 +65,10 @@ export const GroupBoard: React.FC = () => {
     const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
 
     useEffect(() => {
-        if (plan && !initialized) {
+        console.log('GroupBoard useEffect', plan, initialized);
+        // If plan is not defined, we don't want to initialize
+        if (plan) {
+            setInitialized(false);
             setPlacementWrappers(plan.placements
                 .map(placement => {
                     return {
@@ -82,25 +109,6 @@ export const GroupBoard: React.FC = () => {
         )
     };
 
-    function seedGroups(): void {
-        planGenerator.seedPlan(plan)
-            .then((seeded) => {
-                setPlan(seeded);
-                setInitialized(false);
-            })
-            .catch((err) => console.error(err));
-    }
-
-    function calculate(): void {
-        planEvaluator.evaluate(plan)
-            .then(evaluated => {
-                setShowGroupDetails(true);
-                setPlan(evaluated);
-                setInitialized(false)
-            })
-            .catch((err) => console.error(err));
-    }
-
     function exportPlan(): void {
         alert('plan export not implemented yet');
     }
@@ -117,22 +125,9 @@ export const GroupBoard: React.FC = () => {
         <>
             <Box sx={{ marginTop: 1 }}  >
                 <Toolbar>
-
                     <Typography variant="h3" component="div" sx={{ flexGrow: 1 }}>
                         Groups
                     </Typography>
-
-                    <Tooltip title="Seed groups">
-                        <IconButton color="inherit" onClick={seedGroups}>
-                            <ExperimentOutlined />
-                        </IconButton>
-                    </Tooltip>
-
-                    <Tooltip title="Calculate plan">
-                        <IconButton color="inherit" onClick={calculate}>
-                            <CalculatorOutlined />
-                        </IconButton>
-                    </Tooltip>
 
                     <Tooltip title="Export plan">
                         <IconButton color="inherit" onClick={exportPlan}>
@@ -142,16 +137,15 @@ export const GroupBoard: React.FC = () => {
 
                     <Tooltip title="Toggle group details">
                         <IconButton color="inherit" onClick={handleGroupDetails}>
-                            <UserOutlined />
+                            <UserSwitchOutlined />
                         </IconButton>
                     </Tooltip>
 
                     <Tooltip title="Toggle student details">
                         <IconButton color="inherit" onClick={handleStudentDetails}>
-                            <ClockCircleOutlined />
+                            <UserOutlined />
                         </IconButton>
                     </Tooltip>
-
                 </Toolbar>
                 <>{initialized &&
                     <DragAndDrop
