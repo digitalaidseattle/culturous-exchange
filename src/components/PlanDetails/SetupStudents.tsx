@@ -19,7 +19,7 @@ import {
 // third-party
 
 // project import
-import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
+import { StarFilled } from "@ant-design/icons";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { PageInfo } from "@digitalaidseattle/supabase";
 import { placementService } from "../../api/cePlacementService";
@@ -144,9 +144,10 @@ export const SetupStudents: React.FC = () => {
     setShowAddStudent(false);
   };
 
-  async function handleSubmit(studentIds: string[]) {
+  async function handleSubmit(students: Student[]) {
+    // FIXME change student
     planService
-      .addStudents(plan, studentIds)
+      .addStudents(plan, students)
       .then(() => {
         notifications.success("Students added.");
         setRefresh(refresh + 1);
@@ -202,33 +203,6 @@ export const SetupStudents: React.FC = () => {
     }
   };
 
-  const togglePriority = async (placement: Placement) => {
-    const newPriority = placement.priority === 0 ? 1 : 0;
-    
-    // Optimistic update
-    const updatedRows = pageInfo.rows.map((row: Placement) => {
-      if (row.id === placement.id) {
-        return { ...row, priority: newPriority };
-      }
-      return row;
-    });
-    setPageInfo({ ...pageInfo, rows: updatedRows });
-
-    try {
-      await placementService.updatePlacement(
-        placement.plan_id,
-        placement.student_id,
-        { priority: newPriority }
-      );
-      notifications.success(`Student ${newPriority === 1 ? 'set as' : 'removed from'} priority`);
-    } catch (error) {
-      console.error('Error toggling priority:', error);
-      notifications.error('Failed to update student priority status');
-      // Revert optimistic update
-      setPageInfo({ ...pageInfo });
-    }
-  };
-
   const getColumns = (): GridColDef[] => {
     return [
       {
@@ -249,26 +223,9 @@ export const SetupStudents: React.FC = () => {
         },
       },
       {
-        field: "priority",
-        headerName: "Priority",
-        width: 100,
-        type: "boolean",
-        renderCell: (param: GridRenderCellParams) => {
-          return (
-            <ExclamationCircleFilled
-              style={{
-                fontSize: "150%",
-                color: param.row.priority === 1 ? "green" : "gray",
-              }}
-              onClick={() => togglePriority(param.row)}
-            />
-          );
-        },
-      },
-      {
         field: "student.name",
         headerName: "Name",
-        width: 150,
+        width: 200,
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.name}</Typography>;
         },
@@ -277,7 +234,7 @@ export const SetupStudents: React.FC = () => {
       {
         field: "email",
         headerName: "Email",
-        width: 140,
+        width: 300,
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.email}</Typography>;
         },

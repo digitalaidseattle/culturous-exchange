@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { enrollmentService } from './ceEnrollmentService';
 import { studentService } from './ceStudentService';
 import { EntityService } from "./entityService";
-import { Cohort, Enrollment, Identifier } from "./types";
+import { Cohort, Enrollment, Identifier, Student } from "./types";
 import { supabaseClient } from '@digitalaidseattle/supabase';
 
 
@@ -32,9 +32,9 @@ class CECohortService extends EntityService<Cohort> {
         })
     }
     
-    async addStudents(cohort: Cohort, studentIds: string[]): Promise<any> {
+    async addStudents(cohort: Cohort, students: Student[]): Promise<any> {
         try {
-            const enrollments = this.createEnrollments(cohort, studentIds);
+            const enrollments = this.createEnrollments(cohort, students.map(student => student.id!.toString()));
             return enrollmentService
                 .batchInsert(enrollments)
         } catch (err) {

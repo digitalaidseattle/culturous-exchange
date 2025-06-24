@@ -20,7 +20,7 @@ interface Props {
   students: Student[];
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (studentIds: string[]) => void;
+  onSubmit: (students: Student[]) => void;
 }
 
 const AddStudentModal: React.FC<Props> = ({
@@ -38,7 +38,7 @@ const AddStudentModal: React.FC<Props> = ({
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault(); // prevent form from refreshing the page
-    onSubmit([...selectedStudents]);
+    onSubmit(students.filter(student => selectedStudents.includes(student.id as string)));
     setSelectedStudents([]);
   }
 

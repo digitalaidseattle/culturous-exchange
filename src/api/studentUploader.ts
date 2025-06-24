@@ -32,7 +32,8 @@ class StudentUploader {
             city: dict['home city (and state if applicable)'],
             country: dict['home country:'].trim(),
             gender: dict['gender'].trim(),
-            timeWindows: timeWindowService.mapTimeWindows(times.split(','))
+            timeWindows: timeWindowService.mapTimeWindows(times.split(',')),
+            anchor: dict['anchor/priority'] ? dict['anchor/priority'].toLowerCase().trim() === 'x' : false,
         } as Student
     }
 
