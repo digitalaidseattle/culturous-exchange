@@ -12,6 +12,8 @@ import { timeWindowService } from "./ceTimeWindowService";
 
 class PlanExporter {
 
+    static PST_OFFSET = 8;
+
     verticalGroups(plan: Plan): any[] {
         const data: any[] = [];
 
@@ -49,7 +51,7 @@ class PlanExporter {
                 let student: Student = placement.student! || {};
                 const row: any = {
                     "Group": group.name,
-                    "Group Times (PST)": group.time_windows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
+                    "Group Times (PST)": group.time_windows?.map(tw => timeWindowService.toString(tw, PlanExporter.PST_OFFSET)).join(', ') || "",
                     "Group Times (Student TZ)": group.time_windows?.map(tw => timeWindowService.toString(tw, student.tz_offset)).join(', ') || "",
                     "Name": student.name || "",
                     "Anchor": student.anchor ? "yes" : "",
