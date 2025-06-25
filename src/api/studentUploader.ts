@@ -67,7 +67,8 @@ class StudentUploader {
             .getTimeZone(student.city!, student.country)
             .then(tzData => {
                 student.time_zone = tzData.timezone;
-                timeWindowService.adjustTimeWindows(student, tzData.offset);
+                student.tz_offset = tzData.offset;
+                timeWindowService.adjustTimeWindows(student);
                 return studentService.insert(student)
                     .then(inserted => {
                         return { success: true, student: inserted };

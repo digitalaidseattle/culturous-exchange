@@ -5,18 +5,14 @@
  *
  */
 
-import { useNotifications } from '@digitalaidseattle/core';
-import { MainCard } from '@digitalaidseattle/mui';
-import { Box, Button, Stack, Step, StepLabel, Stepper } from '@mui/material';
+import { Box, Button, Step, StepLabel, Stepper } from '@mui/material';
 import { useContext, useState } from "react";
-import { planService } from '../../api/cePlanService';
 import { PlanContext } from '../../pages/plan';
-import { TextEdit } from "../TextEdit";
 import { GroupBoard } from "./GroupBoard";
 import { GroupSize } from './GroupSize';
 import { SetupStudents } from './SetupStudents';
 
-const SteppedDetails: React.FC = () => {
+export const PlanDetails: React.FC = () => {
     const { plan } = useContext(PlanContext);
     const steps = ['Setup Students', 'Group Size', 'Review'];
     const [activeStep, setActiveStep] = useState(0);
@@ -71,38 +67,4 @@ const SteppedDetails: React.FC = () => {
                 </>
             </Box>
         </>);
-}
-
-export const PlanDetails: React.FC = () => {
-    const notification = useNotifications();
-    const { plan, setPlan } = useContext(PlanContext);
-
-    function handleNameUpdate(text: string) {
-        planService.update(plan.id, { name: text })
-            .then(updated => {
-                notification.success('Plan updated.');
-                setPlan(updated)
-            })
-    }
-
-    function handleNoteUpdate(text: string) {
-        planService.update(plan.id, { note: text })
-            .then(updated => {
-                notification.success('Plan updated.');
-                setPlan(updated)
-            })
-    }
-
-    // TODO add breadcrumbs
-    return (
-        <MainCard sx={{ width: '100%' }}>
-            <Stack spacing={{ xs: 1, sm: 4 }}>
-                <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
-                    <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
-                    <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
-                </Stack>
-                <SteppedDetails />
-            </Stack>
-        </MainCard>
-    );
 }

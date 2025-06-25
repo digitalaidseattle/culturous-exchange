@@ -28,6 +28,7 @@ type Student = Entity & {
     country: string;
     gender: string;
     time_zone?: string; 
+    tz_offset: number; 
     timeWindows?: TimeWindow[]; 
     anchor: boolean
 }
