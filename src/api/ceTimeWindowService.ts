@@ -186,8 +186,10 @@ class CETimeWindowService extends EntityService<TimeWindow> {
             })
     }
 
-    toString(tw: TimeWindow): string {
-        return `${tw.day_in_week} ${format(tw.start_date_time!, "haaa")} - ${format(tw.end_date_time!, "haaa")}`
+    toString(tw: TimeWindow, offset?: number): string {
+        let start_time = offset ? addHours( tw.start_date_time!, -offset) :  tw.start_date_time!;
+        let end_time = offset ? addHours( tw.end_date_time!, -offset) :  tw.end_date_time!;
+        return `${tw.day_in_week} ${format(start_time, "haaa")} - ${format(end_time, "haaa")}`
     }
 }
 
