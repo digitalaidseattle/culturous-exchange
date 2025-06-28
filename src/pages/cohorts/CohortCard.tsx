@@ -14,6 +14,7 @@ import { cohortService } from "../../api/ceCohortService";
 import { Cohort } from "../../api/types";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { enrollmentService } from "../../api/ceEnrollmentService";
+import { planService } from "../../api/cePlanService";
 
 
 export const CohortCard = (props: { cohort: Cohort }) => {
@@ -30,11 +31,12 @@ export const CohortCard = (props: { cohort: Cohort }) => {
 
     useEffect(() => {
         if (props.cohort) {
-            enrollmentService.getStudents(props.cohort)
-                .then(students => {
+            Promise.all([planService.findByCohortId(props.cohort.id), enrollmentService.getStudents(props.cohort)])
+                .then(([plans, students]) => {
                     setCohort({
                         ...cohort,
-                        students: students
+                        students: students,
+                        plans: plans
                     })
                 })
         }
