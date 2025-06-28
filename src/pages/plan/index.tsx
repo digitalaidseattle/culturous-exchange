@@ -4,7 +4,7 @@ import { useParams } from "react-router";
 // material-ui
 
 // project import
-import { Stack } from "@mui/material";
+import { Breadcrumbs, Link, Stack, Typography } from "@mui/material";
 
 import { useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
@@ -104,6 +104,20 @@ const PlanPage: React.FC = () => {
     <PlanContext.Provider value={{ plan, setPlan }}>
       <CohortContext.Provider value={{ cohort, setCohort }}>
         <Stack gap={1}>
+          <Breadcrumbs aria-label="breadcrumb">
+            <Link underline="hover" color="inherit"
+              href="/">
+              Home
+            </Link>
+            <Link
+              underline="hover"
+              color="inherit"
+              href={`/cohort/${plan.cohort_id}`}
+            >
+              Cohort: {cohort.name}
+            </Link>
+            <Typography sx={{ color: 'text.primary' }}>Plan: {plan.name}</Typography>
+          </Breadcrumbs>
           <MainCard sx={{ width: '100%' }}>
             <Stack spacing={{ xs: 1, sm: 4 }}>
               <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
