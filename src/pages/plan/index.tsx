@@ -10,7 +10,6 @@ import { useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { cohortService } from "../../api/ceCohortService";
 import { planService } from "../../api/cePlanService";
-import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
 import { Cohort, Identifier, Plan } from "../../api/types";
 import { TextEdit } from "../../components/TextEdit";
