@@ -99,7 +99,6 @@ const PlanPage: React.FC = () => {
       })
   }
 
-  // TODO add breadcrumbs
   return (plan && cohort &&
     <PlanContext.Provider value={{ plan, setPlan }}>
       <CohortContext.Provider value={{ cohort, setCohort }}>
