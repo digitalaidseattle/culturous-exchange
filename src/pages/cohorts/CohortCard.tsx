@@ -1,20 +1,19 @@
 /**
  *  CohortCard.tsx
  *
- *  @copyright 2024 Digital Aid Seattle
+ *  @copyright 2025 Digital Aid Seattle
  *
  */
 
 import { MoreOutlined } from "@ant-design/icons";
+import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { Card, CardContent, IconButton, Menu, MenuItem, Theme, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { cohortService } from "../../api/ceCohortService";
-import { Cohort } from "../../api/types";
-import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { enrollmentService } from "../../api/ceEnrollmentService";
-import { planService } from "../../api/cePlanService";
+import { Cohort } from "../../api/types";
 
 
 export const CohortCard = (props: { cohort: Cohort }) => {
@@ -31,12 +30,11 @@ export const CohortCard = (props: { cohort: Cohort }) => {
 
     useEffect(() => {
         if (props.cohort) {
-            Promise.all([planService.findByCohortId(props.cohort.id), enrollmentService.getStudents(props.cohort)])
-                .then(([plans, students]) => {
+            enrollmentService.getStudents(props.cohort)
+                .then((students) => {
                     setCohort({
                         ...cohort,
                         students: students,
-                        plans: plans
                     })
                 })
         }
