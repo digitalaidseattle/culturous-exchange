@@ -4,7 +4,7 @@ import { useParams } from "react-router";
 // material-ui
 
 // project import
-import { Breadcrumbs, Link, Stack, Typography } from "@mui/material";
+import { Box, Breadcrumbs, CircularProgress, Link, Stack, Typography } from "@mui/material";
 
 import { useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
@@ -32,6 +32,7 @@ const PlanPage: React.FC = () => {
   const { id: planId } = useParams<string>();
   const [plan, setPlan] = useState<Plan>();
   const [cohort, setCohort] = useState<Cohort>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const notifications = useNotifications();;
 
@@ -55,28 +56,12 @@ const PlanPage: React.FC = () => {
   }, [plan]);
 
   function refreshPlan(planId: Identifier) {
+    setPlan(undefined);
+    setLoading(true);
     planGenerator.hydratePlan(planId)
-      .then((hydrated) => {
-        if (hydrated) {
-          // Move seeding and evaluation logic to plan creation
-          //Check  not need if we always seed when creating plans
-          if (hydrated.groups === undefined || hydrated.groups.length === 0) {
-            planGenerator.seedPlan(hydrated)
-              .then((seededPlan) => {
-                planEvaluator.evaluate(seededPlan)
-                  .then((evaluatedPlan) => {
-                    setPlan(evaluatedPlan)
-                  })
-              })
-          } else {
-            planEvaluator.evaluate(hydrated)
-              .then((evaluatedPlan) => {
-                setPlan(evaluatedPlan)
-              })
-          }
-        }
-      })
-      .catch((err) => notifications.error(`Error reading ${planId} : ${err}`));;
+      .then((hydrated) => setPlan(hydrated))
+      .catch((err) => notifications.error(`Error reading ${planId} : ${err}`))
+      .finally(() => setLoading(false));
   }
 
   function handleNameUpdate(text: string) {
@@ -99,37 +84,48 @@ const PlanPage: React.FC = () => {
       })
   }
 
-  return (plan && cohort &&
-    <PlanContext.Provider value={{ plan, setPlan }}>
-      <CohortContext.Provider value={{ cohort, setCohort }}>
-        <Stack gap={1}>
-          <Breadcrumbs aria-label="breadcrumb">
-            <Link underline="hover" color="inherit"
-              href="/">
-              Home
-            </Link>
-            <Link
-              underline="hover"
-              color="inherit"
-              href={`/cohort/${plan.cohort_id}`}
-            >
-              Cohort: {cohort.name}
-            </Link>
-            <Typography sx={{ color: 'text.primary' }}>Plan: {plan.name}</Typography>
-          </Breadcrumbs>
-          <MainCard sx={{ width: '100%' }}>
-            <Stack spacing={{ xs: 1, sm: 4 }}>
-              <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
-                <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
-                <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
+  return (
+    loading
+      ?
+      <Box sx={{
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+        <CircularProgress color="success" />
+      </Box>
+      : plan && cohort &&
+      <PlanContext.Provider value={{ plan, setPlan }}>
+        <CohortContext.Provider value={{ cohort, setCohort }}>
+          <Stack gap={1}>
+            <Breadcrumbs aria-label="breadcrumb">
+              <Link underline="hover" color="inherit"
+                href="/">
+                Home
+              </Link>
+              <Link
+                underline="hover"
+                color="inherit"
+                href={`/cohort/${plan.cohort_id}`}
+              >
+                Cohort: {cohort.name}
+              </Link>
+              <Typography sx={{ color: 'text.primary' }}>Plan: {plan.name}</Typography>
+            </Breadcrumbs>
+            <MainCard sx={{ width: '100%' }}>
+              <Stack spacing={{ xs: 1, sm: 4 }}>
+                <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
+                  <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
+                  <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
+                </Stack>
+                {/* <PlanDetails /> */}
+                <GroupBoard />
               </Stack>
-              {/* <PlanDetails /> */}
-              <GroupBoard />
-            </Stack>
-          </MainCard>
-        </Stack>
-      </CohortContext.Provider>
-    </PlanContext.Provider>
+            </MainCard>
+          </Stack>
+        </CohortContext.Provider>
+      </PlanContext.Provider>
   );
 };
 
