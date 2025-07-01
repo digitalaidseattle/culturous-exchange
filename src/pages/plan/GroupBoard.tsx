@@ -28,6 +28,8 @@ import { Group, Identifier, Placement } from "../../api/types";
 import { placementService } from "../../api/cePlacementService";
 import { StudentCard } from "../../components/StudentCard";
 import { PlanContext } from ".";
+import { planExporter } from "../../api/planExporter";
+import { useNotifications } from "@digitalaidseattle/core";
 
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
     const timeWindows = group ? group.time_windows ?? [] : [];
@@ -63,6 +65,8 @@ export const GroupBoard: React.FC = () => {
     const [initialized, setInitialized] = useState<boolean>(false);
     const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
     const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
+
+    const notifications = useNotifications();
 
     useEffect(() => {
         console.log('GroupBoard useEffect', plan, initialized);
@@ -110,7 +114,16 @@ export const GroupBoard: React.FC = () => {
     };
 
     function exportPlan(): void {
-        alert('plan export not implemented yet');
+        planExporter.exportPlan(plan)
+            .then((exported) => {
+                if (exported) {
+                    notifications.success(`${plan.name} exported successfully`);
+
+
+                } else {
+                    notifications.error('Plan export failed');
+                }
+            })
     }
 
     function handleGroupDetails(): void {

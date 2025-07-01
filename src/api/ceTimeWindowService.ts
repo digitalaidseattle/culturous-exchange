@@ -9,6 +9,7 @@ import { supabaseClient } from "@digitalaidseattle/supabase";
 import { EntityService } from "./entityService";
 import { Student, TimeWindow } from "./types";
 import { addHours, isEqual } from "date-fns";
+import { format } from "date-fns";
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
     if (arr1.length !== arr2.length) {
@@ -183,6 +184,12 @@ class CETimeWindowService extends EntityService<TimeWindow> {
                     offset: data.timezone_offset
                 }
             })
+    }
+
+    toString(tw: TimeWindow, offset?: number): string {
+        let start_time = offset ? addHours( tw.start_date_time!, -offset) :  tw.start_date_time!;
+        let end_time = offset ? addHours( tw.end_date_time!, -offset) :  tw.end_date_time!;
+        return `${tw.day_in_week} ${format(start_time, "haaa")} - ${format(end_time, "haaa")}`
     }
 }
 
