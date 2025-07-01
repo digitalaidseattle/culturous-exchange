@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { PlanProps } from "../../utils/props";
 
-export const GroupSize: React.FC<PlanProps> = ({ plan }) => {
+export const GroupCount: React.FC<PlanProps> = ({ plan }) => {
     const [values, setValues] = useState<number[]>([0, 10]);
 
     const [min, setMin] = useState<number>(5);
@@ -42,7 +42,7 @@ export const GroupSize: React.FC<PlanProps> = ({ plan }) => {
                 <CardContent>
                     <Stack direction={'row'} padding={5} spacing={5}>
                         <Typography gutterBottom sx={{ color: 'text.primary', fontSize: 14 }}>
-                            Group Size
+                            Number of Groups
                         </Typography>
                         <Box sx={{ width: 400 }}>
                             <Slider

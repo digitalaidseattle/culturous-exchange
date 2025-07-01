@@ -34,6 +34,5 @@ export const Config = {
   logoUrl: logo,
   drawerWidth: 240,
   menuItems: [pages],
-  toolbarItems: [],
-  authProviders: ["google"]
+  toolbarItems: []
 }

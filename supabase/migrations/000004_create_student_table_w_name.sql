@@ -14,9 +14,9 @@ CREATE TABLE student_tbl (
 );
 
 -- Insert the first student
--- INSERT INTO student_tbl (first_name, last_name, age, email, city, state, country, availabilities)
--- VALUES ('Student1', 17, 's1@gmail.com', 'Seattle', 'Washington', 'US', '[]');
+INSERT INTO student_tbl (first_name, last_name, age, email, city, state, country, availabilities)
+VALUES ('Student1', 17, 's1@gmail.com', 'Seattle', 'Washington', 'US', '[]');
 
--- -- Insert the second student
--- INSERT INTO student_tbl (first_name, last_name, age, email, city, state, country, availabilities)
--- VALUES ('Student2', 15, 's2@gmail.com', 'Essen', '', 'Germany', '[]');
+-- Insert the second student
+INSERT INTO student_tbl (first_name, last_name, age, email, city, state, country, availabilities)
+VALUES ('Student2', 15, 's2@gmail.com', 'Essen', '', 'Germany', '[]');

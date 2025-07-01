@@ -34,7 +34,7 @@ export const CohortCard = (props: { cohort: Cohort }) => {
                 .then(students => {
                     setCohort({
                         ...cohort,
-                        students: students
+                        enrolled: students
                     })
                 })
         }
@@ -110,7 +110,7 @@ export const CohortCard = (props: { cohort: Cohort }) => {
             </Menu>
             <CardContent>
                 <Typography fontWeight={600}>{cohort.name}</Typography>
-                <Typography>Students : {cohort.students?.length} </Typography>
+                <Typography>Students : {cohort.enrolled?.length} </Typography>
                 <Typography>Plans : {cohort.plans?.length} </Typography>
                 <ConfirmationDialog
                     message={`Delete ${cohort.name}?`}

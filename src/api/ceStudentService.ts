@@ -1,14 +1,14 @@
 /**
- * ceStudentService.ts
+ * cePlanService.ts
  *
  * @copyright 2025 Digital Aid Seattle
  *
  */
-import { supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
-import { timeWindowService } from './ceTimeWindowService';
+import { read, utils } from "xlsx";
 import { EntityService } from "./entityService";
-import { FailedStudent, Student, TimeWindow } from "./types";
+import { FailedStudent, Student } from "./types";
+import { supabaseClient } from '@digitalaidseattle/supabase';
 
 class CEStudentService extends EntityService<Student> {
 
@@ -39,46 +39,81 @@ class CEStudentService extends EntityService<Student> {
     }
   }
 
-  async insert(entity: Partial<Student>, select?: string): Promise<Student> {
-    if (!entity.name || !entity.age || !entity.country || !entity.email) {
-      throw new Error("Name and Email are required fields.");
+
+  async get_students_from_excel(excel_file: File): Promise<Student[]> {
+    try {
+      const arrayBuffer = await excel_file.arrayBuffer();
+      const workbook = read(arrayBuffer);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const data: Student[] = utils.sheet_to_json(worksheet);
+
+      // Modify data if necessary (e.g., ensure id is generated if not provided)
+      data.map((student) => {
+        if (!student.id) {
+          student.id = uuid();
+        }
+        if (!student.availabilities) {
+          student.availabilities = []; // Initialize empty availabilities if missing
+        }
+      });
+
+      return data;
+    } catch (error) {
+      console.error('Error parsing Excel file:', error);
+      throw new Error('Failed to parse Excel file');
     }
-    const studentId = uuid();
-    const studentWithId: Student = {
-      ...entity,
-      id: studentId
-    } as Student;
+  }
+  async insert_from_excel(excel_file: File): Promise<{ successCount: number; failedStudents: FailedStudent[] }> {
+    try {
+      const students = await this.get_students_from_excel(excel_file);
+      let successCount = 0;
+      const failedStudents: FailedStudent[] = [];
 
-    // FIXME remove when time_zone added
-    // delete studentWithId.time_zone;
-    //Remove timeWindow from the student before insert
-    delete studentWithId.timeWindows;
-    const updatedStudent = await super.insert(studentWithId, select);
+      for (const student of students) {
+        try {
+          await this.insert(student);
+          successCount++;
+        } catch (error) {
+          const failedStudent: FailedStudent = {
+            ...student,
+            failedError: error instanceof Error ? error.message : 'Unknown error'
+          }
+          failedStudents.push(failedStudent);
+          if (error instanceof Error) {
+            console.error(`Failed to insert student with ID ${student.id}:`, error.message);
+          } else {
+            console.error(`Failed to insert student with ID ${student.id}:`, error);
+          }
+        }
+      }
 
-    const timeWindows = entity.timeWindows!.map(orig => {
-      return {
-        ...orig,
-        id: uuid(),
-        student_id: studentId
-      } as TimeWindow
-    })
-    await timeWindowService.batchInsert(timeWindows)
-    return updatedStudent;
+      return { successCount, failedStudents };
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error processing Excel file:', error.message);
+      } else {
+        console.error('Error processing Excel file:', error);
+      }
+      throw new Error('Failed to insert students from Excel file');
+    }
   }
 
-  async insertSingle(student: Student, selection: string[]): Promise<{ success: boolean, student: Student | FailedStudent }> {
-    try {
-      const partialWindows = timeWindowService.mapTimeWindows(selection);
-      student.timeWindows = partialWindows as TimeWindow[];
-      const tzData = await timeWindowService.getTimeZone(student.city!, student.country);
-      student.time_zone = tzData.timezone;
-      timeWindowService.adjustTimeWindows(student, tzData.offset);
-      const inserted = await this.insert(student);
-      return { success: true, student: inserted}
-    } catch (err: any) {
-      console.error(`Failed to insert student ${student.name}`, err);
-      return { success: false, student: {...student, failedError:  err.message} }
+  async insert(entity: Partial<Student>, select?: string ): Promise<Student> {
+    console.log('entity: ', entity)
+    if (!entity.name || !entity.age || !entity.city || !entity.country || !entity.email || !entity.state) {
+      throw new Error("Name and Email are required fields.");
     }
+    const studentWithId: Student = {
+      id: entity.id?? uuid(),
+      name: entity.name,
+      email: entity.email,
+      age: entity.age,
+      city: entity.city,
+      state: entity.state,
+      country: entity.country,
+      availabilities: entity.availabilities?? []
+    }
+    return await super.insert(studentWithId, select);
   }
 
 }

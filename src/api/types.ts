@@ -10,25 +10,26 @@ type Entity = {
     id: Identifier;
 }
 
-type TimeWindow = Entity & {
-    student_id: Identifier | null;
-    group_id: Identifier | null;
-    day_in_week: string;
-    start_t: string;
-    end_t: string;
-    start_date_time?: Date;  // FIXME mark as optional until DB updated
-    end_date_time?: Date;  // FIXME mark as optional until DB updated
+type Availability = {
+    id: string;
+    startDate: Date;
+    endDate: Date;
+}
+
+type SelectAvailability = {
+    day: string;
+    start: string;
+    end: string;
 }
 
 type Student = Entity & {
     name: string;
     age: number | null;
     email: string;
-    city?: string; // FIXME mark as optional until DB updated
+    city: string;
+    state: string;
     country: string;
-    gender: string;
-    time_zone?: string; 
-    timeWindows?: TimeWindow[]; // FIXME mark as optional until DB updated
+    availabilities: SelectAvailability[];
 }
 
 type FailedStudent = Student & {
@@ -45,14 +46,26 @@ type StudentField = {
 type Cohort = Entity & {
     name: string;
     plans: Plan[];
-    enrollments: Enrollment[];
-    students: Student[];
+    enrolled: Student[];
+}
+
+type Group = Entity & {
+    groupNo: string;
+    studentIds: Identifier[];
 }
 
 type Enrollment = Entity & {
     cohort_id: Identifier;
     student_id: Identifier;
-    student?: Student;
+}
+
+type Placement = Entity & {
+    cohort_id: Identifier;
+    student_id: Identifier;
+    student: Student;
+    anchor: boolean;
+    priority: boolean;
+    availabilities: Availability[];
 }
 
 type Plan = Entity & {
@@ -60,44 +73,18 @@ type Plan = Entity & {
     cohort_id: Identifier;
     placements: Placement[]
     groups: Group[];
-    note: string;
-}
-
-type Placement = Entity & {
-    plan_id: Identifier;
-    student_id: Identifier;
-    group_id?: Identifier; // will be null when unassigned
-    student?: Student;
-    group?: Group;
-    /**
-     * Whether this student is an anchor student for the plan.
-     * Anchor students are key participants that should be prioritized in group assignments.
-     */
-    anchor: boolean;
-
-    /**
-     * Priority level of the student in this plan.
-     * 0 = normal priority
-     * 1 = high priority
-     */
-    priority: number;
-    time_windows?: TimeWindow[];
-}
-
-type Group = Entity & {
-    plan_id: Identifier;
-    name: string;
-    country_count: number;
+    rating: number;
+    notes: string;
 }
 
 export type {
-    TimeWindow,
+    Availability,
     Enrollment,
     Entity,
     FailedStudent,
-    Identifier,
     Student,
     StudentField,
+    SelectAvailability,
     Cohort,
     Group,
     Placement,

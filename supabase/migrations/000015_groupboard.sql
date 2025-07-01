@@ -1,7 +1,0 @@
-ALTER TABLE grouptable DROP COLUMN IF EXISTS "overlap";
-ALTER TABLE grouptable ADD COLUMN IF NOT EXISTS name TEXT;
-
-DROP TABLE IF EXISTS selection CASCADE;
-
-ALTER TABLE placement DROP COLUMN IF EXISTS "group_id";
-ALTER TABLE placement ADD COLUMN group_id UUID REFERENCES grouptable(id);

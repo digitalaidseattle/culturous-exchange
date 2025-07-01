@@ -23,7 +23,7 @@ const CohortsPage: React.FC = () => {
     const newCohort = async () => {
         const cohort = await cohortService.create();
         if (cohort) {
-            notifications.success(`Cohort ${cohort.name} created.`);
+            notifications.success(`Chort ${cohort.name} created.`);
             setRefresh(refresh + 1);
         } else {
             notifications.error('Unable to create new cohort');
