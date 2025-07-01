@@ -4,7 +4,7 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-import { supabaseClient } from '@digitalaidseattle/supabase';
+import { PageInfo, QueryModel, supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
 import { timeWindowService } from './ceTimeWindowService';
 import { EntityService } from "./entityService";
@@ -39,6 +39,23 @@ class CEStudentService extends EntityService<Student> {
     }
   }
 
+  async find(queryModel: QueryModel, select?: string): Promise<PageInfo<Student>> {
+    return super
+      .find(queryModel, select ?? '*, timewindow(*)')
+      .then((pi) => {
+        const updatedRows = pi.rows.map((student: any) => {
+          const timeWindows = [...student.timewindow as TimeWindow[]];
+          delete student.timewindow;
+          return ({
+            ...student,
+            timeWindows: timeWindows
+          })
+        }
+        );
+        return { rows: updatedRows, totalRowCount: pi.totalRowCount }
+      })
+  }
+
   async insert(entity: Partial<Student>, select?: string): Promise<Student> {
     if (!entity.name || !entity.age || !entity.country || !entity.email) {
       throw new Error("Name and Email are required fields.");
@@ -48,9 +65,6 @@ class CEStudentService extends EntityService<Student> {
       ...entity,
       id: studentId
     } as Student;
-
-    // FIXME remove when time_zone added
-    // delete studentWithId.time_zone;
     //Remove timeWindow from the student before insert
     delete studentWithId.timeWindows;
     const updatedStudent = await super.insert(studentWithId, select);

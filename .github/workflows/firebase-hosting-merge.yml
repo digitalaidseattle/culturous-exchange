@@ -15,6 +15,7 @@ jobs:
       - run: |
           touch .env
           echo VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} >> .env
+          echo VITE_IPGEOLOCATION_KEY=${{ secrets.IPGEOLOCATION_KEY }} >> .env
           cat .env
           npm install && npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0

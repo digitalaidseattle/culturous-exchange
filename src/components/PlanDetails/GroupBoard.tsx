@@ -1,4 +1,3 @@
-
 /**
  *  SprintPanel.tsx
  *
@@ -6,73 +5,111 @@
  *
  */
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 
-import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
-import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
+import { CalculatorOutlined, ClockCircleOutlined, ExperimentOutlined, ExportOutlined, StarFilled, UserOutlined } from "@ant-design/icons";
 import {
     Box,
-    Button,
     Card,
     CardContent,
+    IconButton,
     Stack,
+    Toolbar,
+    Tooltip,
     Typography
 } from "@mui/material";
-import { placementService } from "../../api/cePlacementService";
-import { planGenerator } from "../../api/planGenerator";
-import { Identifier, Placement } from "../../api/types";
-import { PlanProps } from "../../utils/props";
 
-export const StudentCard: React.FC<{ placement: Placement }> = ({ placement }) => {
-    const anchor = placement.anchor ? 'green' : 'gray;'
-    const priority = placement.priority ? 'green' : 'gray;'
-    return (
-        placement &&
+import { format } from "date-fns";
+import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
+
+import { Group, Identifier, Placement } from "../../api/types";
+import { placementService } from "../../api/cePlacementService";
+import { planEvaluator } from "../../api/planEvaluator";
+import { planGenerator } from "../../api/planGenerator";
+import { PlanContext } from "../../pages/plan";
+import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
+import { StepperContext } from "./index";
+
+export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails }) => {
+
+    const anchor = placement.anchor ? 'green' : 'gray;';
+    const timeWindows = placement.student!.timeWindows ? placement.student!.timeWindows ?? [] : [];
+
+    return (placement &&
         <div id={`${placement.plan_id}.${placement.student_id}`} >
             <Card key={placement.student_id} sx={{ pointerEvents: 'auto', margin: 0 }}>
                 <CardContent>
                     <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
-                        <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
-                            {placement.anchor &&
-                                <StarFilled style={{ fontSize: '150%', color: anchor }} />
-                            }
-                            {placement.priority === 1 &&
-                                <ExclamationCircleFilled style={{ fontSize: '150%', color: priority }} />
-                            }
-                        </Stack>
-                        <Typography>{placement.student!.name}</Typography>
+                        {
+                            placement.anchor &&
+                            <StarFilled style={{ fontSize: '150%', color: anchor }} />
+                        }
+                        <Typography fontWeight={600}>{placement.student!.name}</Typography>
                     </Stack>
+                    <Typography>{placement.student!.country}</Typography>
+                    {showDetails &&
+                        <CardContent>
+                            <Typography fontWeight={600}>Time Windows</Typography>
+                            {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                        </CardContent>
+                    }
                 </CardContent>
             </Card>
         </div>
     );
 }
 
+export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
+    const timeWindows = group ? group.time_windows ?? [] : [];
+    return (group &&
+        <Card sx={{ alignContent: "top" }}>
+            <CardContent>
+                <Typography variant="h6" fontWeight={600}>{group.name}</Typography>
+            </CardContent>
+            {showDetails &&
+                <>
+                    <CardContent>
+                        <Stack direction={'row'} spacing={1} >
+                            <Typography fontWeight={600}>Countries: </Typography>
+                            <Typography>{group.country_count}</Typography>
+                        </Stack>
+                    </CardContent>
+                    <CardContent>
+                        <Typography fontWeight={600}>Time Windows</Typography>
+                        {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                    </CardContent>
+                </>
+            }
+        </Card>
+    );
+}
 type PlacementWrapper = Placement & DDType
 
-export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
-    const [placements, setPlacements] = useState<Placement[]>([]);
+export const GroupBoard: React.FC = () => {
+    const { plan, setPlan } = useContext(PlanContext);
+    const { groupSize } = useContext(StepperContext);
+
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
+    const [placementWrappers, setPlacementWrappers] = useState<PlacementWrapper[]>([]);
     const [initialized, setInitialized] = useState<boolean>(false);
+    const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
+    const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
 
     useEffect(() => {
         if (plan && !initialized) {
-            placementService.findByPlanId(plan.id)
-                .then(placements => {
-                    const allGroups = placements
-                        .filter(placement => placement.group !== null)
-                        .map(placement => placement.group);
-                    const groupIds = Array.from(new Set(allGroups.map(group => group!.id)));
-                    const groupCategories = groupIds
-                        .map(groupId => {
-                            const found = allGroups.find(group => group!.id === groupId)!;
-                            return { label: found.name, value: found.id! as string }
-                        })
-                        .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label));
-                    setCategories(groupCategories);
-                    setPlacements(placements);
-                    setInitialized(true);
+            setPlacementWrappers(plan.placements
+                .map(placement => {
+                    return {
+                        ...placement,
+                        id: `${placement.plan_id}:${placement.student_id}`,
+                    } as PlacementWrapper
+                }));
+            setCategories(plan.groups
+                .map(group => {
+                    return { label: group.name, value: group.id! as string }
                 })
+                .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label)));
+            setInitialized(true);
         }
     }, [plan, initialized])
 
@@ -90,39 +127,97 @@ export const GroupBoard: React.FC<PlanProps> = ({ plan }) => {
     }
 
     function cellRender(item: PlacementWrapper): ReactNode {
-        return <StudentCard placement={item} />
+        return <StudentCard placement={item} showDetails={showStudentDetails} />
     }
 
     const headerRenderer = (cat: DDCategory<string>): ReactNode => {
-        return (
-            <Box>
-                <Typography variant="h6">Group: {cat.label}</Typography>
-            </Box>
+        const group = plan.groups.find(g => g.id === cat.value);
+        return (group &&
+            <GroupCard group={group} showDetails={showGroupDetails} />
         )
     };
 
     function seedGroups(): void {
-        planGenerator.seedPlan(plan)
-            .then(() => {
+        planGenerator.seedPlan(plan, groupSize)
+            .then((seeded) => {
+                setPlan(seeded);
+                console.log('Plan seed success');
+                console.log('Seeded plan', seeded);
                 setInitialized(false);
             })
             .catch((err) => console.error(err));
     }
 
+    // TODO : This function will call to add the time window
+    function calculate(): void {
+        planEvaluator.evaluate(plan)
+            .then(evaluated => {
+                setShowGroupDetails(true);
+                setPlan(evaluated);
+                console.log('Evaluated plan', evaluated);
+
+                setInitialized(false)
+                console.log('initialized is False');
+            })
+            .catch((err) => console.error(err));
+    }
+
+    function exportPlan(): void {
+        alert('plan export not implemented yet');
+    }
+
+    function handleGroupDetails(): void {
+        setShowGroupDetails(!showGroupDetails);
+    }
+
+    function handleStudentDetails(): void {
+        setStudentDetails(!showStudentDetails);
+    }
+
     return (
         <>
             <Box sx={{ marginTop: 1 }}  >
-                <Button
-                    color="primary"
-                    variant="contained"
-                    onClick={seedGroups}
-                >
-                    Seed (WIP)
-                </Button>
+                <Toolbar>
+
+                    <Typography variant="h3" component="div" sx={{ flexGrow: 1 }}>
+                        Groups
+                    </Typography>
+
+                    <Tooltip title="Seed groups">
+                        <IconButton color="inherit" onClick={seedGroups}>
+                            <ExperimentOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Calculate plan">
+                        <IconButton color="inherit" onClick={calculate}>
+                            <CalculatorOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Export plan">
+                        <IconButton color="inherit" onClick={exportPlan}>
+                            <ExportOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Toggle group details">
+                        <IconButton color="inherit" onClick={handleGroupDetails}>
+                            <UserOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Toggle student details">
+                        <IconButton color="inherit" onClick={handleStudentDetails}>
+                            <ClockCircleOutlined />
+                        </IconButton>
+                    </Tooltip>
+
+                </Toolbar>
                 <>{initialized &&
                     <DragAndDrop
                         onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
-                        items={placements}
+                        items={placementWrappers}
                         categories={categories}
                         isCategory={isCategory}
                         cardRenderer={cellRender}

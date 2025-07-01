@@ -12,6 +12,17 @@ import { enrollmentService } from "./ceEnrollmentService";
 
 
 class CEPlacementService extends EntityService<Placement> {
+  // TODO : NEW, there's something wrong with original findByPlanId need FIX.
+  async findByPlan(planId: Identifier): Promise<Placement[]> {
+    return await supabaseClient
+      .from('placement')
+      .select('*')
+      .eq('plan_id', planId)
+      .then(resp => {
+        return resp.data as Placement[] || [];
+      });
+  }
+
   async findByPlanId(planId: Identifier): Promise<Placement[]> {
     return await supabaseClient
       .from('placement')
@@ -19,6 +30,7 @@ class CEPlacementService extends EntityService<Placement> {
       .eq('plan_id', planId)
       .then(resp => {
         if (resp.data) {
+
           return resp.data.map(db => {
             const grouptable = db['grouptable'] as Group[];
             const student = db['student'] as Student[];

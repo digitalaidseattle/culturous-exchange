@@ -11,6 +11,7 @@ import CohortsPage from "./cohorts";
 import StudentPage from './student';
 import StudentsPage from './students';
 import PlanPage from "./plan";
+import HomePage from "./home";
 
 const routes = [
   {
@@ -19,7 +20,11 @@ const routes = [
     children: [
       {
         path: "",
-        element: <CohortsPage />,
+        element: <HomePage />,
+      },
+      {
+        path: "home",
+        element: <HomePage />,
       },
       {
         path: "cohorts",
