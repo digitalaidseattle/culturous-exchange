@@ -1,4 +1,3 @@
-
 /**
  *  GroupBoard.tsx
  *
@@ -27,6 +26,8 @@ import { Identifier, Placement } from "../../api/types";
 import { PlanContext } from "../../pages/plan";
 import { StudentCard } from "../StudentCard";
 import { GroupCard } from "../GroupCard";
+import { planExporter } from "../../api/planExporter";
+import { useNotifications } from "@digitalaidseattle/core";
 
 
 type PlacementWrapper = Placement & DDType
@@ -39,6 +40,8 @@ export const GroupBoard: React.FC = () => {
     const [initialized, setInitialized] = useState<boolean>(false);
     const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
     const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
+
+    const notifications = useNotifications();
 
     useEffect(() => {
         if (plan && !initialized) {
@@ -86,23 +89,36 @@ export const GroupBoard: React.FC = () => {
         planGenerator.seedPlan(plan)
             .then((seeded) => {
                 setPlan(seeded);
+                console.log('Plan seed success');
+                console.log('Seeded plan', seeded);
                 setInitialized(false);
             })
             .catch((err) => console.error(err));
     }
 
+    // TODO : This function will call to add the time window
     function calculate(): void {
         planEvaluator.evaluate(plan)
             .then(evaluated => {
                 setShowGroupDetails(true);
                 setPlan(evaluated);
+                console.log('Evaluated plan', evaluated);
+
                 setInitialized(false)
+                console.log('initialized is False');
             })
             .catch((err) => console.error(err));
     }
 
     function exportPlan(): void {
-        alert('plan export not implemented yet');
+        planExporter.exportPlan(plan)
+            .then((exported) => {
+                if (exported) {
+                    notifications.success(`${plan.name} exported successfully`);
+                } else {
+                    notifications.error('Plan export failed');
+                }
+            })
     }
 
     function handleGroupDetails(): void {

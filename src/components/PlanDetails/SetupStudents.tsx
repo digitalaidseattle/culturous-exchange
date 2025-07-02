@@ -68,6 +68,8 @@ export const SetupStudents: React.FC = () => {
 
   // Enrich the pageInfo with the placement students data
   useEffect(() => {
+    console.log(plan)
+    
     if (plan && cohort) {
       placementService.getEnrichedPlacements(plan).then((enrichedPlacements) => {
         setPageInfo({
