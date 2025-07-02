@@ -1,4 +1,3 @@
-
 /**
  *  GroupBoard.tsx
  *
@@ -90,17 +89,23 @@ export const GroupBoard: React.FC = () => {
         planGenerator.seedPlan(plan)
             .then((seeded) => {
                 setPlan(seeded);
+                console.log('Plan seed success');
+                console.log('Seeded plan', seeded);
                 setInitialized(false);
             })
             .catch((err) => console.error(err));
     }
 
+    // TODO : This function will call to add the time window
     function calculate(): void {
         planEvaluator.evaluate(plan)
             .then(evaluated => {
                 setShowGroupDetails(true);
                 setPlan(evaluated);
+                console.log('Evaluated plan', evaluated);
+
                 setInitialized(false)
+                console.log('initialized is False');
             })
             .catch((err) => console.error(err));
     }
