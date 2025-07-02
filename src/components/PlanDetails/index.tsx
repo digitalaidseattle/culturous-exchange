@@ -11,7 +11,6 @@ import { Box, Button, Stack, Step, StepLabel, Stepper } from '@mui/material';
 import { createContext, useContext, useState } from "react";
 import { planService } from '../../api/cePlanService';
 import { PlanContext } from '../../pages/plan';
-import { TextEdit } from "../TextEdit";
 import { GroupBoard } from "./GroupBoard";
 import { GroupSize } from './GroupSize';
 import { SetupStudents } from './SetupStudents';
