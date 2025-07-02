@@ -14,6 +14,7 @@ import { PlanContext } from '../../pages/plan';
 import { GroupBoard } from "./GroupBoard";
 import { GroupSize } from './GroupSize';
 import { SetupStudents } from './SetupStudents';
+import { TextEdit } from '../TextEdit';
 
 // NEW : Add StepperContext to memorize GroupSize
 

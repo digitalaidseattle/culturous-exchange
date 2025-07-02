@@ -42,10 +42,10 @@ class PlanGenerator {
     }, 0);
   }
 
-  async seedPlan(plan: Plan, nGroup: number): Promise<Plan> {
+  async seedPlan(plan: Plan): Promise<Plan> {
     const cleaned = await this.emptyPlan(plan)
 
-    const nGroups = nGroup || Math.ceil(cleaned.placements.length / MAX_SIZE);
+    const nGroups = Math.ceil(cleaned.placements.length / MAX_SIZE);
 
     const groups = Array.from({ length: nGroups }, (_, groupNo) => {
         return {
