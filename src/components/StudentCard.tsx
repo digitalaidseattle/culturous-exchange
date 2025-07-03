@@ -16,7 +16,6 @@ import { format } from "date-fns";
 
 import { useContext } from "react";
 import { placementService } from "../api/cePlacementService";
-import { planEvaluator } from "../api/planEvaluator";
 import { planGenerator } from "../api/planGenerator";
 import { Placement } from "../api/types";
 import { PlanContext } from "../pages/plan";
@@ -38,29 +37,9 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
             .catch((error) => console.error('Error toggling anchor:', error))
     };
 
-
     function refreshPlan() {
         planGenerator.hydratePlan(plan.id)
-            .then((hydrated) => {
-                if (hydrated) {
-                    // Move seeding and evaluation logic to plan creation
-                    //Check  not need if we always seed when creating plans
-                    if (hydrated.groups === undefined || hydrated.groups.length === 0) {
-                        planGenerator.seedPlan(hydrated)
-                            .then((seededPlan) => {
-                                planEvaluator.evaluate(seededPlan)
-                                    .then((evaluatedPlan) => {
-                                        setPlan(evaluatedPlan)
-                                    })
-                            })
-                    } else {
-                        planEvaluator.evaluate(hydrated)
-                            .then((evaluatedPlan) => {
-                                setPlan(evaluatedPlan)
-                            })
-                    }
-                }
-            })
+            .then((hydrated) => setPlan(hydrated))
     }
 
 
