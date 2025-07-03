@@ -15,6 +15,7 @@ import { Cohort, Identifier, Plan } from "../../api/types";
 import { TextEdit } from "../../components/TextEdit";
 import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
+import { planEvaluator } from "../../api/planEvaluator";
 
 interface PlanContextType {
   plan: Plan;
@@ -58,7 +59,11 @@ const PlanPage: React.FC = () => {
     setPlan(undefined);
     setLoading(true);
     planGenerator.hydratePlan(planId)
-      .then((hydrated) => setPlan(hydrated))
+      .then((hydrated) => {
+        // REVIEW evaluation should be done as part of creating the plan
+        planEvaluator.evaluate(hydrated)
+          .then((evaluated) => setPlan(evaluated))
+      })
       .catch((err) => notifications.error(`Error reading ${planId} : ${err}`))
       .finally(() => setLoading(false));
   }
