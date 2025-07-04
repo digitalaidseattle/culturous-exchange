@@ -61,7 +61,7 @@ export const GroupBoard: React.FC = () => {
     const { plan } = useContext(PlanContext);
 
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
-    const [placementWrappers, setPlacementWrappers] = useState<PlacementWrapper[]>([]);
+    const [placementWrappers, setPlacementWrappers] = useState<Map<DDCategory<string>, PlacementWrapper[]>>(new Map());
     const [initialized, setInitialized] = useState<boolean>(false);
     const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
     const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
@@ -69,22 +69,30 @@ export const GroupBoard: React.FC = () => {
     const notifications = useNotifications();
 
     useEffect(() => {
-        console.log('GroupBoard useEffect', plan, initialized);
         // If plan is not defined, we don't want to initialize
         if (plan) {
             setInitialized(false);
-            setPlacementWrappers(plan.placements
-                .map(placement => {
-                    return {
-                        ...placement,
-                        id: `${placement.plan_id}:${placement.student_id}`,
-                    } as PlacementWrapper
-                }));
-            setCategories(plan.groups
+            const temCats: DDCategory<string>[] = plan.groups
                 .map(group => {
                     return { label: group.name, value: group.id! as string }
                 })
-                .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label)));
+                .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label))
+
+            const placementMap = new Map();
+            temCats.forEach(category => {
+                placementMap.set(category, plan.placements
+                    .filter(placement => category.value === placement.group_id)
+                    .map(placement => {
+                        return {
+                            ...placement,
+                            id: `${placement.plan_id}:${placement.student_id}`,
+                        } as PlacementWrapper
+                    })
+                );
+            });
+
+            setPlacementWrappers(placementMap);
+            setCategories(temCats);
             setInitialized(true);
         }
     }, [plan, initialized])
@@ -95,11 +103,6 @@ export const GroupBoard: React.FC = () => {
         placementService
             .updatePlacement(placement.plan_id, placement.student_id, { group_id: newGroupId })
             .then(resp => console.log(resp))
-    }
-
-    function isCategory(item: PlacementWrapper, category: DDCategory<any>): boolean {
-        // console.log('isCategory', item, category);
-        return category.value === item.group_id;
     }
 
     function cellRender(item: PlacementWrapper): ReactNode {
@@ -165,7 +168,6 @@ export const GroupBoard: React.FC = () => {
                         onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
                         items={placementWrappers}
                         categories={categories}
-                        isCategory={isCategory}
                         cardRenderer={cellRender}
                         headerRenderer={headerRenderer}
                     />}
