@@ -78,9 +78,6 @@ const CohortPage: React.FC = () => {
       const created = await planService.create(cohort);
       const hydrated = await planGenerator.hydratePlan(created.id);
       const seededPlan = await planGenerator.seedPlan(hydrated)
-      // TODO consider evaluating the plan
-      // const evaluatedPlan = await planEvaluator.evaluate(seededPlan)
-      // console.log(`evaluatedPlan`, evaluatedPlan);
       navigate(`/plan/${seededPlan.id}`);
       notifications.success(`Plan added to  ${cohort.name}.`);
     }

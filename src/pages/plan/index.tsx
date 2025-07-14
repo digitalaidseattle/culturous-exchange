@@ -15,7 +15,6 @@ import { Cohort, Identifier, Plan } from "../../api/types";
 import { TextEdit } from "../../components/TextEdit";
 import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
-import { planEvaluator } from "../../api/planEvaluator";
 
 interface PlanContextType {
   plan: Plan;
@@ -26,7 +25,6 @@ export const PlanContext = createContext<PlanContextType>({
   plan: {} as Plan,
   setPlan: () => { },
 });
-
 
 const PlanPage: React.FC = () => {
   const { id: planId } = useParams<string>();
@@ -41,29 +39,23 @@ const PlanPage: React.FC = () => {
   }, [planId]);
 
   useEffect(() => {
-    if (plan) {
-      if (plan.cohort_id) {
-        cohortService.getById(plan.cohort_id)
-          .then((cohort) => {
-            if (cohort) {
-              setCohort(cohort);
-            } else {
-              console.error(`Cohort not found ${plan.cohort_id}`);
-            }
-          });
-      }
-    }
+    setCohort(undefined);
+    if (plan && plan.cohort_id) {
+      cohortService.getById(plan.cohort_id)
+        .then((cohort) => {
+          if (cohort) {
+            setCohort(cohort);
+          } else {
+            console.error(`Cohort not found ${plan.cohort_id}`);
+          }
+        });    }
   }, [plan]);
 
   function refreshPlan(planId: Identifier) {
     setPlan(undefined);
     setLoading(true);
     planGenerator.hydratePlan(planId)
-      .then((hydrated) => {
-        // REVIEW evaluation should be done as part of creating the plan
-        planEvaluator.evaluate(hydrated)
-          .then((evaluated) => setPlan(evaluated))
-      })
+      .then((hydrated) => setPlan(hydrated))
       .catch((err) => notifications.error(`Error reading ${planId} : ${err}`))
       .finally(() => setLoading(false));
   }
@@ -88,9 +80,7 @@ const PlanPage: React.FC = () => {
       })
   }
 
-  return (
-    loading
-      ?
+  return (loading ?
       <Box sx={{
         height: '100vh',
         display: 'flex',
