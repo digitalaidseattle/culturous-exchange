@@ -1,14 +1,14 @@
 {
   "name": "culturous-exchange",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite --port 3000",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview --port 3000",
-    "test": "vitest",
+    "test": "vitest --mode test",
     "test:coverage": "vitest --coverage",
     "test:unit": "vitest --root src/"
   },
@@ -16,12 +16,13 @@
     "@ant-design/colors": "^7.0.2",
     "@ant-design/icons": "^5.3.0",
     "@digitalaidseattle/core": "^1.0.7",
-    "@digitalaidseattle/draganddrop": "^1.0.4",
-    "@digitalaidseattle/mui": "^1.0.13",
-    "@digitalaidseattle/supabase": "^1.0.4",
+    "@digitalaidseattle/draganddrop": "^2.0.1",
+    "@digitalaidseattle/mui": "^1.0.15",
+    "@digitalaidseattle/supabase": "^1.0.5",
     "@mui/x-data-grid": "^6.19.6",
     "@mui/x-date-pickers": "^6.20.2",
     "date-fns": "^3.6.0",
+    "file-saver": "^2.0.5",
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
     "react": "^18.2.0",
@@ -30,7 +31,7 @@
     "react-markdown": "^9.0.1",
     "react-router": "^6.22.0",
     "react-router-dom": "^6.22.0",
-    "uuidv4": "^6.2.13",
+    "uuid": "^11.1.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

@@ -1,17 +1,21 @@
-import { createContext, useEffect, useState, useContext } from "react";
+import { createContext, useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 // material-ui
 
 // project import
-import { Stack } from "@mui/material";
+import { Box, Breadcrumbs, CircularProgress, Link, Stack, Typography } from "@mui/material";
 
-import { RefreshContext } from "@digitalaidseattle/core";
-import { planService } from "../../api/cePlanService";
-import { Cohort, Plan } from "../../api/types";
-import { PlanDetails } from "../../components/PlanDetails";
-import { CohortContext } from "../cohort";
+import { useNotifications } from "@digitalaidseattle/core";
+import { MainCard } from "@digitalaidseattle/mui";
 import { cohortService } from "../../api/ceCohortService";
+import { planService } from "../../api/cePlanService";
+import { planGenerator } from "../../api/planGenerator";
+import { Cohort, Identifier, Plan } from "../../api/types";
+import { TextEdit } from "../../components/TextEdit";
+import { CohortContext } from "../cohort";
+import { GroupBoard } from "./GroupBoard";
+import { planEvaluator } from "../../api/planEvaluator";
 
 interface PlanContextType {
   plan: Plan;
@@ -20,46 +24,112 @@ interface PlanContextType {
 
 export const PlanContext = createContext<PlanContextType>({
   plan: {} as Plan,
-  setPlan: () => {},
+  setPlan: () => { },
 });
+
 
 const PlanPage: React.FC = () => {
   const { id: planId } = useParams<string>();
   const [plan, setPlan] = useState<Plan>();
   const [cohort, setCohort] = useState<Cohort>();
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const { refresh } = useContext(RefreshContext);
+  const notifications = useNotifications();;
 
   useEffect(() => {
-    if (planId) {
-      planService.getById(planId).then((p) => {
-        if (p) {
-          setPlan(p);
-          if (p.cohort_id) {
-            cohortService.getById(p.cohort_id).then((cohort) => {
-              if (cohort) {
-                setCohort(cohort);
-              } else {
-                console.error(`Cohort not found ${p.cohort_id}`);
-              }
-            });
-          }
-        }
-      });
+    refreshPlan(planId);
+  }, [planId]);
+
+  useEffect(() => {
+    if (plan) {
+      if (plan.cohort_id) {
+        cohortService.getById(plan.cohort_id)
+          .then((cohort) => {
+            if (cohort) {
+              setCohort(cohort);
+            } else {
+              console.error(`Cohort not found ${plan.cohort_id}`);
+            }
+          });
+      }
     }
-  }, [planId, refresh]);
+  }, [plan]);
+
+  function refreshPlan(planId: Identifier) {
+    setPlan(undefined);
+    setLoading(true);
+    planGenerator.hydratePlan(planId)
+      .then((hydrated) => {
+        // REVIEW evaluation should be done as part of creating the plan
+        planEvaluator.evaluate(hydrated)
+          .then((evaluated) => setPlan(evaluated))
+      })
+      .catch((err) => notifications.error(`Error reading ${planId} : ${err}`))
+      .finally(() => setLoading(false));
+  }
+
+  function handleNameUpdate(text: string) {
+    planService.update(plan!.id, { name: text })
+      .then(updated => {
+        if (updated) {
+          notifications.success('Plan updated.');
+          refreshPlan(updated.id);
+        }
+      })
+  }
+
+  function handleNoteUpdate(text: string) {
+    planService.update(plan!.id, { note: text })
+      .then(updated => {
+        if (updated) {
+          notifications.success('Plan updated.');
+          refreshPlan(updated.id);
+        }
+      })
+  }
 
   return (
-    plan &&
-    cohort && (
+    loading
+      ?
+      <Box sx={{
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+        <CircularProgress color="success" />
+      </Box>
+      : plan && cohort &&
       <PlanContext.Provider value={{ plan, setPlan }}>
         <CohortContext.Provider value={{ cohort, setCohort }}>
           <Stack gap={1}>
-            <PlanDetails />
+            <Breadcrumbs aria-label="breadcrumb">
+              <Link underline="hover" color="inherit"
+                href="/">
+                Home
+              </Link>
+              <Link
+                underline="hover"
+                color="inherit"
+                href={`/cohort/${plan.cohort_id}`}
+              >
+                Cohort: {cohort.name}
+              </Link>
+              <Typography sx={{ color: 'text.primary' }}>Plan: {plan.name}</Typography>
+            </Breadcrumbs>
+            <MainCard sx={{ width: '100%' }}>
+              <Stack spacing={{ xs: 1, sm: 4 }}>
+                <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
+                  <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
+                  <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
+                </Stack>
+                {/* <PlanDetails /> */}
+                <GroupBoard />
+              </Stack>
+            </MainCard>
           </Stack>
         </CohortContext.Provider>
       </PlanContext.Provider>
-    )
   );
 };
 
