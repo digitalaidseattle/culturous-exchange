@@ -13,25 +13,24 @@ import {
   GridRenderCellParams,
   GridRowId,
   GridRowSelectionModel,
-  GridSortModel,
-  useGridApiRef,
+  useGridApiRef
 } from "@mui/x-data-grid";
 
 // third-party
 
 // project import
-import { ExclamationCircleFilled, StarFilled } from "@ant-design/icons";
+import { StarFilled } from "@ant-design/icons";
+import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { PageInfo } from "@digitalaidseattle/supabase";
 import { placementService } from "../../api/cePlacementService";
 import { planService } from "../../api/cePlanService";
 import { Placement } from "../../api/types";
-import { PlanContext } from "../../pages/plan";
 import AddStudentModal from "../../components/AddStudentModal";
-import { ConfirmationDialog } from "@digitalaidseattle/mui";
+import { PlanContext } from "../../pages/plan";
 
 // TODO delete temp
-import { Student } from "../../api/types";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
+import { Student } from "../../api/types";
 import { CohortContext } from "../../pages/cohort";
 
 const PAGE_SIZE = 10;
@@ -48,13 +47,13 @@ export const SetupStudents: React.FC = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
   const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
 
+  const [columns, setColumns] = useState<GridColDef[]>([]);
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: PAGE_SIZE,
   });
-  const [sortModel, setSortModel] = useState<GridSortModel>([
-    { field: "created_at", sort: "desc" },
-  ]);
+
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>();
   const [pageInfo, setPageInfo] = useState<PageInfo<Placement>>({
@@ -62,8 +61,15 @@ export const SetupStudents: React.FC = () => {
     totalRowCount: 0,
   });
 
+  useEffect(() => {
+    setColumns(getColumns());
+  }, []);
+
+
   // Enrich the pageInfo with the placement students data
   useEffect(() => {
+    console.log(plan)
+    
     if (plan && cohort) {
       placementService.getEnrichedPlacements(plan).then((enrichedPlacements) => {
         setPageInfo({
@@ -138,9 +144,10 @@ export const SetupStudents: React.FC = () => {
     setShowAddStudent(false);
   };
 
-  async function handleSubmit(studentIds: string[]) {
+  async function handleSubmit(students: Student[]) {
+    // FIXME change student
     planService
-      .addStudents(plan, studentIds)
+      .addStudents(plan, students)
       .then(() => {
         notifications.success("Students added.");
         setRefresh(refresh + 1);
@@ -196,33 +203,6 @@ export const SetupStudents: React.FC = () => {
     }
   };
 
-  const togglePriority = async (placement: Placement) => {
-    const newPriority = placement.priority === 0 ? 1 : 0;
-    
-    // Optimistic update
-    const updatedRows = pageInfo.rows.map((row: Placement) => {
-      if (row.id === placement.id) {
-        return { ...row, priority: newPriority };
-      }
-      return row;
-    });
-    setPageInfo({ ...pageInfo, rows: updatedRows });
-
-    try {
-      await placementService.updatePlacement(
-        placement.plan_id,
-        placement.student_id,
-        { priority: newPriority }
-      );
-      notifications.success(`Student ${newPriority === 1 ? 'set as' : 'removed from'} priority`);
-    } catch (error) {
-      console.error('Error toggling priority:', error);
-      notifications.error('Failed to update student priority status');
-      // Revert optimistic update
-      setPageInfo({ ...pageInfo });
-    }
-  };
-
   const getColumns = (): GridColDef[] => {
     return [
       {
@@ -243,37 +223,22 @@ export const SetupStudents: React.FC = () => {
         },
       },
       {
-        field: "priority",
-        headerName: "Priority",
-        width: 100,
-        type: "boolean",
-        renderCell: (param: GridRenderCellParams) => {
-          return (
-            <ExclamationCircleFilled
-              style={{
-                fontSize: "150%",
-                color: param.row.priority === 1 ? "green" : "gray",
-              }}
-              onClick={() => togglePriority(param.row)}
-            />
-          );
-        },
-      },
-      {
         field: "student.name",
         headerName: "Name",
-        width: 150,
+        width: 200,
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.name}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.name}`,
       },
       {
         field: "email",
         headerName: "Email",
-        width: 140,
+        width: 300,
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.email}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.email}`,
       },
       {
         field: "city",
@@ -282,6 +247,7 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.city}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.city}`,
       },
       {
         field: "country",
@@ -290,11 +256,14 @@ export const SetupStudents: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.country}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.country}`,
       },
       {
         field: "availability",
         headerName: "Availability",
         width: 140,
+        sortable: false,
+        filterable: false
       },
     ];
   };
@@ -343,15 +312,11 @@ export const SetupStudents: React.FC = () => {
           getRowId={(row) => row.plan_id + ":" + row.student_id}
           apiRef={apiRef}
           rows={pageInfo.rows}
-          columns={getColumns()}
-          paginationMode="server"
+          columns={columns}
           paginationModel={paginationModel}
           rowCount={pageInfo.totalRowCount}
           onPaginationModelChange={setPaginationModel}
-          sortingMode="server"
-          sortModel={sortModel}
-          onSortModelChange={setSortModel}
-          pageSizeOptions={[5, 10, 25, 100]}
+          pageSizeOptions={[10, 25, 50, 100]}
           checkboxSelection
           onRowSelectionModelChange={setRowSelectionModel}
           disableRowSelectionOnClick={true}

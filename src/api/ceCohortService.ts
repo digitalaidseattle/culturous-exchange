@@ -9,7 +9,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { enrollmentService } from './ceEnrollmentService';
 import { studentService } from './ceStudentService';
 import { EntityService } from "./entityService";
-import { Cohort, Enrollment, Identifier } from "./types";
+import { Cohort, Enrollment, Identifier, Student } from "./types";
+import { supabaseClient } from '@digitalaidseattle/supabase';
 
 
 class CECohortService extends EntityService<Cohort> {
@@ -30,10 +31,10 @@ class CECohortService extends EntityService<Cohort> {
             } as Enrollment
         })
     }
-    
-    async addStudents(cohort: Cohort, studentIds: string[]): Promise<any> {
+
+    async addStudents(cohort: Cohort, students: Student[]): Promise<any> {
         try {
-            const enrollments = this.createEnrollments(cohort, studentIds);
+            const enrollments = this.createEnrollments(cohort, students.map(student => student.id!.toString()));
             return enrollmentService
                 .batchInsert(enrollments)
         } catch (err) {
@@ -45,7 +46,7 @@ class CECohortService extends EntityService<Cohort> {
     async create(): Promise<Cohort> {
         return studentService.findUnenrolled()
             .then(students => {
-                return cohortService
+                return this
                     .insert({ id: uuidv4(), name: `(New) Cohort`, } as Cohort)
                     .then(cohort => {
                         const studentIds = students.map(student => student.id?.toString());
@@ -53,6 +54,21 @@ class CECohortService extends EntityService<Cohort> {
                         return enrollmentService.batchInsert(enrollments)
                             .then(() => cohort)
                     })
+            })
+    }
+
+    async getAll(select?: string): Promise<Cohort[]> {
+        return supabaseClient
+            .from(this.tableName)
+            .select(select ?? '*, enrollment(*), plan(*)')
+            .then((resp: any) => {
+                // TODO should we lookup students here?
+               return resp.data.map((cohort: Cohort) => {
+                    return {
+                        ...cohort,
+                        plans: (cohort as any).plan
+                    }
+                })
             })
     }
 
@@ -92,6 +108,20 @@ class CECohortService extends EntityService<Cohort> {
 
     }
 
+    async getLatest(): Promise<Cohort | null> {
+        try {
+            return supabaseClient
+                .from(this.tableName)
+                .select('*, student(*), plan(*), enrollment(*)')
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single()
+                .then(resp => resp.data)
+        } catch (err) {
+            console.error('Unexpected error during select:', err);
+            throw err;
+        }
+    }
 
 }
 
