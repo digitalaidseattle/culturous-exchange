@@ -8,7 +8,7 @@
 
 import { ReactNode, useContext, useEffect, useState } from "react";
 
-import { ExportOutlined, UserOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined, UserSwitchOutlined } from "@ant-design/icons";
 import {
     Box,
     Card,
@@ -24,12 +24,14 @@ import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop'
 import { format } from "date-fns";
 
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
-import { Group, Identifier, Placement } from "../../api/types";
+import { Group, Identifier, Placement, Plan } from "../../api/types";
 import { placementService } from "../../api/cePlacementService";
 import { StudentCard } from "../../components/StudentCard";
 import { PlanContext } from ".";
 import { planExporter } from "../../api/planExporter";
 import { useNotifications } from "@digitalaidseattle/core";
+import PlanSettingsDialog from "../../components/PlanSettingsDialog";
+import { set } from "lodash";
 
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
     const timeWindows = group ? group.time_windows ?? [] : [];
@@ -65,6 +67,7 @@ export const GroupBoard: React.FC = () => {
     const [initialized, setInitialized] = useState<boolean>(false);
     const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
     const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
+    const [showSettings, setShowSettings] = useState<boolean>(false);
 
     const notifications = useNotifications();
 
@@ -137,6 +140,10 @@ export const GroupBoard: React.FC = () => {
         setStudentDetails(!showStudentDetails);
     }
 
+    function handleSettings(): void {
+        setShowSettings(!showSettings);
+    }
+
     return (
         <>
             <Box sx={{ marginTop: 1 }}  >
@@ -153,13 +160,18 @@ export const GroupBoard: React.FC = () => {
 
                     <Tooltip title="Toggle group details">
                         <IconButton color="inherit" onClick={handleGroupDetails}>
-                            <UserSwitchOutlined />
+                            <TeamOutlined />
                         </IconButton>
                     </Tooltip>
 
                     <Tooltip title="Toggle student details">
                         <IconButton color="inherit" onClick={handleStudentDetails}>
                             <UserOutlined />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Show plan settings">
+                        <IconButton color="inherit" onClick={handleSettings}>
+                            <SettingOutlined />
                         </IconButton>
                     </Tooltip>
                 </Toolbar>
@@ -176,6 +188,13 @@ export const GroupBoard: React.FC = () => {
                     }
                 </>
             </Box>
+            <PlanSettingsDialog
+                plan={plan}
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                onSubmit={function (plan: Plan): void {
+                    throw new Error("Function not implemented.");
+                }} />
         </>
     )
 };
