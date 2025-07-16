@@ -62,9 +62,10 @@ type Enrollment = Entity & {
 type Plan = Entity & {
     name: string;
     cohort_id: Identifier;
+    note: string;
+    group_size?: number; // Optional, can be set to override default group size
     placements: Placement[]
     groups: Group[];
-    note: string;
 }
 
 type Placement = Entity & {

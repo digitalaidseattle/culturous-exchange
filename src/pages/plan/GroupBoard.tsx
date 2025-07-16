@@ -8,7 +8,7 @@
 
 import { ReactNode, useContext, useEffect, useState } from "react";
 
-import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
 import {
     Box,
     Card,
@@ -23,15 +23,15 @@ import {
 import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
 import { format } from "date-fns";
 
-import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
-import { Group, Identifier, Placement, Plan } from "../../api/types";
-import { placementService } from "../../api/cePlacementService";
-import { StudentCard } from "../../components/StudentCard";
-import { PlanContext } from ".";
-import { planExporter } from "../../api/planExporter";
 import { useNotifications } from "@digitalaidseattle/core";
+import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
+import { PlanContext } from ".";
+import { placementService } from "../../api/cePlacementService";
+import { planExporter } from "../../api/planExporter";
+import { planGenerator } from "../../api/planGenerator";
+import { Group, Identifier, Placement, Plan } from "../../api/types";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
-import { set } from "lodash";
+import { StudentCard } from "../../components/StudentCard";
 
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
     const timeWindows = group ? group.time_windows ?? [] : [];
@@ -60,7 +60,7 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
 type PlacementWrapper = Placement & DDType
 
 export const GroupBoard: React.FC = () => {
-    const { plan } = useContext(PlanContext);
+    const { plan, setPlan } = useContext(PlanContext);
 
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
     const [placementWrappers, setPlacementWrappers] = useState<Map<DDCategory<string>, PlacementWrapper[]>>(new Map());
@@ -144,6 +144,20 @@ export const GroupBoard: React.FC = () => {
         setShowSettings(!showSettings);
     }
 
+    function handleSettingsChange(plan: Plan): void {
+        //REVIEW
+        planGenerator.seedPlan(plan)
+            .then((seededPlan) => {
+                notifications.success(`Plan ${seededPlan.name} updated successfully`);
+                setInitialized(false)
+                setPlan(seededPlan);
+                setShowSettings(false);
+            })
+            .catch((error) => {
+                notifications.error(`Failed to update plan: ${error.message}`);
+            });
+    }
+
     return (
         <>
             <Box sx={{ marginTop: 1 }}  >
@@ -175,26 +189,26 @@ export const GroupBoard: React.FC = () => {
                         </IconButton>
                     </Tooltip>
                 </Toolbar>
-                <>{initialized &&
-                    <DragAndDrop
-                        onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
-                        items={placementWrappers}
-                        categories={categories}
-                        cardRenderer={cellRender}
-                        headerRenderer={headerRenderer}
-                    />}
+                <>
                     {!plan &&
                         <Typography>No plan found.</Typography>
                     }
+                    {initialized &&
+                        <DragAndDrop
+                            onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
+                            items={placementWrappers}
+                            categories={categories}
+                            cardRenderer={cellRender}
+                            headerRenderer={headerRenderer}
+                        />}
                 </>
             </Box>
             <PlanSettingsDialog
                 plan={plan}
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
-                onSubmit={function (plan: Plan): void {
-                    throw new Error("Function not implemented.");
-                }} />
+                onSubmit={handleSettingsChange}
+            />
         </>
     )
 };

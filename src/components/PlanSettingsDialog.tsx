@@ -27,9 +27,8 @@ const PlanSettingsDialog: React.FC<Props> = ({
   onSubmit,
   plan,
 }) => {
-  const [updatedPlan, setUpdatedPlan] = useState<Plan>({ ...plan });
-  const [groupSize, setGroupSize] = useState<number>(10);
 
+  const [updatedPlan, setUpdatedPlan] = useState<Plan>({ ...plan });
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault(); // prevent form from refreshing the page
@@ -37,9 +36,11 @@ const PlanSettingsDialog: React.FC<Props> = ({
   }
 
   function handleChange(_event: Event, newValue: number | number[]): void {
-    setGroupSize(newValue as number);
+    setUpdatedPlan({
+      ...updatedPlan,
+      group_size: newValue as number
+    });
   }
-
 
   return (
     <React.Fragment>
@@ -50,7 +51,7 @@ const PlanSettingsDialog: React.FC<Props> = ({
           sx: { width: '40rem', maxWidth: '90vw' },
         }}
       >
-        <DialogTitle>Settings</DialogTitle>
+        <DialogTitle><Typography fontSize={24}>Settings</Typography></DialogTitle>
         <DialogContent>
           <Stack sx={{ display: "flex", flexWrap: "wrap" }}>
             <FormControl sx={{ m: 1, minWidth: 120 }}>
@@ -61,14 +62,12 @@ const PlanSettingsDialog: React.FC<Props> = ({
                 <Box sx={{ width: 400 }}>
                   <Slider
                     aria-label="Group size"
-                    value={groupSize}
+                    value={updatedPlan.group_size ?? 10}
                     step={1}
-                    min={7}
-                    max={12}
-                    valueLabelDisplay="auto"
-                    marks={true}
+                    min={5}
+                    max={15}
                     valueLabelDisplay="on"
-
+                    marks={true}
                     onChange={handleChange}
                   />
                 </Box>
