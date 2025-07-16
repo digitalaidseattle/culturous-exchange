@@ -51,7 +51,7 @@ const PlanSettingsDialog: React.FC<Props> = ({
           sx: { width: '40rem', maxWidth: '90vw' },
         }}
       >
-        <DialogTitle><Typography fontSize={24}>Settings</Typography></DialogTitle>
+        <DialogTitle><Typography variant="h2">Settings</Typography></DialogTitle>
         <DialogContent>
           <Stack sx={{ display: "flex", flexWrap: "wrap" }}>
             <FormControl sx={{ m: 1, minWidth: 120 }}>
