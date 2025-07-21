@@ -32,6 +32,7 @@ import { planGenerator } from "../../api/planGenerator";
 import { Group, Identifier, Placement, Plan } from "../../api/types";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { StudentCard } from "../../components/StudentCard";
+import { planService } from "../../api/cePlanService";
 
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
     const timeWindows = group ? group.time_windows ?? [] : [];
@@ -124,8 +125,6 @@ export const GroupBoard: React.FC = () => {
             .then((exported) => {
                 if (exported) {
                     notifications.success(`${plan.name} exported successfully`);
-
-
                 } else {
                     notifications.error('Plan export failed');
                 }
@@ -145,17 +144,30 @@ export const GroupBoard: React.FC = () => {
     }
 
     function handleSettingsChange(plan: Plan): void {
-        //REVIEW
-        planGenerator.seedPlan(plan)
-            .then((seededPlan) => {
-                notifications.success(`Plan ${seededPlan.name} updated successfully`);
-                setInitialized(false)
-                setPlan(seededPlan);
-                setShowSettings(false);
+        planService.update(plan.id,
+            {
+                group_size: plan.group_size!
             })
-            .catch((error) => {
-                notifications.error(`Failed to update plan: ${error.message}`);
-            });
+            .then(updatedPlan => {
+                planGenerator.hydratePlan(updatedPlan.id!)
+                    .then((hydratedPlan) => {
+                        planGenerator.seedPlan(hydratedPlan)
+                            .then((seededPlan) => {
+                                notifications.success(`Plan ${seededPlan.name} updated successfully`);
+                                setInitialized(false)
+                                setPlan(seededPlan);
+                                setShowSettings(false);
+                            })
+                            .catch((error) => {
+                                notifications.error(`Failed to update plan: ${error.message}`);
+                            });
+                    })
+                    .catch((error) => {
+                        notifications.error(`Failed to rehydrate plan: ${error.message}`);
+                        throw error;
+                    });
+            })
+
     }
 
     return (

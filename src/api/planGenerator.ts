@@ -46,7 +46,6 @@ class PlanGenerator {
     const cleaned = await this.emptyPlan(plan)
 
     const nGroups = Math.ceil(cleaned.placements.length / (plan.group_size ?? MAX_SIZE));
-
     const groups = Array.from({ length: nGroups }, (_, groupNo) => {
         return {
             id: uuid(),
