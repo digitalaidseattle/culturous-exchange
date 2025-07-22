@@ -13,14 +13,15 @@ class PlanEvaluator {
     async evaluate(plan: Plan): Promise<Plan> {
         // Update each group time_windows with by the intersections with students
         plan.groups.forEach(group => {
-            group.placements!.forEach(placement => {
+            const placements = group.placements ?? [];
+            placements.forEach(placement => {
                 if (placement.student !== undefined && placement.student.timeWindows) {
                     group.time_windows = PlanEvaluator.updateGroupTimeWindows(group.time_windows, placement.student.timeWindows);
                 } else {
                     console.error("no time windows", placement.student);
                 }
             });
-            group.country_count =  new Set(group.placements!.map(p => p.student?.country.toLocaleUpperCase())).size;
+            group.country_count =  new Set(placements.map(p => p.student?.country.toLocaleUpperCase())).size;
             // TODO: save the group
         })
         return {...plan}; // <- Return a shallow copy of plan object to avoid mutation

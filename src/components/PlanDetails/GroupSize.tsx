@@ -15,8 +15,8 @@ import {
   Stack,
   Typography
 } from "@mui/material";
-import { PlanContext } from "../../pages/plan";
 import { StepperContext } from "./index";
+import { PlanContext } from "../../pages/plan/PlanContext";
 
 export const GroupSize: React.FC = () => {
   const { plan } = useContext(PlanContext);
