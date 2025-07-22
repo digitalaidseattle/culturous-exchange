@@ -58,7 +58,20 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
         </Card>
     );
 }
+
+export const WaitlistedCard: React.FC<{}> = () => {
+    return (
+        <Card sx={{ alignContent: "top" }}>
+            <CardContent>
+                <Typography variant="h6" fontWeight={600}>Waitlisted</Typography>
+            </CardContent>
+        </Card>
+    );
+}
+
 type PlacementWrapper = Placement & DDType
+
+const WAITLIST_ID = 'WAITLIST';
 
 export const GroupBoard: React.FC = () => {
     const { plan, setPlan } = useContext(PlanContext);
@@ -76,16 +89,19 @@ export const GroupBoard: React.FC = () => {
         // If plan is not defined, we don't want to initialize
         if (plan) {
             setInitialized(false);
-            const temCats: DDCategory<string>[] = plan.groups
+            const waitlist: DDCategory<string>[] = [
+                { label: 'Waitlisted', value: WAITLIST_ID }
+            ];
+            const temCats = waitlist.concat(plan.groups
                 .map(group => {
                     return { label: group.name, value: group.id! as string }
                 })
-                .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label))
+                .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label)))
 
             const placementMap = new Map();
             temCats.forEach(category => {
                 placementMap.set(category, plan.placements
-                    .filter(placement => category.value === placement.group_id)
+                    .filter(placement => category.value === (placement.group_id ?? WAITLIST_ID))
                     .map(placement => {
                         return {
                             ...placement,
@@ -103,9 +119,13 @@ export const GroupBoard: React.FC = () => {
 
     function handleChange(container: Map<string, unknown>, placement: Placement) {
         const newGroupId = container.get('containerId') as Identifier;
+        // TODO [CEMT-60] Need to reevaluate plan after moving student
         // find old group; iterate over groups looking for the student
+        // need to reevaluate the plan
+        // then save everything!!
+        
         placementService
-            .updatePlacement(placement.plan_id, placement.student_id, { group_id: newGroupId })
+            .updatePlacement(placement.plan_id, placement.student_id, { group_id: (newGroupId === WAITLIST_ID ? null : newGroupId) })
             .then(resp => console.log(resp))
     }
 
@@ -115,9 +135,11 @@ export const GroupBoard: React.FC = () => {
 
     const headerRenderer = (cat: DDCategory<string>): ReactNode => {
         const group = plan.groups.find(g => g.id === cat.value);
-        return (group &&
-            <GroupCard group={group} showDetails={showGroupDetails} />
-        )
+        if (group) {
+            return <GroupCard group={group} showDetails={showGroupDetails} />
+        } else {
+            return <WaitlistedCard />
+        }
     };
 
     function exportPlan(): void {
