@@ -24,7 +24,12 @@ const HomePage: React.FC = () => {
     return (
         <Stack gap={1}>
             {current &&
-                <MainCard>
+                <MainCard contentSX={{
+                    background: 'linear-gradient(95deg,rgb(37, 184, 252) 100% ,rgb(7, 109, 44) 50%)',
+                    color: 'white',
+                    borderRadius: 2,
+                    boxShadow: 3
+                }}>
                     <Typography variant='h2'>Current Cohort: {current.name}</Typography>
                     <Stack direction='row' justifyContent='space-between' >
                         <Stack direction='row' gap={2}>
@@ -43,7 +48,7 @@ const HomePage: React.FC = () => {
                     </Stack>
                 </MainCard>
             }
-        </Stack>
+        </Stack >
     )
 };
 
