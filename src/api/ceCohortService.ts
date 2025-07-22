@@ -74,12 +74,13 @@ class CECohortService extends EntityService<Cohort> {
 
     async getById(entityId: string | number, select?: string): Promise<Cohort | null> {
         try {
-            const cohort = await super.getById(entityId, select ?? '*, enrollment(*), plan(*)');
-            if (cohort) {
+            const json: any = await super.getById(entityId, select ?? '*, enrollment(*), plan(*)');
+            if (json) {
                 // TODO should we lookup students here?
                 return {
-                    ...cohort,
-                    plans: (cohort as any).plan
+                    ...json,
+                    enrollments: json.enrollment,
+                    plans: json.plan
                 }
             } else {
                 return null
