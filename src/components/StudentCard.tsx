@@ -22,7 +22,7 @@ import { useContext, useState } from "react";
 import { placementService } from "../api/cePlacementService";
 import { planGenerator } from "../api/planGenerator";
 import { Placement } from "../api/types";
-import { PlanContext } from "../pages/plan";
+import { PlanContext } from "../pages/plan/PlanContext";
 
 
 export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails }) => {

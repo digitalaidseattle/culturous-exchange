@@ -23,11 +23,11 @@ import { placementService } from "../../api/cePlacementService";
 import { planEvaluator } from "../../api/planEvaluator";
 import { planGenerator } from "../../api/planGenerator";
 import { Identifier, Placement } from "../../api/types";
-import { PlanContext } from "../../pages/plan";
 import { StudentCard } from "../StudentCard";
 import { GroupCard } from "../GroupCard";
 import { planExporter } from "../../api/planExporter";
 import { useNotifications } from "@digitalaidseattle/core";
+import { PlanContext } from "../../pages/plan/PlanContext";
 
 
 type PlacementWrapper = Placement & DDType
