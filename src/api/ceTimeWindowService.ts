@@ -8,7 +8,7 @@
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { addHours, format, isEqual } from "date-fns";
 import { EntityService } from "./entityService";
-import { Student, TimeWindow } from "./types";
+import { Identifier, Student, TimeWindow } from "./types";
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
   if (arr1.length !== arr2.length) {
@@ -163,11 +163,11 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     }
   }
 
-  async getForStudent(student: Student): Promise<TimeWindow[]> {
-    return supabaseClient
+  async findByGroupId(groupId: Identifier, select?: string): Promise<TimeWindow[]> {
+    return await supabaseClient
       .from(this.tableName)
-      .select('*')
-      .eq('student_id', student.id)
+      .select(select ?? '*')
+      .eq('group_id', groupId)
       .then(resp => resp.data as unknown as TimeWindow[]);
   }
 
@@ -198,6 +198,8 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     return timeWindows.reduce((acc, tw) => acc +
       ((tw.end_date_time?.getTime() ?? 0) - (tw.start_date_time?.getTime() ?? 0)) / (1000 * 60 * 60), 0);
   }
+
+
 
 }
 

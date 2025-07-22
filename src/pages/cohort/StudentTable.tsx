@@ -9,6 +9,8 @@ import { useContext, useEffect, useState } from "react";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import {
   DataGrid,
+  getGridNumericOperators,
+  getGridStringOperators,
   GridColDef,
   GridRenderCellParams,
   GridRowSelectionModel,
@@ -26,8 +28,11 @@ import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { CohortContext } from ".";
 import { cohortService } from "../../api/ceCohortService";
 import { studentService } from "../../api/ceStudentService";
-import { Identifier, Student } from "../../api/types";
+import { Enrollment, Identifier, Student } from "../../api/types";
 import AddStudentModal from "../../components/AddStudentModal";
+import { StarFilled } from "@ant-design/icons";
+import { enrollmentService } from "../../api/ceEnrollmentService";
+import DisplayTimeWindow from "../../components/DisplayTimeWindow";
 
 const PAGE_SIZE = 10;
 
@@ -46,7 +51,7 @@ export const StudentTable: React.FC = () => {
   ]);
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>();
-  const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({
+  const [pageInfo, setPageInfo] = useState<PageInfo<Enrollment>>({
     rows: [],
     totalRowCount: 0,
   });
@@ -59,8 +64,8 @@ export const StudentTable: React.FC = () => {
 
   useEffect(() => {
     setPageInfo({
-      rows: cohort.students ?? [],
-      totalRowCount: cohort.students ? cohort.students.length : 0
+      rows: cohort.enrollments ?? [],
+      totalRowCount: cohort.enrollments ? cohort.enrollments.length : 0
     })
   }, [cohort])
 
@@ -76,18 +81,18 @@ export const StudentTable: React.FC = () => {
     setShowAddStudent(false);
   }
 
-    const handleAddStudent = (students: Student[]) => {
-        cohortService.addStudents(cohort, students)
-            .then(() => {
-                notifications.success('Students added.');
-                setRefresh(refresh + 1);
-                setShowAddStudent(false);
-            })
-            .catch((err) => {
-                notifications.error('Error adding students.');
-                console.error(err);
-            })
-    }
+  const handleAddStudent = (students: Student[]) => {
+    cohortService.addStudents(cohort, students)
+      .then(() => {
+        notifications.success('Students added.');
+        setRefresh(refresh + 1);
+        setShowAddStudent(false);
+      })
+      .catch((err) => {
+        notifications.error('Error adding students.');
+        console.error(err);
+      })
+  }
 
   const doDelete = () => {
     cohortService
@@ -103,6 +108,24 @@ export const StudentTable: React.FC = () => {
     setOpenDeleteDialog(true);
   };
 
+
+  const toggleAnchor = async (enrollment: Enrollment) => {
+    try {
+      enrollment.anchor = !enrollment.anchor;
+      enrollmentService
+        .updateEnrollment(enrollment.cohort_id, enrollment.student_id, { anchor: enrollment.anchor })
+        .then(() => {
+          // Optimistically update the pageInfo
+          setRefresh(refresh + 1);
+        });
+    } catch (error) {
+      console.error('Error toggling anchor:', error);
+      notifications.error('Failed to update student anchor status');
+      // Revert optimistic update
+      setPageInfo({ ...pageInfo });
+    }
+  };
+
   const getColumns = (): GridColDef[] => {
     return [
       {
@@ -110,38 +133,80 @@ export const StudentTable: React.FC = () => {
         headerName: "Name",
         width: 150,
         renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.name}</Typography>;
+          return <Typography>{param.row.student.name}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.name}`,
       },
       {
-        field: "email",
+        field: "student.email",
         headerName: "Email",
-        width: 140,
+        width: 240,
         renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.email}</Typography>;
+          return <Typography>{param.row.student.email}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.email}`,
       },
+
       {
-        field: "city",
-        headerName: "City",
-        width: 140,
-        renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.city}</Typography>;
-        },
-      },
-      {
-        field: "country",
+        field: "student.country",
         headerName: "Country",
         width: 140,
         renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.country}</Typography>;
+          return <Typography>{param.row.student.country}</Typography>;
         },
+        valueGetter: (params) => `${params.row.student.country}`,
+
       },
       {
-        field: "availability",
-        headerName: "Availability",
-        width: 140,
+        field: "anchor",
+        headerName: "Anchor",
+        width: 75,
+        type: "boolean",
+        renderCell: (param: GridRenderCellParams) => {
+          return (
+            <StarFilled
+              style={{
+                fontSize: "150%",
+                color: param.row.anchor ? "green" : "gray",
+              }}
+              onClick={() => toggleAnchor(param.row)}
+            />
+          );
+        }
       },
+      {
+        field: 'student.age',
+        headerName: 'Age',
+        width: 75,
+        type: 'number',
+        filterOperators: getGridNumericOperators()
+          .filter((operator) => studentService.supportedNumberFilters().includes(operator.value)),
+        renderCell: (param: GridRenderCellParams) => {
+          return <Typography>{param.row.student.age}</Typography>;
+        },
+        valueGetter: (params) => `${params.row.student.age}`,
+      },
+      {
+        field: 'student.gender',
+        headerName: 'Gender',
+        width: 100,
+        filterOperators: getGridStringOperators()
+          .filter((operator) => studentService.supportedStringFilters().includes(operator.value)),
+        renderCell: (param: GridRenderCellParams) => {
+          return <Typography>{param.row.student.gender}</Typography>;
+        },
+        valueGetter: (params) => `${params.row.student.gender}`,
+      },
+      {
+        field: 'timeWindows',
+        headerName: 'Availabilities',
+        width: 150,
+        renderCell: (params) => {
+          const timeWindows = Array.isArray(params.row.student.timeWindows) ? params.row.student.timeWindows : [];
+          return <DisplayTimeWindow timeWindows={timeWindows} />
+        },
+        filterable: false
+      }
     ];
   };
 
@@ -168,6 +233,7 @@ export const StudentTable: React.FC = () => {
         <DataGrid
           apiRef={apiRef}
           rows={pageInfo.rows}
+          getRowId={(row) => row.cohort_id + ":" + row.student_id}
           columns={getColumns()}
 
           paginationMode='client'
