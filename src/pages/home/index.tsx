@@ -8,12 +8,13 @@ import { Button, Card, CardContent, Stack, Typography } from '@mui/material';
 
 import { MainCard } from '@digitalaidseattle/mui';
 import { cohortService } from '../../api/ceCohortService';
+import { Cohort } from '../../api/types';
 
 
 const HomePage: React.FC = () => {
     const navigate = useNavigate();
 
-    const [current, setCurrent] = useState<any>();
+    const [current, setCurrent] = useState<Cohort>();
 
     useEffect(() => {
         cohortService.getLatest()
@@ -34,12 +35,12 @@ const HomePage: React.FC = () => {
                         <Stack direction='row' gap={2}>
                             <Card >
                                 <CardContent onClick={() => navigate(`/cohort/${current.id}?tab=1`)}>
-                                    <Typography>Students: {current.student.length}</Typography>
+                                    <Typography>Students: {current.enrollments.length}</Typography>
                                 </CardContent>
                             </Card>
                             <Card >
                                 <CardContent onClick={() => navigate(`/cohort/${current.id}?tab=0`)}>
-                                    <Typography>Plans: {current.plan.length}</Typography>
+                                    <Typography>Plans: {current.plans.length}</Typography>
                                 </CardContent>
                             </Card>
                         </Stack>
