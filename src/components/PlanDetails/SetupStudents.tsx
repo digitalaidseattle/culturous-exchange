@@ -26,12 +26,12 @@ import { placementService } from "../../api/cePlacementService";
 import { planService } from "../../api/cePlanService";
 import { Placement } from "../../api/types";
 import AddStudentModal from "../../components/AddStudentModal";
-import { PlanContext } from "../../pages/plan";
 
 // TODO delete temp
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { Student } from "../../api/types";
 import { CohortContext } from "../../pages/cohort";
+import { PlanContext } from "../../pages/plan/PlanContext";
 
 const PAGE_SIZE = 10;
 

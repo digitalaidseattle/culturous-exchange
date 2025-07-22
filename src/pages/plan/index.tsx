@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 // material-ui
@@ -15,16 +15,7 @@ import { Cohort, Identifier, Plan } from "../../api/types";
 import { TextEdit } from "../../components/TextEdit";
 import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
-
-interface PlanContextType {
-  plan: Plan;
-  setPlan: (plan: Plan) => void;
-}
-
-export const PlanContext = createContext<PlanContextType>({
-  plan: {} as Plan,
-  setPlan: () => { },
-});
+import { PlanContext } from "./PlanContext";
 
 const PlanPage: React.FC = () => {
   const { id: planId } = useParams<string>();

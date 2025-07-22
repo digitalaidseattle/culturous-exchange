@@ -25,7 +25,6 @@ import { format } from "date-fns";
 
 import { useNotifications } from "@digitalaidseattle/core";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
-import { PlanContext } from ".";
 import { placementService } from "../../api/cePlacementService";
 import { planExporter } from "../../api/planExporter";
 import { planGenerator } from "../../api/planGenerator";
@@ -33,6 +32,7 @@ import { Group, Identifier, Placement, Plan } from "../../api/types";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { StudentCard } from "../../components/StudentCard";
 import { planService } from "../../api/cePlanService";
+import { PlanContext } from "./PlanContext";
 
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
     const timeWindows = group ? group.time_windows ?? [] : [];
