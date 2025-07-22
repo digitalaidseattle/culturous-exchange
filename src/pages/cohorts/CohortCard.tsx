@@ -9,10 +9,9 @@ import { MoreOutlined } from "@ant-design/icons";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { Card, CardContent, IconButton, Menu, MenuItem, Theme, Typography } from "@mui/material";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import { cohortService } from "../../api/ceCohortService";
-import { enrollmentService } from "../../api/ceEnrollmentService";
 import { Cohort } from "../../api/types";
 
 
@@ -57,8 +56,8 @@ export const CohortCard = (props: { cohort: Cohort }) => {
         }
     };
 
-    return (cohort &&
-        <Card key={cohort.id}
+    return (props.cohort &&
+        <Card key={props.cohort.id}
             sx={{
                 width: "240px",
                 height: "240px",
