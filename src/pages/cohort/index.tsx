@@ -45,7 +45,15 @@ const CohortPage: React.FC = () => {
       cohortService.getById(cohortId).then((cohort) => {
         if (cohort) {
           enrollmentService.getStudents(cohort).then((students) => {
-            cohort.students = students;
+            cohort.enrollments.forEach(enrollment => {
+              const student = students.find(s => s.id === enrollment.student_id);
+              if (student) {
+                // TODO lookup tw for student
+                enrollment.student = student;
+              } else {
+                console.warn(`Student not found for enrollment: ${enrollment.id}`);
+              }              
+            });
             setCohort(cohort);
           });
         } else {
