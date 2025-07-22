@@ -118,14 +118,12 @@ const PlanPage: React.FC = () => {
               <Typography sx={{ color: 'text.primary' }}>Plan: {plan.name}</Typography>
             </Breadcrumbs>
             <MainCard sx={{ width: '100%' }}>
-              <Stack spacing={{ xs: 1, sm: 4 }}>
                 <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
                   <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
                   <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
                 </Stack>
                 {/* <PlanDetails /> */}
                 <GroupBoard />
-              </Stack>
             </MainCard>
           </Stack>
         </CohortContext.Provider>
