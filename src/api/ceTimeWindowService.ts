@@ -1,5 +1,5 @@
 /**
- *  ceCohortService.ts
+ *  ceTimeWindowSerivce.ts
  *
  *  @copyright 2025 Digital Aid Seattle
  *
@@ -9,6 +9,7 @@ import { supabaseClient } from "@digitalaidseattle/supabase";
 import { addHours, format, isEqual } from "date-fns";
 import { EntityService } from "./entityService";
 import { Identifier, Student, TimeWindow } from "./types";
+import { v4 as uuid } from 'uuid';
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
   if (arr1.length !== arr2.length) {
@@ -42,6 +43,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     } else if (areStringArraysEqual(sortedTimeArray, ['AS', 'BS', 'AE', 'BE'])) {
       if (!isEqual(timeWindowsB.start_date_time!, timeWindowsA.end_date_time!)) {
         return {
+          id: uuid(),
           day_in_week: timeWindowsA.day_in_week,
           start_date_time: timeWindowsB.start_date_time,
           end_date_time: timeWindowsA.end_date_time
@@ -50,6 +52,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     } else if (areStringArraysEqual(sortedTimeArray, ['AS', 'BS', 'BE', 'AE'])) {
       if (!isEqual(timeWindowsB.start_date_time!, timeWindowsB.end_date_time!)) {
         return {
+          id: uuid(),
           day_in_week: timeWindowsA.day_in_week,
           start_date_time: timeWindowsB.start_date_time,
           end_date_time: timeWindowsB.end_date_time
@@ -58,6 +61,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     } else if (areStringArraysEqual(sortedTimeArray, ['BS', 'AS', 'BE', 'AE'])) {
       if (!isEqual(timeWindowsA.start_date_time!, timeWindowsB.end_date_time!)) {
         return {
+          id: uuid(),
           day_in_week: timeWindowsA.day_in_week,
           start_date_time: timeWindowsA.start_date_time,
           end_date_time: timeWindowsB.end_date_time
@@ -66,6 +70,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     } else if (areStringArraysEqual(sortedTimeArray, ['BS', 'AS', 'AE', 'BE'])) {
       if (!isEqual(timeWindowsA.start_date_time!, timeWindowsA.end_date_time!)) {
         return {
+          id: uuid(),
           day_in_week: timeWindowsA.day_in_week,
           start_date_time: timeWindowsA.start_date_time,
           end_date_time: timeWindowsA.end_date_time
@@ -199,7 +204,11 @@ class CETimeWindowService extends EntityService<TimeWindow> {
       ((tw.end_date_time?.getTime() ?? 0) - (tw.start_date_time?.getTime() ?? 0)) / (1000 * 60 * 60), 0);
   }
 
-
+  async save(timeWindow: TimeWindow): Promise<TimeWindow> {
+    const json = { ...timeWindow }
+    await this.insert(json);
+    return timeWindow;
+  }
 
 }
 

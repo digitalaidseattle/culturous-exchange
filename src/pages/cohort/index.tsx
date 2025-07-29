@@ -51,7 +51,7 @@ const CohortPage: React.FC = () => {
                 // TODO lookup tw for student
                 enrollment.student = student;
               } else {
-                console.warn(`Student not found for enrollment: ${enrollment.id}`);
+                console.warn(`Student not found for enrollment: ${enrollment.student_id}`);
               }              
             });
             setCohort(cohort);
