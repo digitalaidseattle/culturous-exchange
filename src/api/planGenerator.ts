@@ -48,8 +48,8 @@ class PlanGenerator {
     const nGroups = Math.ceil(cleaned.placements.length / MAX_SIZE);
 
     const groups = Array.from({ length: nGroups + 1 }, (_, i) => {
-      // Create Group '0' for noMatching students. The other Groups are 1, ..
-      const groupNo = i === nGroups ? 'notAssign' : i;
+      // Create Group 'waitlist' for noMatching students. The other Groups are 1, ..
+      const groupNo = i === nGroups ? 'waitlist' : i;
       return {
         id: uuid(),
         plan_id: cleaned.id,
@@ -168,11 +168,11 @@ class PlanGenerator {
       let { bestOverlap, bestGroup, bestIntersect } = await groupService.getBestOverlap(placement, groups, maxGroupSize);
 
       // Set no overlap students
-      // Assign no-overlap group_id to null and assign to group 'notAssign'
+      // Assign no-overlap group_id to null and assign to group 'waitlist'
       if (!bestGroup || bestOverlap <= 0) {
         placement.group_id = null; // No suitable group found, assign to null
 
-        bestGroup = plan.groups.find(g => g.name === "Group notAssign") || null;
+        bestGroup = plan.groups.find(g => g.name === "Group waitlist") || null;
         bestIntersect = [];
       }
 
