@@ -42,22 +42,12 @@ export const StudentTable: React.FC = () => {
   const notifications = useNotifications();
   const { refresh, setRefresh } = useContext(RefreshContext);
 
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: PAGE_SIZE,
-  });
-  const [sortModel, setSortModel] = useState<GridSortModel>([
-    { field: "created_at", sort: "desc" },
-  ]);
-  const [rowSelectionModel, setRowSelectionModel] =
-    useState<GridRowSelectionModel>();
-  const [pageInfo, setPageInfo] = useState<PageInfo<Enrollment>>({
-    rows: [],
-    totalRowCount: 0,
-  });
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
+  const [sortModel, setSortModel] = useState<GridSortModel>([{ field: "created_at", sort: "desc" }]);
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
+  const [pageInfo, setPageInfo] = useState<PageInfo<Enrollment>>({ rows: [], totalRowCount: 0, });
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
-
   const [showAddStudent, setShowAddStudent] = useState<boolean>(false);
   const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
 
@@ -154,8 +144,7 @@ export const StudentTable: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.country}</Typography>;
         },
-        valueGetter: (params) => `${params.row.student.country}`,
-
+        valueGetter: (params) => `${params.row.student.country}`
       },
       {
         field: "anchor",
@@ -233,7 +222,7 @@ export const StudentTable: React.FC = () => {
         <DataGrid
           apiRef={apiRef}
           rows={pageInfo.rows}
-          getRowId={(row) => row.cohort_id + ":" + row.student_id}
+          getRowId={(row) => row.student_id}
           columns={getColumns()}
 
           paginationMode='client'
