@@ -47,27 +47,29 @@ class PlanGenerator {
 
     const nGroups = Math.ceil(cleaned.placements.length / MAX_SIZE);
 
-    const groups = Array.from({ length: nGroups }, (_, groupNo) => {
-        return {
-            id: uuid(),
-            plan_id: cleaned.id,
-            name: `Group ${groupNo}`,
-            country_count: 0
-        } as Group;
+    const groups = Array.from({ length: nGroups + 1 }, (_, i) => {
+      // Create Group '0' for noMatching students. The other Groups are 1, ..
+      const groupNo = i === nGroups ? 'notAssign' : i;
+      return {
+        id: uuid(),
+        plan_id: cleaned.id,
+        name: `Group ${groupNo}`,
+        country_count: 0
+      } as Group;
     });
 
     const updatedPlan = await groupService.batchInsert(groups)
-        .then(() => {
-            return {
-                ...cleaned,  // <- placements here still have group_id: null
-                groups: groups
-            } as Plan;
-        });
-    
+      .then(() => {
+        return {
+          ...cleaned,  // <- placements here still have group_id: null
+          groups: groups
+        } as Plan;
+      });
+
     // Assign first row students to groups
-    const sortedPlacements = [...cleaned.placements].sort((a,b) => {
+    const sortedPlacements = [...cleaned.placements].sort((a, b) => {
       if (a.anchor && !b.anchor) return -1; // a is anchor, b is not
-      if (!a.anchor && b.anchor) return 1; // b is anchor, 
+      if (!a.anchor && b.anchor) return 1; // b is anchor,
       return 0; // both are anchors or neither is an anchor
     })
     const firstRowStudents = sortedPlacements.slice(0, nGroups);
@@ -78,7 +80,6 @@ class PlanGenerator {
     const firstrowUpdatedPlan = await planEvaluator.evaluate(firstrowPlan); // to update group.time_windows and country counts
     const finalPlan = await planGenerator.assignedByTimewindow(firstrowUpdatedPlan, nGroups, remainingPlacements);
 
-    
     return finalPlan;
   }
 
@@ -95,6 +96,11 @@ class PlanGenerator {
 
     const latest = await planService.getById(planId);
     if (latest !== null) {
+      // 1. Initialize all groups with an empty placements array
+      latest.groups.forEach(group => {
+        group.placements = []; // Always start with an empty array, no matter what
+      });
+
       latest.placements
         .filter(placement => placement.student_id !== null)
         .forEach(placement => {
@@ -124,6 +130,7 @@ class PlanGenerator {
           }
         }
       }
+      console.log("Plan evaluator evaluating plan", latest);
       return latest;
     }
     throw new Error("Plan not found");
@@ -137,12 +144,12 @@ class PlanGenerator {
       const group = plan.groups[index % nGroups];
       return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
     });
-    
+
     plan = await Promise.all(firstRowStudentsPromises)
-        .then(() => this.hydratePlan(plan.id));
-    
+      .then(() => this.hydratePlan(plan.id));
+
     console.log("plan student has group_id", plan);
-    
+
     return plan
   }
 
@@ -159,11 +166,13 @@ class PlanGenerator {
     // Assign each placement to the best group based on time windows
     for (const placement of remainingPlacements) {
       let { bestOverlap, bestGroup, bestIntersect } = await groupService.getBestOverlap(placement, groups, maxGroupSize);
-      
-      // Assign studnets that has no overlap to the first group
+
+      // Set no overlap students
+      // Assign no-overlap group_id to null and assign to group 'notAssign'
       if (!bestGroup || bestOverlap <= 0) {
-        console.log("No suitable group found for placement", placement.student_id);
-        bestGroup = plan.groups[0]; // Assign to the first group if no suitable group found
+        placement.group_id = null; // No suitable group found, assign to null
+
+        bestGroup = plan.groups.find(g => g.name === "Group notAssign") || null;
         bestIntersect = [];
       }
 
@@ -180,7 +189,7 @@ class PlanGenerator {
           groups[groupIndex].placements.push(placement);
           groups[groupIndex].time_windows = bestIntersect;
         }
-        
+
         // Update the placement in the database
         await placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: bestGroup.id });
       }

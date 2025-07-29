@@ -8,16 +8,16 @@
 
 import { ReactNode, useContext, useEffect, useState } from "react";
 
-import { ExportOutlined, UserOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { ExportOutlined, UserOutlined, UserSwitchOutlined, ExperimentOutlined } from "@ant-design/icons";
 import {
-    Box,
-    Card,
-    CardContent,
-    IconButton,
-    Stack,
-    Toolbar,
-    Tooltip,
-    Typography
+  Box,
+  Card,
+  CardContent,
+  IconButton,
+  Stack,
+  Toolbar,
+  Tooltip,
+  Typography
 } from "@mui/material";
 
 import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
@@ -30,152 +30,171 @@ import { StudentCard } from "../../components/StudentCard";
 import { PlanContext } from ".";
 import { planExporter } from "../../api/planExporter";
 import { useNotifications } from "@digitalaidseattle/core";
+import { planGenerator } from "../../api/planGenerator";
 
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
-    const timeWindows = group ? group.time_windows ?? [] : [];
-    return (group &&
-        <Card sx={{ alignContent: "top" }}>
-            <CardContent>
-                <Typography variant="h6" fontWeight={600}>{group.name}</Typography>
-            </CardContent>
-            {showDetails &&
-                <>
-                    <CardContent>
-                        <Stack direction={'row'} spacing={1} >
-                            <Typography fontWeight={600}>Countries: </Typography>
-                            <Typography>{group.country_count}</Typography>
-                        </Stack>
-                    </CardContent>
-                    <CardContent>
-                        <Typography fontWeight={600}>Time Windows</Typography>
-                        {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
-                    </CardContent>
-                </>
-            }
-        </Card>
-    );
+  const timeWindows = group ? group.time_windows ?? [] : [];
+  return (group &&
+    <Card sx={{ alignContent: "top" }}>
+      <CardContent>
+        <Typography variant="h6" fontWeight={600}>{group.name}</Typography>
+      </CardContent>
+      {showDetails &&
+        <>
+          <CardContent>
+            <Stack direction={'row'} spacing={1} >
+              <Typography fontWeight={600}>Countries: </Typography>
+              <Typography>{group.country_count}</Typography>
+            </Stack>
+          </CardContent>
+          <CardContent>
+            <Typography fontWeight={600}>Time Windows</Typography>
+            {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+          </CardContent>
+        </>
+      }
+    </Card>
+  );
 }
 type PlacementWrapper = Placement & DDType
 
 export const GroupBoard: React.FC = () => {
-    const { plan } = useContext(PlanContext);
+  const { plan, setPlan } = useContext(PlanContext);
 
-    const [categories, setCategories] = useState<DDCategory<string>[]>([]);
-    const [placementWrappers, setPlacementWrappers] = useState<Map<DDCategory<string>, PlacementWrapper[]>>(new Map());
-    const [initialized, setInitialized] = useState<boolean>(false);
-    const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
-    const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
+  const [categories, setCategories] = useState<DDCategory<string>[]>([]);
+  const [placementWrappers, setPlacementWrappers] = useState<Map<DDCategory<string>, PlacementWrapper[]>>(new Map());
+  const [initialized, setInitialized] = useState<boolean>(false);
+  const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
+  const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
 
-    const notifications = useNotifications();
+  const notifications = useNotifications();
 
-    useEffect(() => {
-        // If plan is not defined, we don't want to initialize
-        if (plan) {
-            setInitialized(false);
-            const temCats: DDCategory<string>[] = plan.groups
-                .map(group => {
-                    return { label: group.name, value: group.id! as string }
-                })
-                .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label))
+  useEffect(() => {
+    // If plan is not defined, we don't want to initialize
+    if (plan) {
+      setInitialized(false);
+      const temCats: DDCategory<string>[] = plan.groups
+        .map(group => {
+          return { label: group.name, value: group.id! as string }
+        })
+        .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label))
 
-            const placementMap = new Map();
-            temCats.forEach(category => {
-                placementMap.set(category, plan.placements
-                    .filter(placement => category.value === placement.group_id)
-                    .map(placement => {
-                        return {
-                            ...placement,
-                            id: `${placement.plan_id}:${placement.student_id}`,
-                        } as PlacementWrapper
-                    })
-                );
-            });
+      const placementMap = new Map();
+      temCats.forEach(category => {
+        placementMap.set(category, plan.placements
+          .filter(placement => category.value === placement.group_id)
+          .map(placement => {
+            return {
+              ...placement,
+              id: `${placement.plan_id}:${placement.student_id}`,
+            } as PlacementWrapper
+          })
+        );
+      });
 
-            setPlacementWrappers(placementMap);
-            setCategories(temCats);
-            setInitialized(true);
-        }
-    }, [plan, initialized])
-
-    function handleChange(container: Map<string, unknown>, placement: Placement) {
-        const newGroupId = container.get('containerId') as Identifier;
-        // find old group; iterate over groups looking for the student
-        placementService
-            .updatePlacement(placement.plan_id, placement.student_id, { group_id: newGroupId })
-            .then(resp => console.log(resp))
+      setPlacementWrappers(placementMap);
+      setCategories(temCats);
+      setInitialized(true);
     }
+  }, [plan, initialized])
 
-    function cellRender(item: PlacementWrapper): ReactNode {
-        return <StudentCard placement={item} showDetails={showStudentDetails} />
-    }
+  function handleChange(container: Map<string, unknown>, placement: Placement) {
+    const newGroupId = container.get('containerId') as Identifier;
+    // find old group; iterate over groups looking for the student
+    placementService
+      .updatePlacement(placement.plan_id, placement.student_id, { group_id: newGroupId })
+      .then(resp => console.log(resp))
+  }
 
-    const headerRenderer = (cat: DDCategory<string>): ReactNode => {
-        const group = plan.groups.find(g => g.id === cat.value);
-        return (group &&
-            <GroupCard group={group} showDetails={showGroupDetails} />
-        )
-    };
+  function cellRender(item: PlacementWrapper): ReactNode {
+    return <StudentCard placement={item} showDetails={showStudentDetails} />
+  }
 
-    function exportPlan(): void {
-        planExporter.exportPlan(plan)
-            .then((exported) => {
-                if (exported) {
-                    notifications.success(`${plan.name} exported successfully`);
-
-
-                } else {
-                    notifications.error('Plan export failed');
-                }
-            })
-    }
-
-    function handleGroupDetails(): void {
-        setShowGroupDetails(!showGroupDetails);
-    }
-
-    function handleStudentDetails(): void {
-        setStudentDetails(!showStudentDetails);
-    }
-
-    return (
-        <>
-            <Box sx={{ marginTop: 1 }}  >
-                <Toolbar>
-                    <Typography variant="h3" component="div" sx={{ flexGrow: 1 }}>
-                        Groups
-                    </Typography>
-
-                    <Tooltip title="Export plan">
-                        <IconButton color="inherit" onClick={exportPlan}>
-                            <ExportOutlined />
-                        </IconButton>
-                    </Tooltip>
-
-                    <Tooltip title="Toggle group details">
-                        <IconButton color="inherit" onClick={handleGroupDetails}>
-                            <UserSwitchOutlined />
-                        </IconButton>
-                    </Tooltip>
-
-                    <Tooltip title="Toggle student details">
-                        <IconButton color="inherit" onClick={handleStudentDetails}>
-                            <UserOutlined />
-                        </IconButton>
-                    </Tooltip>
-                </Toolbar>
-                <>{initialized &&
-                    <DragAndDrop
-                        onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
-                        items={placementWrappers}
-                        categories={categories}
-                        cardRenderer={cellRender}
-                        headerRenderer={headerRenderer}
-                    />}
-                    {!plan &&
-                        <Typography>No plan found.</Typography>
-                    }
-                </>
-            </Box>
-        </>
+  const headerRenderer = (cat: DDCategory<string>): ReactNode => {
+    const group = plan.groups.find(g => g.id === cat.value);
+    return (group &&
+      <GroupCard group={group} showDetails={showGroupDetails} />
     )
+  };
+
+  function exportPlan(): void {
+    planExporter.exportPlan(plan)
+      .then((exported) => {
+        if (exported) {
+          notifications.success(`${plan.name} exported successfully`);
+
+
+        } else {
+          notifications.error('Plan export failed');
+        }
+      })
+  }
+
+  function handleGroupDetails(): void {
+    setShowGroupDetails(!showGroupDetails);
+  }
+
+  function handleStudentDetails(): void {
+    setStudentDetails(!showStudentDetails);
+  }
+
+  // NEW : copied from components/PlanDetails/GroupBoard.tsx
+  function seedGroups(): void {
+    planGenerator.seedPlan(plan)
+      .then((seeded) => {
+        setPlan(seeded);
+        console.log('Plan seed success');
+        console.log('Seeded plan', seeded);
+        setInitialized(false);
+      })
+      .catch((err) => console.error(err));
+  }
+
+  return (
+    <>
+      <Box sx={{ marginTop: 1 }}  >
+        <Toolbar>
+          <Typography variant="h3" component="div" sx={{ flexGrow: 1 }}>
+            Groups
+          </Typography>
+
+          <Tooltip title="Seed groups">
+            <IconButton color="inherit" onClick={seedGroups}>
+              <ExperimentOutlined />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Export plan">
+            <IconButton color="inherit" onClick={exportPlan}>
+              <ExportOutlined />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Toggle group details">
+            <IconButton color="inherit" onClick={handleGroupDetails}>
+              <UserSwitchOutlined />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Toggle student details">
+            <IconButton color="inherit" onClick={handleStudentDetails}>
+              <UserOutlined />
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
+        <>{initialized &&
+          <DragAndDrop
+            onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
+            items={placementWrappers}
+            categories={categories}
+            cardRenderer={cellRender}
+            headerRenderer={headerRenderer}
+          />}
+          {!plan &&
+            <Typography>No plan found.</Typography>
+          }
+        </>
+      </Box>
+    </>
+  )
 };
