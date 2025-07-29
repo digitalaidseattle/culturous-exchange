@@ -43,6 +43,9 @@ class PlanGenerator {
   }
 
   async seedPlan(plan: Plan): Promise<Plan> {
+    // TODO clean this up. Do not save to DB yet, save updated plan to DB only
+    // at the function that called seedPlan
+
     const cleaned = await this.emptyPlan(plan)
 
     const nGroups = Math.ceil(cleaned.placements.length / MAX_SIZE);
@@ -58,6 +61,7 @@ class PlanGenerator {
       } as Group;
     });
 
+    // TODO : jeffrey say no need to do this ?
     const updatedPlan = await groupService.batchInsert(groups)
       .then(() => {
         return {
@@ -75,6 +79,7 @@ class PlanGenerator {
     const firstRowStudents = sortedPlacements.slice(0, nGroups);
     const remainingPlacements = sortedPlacements.slice(nGroups);
 
+    // TODO: Go into these functions and clean up the part that save plan to db
     // Fetch DB and update plan
     const firstrowPlan = await planGenerator.assignToGroup(updatedPlan, nGroups, firstRowStudents);
     const firstrowUpdatedPlan = await planEvaluator.evaluate(firstrowPlan); // to update group.time_windows and country counts
@@ -145,6 +150,7 @@ class PlanGenerator {
       return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
     });
 
+    // TODO : check if hydrate plan is needed ?
     plan = await Promise.all(firstRowStudentsPromises)
       .then(() => this.hydratePlan(plan.id));
 
