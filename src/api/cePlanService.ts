@@ -11,9 +11,12 @@ import { enrollmentService } from "./ceEnrollmentService";
 import { groupService } from "./ceGroupService";
 import { placementService } from "./cePlacementService";
 import { EntityService } from "./entityService";
-import { Cohort, Group, Identifier, Placement, Plan, Student } from "./types";
+import { Cohort, Identifier, Placement, Plan, Student } from "./types";
+
+const DEFAULT_SELECT = '*, placement(*), grouptable(*)';
 
 class CEPlanService extends EntityService<Plan> {
+
   async create(cohort: Cohort): Promise<Plan> {
     const proposed: Plan = {
       id: uuidv4(),
@@ -64,26 +67,32 @@ class CEPlanService extends EntityService<Plan> {
     }
   }
 
+  private mapToPlan(json: any): Plan | null {
+    if (json) {
+      const plan = {
+        ...json,
+        placements: json.placement,
+        groups: json.grouptable
+      }
+      delete plan.placement;
+      delete plan.grouptable;
+      return plan as Plan;
+    }
+    else {
+      return null
+    }
+  }
+
   async insert(entity: Plan, select?: string): Promise<Plan> {
     return super.insert(entity, select ?? '*, placement(*)')
   }
 
   async getById(entityId: Identifier, select?: string): Promise<Plan | null> {
-    return super.getById(entityId, select ?? '*, placement(*), grouptable(*)')
-      .then((dbPlan: any) => {
-        if (dbPlan) {
-          return {
-            id: dbPlan.id,
-            cohort_id: dbPlan.cohort_id,
-            name: dbPlan.name,
-            note: dbPlan.note,
-            group_size: dbPlan.group_size,
-            placements: dbPlan.placement,
-            groups:
-              dbPlan.grouptable ? dbPlan.grouptable.map((group: any) => ({
-                ...group
-              } as Group)) : []
-          };
+    return super.getById(entityId, select ?? DEFAULT_SELECT)
+      .then((json: any) => {
+        const plan = this.mapToPlan(json)
+        if (plan) {
+          return plan
         } else {
           return null
         }
@@ -99,7 +108,7 @@ class CEPlanService extends EntityService<Plan> {
       id: uuidv4(),
       cohort_id: plan.cohort_id,
       name: plan.name + ' (copy)',
-      note: ''
+      note: '',
     } as unknown as Plan
     return this.insert(proposed)
       .then(async duplicatePlan => {
@@ -149,6 +158,26 @@ class CEPlanService extends EntityService<Plan> {
       )
     ).then(() => true);
   }
+
+  async update(entityId: Identifier, updatedFields: Partial<Plan>, select?: string): Promise<Plan> {
+    const json = { ...updatedFields } as any;
+    delete json.groups;
+    delete json.placements;
+
+    return super.update(entityId, json, select)
+      .then(updated => this.mapToPlan(updated)!);
+  }
+
+  async save(plan: Plan): Promise<Plan> {
+    for (const placement of plan.placements) {
+      await placementService.save(placement)
+    }
+    for (const group of plan.groups) {
+      await groupService.save(group)
+    }
+    return await this.update(plan.id, plan)
+  }
+
 }
 
 const planService = new CEPlanService('plan')
