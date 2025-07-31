@@ -23,6 +23,8 @@ import { studentService } from '../../api/ceStudentService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import { StarFilled } from '@ant-design/icons';
+import StudentDetailsModal from './StudentDetailsModal';
+import { set } from 'lodash';
 
 const PAGE_SIZE = 10;
 
@@ -36,6 +38,9 @@ const StudentsDetailsTable: React.FC = () => {
   const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
   const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
   const notifications = useNotifications();
+
+  const [showDetails, setShowDetails] = useState<boolean>(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   useEffect(() => {
     setColumns(getColumns());
@@ -151,24 +156,38 @@ const StudentsDetailsTable: React.FC = () => {
   };
 
   return (
-    <DataGrid
-      rows={pageInfo.rows}
-      columns={columns}
-      rowCount={pageInfo.totalRowCount}
-      pageSizeOptions={[5, 10, 25, 100]}
+    <>
+      <DataGrid
+        rows={pageInfo.rows}
+        columns={columns}
+        rowCount={pageInfo.totalRowCount}
+        pageSizeOptions={[5, 10, 25, 100]}
 
-      paginationMode="server"
-      paginationModel={paginationModel}
-      onPaginationModelChange={setPaginationModel}
+        paginationMode="server"
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
 
-      sortingMode="server"
-      sortModel={sortModel}
-      onSortModelChange={setSortModel}
+        sortingMode="server"
+        sortModel={sortModel}
+        onSortModelChange={setSortModel}
 
-      filterMode="server"
-      filterModel={filterModel}
-      onFilterModelChange={setFilterModel}
-    />
+        filterMode="server"
+        filterModel={filterModel}
+        onFilterModelChange={setFilterModel}
+
+        onRowDoubleClick={(row) => {
+          setSelectedStudent(row.row);
+          setShowDetails(true);
+        }}
+      />
+      {selectedStudent && (
+        <StudentDetailsModal
+          student={selectedStudent}
+          isModalOpen={showDetails}
+          onClose={() => setShowDetails(false)}
+        />
+      )}
+    </>
   );
 };
 
