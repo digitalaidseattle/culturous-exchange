@@ -17,14 +17,13 @@ import {
   GridSortModel
 } from '@mui/x-data-grid';
 
+import { StarFilled } from '@ant-design/icons';
 import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
-import { StarFilled } from '@ant-design/icons';
 import StudentDetailsModal from './StudentDetailsModal';
-import { set } from 'lodash';
 
 const PAGE_SIZE = 10;
 
