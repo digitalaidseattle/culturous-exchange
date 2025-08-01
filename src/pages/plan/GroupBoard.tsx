@@ -8,7 +8,7 @@
 
 import { ReactNode, useContext, useEffect, useState } from "react";
 
-import { ExportOutlined, UserOutlined, UserSwitchOutlined } from "@ant-design/icons";
+import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
 import {
     Box,
     Card,
@@ -23,13 +23,16 @@ import {
 import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
 import { format } from "date-fns";
 
-import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
-import { Group, Identifier, Placement } from "../../api/types";
-import { placementService } from "../../api/cePlacementService";
-import { StudentCard } from "../../components/StudentCard";
-import { PlanContext } from ".";
-import { planExporter } from "../../api/planExporter";
 import { useNotifications } from "@digitalaidseattle/core";
+import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
+import { placementService } from "../../api/cePlacementService";
+import { planExporter } from "../../api/planExporter";
+import { planGenerator } from "../../api/planGenerator";
+import { Group, Identifier, Placement, Plan } from "../../api/types";
+import PlanSettingsDialog from "../../components/PlanSettingsDialog";
+import { StudentCard } from "../../components/StudentCard";
+import { planService } from "../../api/cePlanService";
+import { PlanContext } from "./PlanContext";
 
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
     const timeWindows = group ? group.time_windows ?? [] : [];
@@ -58,13 +61,14 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
 type PlacementWrapper = Placement & DDType
 
 export const GroupBoard: React.FC = () => {
-    const { plan } = useContext(PlanContext);
+    const { plan, setPlan } = useContext(PlanContext);
 
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
     const [placementWrappers, setPlacementWrappers] = useState<Map<DDCategory<string>, PlacementWrapper[]>>(new Map());
     const [initialized, setInitialized] = useState<boolean>(false);
     const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
     const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
+    const [showSettings, setShowSettings] = useState<boolean>(false);
 
     const notifications = useNotifications();
 
@@ -121,8 +125,6 @@ export const GroupBoard: React.FC = () => {
             .then((exported) => {
                 if (exported) {
                     notifications.success(`${plan.name} exported successfully`);
-
-
                 } else {
                     notifications.error('Plan export failed');
                 }
@@ -135,6 +137,37 @@ export const GroupBoard: React.FC = () => {
 
     function handleStudentDetails(): void {
         setStudentDetails(!showStudentDetails);
+    }
+
+    function handleSettings(): void {
+        setShowSettings(!showSettings);
+    }
+
+    function handleSettingsChange(plan: Plan): void {
+        planService.update(plan.id,
+            {
+                group_size: plan.group_size!
+            })
+            .then(updatedPlan => {
+                planGenerator.hydratePlan(updatedPlan.id!)
+                    .then((hydratedPlan) => {
+                        planGenerator.seedPlan(hydratedPlan)
+                            .then((seededPlan) => {
+                                notifications.success(`Plan ${seededPlan.name} updated successfully`);
+                                setInitialized(false)
+                                setPlan(seededPlan);
+                                setShowSettings(false);
+                            })
+                            .catch((error) => {
+                                notifications.error(`Failed to update plan: ${error.message}`);
+                            });
+                    })
+                    .catch((error) => {
+                        notifications.error(`Failed to rehydrate plan: ${error.message}`);
+                        throw error;
+                    });
+            })
+
     }
 
     return (
@@ -153,7 +186,7 @@ export const GroupBoard: React.FC = () => {
 
                     <Tooltip title="Toggle group details">
                         <IconButton color="inherit" onClick={handleGroupDetails}>
-                            <UserSwitchOutlined />
+                            <TeamOutlined />
                         </IconButton>
                     </Tooltip>
 
@@ -162,20 +195,32 @@ export const GroupBoard: React.FC = () => {
                             <UserOutlined />
                         </IconButton>
                     </Tooltip>
+                    <Tooltip title="Show plan settings">
+                        <IconButton color="inherit" onClick={handleSettings}>
+                            <SettingOutlined />
+                        </IconButton>
+                    </Tooltip>
                 </Toolbar>
-                <>{initialized &&
-                    <DragAndDrop
-                        onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
-                        items={placementWrappers}
-                        categories={categories}
-                        cardRenderer={cellRender}
-                        headerRenderer={headerRenderer}
-                    />}
+                <>
                     {!plan &&
                         <Typography>No plan found.</Typography>
                     }
+                    {initialized &&
+                        <DragAndDrop
+                            onChange={(container: Map<string, unknown>, placement: Placement) => handleChange(container, placement)}
+                            items={placementWrappers}
+                            categories={categories}
+                            cardRenderer={cellRender}
+                            headerRenderer={headerRenderer}
+                        />}
                 </>
             </Box>
+            <PlanSettingsDialog
+                plan={plan}
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                onSubmit={handleSettingsChange}
+            />
         </>
     )
 };

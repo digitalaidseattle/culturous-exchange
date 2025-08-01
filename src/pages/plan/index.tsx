@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 // material-ui
@@ -15,18 +15,7 @@ import { Cohort, Identifier, Plan } from "../../api/types";
 import { TextEdit } from "../../components/TextEdit";
 import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
-import { planEvaluator } from "../../api/planEvaluator";
-
-interface PlanContextType {
-  plan: Plan;
-  setPlan: (plan: Plan) => void;
-}
-
-export const PlanContext = createContext<PlanContextType>({
-  plan: {} as Plan,
-  setPlan: () => { },
-});
-
+import { PlanContext } from "./PlanContext";
 
 const PlanPage: React.FC = () => {
   const { id: planId } = useParams<string>();
@@ -41,29 +30,23 @@ const PlanPage: React.FC = () => {
   }, [planId]);
 
   useEffect(() => {
-    if (plan) {
-      if (plan.cohort_id) {
-        cohortService.getById(plan.cohort_id)
-          .then((cohort) => {
-            if (cohort) {
-              setCohort(cohort);
-            } else {
-              console.error(`Cohort not found ${plan.cohort_id}`);
-            }
-          });
-      }
-    }
+    setCohort(undefined);
+    if (plan && plan.cohort_id) {
+      cohortService.getById(plan.cohort_id)
+        .then((cohort) => {
+          if (cohort) {
+            setCohort(cohort);
+          } else {
+            console.error(`Cohort not found ${plan.cohort_id}`);
+          }
+        });    }
   }, [plan]);
 
   function refreshPlan(planId: Identifier) {
     setPlan(undefined);
     setLoading(true);
     planGenerator.hydratePlan(planId)
-      .then((hydrated) => {
-        // REVIEW evaluation should be done as part of creating the plan
-        planEvaluator.evaluate(hydrated)
-          .then((evaluated) => setPlan(evaluated))
-      })
+      .then((hydrated) => setPlan(hydrated))
       .catch((err) => notifications.error(`Error reading ${planId} : ${err}`))
       .finally(() => setLoading(false));
   }
@@ -88,9 +71,7 @@ const PlanPage: React.FC = () => {
       })
   }
 
-  return (
-    loading
-      ?
+  return (loading ?
       <Box sx={{
         height: '100vh',
         display: 'flex',
@@ -118,14 +99,12 @@ const PlanPage: React.FC = () => {
               <Typography sx={{ color: 'text.primary' }}>Plan: {plan.name}</Typography>
             </Breadcrumbs>
             <MainCard sx={{ width: '100%' }}>
-              <Stack spacing={{ xs: 1, sm: 4 }}>
                 <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
                   <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
                   <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
                 </Stack>
                 {/* <PlanDetails /> */}
                 <GroupBoard />
-              </Stack>
             </MainCard>
           </Stack>
         </CohortContext.Provider>

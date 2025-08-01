@@ -7,10 +7,28 @@
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { EntityService } from "./entityService";
-import { Cohort, Enrollment, Student } from "./types";
+import { Cohort, Enrollment, Identifier, Student } from "./types";
 
 
 class CEEnrollmentService extends EntityService<Enrollment> {
+  async updateEnrollment(cohortId: Identifier, studentId: Identifier, updatedFields: Partial<Enrollment>, select?: string): Promise<Enrollment> {
+    try {
+      const { data, error } = await supabaseClient.from(this.tableName)
+        .update(updatedFields)
+        .eq('cohort_id', cohortId)
+        .eq('student_id', studentId)
+        .select(select ?? '*')
+        .single();
+      if (error) {
+        console.error('Error updating entity:', error.message);
+        throw new Error('Failed to update entity');
+      }
+      return data as unknown as Enrollment;
+    } catch (err) {
+      console.error('Unexpected error during update:', err);
+      throw err;
+    }
+  }
 
     async getStudents(cohort: Cohort): Promise<Student[]> {
         return await supabaseClient

@@ -77,6 +77,7 @@ class CEPlanService extends EntityService<Plan> {
             cohort_id: dbPlan.cohort_id,
             name: dbPlan.name,
             note: dbPlan.note,
+            group_size: dbPlan.group_size,
             placements: dbPlan.placement,
             groups:
               dbPlan.grouptable ? dbPlan.grouptable.map((group: any) => ({
