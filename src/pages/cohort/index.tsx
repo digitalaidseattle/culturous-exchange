@@ -16,6 +16,8 @@ import { TabPanel } from "../../components/TabPanel";
 import { TextEdit } from "../../components/TextEdit";
 import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
+import { useSearchParams } from "react-router-dom";
+import { planGenerator } from "../../api/planGenerator";
 
 interface CohortContextType {
   cohort: Cohort;
@@ -24,10 +26,11 @@ interface CohortContextType {
 
 export const CohortContext = createContext<CohortContextType>({
   cohort: {} as Cohort,
-  setCohort: () => {},
+  setCohort: () => { },
 });
 
 const CohortPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const { id: cohortId } = useParams<string>();
   const notifications = useNotifications();
   const navigate = useNavigate();
@@ -52,6 +55,13 @@ const CohortPage: React.FC = () => {
     }
   }, [cohortId, refresh]);
 
+  useEffect(() => {
+    if (searchParams && searchParams.get('tab')) {
+      setTabValue(Number(searchParams.get('tab')));
+    }
+  }, [searchParams]);
+
+
   function handleNameChange(newText: string) {
     if (cohort && cohort.id) {
       cohortService
@@ -63,12 +73,16 @@ const CohortPage: React.FC = () => {
     }
   }
 
-  function handleCreatePlan() {
+  async function handleCreatePlan() {
     if (cohort) {
-      planService.create(cohort).then((plan) => {
-        navigate(`/plan/${plan.id}`);
-        notifications.success(`Plan added to  ${cohort.name}.`);
-      });
+      const created = await planService.create(cohort);
+      const hydrated = await planGenerator.hydratePlan(created.id);
+      const seededPlan = await planGenerator.seedPlan(hydrated)
+      // TODO consider evaluating the plan
+      // const evaluatedPlan = await planEvaluator.evaluate(seededPlan)
+      // console.log(`evaluatedPlan`, evaluatedPlan);
+      navigate(`/plan/${seededPlan.id}`);
+      notifications.success(`Plan added to  ${cohort.name}.`);
     }
   }
 
