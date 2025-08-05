@@ -6,7 +6,7 @@
  */
 import { useContext, useEffect, useState } from 'react';
 
-// import Box from '@mui/material/Box';
+import { Button } from '@mui/material';
 import {
   DataGrid,
   getGridNumericOperators,
@@ -17,13 +17,14 @@ import {
   GridSortModel
 } from '@mui/x-data-grid';
 
-import { StarFilled } from '@ant-design/icons';
+import { DeleteOutlined, StarFilled } from '@ant-design/icons';
 import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import StudentDetailsModal from './StudentDetailsModal';
+import { ConfirmationDialog } from '@digitalaidseattle/mui';
 
 const PAGE_SIZE = 10;
 
@@ -40,6 +41,10 @@ const StudentsDetailsTable: React.FC = () => {
 
   const [showDetails, setShowDetails] = useState<boolean>(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+
+  const [deleteStudent, setDeleteStudent] = useState<Student | null>(null);
+  const [deleteMessage, setDeleteMessage] = useState<string>('Are you sure you want to delete this student?');
+  const [deleteConfirmation, showDeleteConfirmation] = useState<boolean>(false);
 
   useEffect(() => {
     setColumns(getColumns());
@@ -74,7 +79,6 @@ const StudentsDetailsTable: React.FC = () => {
         .update(student.id, { anchor: student.anchor })
         .then((resp) => {
           console.log('Anchor status updated:', resp);
-          // Optimistically update the pageInfo
           setRefresh(refresh + 1);
         });
     } catch (error) {
@@ -85,8 +89,59 @@ const StudentsDetailsTable: React.FC = () => {
     }
   };
 
+  function handleDeleteStudent(param: GridRenderCellParams) {
+    return (evt: any) => {
+      console.log('handleDeleteStudent', param.row.id, param.row.name);
+
+      studentService.getCohortsForStudent(param.row)
+        .then((cohorts) => {
+          if (cohorts.length > 0) {
+            notifications.error(`Cannot delete student ${param.row.name} as they are enrolled in cohorts.`);
+            return;
+          } else {
+            setDeleteStudent(param.row);
+            setDeleteMessage(`Are you sure you want to delete student ${param.row.name}?`);
+            showDeleteConfirmation(true);
+          }
+          evt.stopPropagation()
+        })
+    }
+  }
+
+  function doDeleteStudent() {
+    if (deleteStudent) {
+      studentService.delete(deleteStudent.id)
+        .then(() => {
+          notifications.success(`Student ${deleteStudent.name} deleted successfully`);
+          setRefresh(refresh + 1);
+        })
+        .catch((err) => {
+          console.error(`Deletion failed: ${err.message}`);
+          notifications.error(`Deletion failed: ${err.message}`);
+        })
+        .finally(() => {
+          setSelectedStudent(null);
+          showDeleteConfirmation(false);
+        })
+    }
+  }
+
   const getColumns = (): GridColDef[] => {
     return [
+      {
+        field: 'id',
+        headerName: '',
+        width: 75,
+        renderCell: (param: GridRenderCellParams) => {
+          return (
+            <Button
+              color='error'
+              onClick={handleDeleteStudent(param)} >
+              <DeleteOutlined />
+            </Button>
+          );
+        }
+      },
       {
         field: 'name',
         headerName: 'Name',
@@ -186,6 +241,15 @@ const StudentsDetailsTable: React.FC = () => {
           onClose={() => setShowDetails(false)}
         />
       )}
+      <ConfirmationDialog
+        message={deleteMessage}
+        open={deleteConfirmation}
+        handleConfirm={function (): void {
+          doDeleteStudent();
+        }}
+        handleCancel={function (): void {
+          showDeleteConfirmation(false);
+        }} />
     </>
   );
 };

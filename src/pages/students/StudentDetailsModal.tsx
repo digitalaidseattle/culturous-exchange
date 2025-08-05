@@ -109,7 +109,7 @@ const StudentDetailsModal: React.FC<Props> = ({ student, isModalOpen, onClose })
       label: 'Cohorts',
       type: 'custom',
       disabled: true,
-      inputRenderer(idx, option, value) {
+      inputRenderer(idx: number, option: any, value: any) {
         console.log('Cohorts for student:', value);
         return (
           <FormControl
