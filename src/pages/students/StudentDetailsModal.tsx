@@ -110,7 +110,6 @@ const StudentDetailsModal: React.FC<Props> = ({ student, isModalOpen, onClose })
       type: 'custom',
       disabled: true,
       inputRenderer(idx, option, value) {
-        console.log('Cohorts for student:', value);
         return (
           <FormControl
             key={idx}
@@ -125,7 +124,6 @@ const StudentDetailsModal: React.FC<Props> = ({ student, isModalOpen, onClose })
                 ? cohorts.map((cc: Cohort) => cc.name).join(', ')
                 : "No availabilities set"
               }
-              multiline={true}
             ></OutlinedInput>
           </FormControl>
         );
