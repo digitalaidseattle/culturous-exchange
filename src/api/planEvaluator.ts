@@ -12,6 +12,8 @@ import { Plan, TimeWindow } from "./types";
 class PlanEvaluator {
 
     async evaluate(plan: Plan): Promise<Plan> {
+        // Evaluautes Plan in memory
+        // mutate group objects inside the plan object, and return plan
         // Update each group time_windows with by the intersections with students
         plan.groups.forEach(group => {
             const placements = group.placements ?? [];
@@ -26,6 +28,7 @@ class PlanEvaluator {
         })
         return { ...plan }; // <- Return a shallow copy of plan object to avoid mutation
     }
+
 
     updateGroupTimeWindows(
         currentGroupWindows: TimeWindow[] | undefined,

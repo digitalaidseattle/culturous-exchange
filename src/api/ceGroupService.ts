@@ -63,6 +63,9 @@ class CEGroupService extends EntityService<Group> {
   }
 
   async update(entityId: Identifier, updatedFields: Partial<Group>, select?: string): Promise<Group> {
+    /* The update() method updates a Group entity in the database 'grouptable', 
+      excluding nested fields like placements and time_windows. */
+
     const json = { ...updatedFields } as any;
     delete json.placements;
     delete json.time_windows;

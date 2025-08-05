@@ -43,6 +43,9 @@ class PlanGenerator {
   }
 
   async seedPlan(plan: Plan): Promise<Plan> {
+    // Clean this up. Do not save to DB yet, save updated plan to DB only
+    // at the function that called seedPlan
+
     const cleaned = await this.emptyPlan(plan)
 
     const nGroups = Math.ceil(cleaned.placements.length / (plan.group_size ?? MAX_SIZE));
@@ -55,14 +58,8 @@ class PlanGenerator {
       } as Group;
     });
 
-    // TODO shouldn't need save to server here
-    const updatedPlan = await groupService.batchInsert(groups)
-      .then(() => {
-        return {
-          ...cleaned,  // <- placements here still have group_id: null
-          groups: groups
-        } as Plan;
-      });
+    // Current state of cleaned.placement has group_id: null
+    const updatedPlan: Plan = { ...cleaned, groups, };
 
     // Assign first row students to groups
     const sortedPlacements = [...cleaned.placements].sort((a, b) => {
@@ -73,40 +70,44 @@ class PlanGenerator {
     const firstRowStudents = sortedPlacements.slice(0, nGroups);
     const remainingPlacements = sortedPlacements.slice(nGroups);
 
+    // *** Pan TODO: Go into these functions and clean up the part that save plan to db
     // Fetch DB and update plan
-    const planWithAnchors = await planGenerator.assignToGroup(updatedPlan, nGroups, firstRowStudents);
+    const planWithAnchors = await planGenerator.assignByGreedy(updatedPlan, nGroups, firstRowStudents);
     const planEvaluatedWithAnchors = await planEvaluator.evaluate(planWithAnchors); // to update group.time_windows and country counts
     const planWithAllStudents = await planGenerator.assignedByTimewindow(planEvaluatedWithAnchors, nGroups, remainingPlacements);
     const finalPlan = await planEvaluator.evaluate(planWithAllStudents); // to update group.time_windows and country counts
 
-    // TODO should not use save here, make changes in memory
-    // Save groups
-    finalPlan.groups.forEach(async group => {
-      await groupService.update(group.id, {
-        country_count: group.country_count
-      });
-    });
+    // DELETE : 
 
-    // Save time windows
-    finalPlan.groups.forEach(group => {
-      const timewindowsWithGroups = group.time_windows?.map(tw => {
-        return {
-          ...tw,
-          id: uuid(),
-          group_id: group.id
-        }
-      });
-      timeWindowService.batchInsert(timewindowsWithGroups || [])
-    });
+    // Remove and change to save Group, Timewindow tables at the function call seedPlan
 
-    console.log("Final plan after seeding:", finalPlan);
+    // // Save groups (delete)
+    // finalPlan.groups.forEach(async group => {
+    //   await groupService.update(group.id, {
+    //     country_count: group.country_count
+    //   });
+    // });
+
+    // // Save time windows (delete)
+    // finalPlan.groups.forEach(group => {
+    //   const timewindowsWithGroups = group.time_windows?.map(tw => {
+    //     return {
+    //       ...tw,
+    //       id: uuid(),
+    //       group_id: group.id
+    //     }
+    //   });
+    //   timeWindowService.batchInsert(timewindowsWithGroups || [])
+    // });
+
+    // console.log("Final plan after seeding:", finalPlan);
 
     return finalPlan;
   }
 
   // Review: consider moving to planService as getById
   async hydratePlan(planId: Identifier): Promise<Plan> {
-    // Get latest plan
+    // Get latest plan from DB
     // Attach placements to the latest plan's group objects
     // Fetch full students' schedules
     // Attach the enriched student to their placement
@@ -161,21 +162,29 @@ class PlanGenerator {
     throw new Error("Plan not found");
   }
 
-  async assignToGroup(plan: Plan, nGroups: number, students: Placement[]): Promise<Plan> {
-    // Greedy algorithm to assign students to groups
+  async assignByGreedy(plan: Plan, nGroups: number, students: Placement[]): Promise<Plan> {
+    // Greedy algorithm to assign first row students into groups 
+    // Output contains one student in each group id
+    // All anchors + other students that fit in the first row
 
-    // TODO should not use updatePlacement here, make changes in memory
-    // 1. Place anchor students in the first row
-    const firstRowStudentsPromises = students.map((placement, index) => {
+    // Assign anchor students to the first row (in memory only)
+    const updatedPlacements = students.map((placement, index) => {
       const group = plan.groups[index % nGroups];
-      return placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: group.id });
+      return {
+        ...placement,
+        group_id: group.id
+      };
     });
 
-    plan = await Promise.all(firstRowStudentsPromises)
-      .then(() => this.hydratePlan(plan.id));
+    // Replace placements in plan
+    const updatedPlan: Plan = {
+      ...plan,
+      placements: updatedPlacements
+    };
 
-    return plan
+    return updatedPlan
   }
+
 
   async assignedByTimewindow(plan: Plan, nGroups: number, remainingPlacements: Placement[]): Promise<Plan> {
     // Greedy algorithm to assign students to groups by time windows
@@ -197,26 +206,36 @@ class PlanGenerator {
         placement.group_id = null;
       } else {
         placement.group_id = bestGroup.id;
-        bestGroup.time_windows = bestIntersect;
 
-        // Update the group in the plan
-        const groupIndex = groups.findIndex(g => g.id === bestGroup.id);
-        if (groupIndex !== -1) {
-          groups[groupIndex].placements = groups[groupIndex].placements || [];
-          groups[groupIndex].placements.push(placement);
-          groups[groupIndex].time_windows = bestIntersect;
-        }
+        // TODO : consider do this at the caller function (seedPlan) ? 
+        // This function mutate plan.groups in place 
+        this.assignPlacementToGroup(groups, placement, bestGroup.id, bestIntersect);
       }
-
-      // TODO should not use updatePlacement here, make changes in memory
-      await placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: placement.group_id });
-
     }
 
-    return this.hydratePlan(plan.id);
+    return plan;
   }
 
+  private assignPlacementToGroup(
+    groups: Group[],
+    placement: Placement,
+    groupId: Identifier,
+    newTimeWindows: TimeWindow[]
+  ): void {
+    // This function mutate plan.groups in place 
+    // fill plan.group[id].placements and plan.group[id].time_windows
+
+    const groupIndex = groups.findIndex(g => g.id === groupId);
+
+    if (groupIndex !== -1) {
+      const group = groups[groupIndex];
+      group.placements = group.placements || [];
+      group.placements.push(placement);
+      group.time_windows = newTimeWindows;    // TODO : This part might duplicate with evaluate()
+    }
+  }
 }
+
 
 const planGenerator = new PlanGenerator()
 export { planGenerator };
