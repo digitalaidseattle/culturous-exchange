@@ -92,7 +92,7 @@ abstract class EntityService<T extends Entity> {
         try {
             const { data, error } = await supabaseClient
                 .from(this.tableName)
-                .insert(entities)
+                .upsert(entities)
                 .select(select ?? '*');
             if (error) {
                 console.error('Error inserting entity:', error);
@@ -109,7 +109,7 @@ abstract class EntityService<T extends Entity> {
         try {
             const { data, error } = await supabaseClient
                 .from(this.tableName)
-                .insert([entity])
+                .upsert([entity])
                 .select(select ?? '*')
                 .single();
             if (error) {

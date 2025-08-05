@@ -22,7 +22,6 @@ class PlanGenerator {
   async emptyPlan(plan: Plan): Promise<Plan> {
     for (const placement of plan.placements) {
       await placementService.updatePlacement(plan.id, placement.student_id, { group_id: null });
-      placement.group = undefined;
       placement.group_id = undefined;
     }
 
@@ -56,6 +55,7 @@ class PlanGenerator {
       } as Group;
     });
 
+    // TODO shouldn't need save to server here
     const updatedPlan = await groupService.batchInsert(groups)
       .then(() => {
         return {
@@ -79,6 +79,7 @@ class PlanGenerator {
     const planWithAllStudents = await planGenerator.assignedByTimewindow(planEvaluatedWithAnchors, nGroups, remainingPlacements);
     const finalPlan = await planEvaluator.evaluate(planWithAllStudents); // to update group.time_windows and country counts
 
+    // TODO should not use save here, make changes in memory
     // Save groups
     finalPlan.groups.forEach(async group => {
       await groupService.update(group.id, {
@@ -126,7 +127,6 @@ class PlanGenerator {
             if (group.placements === undefined) {
               group.placements = [];
             }
-            placement.group = group;
             placement.group_id = group.id;
             group.placements.push(placement);
           }
@@ -150,6 +150,10 @@ class PlanGenerator {
       // Groups have real timeWindows
       for (const group of latest.groups) {
         const timewindows: TimeWindow[] = await timeWindowService.findByGroupId(group.id);
+        timewindows.forEach((tw: TimeWindow) => {
+          tw.start_date_time = parseISO(tw.start_date_time! as unknown as string);
+          tw.end_date_time = parseISO(tw.end_date_time! as unknown as string);
+        });
         group.time_windows = timewindows
       }
       return latest;
@@ -160,6 +164,7 @@ class PlanGenerator {
   async assignToGroup(plan: Plan, nGroups: number, students: Placement[]): Promise<Plan> {
     // Greedy algorithm to assign students to groups
 
+    // TODO should not use updatePlacement here, make changes in memory
     // 1. Place anchor students in the first row
     const firstRowStudentsPromises = students.map((placement, index) => {
       const group = plan.groups[index % nGroups];
@@ -184,19 +189,14 @@ class PlanGenerator {
 
     // Assign each placement to the best group based on time windows
     for (const placement of remainingPlacements) {
-      let { bestOverlap, bestGroup, bestIntersect } = await groupService.getBestOverlap(placement, groups, maxGroupSize);
+      let { bestGroup, bestIntersect } = await groupService.getBestOverlap(placement, groups, maxGroupSize);
 
       // Assign studnets that has no overlap to the first group
-      if (!bestGroup || bestOverlap <= 0) {
+      if (!bestGroup) {
         console.log("No suitable group found for placement", placement.student_id);
-        bestGroup = plan.groups[0]; // Assign to the first group if no suitable group found
-        bestIntersect = [];
-      }
-
-      // Assign the best group to the placement students
-      if (bestGroup) {
+        placement.group_id = null;
+      } else {
         placement.group_id = bestGroup.id;
-        placement.group = bestGroup;
         bestGroup.time_windows = bestIntersect;
 
         // Update the group in the plan
@@ -206,10 +206,11 @@ class PlanGenerator {
           groups[groupIndex].placements.push(placement);
           groups[groupIndex].time_windows = bestIntersect;
         }
-
-        // Update the placement in the database
-        await placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: bestGroup.id });
       }
+
+      // TODO should not use updatePlacement here, make changes in memory
+      await placementService.updatePlacement(placement.plan_id, placement.student_id, { group_id: placement.group_id });
+
     }
 
     return this.hydratePlan(plan.id);

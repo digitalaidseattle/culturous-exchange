@@ -39,7 +39,8 @@ const PlanPage: React.FC = () => {
           } else {
             console.error(`Cohort not found ${plan.cohort_id}`);
           }
-        });    }
+        });
+    } 
   }, [plan]);
 
   function refreshPlan(planId: Identifier) {
@@ -72,43 +73,43 @@ const PlanPage: React.FC = () => {
   }
 
   return (loading ?
-      <Box sx={{
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}>
-        <CircularProgress color="success" />
-      </Box>
-      : plan && cohort &&
-      <PlanContext.Provider value={{ plan, setPlan }}>
-        <CohortContext.Provider value={{ cohort, setCohort }}>
-          <Stack gap={1}>
-            <Breadcrumbs aria-label="breadcrumb">
-              <Link underline="hover" color="inherit"
-                href="/">
-                Home
-              </Link>
-              <Link
-                underline="hover"
-                color="inherit"
-                href={`/cohort/${plan.cohort_id}`}
-              >
-                Cohort: {cohort.name}
-              </Link>
-              <Typography sx={{ color: 'text.primary' }}>Plan: {plan.name}</Typography>
-            </Breadcrumbs>
-            <MainCard sx={{ width: '100%' }}>
-                <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
-                  <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
-                  <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
-                </Stack>
-                {/* <PlanDetails /> */}
-                <GroupBoard />
-            </MainCard>
-          </Stack>
-        </CohortContext.Provider>
-      </PlanContext.Provider>
+    <Box sx={{
+      height: '100vh',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}>
+      <CircularProgress color="success" />
+    </Box>
+    : plan && cohort &&
+    <PlanContext.Provider value={{ plan, setPlan }}>
+      <CohortContext.Provider value={{ cohort, setCohort }}>
+        <Stack gap={1}>
+          <Breadcrumbs aria-label="breadcrumb">
+            <Link underline="hover" color="inherit"
+              href="/">
+              Home
+            </Link>
+            <Link
+              underline="hover"
+              color="inherit"
+              href={`/cohort/${plan.cohort_id}`}
+            >
+              Cohort: {cohort.name}
+            </Link>
+            <Typography sx={{ color: 'text.primary' }}>Plan: {plan.name}</Typography>
+          </Breadcrumbs>
+          <MainCard sx={{ width: '100%' }}>
+            <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
+              <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
+              <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
+            </Stack>
+            {/* <PlanDetails /> */}
+            <GroupBoard />
+          </MainCard>
+        </Stack>
+      </CohortContext.Provider>
+    </PlanContext.Provider>
   );
 };
 
