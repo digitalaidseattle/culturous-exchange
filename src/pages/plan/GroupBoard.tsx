@@ -25,13 +25,13 @@ import { format } from "date-fns";
 
 import { useNotifications } from "@digitalaidseattle/core";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
-import { placementService } from "../../api/cePlacementService";
+import { planService } from "../../api/cePlanService";
+import { planEvaluator } from "../../api/planEvaluator";
 import { planExporter } from "../../api/planExporter";
 import { planGenerator } from "../../api/planGenerator";
 import { Group, Identifier, Placement, Plan } from "../../api/types";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { StudentCard } from "../../components/StudentCard";
-import { planService } from "../../api/cePlanService";
 import { PlanContext } from "./PlanContext";
 
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
@@ -58,7 +58,20 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
         </Card>
     );
 }
+
+export const WaitlistedCard: React.FC<{}> = () => {
+    return (
+        <Card sx={{ alignContent: "top" }}>
+            <CardContent>
+                <Typography variant="h6" fontWeight={600}>Waitlisted</Typography>
+            </CardContent>
+        </Card>
+    );
+}
+
 type PlacementWrapper = Placement & DDType
+
+const WAITLIST_ID = 'WAITLIST';
 
 export const GroupBoard: React.FC = () => {
     const { plan, setPlan } = useContext(PlanContext);
@@ -76,16 +89,19 @@ export const GroupBoard: React.FC = () => {
         // If plan is not defined, we don't want to initialize
         if (plan) {
             setInitialized(false);
-            const temCats: DDCategory<string>[] = plan.groups
+            const waitlist: DDCategory<string>[] = [
+                { label: 'Waitlisted', value: WAITLIST_ID }
+            ];
+            const temCats = waitlist.concat(plan.groups
                 .map(group => {
                     return { label: group.name, value: group.id! as string }
                 })
-                .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label))
+                .sort((cat0, cat1) => cat0.label.localeCompare(cat1.label)))
 
             const placementMap = new Map();
             temCats.forEach(category => {
                 placementMap.set(category, plan.placements
-                    .filter(placement => category.value === placement.group_id)
+                    .filter(placement => category.value === (placement.group_id ?? WAITLIST_ID))
                     .map(placement => {
                         return {
                             ...placement,
@@ -102,11 +118,37 @@ export const GroupBoard: React.FC = () => {
     }, [plan, initialized])
 
     function handleChange(container: Map<string, unknown>, placement: Placement) {
-        const newGroupId = container.get('containerId') as Identifier;
-        // find old group; iterate over groups looking for the student
-        placementService
-            .updatePlacement(placement.plan_id, placement.student_id, { group_id: newGroupId })
-            .then(resp => console.log(resp))
+        if (plan) {
+
+            const planPlacement = plan.placements.find(p => p.student_id === placement.student_id);
+            if (planPlacement) {
+                const newGroupId = container.get('containerId') as Identifier;
+                const oldGroup = plan.groups.find(g => g.id === planPlacement.group_id);
+                const newGroup = plan.groups.find(g => g.id === newGroupId);
+
+                if (oldGroup && oldGroup.placements) {
+                    const oldIndex = oldGroup.placements.findIndex(p => p.student_id === planPlacement.student_id);
+                    oldGroup.placements.splice(oldIndex, 1);
+                    // TODO  reorder / resequence group
+                }
+
+                if (newGroup && newGroup.placements) {
+                    // TODO  reorder / resequence group
+                    newGroup.placements.push(planPlacement)
+                } 
+                planPlacement.group_id = newGroupId === WAITLIST_ID ? null : newGroupId;
+
+                console.log('handleChange', plan);
+
+                planEvaluator
+                    .evaluate(plan)
+                    .then(evaluated => {
+                        planService
+                            .save(evaluated)
+                            .then((saved) => setPlan(saved))
+                    })
+            }
+        }
     }
 
     function cellRender(item: PlacementWrapper): ReactNode {
@@ -114,17 +156,19 @@ export const GroupBoard: React.FC = () => {
     }
 
     const headerRenderer = (cat: DDCategory<string>): ReactNode => {
-        const group = plan.groups.find(g => g.id === cat.value);
-        return (group &&
-            <GroupCard group={group} showDetails={showGroupDetails} />
-        )
+        const group = plan!.groups.find(g => g.id === cat.value);
+        if (group) {
+            return <GroupCard group={group} showDetails={showGroupDetails} />
+        } else {
+            return <WaitlistedCard />
+        }
     };
 
     function exportPlan(): void {
-        planExporter.exportPlan(plan)
+        planExporter.exportPlan(plan!)
             .then((exported) => {
                 if (exported) {
-                    notifications.success(`${plan.name} exported successfully`);
+                    notifications.success(`${plan!.name} exported successfully`);
                 } else {
                     notifications.error('Plan export failed');
                 }
@@ -216,7 +260,7 @@ export const GroupBoard: React.FC = () => {
                 </>
             </Box>
             <PlanSettingsDialog
-                plan={plan}
+                plan={plan!}
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
                 onSubmit={handleSettingsChange}
