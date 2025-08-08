@@ -36,11 +36,15 @@ class CEEnrollmentService {
     async getStudents(cohort: Cohort): Promise<Student[]> {
         return await supabaseClient
             .from('enrollment')
-            .select('student(*)')
+            .select('student(*, timewindow(*))')
             .eq('cohort_id', cohort.id)
             .then(resp => {
                 const enrollments = resp.data as unknown as any[];
-                return enrollments.map(en => en.student)
+                return enrollments.map(en => {
+                    en.student.timeWindows = en.student.timewindow;
+                    delete en.student.timewindow;
+                    return en.student as Student;
+                })
             });
     }
 
