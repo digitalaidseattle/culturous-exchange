@@ -6,12 +6,17 @@
  */
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
-import { EntityService } from "./entityService";
-import { Plan, Placement, Student, Identifier, Cohort, Group } from "./types";
 import { enrollmentService } from "./ceEnrollmentService";
+import { Cohort, Group, Identifier, Placement, Plan, Student } from "./types";
 
 
-class CEPlacementService extends EntityService<Placement> {
+class CEPlacementService {
+  tableName = '';
+
+  constructor(tableName: string) {
+    this.tableName = tableName;
+  }
+
   // TODO : NEW, there's something wrong with original findByPlanId need FIX.
   async findByPlan(planId: Identifier): Promise<Placement[]> {
     return await supabaseClient
@@ -65,10 +70,24 @@ class CEPlacementService extends EntityService<Placement> {
     return unplacedStudents;
   }
 
+  async save(placement: Placement): Promise<Placement> {
+    const json = { ...placement }
+    delete json.student;
+
+    const updated = await this.updatePlacement(placement.plan_id,
+      placement.student_id,
+      json)
+    updated.student = placement.student
+    return updated;
+  }
+
   async updatePlacement(planId: Identifier, studentId: Identifier, updatedFields: Partial<Placement>, select?: string): Promise<Placement> {
+    const json = { ...updatedFields }
+    delete json.student;
+
     try {
       const { data, error } = await supabaseClient.from(this.tableName)
-        .update(updatedFields)
+        .update(json)
         .eq('plan_id', planId)
         .eq('student_id', studentId)
         .select(select ?? '*')
@@ -110,6 +129,25 @@ class CEPlacementService extends EntityService<Placement> {
       ),
     } as Placement));
   }
+
+
+  async batchInsert(entities: Placement[], select?: string): Promise<Placement[]> {
+    try {
+      const { data, error } = await supabaseClient
+        .from(this.tableName)
+        .upsert(entities)
+        .select(select ?? '*');
+      if (error) {
+        console.error('Error inserting entity:', error);
+        throw new Error('Failed to insert entity: ' + error.message);
+      }
+      return data as unknown as Placement[];
+    } catch (err) {
+      console.error('Unexpected error during insertion:', err);
+      throw err;
+    }
+  }
+
 }
 
 const placementService = new CEPlacementService('placement')

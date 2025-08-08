@@ -30,7 +30,6 @@ describe("timeWindowService", () => {
 
     });
 
-
     it("intersectionTimeWindows", () => {
 
         const timeA = {

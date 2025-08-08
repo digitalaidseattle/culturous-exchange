@@ -5,12 +5,35 @@
  *
  */
 
+import { parseISO } from "date-fns";
 import { timeWindowService } from "./ceTimeWindowService";
 import { EntityService } from "./entityService";
-import { Group, Placement, TimeWindow } from "./types";
+import { Group, Identifier, Placement, TimeWindow } from "./types";
 
 
 class CEGroupService extends EntityService<Group> {
+
+  private mapToGroup(json: any): Group | null {
+    if (json) {
+      const group = {
+        ...json,
+        placements: json.placement,
+        time_windows: json.time_window
+      }
+      delete group.placement;
+      delete group.timewindow;
+
+      group.timewindows.forEach((tw: TimeWindow) => {
+        tw.start_date_time = parseISO(tw.start_date_time! as unknown as string);
+        tw.end_date_time = parseISO(tw.end_date_time! as unknown as string);
+      });
+      return group as Group;
+    }
+    else {
+      return null
+    }
+  }
+
   async getBestOverlap(
     placement: Placement,
     groups: Group[],
@@ -27,7 +50,7 @@ class CEGroupService extends EntityService<Group> {
         group.time_windows ?? [],
         placement.student?.timeWindows ?? []
       );
-      
+
       const overlap = await timeWindowService.overlapDuration(intersect);
 
       if (overlap > bestOverlap) {
@@ -37,6 +60,26 @@ class CEGroupService extends EntityService<Group> {
       }
     }
     return { bestOverlap, bestGroup, bestIntersect };
+  }
+
+  async update(entityId: Identifier, updatedFields: Partial<Group>, select?: string): Promise<Group> {
+    const json = { ...updatedFields } as any;
+    delete json.placements;
+    delete json.time_windows;
+
+    return super.update(entityId, json, select)
+      .then(updated => this.mapToGroup(updated)!);
+  }
+
+  async save(group: Group): Promise<Group> {
+    for (const tw of group.time_windows!) {
+      await timeWindowService.save(tw)
+    }
+
+    const json = { ...group }
+    delete json.placements;
+    delete json.time_windows;
+    return this.update(group.id, json);
   }
 }
 
