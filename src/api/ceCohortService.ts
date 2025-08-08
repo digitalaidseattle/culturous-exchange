@@ -24,18 +24,19 @@ class CECohortService extends EntityService<Cohort> {
     }
 
 
-    private createEnrollments(cohort: Cohort, studentIds: Identifier[]): Enrollment[] {
-        return studentIds.map(id => {
+    private createEnrollments(cohort: Cohort, students: Student[]): Enrollment[] {
+        return students.map(student => {
             return {
                 cohort_id: cohort.id,
-                student_id: id
+                student_id: student.id,
+                anchor: student.anchor ?? false,
             } as Enrollment
         })
     }
 
     async addStudents(cohort: Cohort, students: Student[]): Promise<any> {
         try {
-            const enrollments = this.createEnrollments(cohort, students.map(student => student.id!.toString()));
+            const enrollments = this.createEnrollments(cohort, students);
             return enrollmentService
                 .batchInsert(enrollments)
         } catch (err) {
@@ -50,8 +51,7 @@ class CECohortService extends EntityService<Cohort> {
                 return this
                     .insert({ id: uuidv4(), name: `(New) Cohort`, } as Cohort)
                     .then(cohort => {
-                        const studentIds = students.map(student => student.id?.toString());
-                        const enrollments = this.createEnrollments(cohort, studentIds)
+                        const enrollments = this.createEnrollments(cohort, students)
                         return enrollmentService.batchInsert(enrollments)
                             .then(() => cohort)
                     })
