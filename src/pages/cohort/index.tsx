@@ -88,6 +88,9 @@ const CohortPage: React.FC = () => {
       const seededPlan = await planGenerator.seedPlan(hydrated)
       planService.save(seededPlan);
 
+      // save timewindow db
+      // save group db
+
       navigate(`/plan/${seededPlan.id}`);
       notifications.success(`Plan added to  ${cohort.name}.`);
     }
