@@ -70,37 +70,11 @@ class PlanGenerator {
     const firstRowStudents = sortedPlacements.slice(0, nGroups);
     const remainingPlacements = sortedPlacements.slice(nGroups);
 
-    // *** Pan TODO: Go into these functions and clean up the part that save plan to db
     // Fetch DB and update plan
     const planWithAnchors = await planGenerator.assignByGreedy(updatedPlan, nGroups, firstRowStudents);
     const planEvaluatedWithAnchors = await planEvaluator.evaluate(planWithAnchors); // to update group.time_windows and country counts
     const planWithAllStudents = await planGenerator.assignedByTimewindow(planEvaluatedWithAnchors, nGroups, remainingPlacements);
     const finalPlan = await planEvaluator.evaluate(planWithAllStudents); // to update group.time_windows and country counts
-
-    // DELETE : 
-
-    // Remove and change to save Group, Timewindow tables at the function call seedPlan
-
-    // // Save groups (delete)
-    // finalPlan.groups.forEach(async group => {
-    //   await groupService.update(group.id, {
-    //     country_count: group.country_count
-    //   });
-    // });
-
-    // // Save time windows (delete)
-    // finalPlan.groups.forEach(group => {
-    //   const timewindowsWithGroups = group.time_windows?.map(tw => {
-    //     return {
-    //       ...tw,
-    //       id: uuid(),
-    //       group_id: group.id
-    //     }
-    //   });
-    //   timeWindowService.batchInsert(timewindowsWithGroups || [])
-    // });
-
-    // console.log("Final plan after seeding:", finalPlan);
 
     return finalPlan;
   }
@@ -111,6 +85,7 @@ class PlanGenerator {
     // Attach placements to the latest plan's group objects
     // Fetch full students' schedules
     // Attach the enriched student to their placement
+    // Does not save to DB, just returns the hydrated plan object in place.
     // Output :
     // - Each placement has a full student object attached.
     // - Each student has real timeWindows as Date objects
@@ -189,12 +164,14 @@ class PlanGenerator {
   async assignedByTimewindow(plan: Plan, nGroups: number, remainingPlacements: Placement[]): Promise<Plan> {
     // Greedy algorithm to assign students to groups by time windows
 
+    const tempPlan = structuredClone(plan);
+
     if (remainingPlacements.length === 0) {
-      return plan; // No placements to assign
+      return tempPlan; // No placements to assign
     }
 
-    const groups = plan.groups;
-    const maxGroupSize = Math.ceil(plan.placements.length / nGroups);
+    const groups = tempPlan.groups;   // create new reference to tempPlan.groups
+    const maxGroupSize = Math.ceil(tempPlan.placements.length / nGroups);
 
     // Assign each placement to the best group based on time windows
     for (const placement of remainingPlacements) {
@@ -207,13 +184,12 @@ class PlanGenerator {
       } else {
         placement.group_id = bestGroup.id;
 
-        // TODO : consider do this at the caller function (seedPlan) ? 
-        // This function mutate plan.groups in place 
+        // This function mutate tempPlan.groups in place 
         this.assignPlacementToGroup(groups, placement, bestGroup.id, bestIntersect);
       }
     }
 
-    return plan;
+    return tempPlan;  // returning in-memory tempPlan
   }
 
   private assignPlacementToGroup(
@@ -225,14 +201,12 @@ class PlanGenerator {
     // This function mutate plan.groups in place 
     // fill plan.group[id].placements and plan.group[id].time_windows
 
-    const groupIndex = groups.findIndex(g => g.id === groupId);
+    const group = groups.find(g => g.id === groupId);
+    if (!group) return; // Not found — exit early
 
-    if (groupIndex !== -1) {
-      const group = groups[groupIndex];
-      group.placements = group.placements || [];
-      group.placements.push(placement);
-      group.time_windows = newTimeWindows;    // TODO : This part might duplicate with evaluate()
-    }
+    group.placements = group.placements || [];
+    group.placements.push(placement);
+    group.time_windows = newTimeWindows;
   }
 }
 
