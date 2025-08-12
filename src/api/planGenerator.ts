@@ -201,12 +201,20 @@ class PlanGenerator {
     // This function mutate plan.groups in place 
     // fill plan.group[id].placements and plan.group[id].time_windows
 
-    const group = groups.find(g => g.id === groupId);
-    if (!group) return; // Not found — exit early
+    const groupIndex = groups.findIndex(g => g.id === groupId);
 
-    group.placements = group.placements || [];
-    group.placements.push(placement);
-    group.time_windows = newTimeWindows;
+    if (groupIndex !== -1) {
+      const group = groups[groupIndex];
+      group.placements = group.placements || [];
+      group.placements.push(placement);
+      group.time_windows = newTimeWindows;    // TODO : This part might duplicate with evaluate()
+    }
+    // const group = groups.find(g => g.id === groupId);
+    // if (!group) return; // Not found — exit early
+
+    // group.placements = group.placements || [];
+    // group.placements.push(placement);
+    // group.time_windows = newTimeWindows;
   }
 }
 
