@@ -24,6 +24,7 @@ import { studentService } from '../../api/ceStudentService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import StudentModal from './StudentModal';
+import { ConfirmationDialog } from '@digitalaidseattle/mui';
 
 const PAGE_SIZE = 10;
 
@@ -237,8 +238,12 @@ const StudentsDetailsTable: React.FC = () => {
           mode={'edit'}
           student={selectedStudent}
           open={showDetails}
-          onClose={() => setShowDetails(false)}
-          handleSubmit={function (event: any): void {
+          onClose={() => {
+            setSelectedStudent(null);
+            setShowDetails(false);
+          }}
+          onChange={function (event: any): void {
+
             console.log('edit', event)
           }} />
       )}

@@ -67,21 +67,26 @@ interface Props {
 
 const StudentForm: React.FC<Props> = ({ student, onChange }) => {
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
+  const [updated, setUpdated] = useState<Student>(student);
 
   useEffect(() => {
-    studentService.getCohortsForStudent(student)
-      .then(ccs => setCohorts(ccs))
+    setUpdated(student)
   }, [student]);
+
+  useEffect(() => {
+    studentService.getCohortsForStudent(updated)
+      .then(ccs => setCohorts(ccs))
+  }, [updated]);
 
   const handleFieldChange = (event: any) => {
     const { name, value } = event.target;
     onChange({
-      ...student,
+      ...updated,
       [name]: value
     })
   }
 
-  const toggleAnchor = async (student: Student) => {
+  const handleAnchorChange = async (student: Student) => {
     try {
       handleFieldChange({
         target: {
@@ -95,43 +100,47 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
   };
 
   const handleTimeSlotChange = (event: any) => {
-    console.log('handleTimeSlotChange', event);
     const { value } = event.target;
-    const newTimeSlots: any[] = [] // student.time_slots ? [...student.time_slots] : [];
-
-    if (newTimeSlots.includes(value)) {
-      // Remove the time slot if it already exists
-      const index = newTimeSlots.indexOf(value);
-      if (index > -1) {
-        newTimeSlots.splice(index, 1);
-      }
-    } else {
-      // Add the time slot if it doesn't exist
-      newTimeSlots.push(value);
-    }
-
-    console.log('handleTimeSlotChange', newTimeSlots);
-
     handleFieldChange({
       target: {
         name: 'timeWindows',
-        value: newTimeSlots
+        value: value.map((ts: string) => toTimeWindow(ts))
       }
     });
+  }
+
+  function isChecked(ts: LabeledTimeWindow): boolean {
+    return (updated.timeWindows ?? []).some(tw => isTimeWindowEqual(tw, ts));
+  }
+
+  function toTimeWindow(tsLabel: string): TimeWindow {
+    const ts = TIME_SLOTS.find(tw => tw.label === tsLabel);
+    if (ts) {
+      return {
+        student_id: updated.id,
+        group_id: null,
+        day_in_week: ts.day_in_week,
+        start_t: ts.start_t,
+        end_t: ts.end_t,
+        start_date_time: undefined,
+        end_date_time: undefined
+      } as TimeWindow;
+    }
+    throw new Error(`Time slot not found for label: ${tsLabel}`);
   }
 
   return (
     <Box gap={1.5} display="flex" flexDirection="column">
       <CETextInput
         key="name"
-        value={student.name || ''}
+        value={updated.name || ''}
         label="Full Name"
         required={true}
         type="text"
         handleFieldChange={handleFieldChange} />
       <CETextInput
         key="email"
-        value={student.email || ''}
+        value={updated.email || ''}
         label="Email"
         required={true}
         type="email"
@@ -139,14 +148,14 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
       <Box display="flex" gap={1} flexDirection={"row"}>
         <CETextInput
           key="city"
-          value={student.city || ''}
+          value={updated.city || ''}
           label="City"
           required={true}
           type="text"
           handleFieldChange={handleFieldChange} />
         <CETextInput
           key="country"
-          value={student.country || ''}
+          value={updated.country || ''}
           label="Country"
           required={true}
           type="text"
@@ -158,14 +167,14 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
           <StarFilled
             style={{
               fontSize: "150%",
-              color: student.anchor ? "green" : "gray",
+              color: updated.anchor ? "green" : "gray",
             }}
-            onClick={() => toggleAnchor(student)}
+            onClick={() => handleAnchorChange(updated)}
           />
         </FormControl>
         <CETextInput
           key="age"
-          value={student.age || ''}
+          value={updated.age || ''}
           label="Age"
           required={true}
           type="number"
@@ -175,7 +184,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
           <RadioGroup
             id="gender-group"
             aria-labelledby="gender-group"
-            value={student.gender}
+            value={updated.gender}
             onChange={handleFieldChange}
             row={true}
           >
@@ -197,18 +206,16 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
           id="time-window-checkbox"
           name='timeWindows'
           multiple
-          value={student.timeWindows ?? []}
+          value={updated.timeWindows ? updated.timeWindows.map(tw => findTimeSlot(tw)?.label) : []}
           onChange={handleTimeSlotChange}
           input={<Input />}
           renderValue={(selected) =>
-            selected
-              .map(tw => findTimeSlot(tw)?.label)
-              .join(', ')
+            selected.join(', ')
           }
         >
           {TIME_SLOTS.map((ts) => (
             <MenuItem key={ts.label} value={ts.label}>
-              <Checkbox checked={(student.timeWindows ?? []).find(tw => isTimeWindowEqual(tw, ts)) ? true : false} />
+              <Checkbox checked={isChecked(ts)} />
               <ListItemText primary={ts.label} />
             </MenuItem>
           ))}
