@@ -11,6 +11,9 @@ import { EntityService } from "./entityService";
 import { Cohort, FailedStudent, Student, TimeWindow } from "./types";
 
 class CEStudentService extends EntityService<Student> {
+  emptyStudent(): Student {
+    return {} as Student;
+  }
 
   async getCohortsForStudent(student: Student): Promise<Cohort[]> {
     try {

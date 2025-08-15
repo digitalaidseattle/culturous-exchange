@@ -19,14 +19,14 @@ import { Button, Stack } from '@mui/material';
 // project import
 import { MainCard } from '@digitalaidseattle/mui';
 
+import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
+import { createContext } from 'react';
+import { studentService } from '../../api/ceStudentService';
+import { FailedStudent, Student } from '../../api/types';
+import FailedStudentsModal from './FailedStudentsModal';
+import StudentModal from './StudentModal';
 import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
-import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
-import FailedStudentsModal from './FailedStudentsModal';
-import { FailedStudent, Student } from '../../api/types';
-import AddStudentModal from './AddStudentModal';
-import { studentService } from '../../api/ceStudentService';
-import { createContext } from 'react';
 
 interface StudentContextType {
     student: Student,
@@ -35,7 +35,7 @@ interface StudentContextType {
 
 export const StudentContext = createContext<StudentContextType>({
     student: {} as Student,
-    setStudent: () => {}
+    setStudent: () => { }
 })
 
 interface TimeWindowContextType {
@@ -55,7 +55,7 @@ const UploadSection = () => {
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
     const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isFailedModalOpen, setIsFailedModalOpen] = useState<boolean>(false);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
 
     const handleUpdate = (resp: any) => {
@@ -64,10 +64,10 @@ const UploadSection = () => {
         if (resp.failedCount === resp.attemptedCount) {
             notifications.error(`Error uploading spreadsheet. Failed to add ${resp.successCount} of ${resp.attemptedCount}`)
             setFailedStudents(resp.failedStudents)
-            setIsModalOpen(true);
+            setIsFailedModalOpen(true);
         } else if (resp.failedCount > 0) {
             setFailedStudents(resp.failedStudents)
-            setIsModalOpen(true);
+            setIsFailedModalOpen(true);
             notifications.warn(
                 `${resp.attemptedCount} Attempted, ${resp.successCount} added, ${resp.failedCount} failed.`
             );
@@ -121,14 +121,16 @@ const UploadSection = () => {
                 <StudentUploader onChange={handleUpdate} />
             }
             <FailedStudentsModal
-                isModalOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                isModalOpen={isFailedModalOpen}
+                onClose={() => setIsFailedModalOpen(false)}
                 failedStudents={failedStudents}
             />
-            <AddStudentModal
-                isAddStudentModalOpen={isAddStudentModalOpen}
+            <StudentModal
+                mode={'add'}
+                student={studentService.emptyStudent()}
+                open={isAddStudentModalOpen}
                 onClose={() => handleCloseAddStudentModal()}
-                handleAddStudent={handleAddStudent}
+                handleSubmit={handleAddStudent}
             />
         </Stack>
     )
@@ -137,8 +139,8 @@ const StudentsPage: React.FC = () => {
     const [student, setStudent] = useState<Student>({} as Student);
     const [selection, setSelection] = useState<string[]>([]);
     return (
-        <StudentContext.Provider value={{student, setStudent}}>
-            <TimeWindowSelectionContext.Provider value={{selection, setSelection}}>
+        <StudentContext.Provider value={{ student, setStudent }}>
+            <TimeWindowSelectionContext.Provider value={{ selection, setSelection }}>
                 <MainCard title="Students Page">
                     <UploadSection />
                     <StudentsDetailsTable />

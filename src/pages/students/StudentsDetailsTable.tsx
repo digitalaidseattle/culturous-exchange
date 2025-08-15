@@ -23,8 +23,7 @@ import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
-import StudentDetailsModal from './StudentDetailsModal';
-import { ConfirmationDialog } from '@digitalaidseattle/mui';
+import StudentModal from './StudentModal';
 
 const PAGE_SIZE = 10;
 
@@ -70,7 +69,6 @@ const StudentsDetailsTable: React.FC = () => {
         .finally(() => setLoading(false));
     }
   }, [refresh, paginationModel, sortModel, filterModel]);
-
 
   const toggleAnchor = async (student: Student) => {
     try {
@@ -235,11 +233,14 @@ const StudentsDetailsTable: React.FC = () => {
         }}
       />
       {selectedStudent && (
-        <StudentDetailsModal
+        <StudentModal
+          mode={'edit'}
           student={selectedStudent}
-          isModalOpen={showDetails}
+          open={showDetails}
           onClose={() => setShowDetails(false)}
-        />
+          handleSubmit={function (event: any): void {
+            console.log('edit', event)
+          }} />
       )}
       <ConfirmationDialog
         message={deleteMessage}
