@@ -67,7 +67,8 @@ export const PlanCard = (props: { plan: Plan }) => {
                 borderRadius: "10px",
                 boxShadow: "0px 14px 80px rgba(34, 35, 58, 0.2)",
                 position: "relative",
-            }}>
+            }}
+            onDoubleClick={handleOpen}>
             <IconButton
                 onClick={handleClick}
                 aria-label="close"

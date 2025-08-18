@@ -44,10 +44,18 @@ const CohortPage: React.FC = () => {
     if (cohortId) {
       cohortService.getById(cohortId).then((cohort) => {
         if (cohort) {
-          enrollmentService.getStudents(cohort).then((students) => {
-            cohort.students = students;
-            setCohort(cohort);
-          });
+          enrollmentService.getStudents(cohort)
+            .then((students) => {
+              cohort.enrollments.forEach(enrollment => {
+                const student = students.find(s => s.id === enrollment.student_id);
+                if (student) {
+                  enrollment.student = student;
+                } else {
+                  console.warn(`Student not found for enrollment: ${enrollment.student_id}`);
+                }
+              });
+              setCohort(cohort);
+            });
         } else {
           console.error(`Cohort not found ${cohortId}`);
         }
@@ -78,9 +86,6 @@ const CohortPage: React.FC = () => {
       const created = await planService.create(cohort);
       const hydrated = await planGenerator.hydratePlan(created.id);
       const seededPlan = await planGenerator.seedPlan(hydrated)
-      // TODO consider evaluating the plan
-      // const evaluatedPlan = await planEvaluator.evaluate(seededPlan)
-      // console.log(`evaluatedPlan`, evaluatedPlan);
       navigate(`/plan/${seededPlan.id}`);
       notifications.success(`Plan added to  ${cohort.name}.`);
     }

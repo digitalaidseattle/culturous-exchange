@@ -26,11 +26,12 @@ abstract class EntityService<T extends Entity> {
 
     async find(queryModel: QueryModel, select?: string): Promise<PageInfo<T>> {
         try {
+            console.log('Finding entities with query model:', queryModel);
             const fModel = queryModel as any;
             let query: any = supabaseClient
                 .from(this.tableName)
                 .select(select ?? '*', { count: 'exact' })
-                .range(queryModel.page, queryModel.page + queryModel.pageSize - 1)
+                .range(queryModel.page * queryModel.pageSize, (queryModel.page + 1) * queryModel.pageSize)
                 .order(queryModel.sortField, { ascending: queryModel.sortDirection === 'asc' });
             if (fModel.filterField && fModel.filterOperator && fModel.filterValue) {
                 switch (fModel.filterOperator) {
@@ -92,7 +93,7 @@ abstract class EntityService<T extends Entity> {
         try {
             const { data, error } = await supabaseClient
                 .from(this.tableName)
-                .insert(entities)
+                .upsert(entities)
                 .select(select ?? '*');
             if (error) {
                 console.error('Error inserting entity:', error);
@@ -109,7 +110,7 @@ abstract class EntityService<T extends Entity> {
         try {
             const { data, error } = await supabaseClient
                 .from(this.tableName)
-                .insert([entity])
+                .upsert([entity])
                 .select(select ?? '*')
                 .single();
             if (error) {
