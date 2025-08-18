@@ -6,20 +6,45 @@
  */
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
-import { EntityService } from "./entityService";
-import { Cohort, Enrollment, Student } from "./types";
+import { Cohort, Enrollment, Identifier, Student } from "./types";
 
+class CEEnrollmentService {
+    tableName = '';
 
-class CEEnrollmentService extends EntityService<Enrollment> {
+    constructor(tableName: string) {
+        this.tableName = tableName;
+    }
+    async updateEnrollment(cohortId: Identifier, studentId: Identifier, updatedFields: Partial<Enrollment>, select?: string): Promise<Enrollment> {
+        try {
+            const { data, error } = await supabaseClient.from(this.tableName)
+                .update(updatedFields)
+                .eq('cohort_id', cohortId)
+                .eq('student_id', studentId)
+                .select(select ?? '*')
+                .single();
+            if (error) {
+                console.error('Error updating entity:', error.message);
+                throw new Error('Failed to update entity');
+            }
+            return data as unknown as Enrollment;
+        } catch (err) {
+            console.error('Unexpected error during update:', err);
+            throw err;
+        }
+    }
 
     async getStudents(cohort: Cohort): Promise<Student[]> {
         return await supabaseClient
             .from('enrollment')
-            .select('student(*)')
+            .select('student(*, timewindow(*))')
             .eq('cohort_id', cohort.id)
             .then(resp => {
                 const enrollments = resp.data as unknown as any[];
-                return enrollments.map(en => en.student)
+                return enrollments.map(en => {
+                    en.student.timeWindows = en.student.timewindow;
+                    delete en.student.timewindow;
+                    return en.student as Student;
+                })
             });
     }
 
@@ -39,6 +64,24 @@ class CEEnrollmentService extends EntityService<Enrollment> {
             throw err;
         }
     }
+
+    async batchInsert(entities: Enrollment[], select?: string): Promise<Enrollment[]> {
+        try {
+            const { data, error } = await supabaseClient
+                .from(this.tableName)
+                .insert(entities)
+                .select(select ?? '*');
+            if (error) {
+                console.error('Error inserting entity:', error);
+                throw new Error('Failed to insert entity: ' + error.message);
+            }
+            return data as unknown as Enrollment[];
+        } catch (err) {
+            console.error('Unexpected error during insertion:', err);
+            throw err;
+        }
+    }
+
 
 }
 

@@ -91,7 +91,7 @@ const UploadSection = () => {
             const resp = await studentService.insertSingle(student, selection);
             setStudent({} as Student);
             setSelection([]);
-            notifications.success(`Success. Added student: - id ${resp.student.id} | - name: ${resp.student.name}`);
+            notifications.success(`Success. Added student: ${resp.student.name}`);
             handleCloseAddStudentModal();
         } catch (err: any) {
             console.error(`Insertion failed: ${err.message}`);
@@ -115,7 +115,7 @@ const UploadSection = () => {
                     color="primary"
                     onClick={() => setIsAddStudentModalOpen(true)}>
                     Add Student
-                </Button>
+                </Button>                
             </Stack>
             {showDropzone &&
                 <StudentUploader onChange={handleUpdate} />

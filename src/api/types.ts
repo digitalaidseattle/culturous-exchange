@@ -50,29 +50,33 @@ type Cohort = Entity & {
     name: string;
     plans: Plan[];
     enrollments: Enrollment[];
-    students: Student[];
 }
 
-type Enrollment = Entity & {
+type Enrollment = {
     cohort_id: Identifier;
     student_id: Identifier;
     student?: Student;
+    /**
+     * Whether this student is an anchor student for the cohort.
+     * Anchor students are key participants that should be prioritized in group assignments.
+     */
+    anchor: boolean;
 }
 
 type Plan = Entity & {
     name: string;
     cohort_id: Identifier;
+    note: string;
+    group_size?: number; // Optional, can be set to override default group size
     placements: Placement[]
     groups: Group[];
-    note: string;
 }
 
-type Placement = Entity & {
+type Placement = {
     plan_id: Identifier;
     student_id: Identifier;
     group_id?: Identifier; // will be null when unassigned
     student?: Student;
-    group?: Group;
     /**
      * Whether this student is an anchor student for the plan.
      * Anchor students are key participants that should be prioritized in group assignments.
@@ -85,7 +89,6 @@ type Placement = Entity & {
      * 1 = high priority
      */
     priority: number;
-    time_windows?: TimeWindow[];
 }
 
 type Group = Entity & {
