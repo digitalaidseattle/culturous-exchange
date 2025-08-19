@@ -19,12 +19,13 @@ import {
 
 import { DeleteOutlined, StarFilled } from '@ant-design/icons';
 import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
+import { ConfirmationDialog } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
+import { timeWindowService } from '../../api/ceTimeWindowService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import StudentModal from './StudentModal';
-import { ConfirmationDialog } from '@digitalaidseattle/mui';
 
 const PAGE_SIZE = 10;
 
@@ -32,6 +33,7 @@ const PAGE_SIZE = 10;
 const StudentsDetailsTable: React.FC = () => {
   const { setLoading } = useContext(LoadingContext);
   const { refresh, setRefresh } = useContext(RefreshContext);
+  const [initialize, setInitialize] = useState<boolean>(true);
   const [columns, setColumns] = useState<GridColDef[]>([]);
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'name', sort: 'asc' }]);
@@ -46,9 +48,17 @@ const StudentsDetailsTable: React.FC = () => {
   const [deleteMessage, setDeleteMessage] = useState<string>('Are you sure you want to delete this student?');
   const [deleteConfirmation, showDeleteConfirmation] = useState<boolean>(false);
 
+  //  const columns = useMemo(
+  //   () => getColumns(),
+  //   []
+  // );
+
   useEffect(() => {
-    setColumns(getColumns());
-  }, []);
+    if (initialize) {
+      setColumns(getColumns());
+      setInitialize(false);
+    }
+  }, [initialize]);
 
   useEffect(() => {
     if (paginationModel && sortModel && filterModel) {
@@ -64,7 +74,7 @@ const StudentsDetailsTable: React.FC = () => {
         filterValue: filterModel.items.length > 0 ? filterModel.items[0].value : undefined,
       } as QueryModel;
       studentService
-        .find(queryModel, '*, timewindow(*)')
+        .find(queryModel)
         .then((pi) => setPageInfo(pi))
         .catch((err) => console.error(err))
         .finally(() => setLoading(false));
@@ -90,7 +100,6 @@ const StudentsDetailsTable: React.FC = () => {
 
   function handleDeleteStudent(param: GridRenderCellParams) {
     return (evt: any) => {
-      console.log('handleDeleteStudent', param.row.id, param.row.name);
 
       studentService.getCohortsForStudent(param.row)
         .then((cohorts) => {
@@ -121,6 +130,25 @@ const StudentsDetailsTable: React.FC = () => {
         .finally(() => {
           setSelectedStudent(null);
           showDeleteConfirmation(false);
+        })
+    }
+  }
+
+  function doUpdateStudent(student: Student) {
+    if (student) {
+      timeWindowService.adjustTimeWindows(student);
+      studentService.save(student)
+        .then(() => {
+          notifications.success(`Student ${student.name} updated successfully`);
+          setRefresh(refresh + 1);
+        })
+        .catch((err) => {
+          console.error(`Update failed: ${err.message}`);
+          notifications.error(`Update failed: ${err.message}`);
+        })
+        .finally(() => {
+          setSelectedStudent(null);
+          setShowDetails(false);
         })
     }
   }
@@ -208,7 +236,7 @@ const StudentsDetailsTable: React.FC = () => {
     ];
   };
 
-  return (
+  return (columns &&
     <>
       <DataGrid
         rows={pageInfo.rows}
@@ -242,10 +270,7 @@ const StudentsDetailsTable: React.FC = () => {
             setSelectedStudent(null);
             setShowDetails(false);
           }}
-          onChange={function (event: any): void {
-
-            console.log('edit', event)
-          }} />
+          onChange={doUpdateStudent} />
       )}
       <ConfirmationDialog
         message={deleteMessage}

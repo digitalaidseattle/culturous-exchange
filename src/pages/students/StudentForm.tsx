@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { StarFilled } from '@ant-design/icons';
 import {
   Box,
@@ -14,26 +15,26 @@ import {
   TextField
 } from '@mui/material';
 import { Cohort, Student, TimeWindow } from '../../api/types';
-import { GENDER_OPTION, LabeledTimeWindow, TIME_SLOTS } from '../../constants';
-import { useEffect, useState } from 'react';
+import { v4 as uuid } from 'uuid';
+import { GENDER_OPTION, TimeSlot, TIME_SLOTS } from '../../constants';
 import { studentService } from '../../api/ceStudentService';
 
 
-function findTimeSlot(timeWindow: TimeWindow): LabeledTimeWindow | null {
+function findTimeSlot(timeWindow: TimeWindow): TimeSlot | null {
   return TIME_SLOTS.find(slot =>
     slot.day_in_week === timeWindow.day_in_week &&
     slot.start_t === timeWindow.start_t &&
     slot.end_t === timeWindow.end_t) || null;
 }
 
-function isTimeWindowEqual(timeWindow: TimeWindow, ts: LabeledTimeWindow): boolean {
+function isTimeWindowEqual(timeWindow: TimeWindow, ts: TimeSlot): boolean {
   return ts.day_in_week === timeWindow.day_in_week &&
     ts.start_t === timeWindow.start_t &&
     ts.end_t === timeWindow.end_t;
 }
 
 interface CETextInputProps {
-  key: string;
+  name: string;
   value: any;
   label: string;
   required: boolean;
@@ -41,17 +42,16 @@ interface CETextInputProps {
   handleFieldChange: (event: any) => void;
 }
 
-const CETextInput: React.FC<CETextInputProps> = ({ key, value, label, required, type, handleFieldChange }) => {
+const CETextInput: React.FC<CETextInputProps> = ({ name, value, label, required, type, handleFieldChange }) => {
   return (
-    <FormControl key={key} fullWidth>
+    <FormControl key={name} fullWidth>
       <FormLabel id="gender-group" required>{label}</FormLabel>
       <TextField
         autoFocus
         required={required}
-        key={key}
         margin="dense"
-        id={key}
-        name={key}
+        id={name}
+        name={name}
         type={type}
         variant="standard"
         value={value ?? ''}
@@ -100,46 +100,49 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
   };
 
   const handleTimeSlotChange = (event: any) => {
-    const { value } = event.target;
+    const newTimeWindows = event.target.value
+      .map((tsLabel: string) => {
+        const ts = TIME_SLOTS.find(test => test.label === tsLabel)!;
+        const tw = student.timeWindows!.find(tw => isTimeWindowEqual(tw, ts));
+        if (tw) {
+          return tw;
+        } else {
+          return {
+            id: uuid(),
+            student_id: updated.id,
+            group_id: null,
+            day_in_week: ts.day_in_week,
+            start_t: ts.start_t,
+            end_t: ts.end_t,
+            start_date_time: undefined,
+            end_date_time: undefined
+          } as unknown as TimeWindow;
+        }
+      })
+
     handleFieldChange({
       target: {
         name: 'timeWindows',
-        value: value.map((ts: string) => toTimeWindow(ts))
+        value: newTimeWindows
       }
     });
   }
 
-  function isChecked(ts: LabeledTimeWindow): boolean {
+  function isChecked(ts: TimeSlot): boolean {
     return (updated.timeWindows ?? []).some(tw => isTimeWindowEqual(tw, ts));
-  }
-
-  function toTimeWindow(tsLabel: string): TimeWindow {
-    const ts = TIME_SLOTS.find(tw => tw.label === tsLabel);
-    if (ts) {
-      return {
-        student_id: updated.id,
-        group_id: null,
-        day_in_week: ts.day_in_week,
-        start_t: ts.start_t,
-        end_t: ts.end_t,
-        start_date_time: undefined,
-        end_date_time: undefined
-      } as TimeWindow;
-    }
-    throw new Error(`Time slot not found for label: ${tsLabel}`);
   }
 
   return (
     <Box gap={1.5} display="flex" flexDirection="column">
       <CETextInput
-        key="name"
+        name="name"
         value={updated.name || ''}
         label="Full Name"
         required={true}
         type="text"
         handleFieldChange={handleFieldChange} />
       <CETextInput
-        key="email"
+        name="email"
         value={updated.email || ''}
         label="Email"
         required={true}
@@ -147,14 +150,14 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
         handleFieldChange={handleFieldChange} />
       <Box display="flex" gap={1} flexDirection={"row"}>
         <CETextInput
-          key="city"
+          name="city"
           value={updated.city || ''}
           label="City"
           required={true}
           type="text"
           handleFieldChange={handleFieldChange} />
         <CETextInput
-          key="country"
+          name="country"
           value={updated.country || ''}
           label="Country"
           required={true}
@@ -173,7 +176,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
           />
         </FormControl>
         <CETextInput
-          key="age"
+          name="age"
           value={updated.age || ''}
           label="Age"
           required={true}
@@ -184,7 +187,8 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
           <RadioGroup
             id="gender-group"
             aria-labelledby="gender-group"
-            value={updated.gender}
+            name="gender"
+            value={updated.gender ?? GENDER_OPTION[0]}
             onChange={handleFieldChange}
             row={true}
           >

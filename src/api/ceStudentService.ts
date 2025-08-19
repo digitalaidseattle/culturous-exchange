@@ -6,13 +6,27 @@
  */
 import { PageInfo, QueryModel, supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
+import { GENDER_OPTION } from '../constants';
 import { timeWindowService } from './ceTimeWindowService';
 import { EntityService } from "./entityService";
-import { Cohort, FailedStudent, Student, TimeWindow } from "./types";
+import { Cohort, Identifier, Student, TimeWindow } from "./types";
 
 class CEStudentService extends EntityService<Student> {
+
   emptyStudent(): Student {
-    return {} as Student;
+    return {
+      id: uuid(),
+      name: 'Jeff',
+      email: 'jnakaso@yahoo.com ',
+      city: 'Bothell',
+      country: 'USA',
+      age: 15,
+      time_zone: '',
+      tz_offset: 0,
+      anchor: false,
+      gender: GENDER_OPTION[0],
+      timeWindows: []
+    } as Student;
   }
 
   async getCohortsForStudent(student: Student): Promise<Cohort[]> {
@@ -72,46 +86,52 @@ class CEStudentService extends EntityService<Student> {
       })
   }
 
-  async insert(entity: Partial<Student>, select?: string): Promise<Student> {
-    if (!entity.name || !entity.age || !entity.country || !entity.email) {
-      throw new Error("Name and Email are required fields.");
+  private mapToStudent(json: any): Student | null {
+    if (json) {
+      const student = {
+        ...json,
+        timeWindows: json.timewindow,
+      }
+      delete student.timewindow;
+      return student as Student;
     }
-    const studentId = uuid();
-    const studentWithId: Student = {
-      ...entity,
-      id: studentId
-    } as Student;
-    //Remove timeWindow from the student before insert
-    delete studentWithId.timeWindows;
-    const updatedStudent = await super.insert(studentWithId, select);
-
-    const timeWindows = entity.timeWindows!.map(orig => {
-      return {
-        ...orig,
-        id: uuid(),
-        student_id: studentId
-      } as TimeWindow
-    })
-    await timeWindowService.batchInsert(timeWindows)
-    return updatedStudent;
+    else {
+      return null
+    }
   }
 
-  async insertSingle(student: Student, selection: string[]): Promise<{ success: boolean, student: Student | FailedStudent }> {
+  async update(entityId: Identifier, updatedFields: Partial<Student>, select?: string): Promise<Student> {
+    const json = { ...updatedFields } as any;
+    delete json.timeWindows;
+
+    return super.update(entityId, json, select)
+      .then(updated => this.mapToStudent(updated)!);
+  }
+
+  async save(student: Student): Promise<Student> {
     try {
-      const partialWindows = timeWindowService.mapTimeWindows(selection);
-      student.timeWindows = partialWindows as TimeWindow[];
-      const tzData = await timeWindowService.getTimeZone(student.city!, student.country);
-      student.time_zone = tzData.timezone;
-      student.tz_offset = tzData.offset;
-      timeWindowService.adjustTimeWindows(student);
-      const inserted = await this.insert(student);
-      return { success: true, student: inserted }
-    } catch (err: any) {
-      console.error(`Failed to insert student ${student.name}`, err);
-      return { success: false, student: { ...student, failedError: err.message } }
+      const json = { ...student }
+      delete json.timeWindows;
+      await this.insert(json)
+
+      await timeWindowService.deleteForStudent(student.id);
+      await timeWindowService.batchInsert(student.timeWindows!);
+
+      const resp = await this.getById(student.id, "*, timewindow(*)");
+      if (resp) {
+        return this.mapToStudent(resp)!;
+      }
+      throw new Error(`Student with id ${student.id} not found after save.`);
+    } catch (err) {
+      console.error('Unexpected error during save:', err);
+      throw err;
     }
   }
 
+  async delete(studentId: Identifier): Promise<void> {
+    await timeWindowService.deleteForStudent(studentId);
+    await super.delete(studentId)
+  }
 }
 
 const studentService = new CEStudentService('student');

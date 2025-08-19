@@ -20,8 +20,7 @@ const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange 
         open={open}
         onClose={onClose}
         PaperProps={{
-          sx: { width: '40rem', maxWidth: '90vw' },
-          component: 'form'
+          sx: { width: '75vw', maxWidth: '90vw' },
         }}
       >
         <DialogTitle>{`${mode === 'add' ? 'New' : 'Edit'} Details`}</DialogTitle>

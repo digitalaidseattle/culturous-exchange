@@ -1,11 +1,12 @@
 /**
- * Uploader.ts
+ * StudentUploader.ts
  *
  * encapsulate excel interaction
  *
  * @copyright 2025 Digital Aid Seattle
  *
  */
+import { v4 as uuid } from 'uuid';
 import { read, utils } from "xlsx";
 import { timeWindowService } from "./ceTimeWindowService";
 import { FailedStudent, Student } from "./types";
@@ -65,11 +66,12 @@ class StudentUploader {
         }
         return timeWindowService
             .getTimeZone(student.city!, student.country)
-            .then(tzData => {
-                student.time_zone = tzData.timezone;
-                student.tz_offset = tzData.offset;
+            .then(resp => {
+                student.id = uuid();
+                student.time_zone = resp.timezone
+                student.tz_offset = resp.offset
                 timeWindowService.adjustTimeWindows(student);
-                return studentService.insert(student)
+                return studentService.save(student)
                     .then(inserted => {
                         return { success: true, student: inserted };
                     })

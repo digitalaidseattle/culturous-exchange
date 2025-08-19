@@ -26,7 +26,6 @@ abstract class EntityService<T extends Entity> {
 
     async find(queryModel: QueryModel, select?: string): Promise<PageInfo<T>> {
         try {
-            console.log('Finding entities with query model:', queryModel);
             const fModel = queryModel as any;
             let query: any = supabaseClient
                 .from(this.tableName)
@@ -144,6 +143,9 @@ abstract class EntityService<T extends Entity> {
 
     async delete(entityId: Identifier): Promise<void> {
         try {
+
+            // FIXME need to delete timewindows first
+
             const { error } = await supabaseClient
                 .from(this.tableName)
                 .delete()

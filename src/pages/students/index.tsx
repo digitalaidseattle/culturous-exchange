@@ -22,6 +22,7 @@ import { MainCard } from '@digitalaidseattle/mui';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { createContext } from 'react';
 import { studentService } from '../../api/ceStudentService';
+import { timeWindowService } from '../../api/ceTimeWindowService';
 import { FailedStudent, Student } from '../../api/types';
 import FailedStudentsModal from './FailedStudentsModal';
 import StudentModal from './StudentModal';
@@ -49,8 +50,6 @@ export const TimeWindowSelectionContext = createContext<TimeWindowContextType>({
 })
 
 const UploadSection = () => {
-    const { student, setStudent } = useContext(StudentContext)
-    const { selection, setSelection } = useContext(TimeWindowSelectionContext)
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
@@ -77,26 +76,28 @@ const UploadSection = () => {
     }
 
     const handleCloseAddStudentModal = () => {
-        setStudent({} as Student)
-        setSelection([]);
-        setStudent({} as Student)
-        setSelection([]);
         setIsAddStudentModalOpen(false)
     }
 
-    const handleAddStudent = async (event: any) => {
-        event.preventDefault();
-        setRefresh(refresh + 1);
-        try {
-            const resp = await studentService.insertSingle(student, selection);
-            setStudent({} as Student);
-            setSelection([]);
-            notifications.success(`Success. Added student: ${resp.student.name}`);
-            handleCloseAddStudentModal();
-        } catch (err: any) {
-            console.error(`Insertion failed: ${err.message}`);
-            notifications.error(`Insertion failed: ${err.message}`);
-        }
+    const handleAddStudent = async (updated: Student) => {
+        return timeWindowService
+            .getTimeZone(updated.city!, updated.country)
+            .then(resp => {
+                updated.time_zone = resp.timezone
+                updated.tz_offset = resp.offset
+                timeWindowService.adjustTimeWindows(updated);
+
+                studentService.save(updated)
+                    .then(saved => {
+                        console.log('saved', saved)
+
+                        notifications.success(`Success. Added student: ${saved.name}`);
+                        handleCloseAddStudentModal();
+                    })
+                notifications.success(`Success. Added student: ${updated.name}`);
+                handleCloseAddStudentModal();
+                setRefresh(refresh + 1)
+            })
     }
 
     return (
@@ -115,7 +116,7 @@ const UploadSection = () => {
                     color="primary"
                     onClick={() => setIsAddStudentModalOpen(true)}>
                     Add Student
-                </Button>                
+                </Button>
             </Stack>
             {showDropzone &&
                 <StudentUploader onChange={handleUpdate} />
@@ -130,8 +131,7 @@ const UploadSection = () => {
                 student={studentService.emptyStudent()}
                 open={isAddStudentModalOpen}
                 onClose={() => handleCloseAddStudentModal()}
-                handleSubmit={handleAddStudent}
-            />
+                onChange={handleAddStudent} />
         </Stack>
     )
 }
