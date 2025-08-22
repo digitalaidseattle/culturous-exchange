@@ -24,7 +24,7 @@ export const PlansStack: React.FC = () => {
         <Stack direction={'row'} gap={2} >
             {
                 cohort.plans.map(plan =>
-                    <PlanCard key={plan.id} plan={plan} />
+                    <PlanCard key={plan.id} planId={plan.id} />
                 )
             }
         </Stack>
