@@ -9,15 +9,16 @@
 import { MoreOutlined } from "@ant-design/icons";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { Card, CardContent, IconButton, Menu, MenuItem, Theme, Typography } from "@mui/material";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { planService } from "../api/cePlanService";
-import { Plan } from "../api/types";
+import { Identifier, Plan } from "../api/types";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 
 
-export const PlanCard = (props: { plan: Plan }) => {
+export const PlanCard = (props: { planId: Identifier }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const [plan, setPlan] = useState<Plan>();
     const showMenu = Boolean(anchorEl);
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
@@ -25,6 +26,14 @@ export const PlanCard = (props: { plan: Plan }) => {
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (props.planId) {
+            planService.
+                getById(props.planId)
+                .then((resp) => setPlan(resp!))
+        }
+    }, [props.planId]);
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -35,13 +44,17 @@ export const PlanCard = (props: { plan: Plan }) => {
     };
 
     const handleOpen = () => {
-        navigate(`/plan/${props.plan.id}`);
-        setAnchorEl(null);
+        if (plan) {
+            navigate(`/plan/${plan.id}`);
+            setAnchorEl(null);
+        }
     };
 
     const handleDuplicate = () => {
-        planService.duplicate(props.plan)
-        setAnchorEl(null);
+        if (plan) {
+            planService.duplicate(plan)
+            setAnchorEl(null);
+        }
     };
 
     const handleDelete = () => {
@@ -50,16 +63,19 @@ export const PlanCard = (props: { plan: Plan }) => {
     };
 
     const doDelete = () => {
-        planService.delete(props.plan.id)
-            .then(() => {
-                setOpenDeleteDialog(false);
-                setAnchorEl(null);
-                setRefresh(refresh + 1);
-                notifications.success('Plan deleted.');
-            })
+        if (plan) {
+            console.log(plan)
+            planService.deletePlan(plan)
+                .then(() => {
+                    setOpenDeleteDialog(false);
+                    setAnchorEl(null);
+                    setRefresh(refresh + 1);
+                    notifications.success('Plan deleted.');
+                })
+        }
     };
 
-    return (
+    return (plan &&
         <Card
             sx={{
                 width: "240px",
@@ -98,11 +114,12 @@ export const PlanCard = (props: { plan: Plan }) => {
                 <MenuItem onClick={handleDelete}>Delete...</MenuItem>
             </Menu>
             <CardContent>
-                <Typography fontWeight={600}>{props.plan.name}</Typography>
-                <Typography>Notes : {props.plan.note}</Typography>
-                <Typography>Stats : # of students, groups, etc.</Typography>
+                <Typography fontWeight={600}>{plan.name}</Typography>
+                <Typography>Notes : {plan.note}</Typography>
+                <Typography>Groups : {plan.groups.length}</Typography>
+                <Typography>Students : {plan.placements.length}</Typography>
                 <ConfirmationDialog
-                    message={`Delete ${props.plan.name}?`}
+                    message={`Delete ${plan.name}?`}
                     open={openDeleteDialog}
                     handleConfirm={() => doDelete()}
                     handleCancel={() => setOpenDeleteDialog(false)} />
