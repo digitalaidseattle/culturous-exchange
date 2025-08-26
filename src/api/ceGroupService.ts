@@ -13,6 +13,8 @@ import { Group, Identifier, Placement, TimeWindow } from "./types";
 
 class CEGroupService extends EntityService<Group> {
 
+
+
   private mapToGroup(json: any): Group | null {
     if (json) {
       const group = {
@@ -84,6 +86,14 @@ class CEGroupService extends EntityService<Group> {
     delete json.time_windows;
     return this.update(group.id, json);
   }
+
+  async deleteGroup(group: Group) {
+    for (const tw of group.time_windows!) {
+      await timeWindowService.delete(tw.id)
+    }
+    return await this.delete(group.id)
+  }
+
 }
 
 const groupService = new CEGroupService('grouptable')

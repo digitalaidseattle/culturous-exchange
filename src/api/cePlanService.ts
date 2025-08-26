@@ -11,9 +11,10 @@ import { enrollmentService } from "./ceEnrollmentService";
 import { groupService } from "./ceGroupService";
 import { placementService } from "./cePlacementService";
 import { EntityService } from "./entityService";
-import { Cohort, Identifier, Placement, Plan, Student } from "./types";
+import { Cohort, Group, Identifier, Placement, Plan, Student } from "./types";
 
-const DEFAULT_SELECT = '*, placement(*), grouptable(*)';
+// TODO consider joining to student
+const DEFAULT_SELECT = '*, placement(*), grouptable(*, timewindow(*))';
 
 class CEPlanService extends EntityService<Plan> {
 
@@ -72,8 +73,16 @@ class CEPlanService extends EntityService<Plan> {
       const plan = {
         ...json,
         placements: json.placement,
-        groups: json.grouptable
+        groups: json.grouptable.map((groupJson: any) => {
+          const group = {
+            ...groupJson,
+            time_windows: groupJson.timewindow
+          }
+          delete group.timewindow;
+          return group as Group;
+        })
       }
+
       delete plan.placement;
       delete plan.grouptable;
       return plan as Plan;
@@ -164,7 +173,7 @@ class CEPlanService extends EntityService<Plan> {
     delete json.groups;
     delete json.placements;
 
-    return super.update(entityId, json, select)
+    return super.update(entityId, json, select ?? DEFAULT_SELECT)
       .then(updated => this.mapToPlan(updated)!);
   }
 
@@ -176,6 +185,19 @@ class CEPlanService extends EntityService<Plan> {
       await groupService.save(group)
     }
     return await this.update(plan.id, plan)
+  }
+
+
+  async deletePlan(plan: Plan): Promise<void> {
+    for (const placement of plan.placements) {
+      await placementService.deletePlacement(placement);
+    }
+    for (const group of plan.groups) {
+
+      await groupService.deleteGroup(group)
+      console.log('deleted group', group.name)
+    }
+    return await this.delete(plan.id)
   }
 
 }

@@ -8,9 +8,22 @@ import { PageInfo, QueryModel, supabaseClient } from '@digitalaidseattle/supabas
 import { v4 as uuid } from 'uuid';
 import { timeWindowService } from './ceTimeWindowService';
 import { EntityService } from "./entityService";
-import { FailedStudent, Student, TimeWindow } from "./types";
+import { Cohort, FailedStudent, Student, TimeWindow } from "./types";
 
 class CEStudentService extends EntityService<Student> {
+
+  async getCohortsForStudent(student: Student): Promise<Cohort[]> {
+    try {
+      return await supabaseClient
+        .from('enrollment')
+        .select('cohort(*)')
+        .eq('student_id', student.id)
+        .then(resp => resp.data!.map((json: any) => json.cohort))
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      throw err;
+    }
+  }
 
   async findUnenrolled(): Promise<Student[]> {
     try {
@@ -87,12 +100,12 @@ class CEStudentService extends EntityService<Student> {
       const tzData = await timeWindowService.getTimeZone(student.city!, student.country);
       student.time_zone = tzData.timezone;
       student.tz_offset = tzData.offset;
-      timeWindowService.adjustTimeWindows(student);   
+      timeWindowService.adjustTimeWindows(student);
       const inserted = await this.insert(student);
-      return { success: true, student: inserted}
+      return { success: true, student: inserted }
     } catch (err: any) {
       console.error(`Failed to insert student ${student.name}`, err);
-      return { success: false, student: {...student, failedError:  err.message} }
+      return { success: false, student: { ...student, failedError: err.message } }
     }
   }
 
