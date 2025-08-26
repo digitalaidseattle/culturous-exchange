@@ -95,7 +95,7 @@ class CEStudentService extends EntityService<Student> {
 
   async insertSingle(student: Student, selection: string[]): Promise<{ success: boolean, student: Student | FailedStudent }> {
     try {
-      const partialWindows = timeWindowService.mapTimeWindows(selection);
+      const partialWindows = timeWindowService.transformTimeSlots(selection);
       student.timeWindows = partialWindows as TimeWindow[];
       const tzData = await timeWindowService.getTimeZone(student.city!, student.country);
       student.time_zone = tzData.timezone;
@@ -107,6 +107,16 @@ class CEStudentService extends EntityService<Student> {
       console.error(`Failed to insert student ${student.name}`, err);
       return { success: false, student: { ...student, failedError: err.message } }
     }
+  }
+
+  mapJson(json: any): Student | null {
+    const student = {
+      ...json,
+      timeWindows: json.timewindow
+        .map((timewindow: any) => timeWindowService.mapJson(timewindow))
+    }
+    delete student.timewindow;
+    return student
   }
 
 }

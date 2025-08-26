@@ -8,16 +8,16 @@ import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
 
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
+import { useSearchParams } from "react-router-dom";
 import { cohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { planService } from "../../api/cePlanService";
+import { planGenerator } from "../../api/planGenerator";
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
 import { TextEdit } from "../../components/TextEdit";
 import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
-import { useSearchParams } from "react-router-dom";
-import { planGenerator } from "../../api/planGenerator";
 
 interface CohortContextType {
   cohort: Cohort;
@@ -84,9 +84,10 @@ const CohortPage: React.FC = () => {
   async function handleCreatePlan() {
     if (cohort) {
       const created = await planService.create(cohort);
-      const hydrated = await planGenerator.hydratePlan(created.id);
-      const seededPlan = await planGenerator.seedPlan(hydrated)
-      navigate(`/plan/${seededPlan.id}`);
+      console.log('created', created)
+      const seededPlan = await planGenerator.seedPlan(created);
+      const savedPlan = await planService.save(seededPlan);
+      navigate(`/plan/${savedPlan.id}`);
       notifications.success(`Plan added to  ${cohort.name}.`);
     }
   }

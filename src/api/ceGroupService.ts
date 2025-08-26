@@ -5,7 +5,6 @@
  *
  */
 
-import { parseISO } from "date-fns";
 import { timeWindowService } from "./ceTimeWindowService";
 import { EntityService } from "./entityService";
 import { Group, Identifier, Placement, TimeWindow } from "./types";
@@ -13,26 +12,30 @@ import { Group, Identifier, Placement, TimeWindow } from "./types";
 
 class CEGroupService extends EntityService<Group> {
 
-
-
-  private mapToGroup(json: any): Group | null {
-    if (json) {
-      const group = {
-        ...json,
-        placements: json.placement,
-        time_windows: json.time_window
-      }
-      delete group.placement;
-      delete group.timewindow;
-
-      group.timewindows.forEach((tw: TimeWindow) => {
-        tw.start_date_time = parseISO(tw.start_date_time! as unknown as string);
-        tw.end_date_time = parseISO(tw.end_date_time! as unknown as string);
-      });
-      return group as Group;
+  mapJson(json: any): Group {
+    const group = {
+      ...json,
+      time_windows: json.timewindow
+        .map((timeWindowJson: any) => timeWindowService.mapJson(timeWindowJson))
     }
-    else {
-      return null
+    delete group.timewindow;
+    return group;
+  }
+  async batchInsert(groups: Group[], select?: string): Promise<Group[]> {
+    try {
+      console.log(groups)
+      const json = groups.map((group) => {
+        const groupJson =  {
+          ...group,
+        }
+        delete groupJson.placements;
+        delete groupJson.time_windows;
+        return groupJson
+      });
+      return super.batchInsert(json, select)
+    } catch (err) {
+      console.error('Unexpected error during insertion:', err);
+      throw err;
     }
   }
 
@@ -70,7 +73,7 @@ class CEGroupService extends EntityService<Group> {
     delete json.time_windows;
 
     return super.update(entityId, json, select)
-      .then(updated => this.mapToGroup(updated)!);
+      .then(updated => this.mapJson(updated));
   }
 
   async save(group: Group): Promise<Group> {
@@ -81,7 +84,8 @@ class CEGroupService extends EntityService<Group> {
     const json = { ...group }
     delete json.placements;
     delete json.time_windows;
-    return this.update(group.id, json);
+    console.log('save', json)
+    return this.insert(json);
   }
 
   async deleteGroup(group: Group) {

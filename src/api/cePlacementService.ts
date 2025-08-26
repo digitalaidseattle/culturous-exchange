@@ -8,6 +8,7 @@
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { enrollmentService } from "./ceEnrollmentService";
 import { Cohort, Group, Identifier, Placement, Plan, Student } from "./types";
+import { studentService } from "./ceStudentService";
 
 
 class CEPlacementService {
@@ -71,6 +72,7 @@ class CEPlacementService {
   }
 
   async save(placement: Placement): Promise<Placement> {
+    
     const json = { ...placement }
     delete json.student;
 
@@ -146,6 +148,14 @@ class CEPlacementService {
       console.error('Unexpected error during insertion:', err);
       throw err;
     }
+  }
+
+  mapJson(json: any): Placement {
+    const placement = {
+      ...json,
+      student: studentService.mapJson(json.student)
+    }
+    return placement;
   }
 
 }

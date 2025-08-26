@@ -20,7 +20,7 @@ import { format } from "date-fns";
 
 import { useContext, useState } from "react";
 import { placementService } from "../api/cePlacementService";
-import { planGenerator } from "../api/planGenerator";
+import { planService } from "../api/cePlanService";
 import { Placement } from "../api/types";
 import { PlanContext } from "../pages/plan/PlanContext";
 
@@ -63,8 +63,8 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
     };
 
     function refreshPlan() {
-        planGenerator.hydratePlan(plan.id)
-            .then((hydrated) => setPlan(hydrated))
+        planService.getById(plan.id)
+            .then((resp) => setPlan(resp!))
     }
 
 

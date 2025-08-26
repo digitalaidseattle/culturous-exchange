@@ -6,7 +6,7 @@
  */
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
-import { addHours, format, isEqual } from "date-fns";
+import { addHours, format, isEqual, parseISO } from "date-fns";
 import { EntityService } from "./entityService";
 import { Identifier, Student, TimeWindow } from "./types";
 import { v4 as uuid } from 'uuid';
@@ -177,7 +177,8 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     return intersect;
   }
 
-  mapTimeWindows(entries: string[]): Partial<TimeWindow>[] {
+  // time slot to time window  
+  transformTimeSlots(entries: string[]): Partial<TimeWindow>[] {
     let timeWindows: Partial<TimeWindow>[] = [];
     entries.forEach(entry => {
       timeWindows = timeWindows.concat(this.createTimeWindows(entry))
@@ -306,6 +307,14 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     const json = { ...timeWindow }
     await this.insert(json);
     return timeWindow;
+  }
+
+  mapJson(json: any): TimeWindow {
+    return {
+      ...json,
+      start_date_time: json.start_date_time ? parseISO(json.start_date_time) : null,
+      end_date_time: json.end_date_time ? parseISO(json.end_date_time) : null
+    };
   }
 
 }

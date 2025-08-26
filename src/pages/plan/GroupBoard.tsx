@@ -135,7 +135,7 @@ export const GroupBoard: React.FC = () => {
                 if (newGroup && newGroup.placements) {
                     // TODO  reorder / resequence group
                     newGroup.placements.push(planPlacement)
-                } 
+                }
                 planPlacement.group_id = newGroupId === WAITLIST_ID ? null : newGroupId;
 
                 console.log('handleChange', plan);
@@ -188,14 +188,11 @@ export const GroupBoard: React.FC = () => {
     }
 
     function handleSettingsChange(plan: Plan): void {
-        planService.update(plan.id,
-            {
-                group_size: plan.group_size!
-            })
+        planService.update(plan.id, { group_size: plan.group_size! })
             .then(updatedPlan => {
-                planGenerator.hydratePlan(updatedPlan.id!)
-                    .then((hydratedPlan) => {
-                        planGenerator.seedPlan(hydratedPlan)
+                planGenerator.emptyPlan(updatedPlan)
+                    .then(emptiedPlan => {
+                        planGenerator.seedPlan(emptiedPlan)
                             .then((seededPlan) => {
                                 notifications.success(`Plan ${seededPlan.name} updated successfully`);
                                 setInitialized(false)
@@ -205,13 +202,13 @@ export const GroupBoard: React.FC = () => {
                             .catch((error) => {
                                 notifications.error(`Failed to update plan: ${error.message}`);
                             });
-                    })
-                    .catch((error) => {
-                        notifications.error(`Failed to rehydrate plan: ${error.message}`);
-                        throw error;
-                    });
-            })
 
+                    })
+            })
+            .catch((error) => {
+                notifications.error(`Failed to get plan: ${error.message}`);
+                throw error;
+            });
     }
 
     return (

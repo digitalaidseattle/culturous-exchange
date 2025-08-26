@@ -64,7 +64,6 @@ export const PlanCard = (props: { planId: Identifier }) => {
 
     const doDelete = () => {
         if (plan) {
-            console.log(plan)
             planService.deletePlan(plan)
                 .then(() => {
                     setOpenDeleteDialog(false);
