@@ -13,7 +13,8 @@ import { placementService } from "./cePlacementService";
 import { EntityService } from "./entityService";
 import { Cohort, Identifier, Placement, Plan, Student } from "./types";
 
-const DEFAULT_SELECT = '*, placement(*), grouptable(*)';
+// TODO consider joining to student
+const DEFAULT_SELECT = '*, placement(*, student(*, timewindow(*))), grouptable(*, timewindow(*))';
 
 class CEPlanService extends EntityService<Plan> {
 
@@ -23,26 +24,32 @@ class CEPlanService extends EntityService<Plan> {
       name: "New Plan",
       cohort_id: cohort.id,
       note: "",
+      group_size: 10,
+      placements: [],
+      groups: []
     } as Plan;
-
-    return enrollmentService.getStudents(cohort).then((students) => {
-      return this.insert(proposed).then((plan) => {
-        const placements = students.map((student) => {
-          return {
-            plan_id: plan.id,
-            student_id: student.id,
-            anchor: student.anchor || false,
-            priority: 0,
-          } as unknown as Placement;
-        });
-        return placementService
-          .batchInsert(placements)
-          .then((createdPlacements) => {
-            plan.placements = createdPlacements;
-            return plan;
+    await this.save(proposed)
+    return this.insert(proposed)
+      .then((plan) => {
+        return enrollmentService.getStudents(cohort)
+          .then((students) => {
+            const placements = students.map((student) => {
+              return {
+                plan_id: plan.id,
+                student_id: student.id,
+                anchor: student.anchor || false,
+                priority: 0,
+                student: student
+              } as unknown as Placement;
+            });
+            return placementService
+              .batchInsert(placements)
+              .then((createdPlacements) => {
+                plan.placements = createdPlacements;
+                return plan;
+              });
           });
       });
-    });
   }
 
   createPlacements(plan: Plan, students: Student[]): Placement[] {
@@ -67,36 +74,35 @@ class CEPlanService extends EntityService<Plan> {
     }
   }
 
-  private mapToPlan(json: any): Plan | null {
-    if (json) {
-      const plan = {
-        ...json,
-        placements: json.placement,
-        groups: json.grouptable
-      }
-      delete plan.placement;
-      delete plan.grouptable;
-      return plan as Plan;
+  mapJson(json: any): Plan {
+    const plan = {
+      ...json,
+      placements: json.placement.map((pJson: any) => placementService.mapJson(pJson)),
+      groups: json.grouptable.map((gJson: any) => groupService.mapJson(gJson))
     }
-    else {
-      return null
-    }
+
+    delete plan.placement;
+    delete plan.grouptable;
+    return plan as Plan;
+
   }
 
   async insert(entity: Plan, select?: string): Promise<Plan> {
-    return super.insert(entity, select ?? '*, placement(*)')
+    const json = { ...entity } as any;
+    delete json.groups;
+    delete json.placements;
+
+    return super.insert(json, select ?? DEFAULT_SELECT)
+      .then((resp: any) => this.mapJson(resp))
+      .catch(err => {
+        console.error('Unexpected error during select:', err);
+        throw err;
+      });
   }
 
-  async getById(entityId: Identifier, select?: string): Promise<Plan | null> {
+  async getById(entityId: Identifier, select?: string): Promise<Plan> {
     return super.getById(entityId, select ?? DEFAULT_SELECT)
-      .then((json: any) => {
-        const plan = this.mapToPlan(json)
-        if (plan) {
-          return plan
-        } else {
-          return null
-        }
-      })
+      .then((json: any) => this.mapJson(json))
       .catch(err => {
         console.error('Unexpected error during select:', err);
         throw err;
@@ -164,18 +170,30 @@ class CEPlanService extends EntityService<Plan> {
     delete json.groups;
     delete json.placements;
 
-    return super.update(entityId, json, select)
-      .then(updated => this.mapToPlan(updated)!);
+    return super.update(entityId, json, select ?? DEFAULT_SELECT)
+      .then(updated => this.mapJson(updated)!);
   }
 
   async save(plan: Plan): Promise<Plan> {
-    for (const placement of plan.placements) {
-      await placementService.save(placement)
-    }
+    await this.insert(plan)
     for (const group of plan.groups) {
       await groupService.save(group)
     }
-    return await this.update(plan.id, plan)
+    for (const placement of plan.placements) {
+      await placementService.save(placement)
+    }
+    return plan
+  }
+
+
+  async deletePlan(plan: Plan): Promise<void> {
+    for (const placement of plan.placements) {
+      await placementService.deletePlacement(placement);
+    }
+    for (const group of plan.groups) {
+      await groupService.deleteGroup(group)
+    }
+    return await this.delete(plan.id)
   }
 
 }

@@ -135,7 +135,7 @@ export const GroupBoard: React.FC = () => {
                 if (newGroup && newGroup.placements) {
                     // TODO  reorder / resequence group
                     newGroup.placements.push(planPlacement)
-                } 
+                }
                 planPlacement.group_id = newGroupId === WAITLIST_ID ? null : newGroupId;
 
                 console.log('handleChange', plan);
@@ -188,27 +188,17 @@ export const GroupBoard: React.FC = () => {
     }
 
     function handleSettingsChange(plan: Plan): void {
-        planService.update(plan.id,
-            {
-                group_size: plan.group_size!
-            })
+        planService.update(plan.id, { group_size: plan.group_size! })
             .then(updatedPlan => {
-                planGenerator.hydratePlan(updatedPlan.id!)
-                    .then((hydratedPlan) => {
-                        planGenerator.seedPlan(hydratedPlan)
-                            .then((seededPlan) => {
-                                notifications.success(`Plan ${seededPlan.name} updated successfully`);
-                                setInitialized(false)
-                                setPlan(seededPlan);
-                                setShowSettings(false);
-                            })
-                            .catch((error) => {
-                                notifications.error(`Failed to update plan: ${error.message}`);
-                            });
+                planGenerator.seedPlan(updatedPlan)
+                    .then((seededPlan) => {
+                        notifications.success(`Plan ${seededPlan.name} updated successfully`);
+                        setInitialized(false)
+                        setPlan(seededPlan);
+                        setShowSettings(false);
                     })
                     .catch((error) => {
-                        notifications.error(`Failed to rehydrate plan: ${error.message}`);
-                        throw error;
+                        notifications.error(`Failed to update plan: ${error.message}`);
                     });
             })
 

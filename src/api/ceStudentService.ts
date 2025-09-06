@@ -110,28 +110,29 @@ class CEStudentService extends EntityService<Student> {
 
   async save(student: Student): Promise<Student> {
     try {
-      const json = { ...student }
-      delete json.timeWindows;
-      await this.insert(json)
-
-      await timeWindowService.deleteForStudent(student.id);
-      await timeWindowService.batchInsert(student.timeWindows!);
-
-      const resp = await this.getById(student.id, "*, timewindow(*)");
-      if (resp) {
-        return this.mapToStudent(resp)!;
-      }
-      throw new Error(`Student with id ${student.id} not found after save.`);
-    } catch (err) {
-      console.error('Unexpected error during save:', err);
-      throw err;
+      const partialWindows = timeWindowService.mapTimeWindows(selection);
+      student.timeWindows = partialWindows as TimeWindow[];
+      const tzData = await timeWindowService.getTimeZone(student.city!, student.country);
+      student.time_zone = tzData.timezone;
+      student.tz_offset = tzData.offset;
+      timeWindowService.adjustTimeWindows(student);
+      const inserted = await this.insert(student);
+      return { success: true, student: inserted }
+    } catch (err: any) {
+      console.error(`Failed to insert student ${student.name}`, err);
+      return { success: false, student: { ...student, failedError: err.message } }
     }
   }
 
-  async delete(studentId: Identifier): Promise<void> {
-    await timeWindowService.deleteForStudent(studentId);
-    await super.delete(studentId)
+  mapJson(json: any): Student {
+    const student = {
+      ...json,
+      timeWindows: json.timewindow.map((js: any) => timeWindowService.mapJson(js))
+    }
+    delete student.timewindow
+    return student
   }
+
 }
 
 const studentService = new CEStudentService('student');
