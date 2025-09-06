@@ -6,11 +6,28 @@
  */
 import { PageInfo, QueryModel, supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
+import { GENDER_OPTION } from '../constants';
 import { timeWindowService } from './ceTimeWindowService';
 import { EntityService } from "./entityService";
-import { Cohort, FailedStudent, Student, TimeWindow } from "./types";
+import { Cohort, Identifier, Student, TimeWindow } from "./types";
 
 class CEStudentService extends EntityService<Student> {
+
+  emptyStudent(): Student {
+    return {
+      id: uuid(),
+      name: '',
+      email: '',
+      city: '',
+      country: '',
+      age: 15,
+      time_zone: '',
+      tz_offset: 0,
+      anchor: false,
+      gender: GENDER_OPTION[0],
+      timeWindows: []
+    } as Student;
+  }
 
   async getCohortsForStudent(student: Student): Promise<Cohort[]> {
     try {
@@ -69,44 +86,26 @@ class CEStudentService extends EntityService<Student> {
       })
   }
 
-  async insert(entity: Partial<Student>, select?: string): Promise<Student> {
-    if (!entity.name || !entity.age || !entity.country || !entity.email) {
-      throw new Error("Name and Email are required fields.");
+  private mapToStudent(json: any): Student | null {
+    if (json) {
+      const student = {
+        ...json,
+        timeWindows: json.timewindow,
+      }
+      delete student.timewindow;
+      return student as Student;
     }
-    const studentId = uuid();
-    const studentWithId: Student = {
-      ...entity,
-      id: studentId
-    } as Student;
-    //Remove timeWindow from the student before insert
-    delete studentWithId.timeWindows;
-    const updatedStudent = await super.insert(studentWithId, select);
-
-    const timeWindows = entity.timeWindows!.map(orig => {
-      return {
-        ...orig,
-        id: uuid(),
-        student_id: studentId
-      } as TimeWindow
-    })
-    await timeWindowService.batchInsert(timeWindows)
-    return updatedStudent;
+    else {
+      return null
+    }
   }
 
-  async insertSingle(student: Student, selection: string[]): Promise<{ success: boolean, student: Student | FailedStudent }> {
-    try {
-      const partialWindows = timeWindowService.mapTimeWindows(selection);
-      student.timeWindows = partialWindows as TimeWindow[];
-      const tzData = await timeWindowService.getTimeZone(student.city!, student.country);
-      student.time_zone = tzData.timezone;
-      student.tz_offset = tzData.offset;
-      timeWindowService.adjustTimeWindows(student);
-      const inserted = await this.insert(student);
-      return { success: true, student: inserted }
-    } catch (err: any) {
-      console.error(`Failed to insert student ${student.name}`, err);
-      return { success: false, student: { ...student, failedError: err.message } }
-    }
+  async update(entityId: Identifier, updatedFields: Partial<Student>, select?: string): Promise<Student> {
+    const json = { ...updatedFields } as any;
+    delete json.timeWindows;
+
+    return super.update(entityId, json, select)
+      .then(updated => this.mapToStudent(updated)!);
   }
 
   mapJson(json: any): Student {
@@ -117,7 +116,18 @@ class CEStudentService extends EntityService<Student> {
     delete student.timewindow
     return student
   }
+  async save(student: Student): Promise<Student> {
+    // inserting group before tw is required.  Group must exist before timewindow added.
+    const json = { ...student }
+    delete student.timeWindows;
+    await this.insert(json);
 
+    for (const tw of student.timeWindows!) {
+      await timeWindowService.save(tw)
+    }
+
+    return student
+  }
 }
 
 const studentService = new CEStudentService('student');

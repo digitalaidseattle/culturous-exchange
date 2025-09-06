@@ -30,6 +30,7 @@ function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
 
 class CETimeWindowService extends EntityService<TimeWindow> {
 
+
   unionTimeWindows(timeWindowsA: TimeWindow, timeWindowsB: TimeWindow): TimeWindow[] {
     const timeArray = [
       { name: 'AS', date: timeWindowsA.start_date_time! },
@@ -241,7 +242,6 @@ class CETimeWindowService extends EntityService<TimeWindow> {
           timeWindow.start_date_time = this.toDateTime(dayOffset, timeWindow.start_t, student.tz_offset);
           timeWindow.end_date_time = this.toDateTime(dayOffset, timeWindow.end_t, student.tz_offset);
         });
-      student.timeWindows = this.mergeTimeWindows(student.timeWindows);
     }
   }
 
@@ -275,6 +275,10 @@ class CETimeWindowService extends EntityService<TimeWindow> {
   }
 
   async getTimeZone(city: string, country: string): Promise<{ timezone: string, offset: number }> {
+    // return {
+    //   timezone: 'America/Los_Angeles',
+    //   offset: -8
+    // };
     return fetch(`https://api.ipgeolocation.io/timezone?apiKey=${import.meta.env.VITE_IPGEOLOCATION_KEY}&location=${city},%20${country}`)
       .then(resp => {
         if (!resp.ok) {
