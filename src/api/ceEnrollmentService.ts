@@ -7,6 +7,7 @@
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { Cohort, Enrollment, Identifier, Student } from "./types";
+import { timeWindowService } from "./ceTimeWindowService";
 
 class CEEnrollmentService {
     tableName = '';
@@ -39,11 +40,10 @@ class CEEnrollmentService {
             .select('student(*, timewindow(*))')
             .eq('cohort_id', cohort.id)
             .then(resp => {
-                const enrollments = resp.data as unknown as any[];
-                return enrollments.map(en => {
-                    en.student.timeWindows = en.student.timewindow;
-                    delete en.student.timewindow;
-                    return en.student as Student;
+                return resp.data!.map((json: any) => {
+                    json.student.timeWindows = timeWindowService.mapJson(json.student.timewindow)
+                    delete json.student.timewindow;
+                    return json.student as Student;
                 })
             });
     }
