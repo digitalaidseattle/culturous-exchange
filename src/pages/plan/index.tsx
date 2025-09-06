@@ -10,7 +10,6 @@ import { useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { cohortService } from "../../api/ceCohortService";
 import { planService } from "../../api/cePlanService";
-import { planGenerator } from "../../api/planGenerator";
 import { Cohort, Identifier, Plan } from "../../api/types";
 import { TextEdit } from "../../components/TextEdit";
 import { CohortContext } from "../cohort";
@@ -40,15 +39,18 @@ const PlanPage: React.FC = () => {
             console.error(`Cohort not found ${plan.cohort_id}`);
           }
         });
-    } 
+    }
   }, [plan]);
 
   function refreshPlan(planId: Identifier) {
     setPlan(undefined);
     setLoading(true);
-    planGenerator.hydratePlan(planId)
-      .then((hydrated) => setPlan(hydrated))
-      .catch((err) => notifications.error(`Error reading ${planId} : ${err}`))
+    planService.getById(planId)
+      .then(resp => setPlan(resp))
+      .catch((err) => {
+        notifications.error(`Error reading ${planId} : ${err}`)
+        console.error(`Error reading ${planId} : ${err}`)
+      })
       .finally(() => setLoading(false));
   }
 
