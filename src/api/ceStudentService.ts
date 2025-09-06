@@ -108,22 +108,6 @@ class CEStudentService extends EntityService<Student> {
       .then(updated => this.mapToStudent(updated)!);
   }
 
-  async save(student: Student): Promise<Student> {
-    try {
-      const partialWindows = timeWindowService.mapTimeWindows(selection);
-      student.timeWindows = partialWindows as TimeWindow[];
-      const tzData = await timeWindowService.getTimeZone(student.city!, student.country);
-      student.time_zone = tzData.timezone;
-      student.tz_offset = tzData.offset;
-      timeWindowService.adjustTimeWindows(student);
-      const inserted = await this.insert(student);
-      return { success: true, student: inserted }
-    } catch (err: any) {
-      console.error(`Failed to insert student ${student.name}`, err);
-      return { success: false, student: { ...student, failedError: err.message } }
-    }
-  }
-
   mapJson(json: any): Student {
     const student = {
       ...json,
@@ -132,7 +116,18 @@ class CEStudentService extends EntityService<Student> {
     delete student.timewindow
     return student
   }
+  async save(student: Student): Promise<Student> {
+    // inserting group before tw is required.  Group must exist before timewindow added.
+    const json = { ...student }
+    delete student.timeWindows;
+    await this.insert(json);
 
+    for (const tw of student.timeWindows!) {
+      await timeWindowService.save(tw)
+    }
+
+    return student
+  }
 }
 
 const studentService = new CEStudentService('student');
