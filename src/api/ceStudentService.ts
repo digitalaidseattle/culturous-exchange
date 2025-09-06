@@ -16,10 +16,10 @@ class CEStudentService extends EntityService<Student> {
   emptyStudent(): Student {
     return {
       id: uuid(),
-      name: 'Jeff',
-      email: 'jnakaso@yahoo.com ',
-      city: 'Bothell',
-      country: 'USA',
+      name: '',
+      email: '',
+      city: '',
+      country: '',
       age: 15,
       time_zone: '',
       tz_offset: 0,
