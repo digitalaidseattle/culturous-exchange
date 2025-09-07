@@ -25,7 +25,7 @@ import { studentService } from '../../api/ceStudentService';
 import { timeWindowService } from '../../api/ceTimeWindowService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
-import StudentModal from './StudentModal';
+import StudentModal from '../../components/StudentModal';
 
 const PAGE_SIZE = 10;
 
@@ -33,6 +33,7 @@ const PAGE_SIZE = 10;
 const StudentsDetailsTable: React.FC = () => {
   const { setLoading } = useContext(LoadingContext);
   const { refresh, setRefresh } = useContext(RefreshContext);
+
   const [initialize, setInitialize] = useState<boolean>(true);
   const [columns, setColumns] = useState<GridColDef[]>([]);
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
@@ -47,11 +48,6 @@ const StudentsDetailsTable: React.FC = () => {
   const [deleteStudent, setDeleteStudent] = useState<Student | null>(null);
   const [deleteMessage, setDeleteMessage] = useState<string>('Are you sure you want to delete this student?');
   const [deleteConfirmation, showDeleteConfirmation] = useState<boolean>(false);
-
-  //  const columns = useMemo(
-  //   () => getColumns(),
-  //   []
-  // );
 
   useEffect(() => {
     if (initialize) {
@@ -100,7 +96,6 @@ const StudentsDetailsTable: React.FC = () => {
 
   function handleDeleteStudent(param: GridRenderCellParams) {
     return (evt: any) => {
-
       studentService.getCohortsForStudent(param.row)
         .then((cohorts) => {
           if (cohorts.length > 0) {
@@ -226,10 +221,10 @@ const StudentsDetailsTable: React.FC = () => {
       {
         field: 'timeWindows',
         headerName: 'Availabilities',
-        width: 150,
+        width: 450,
         renderCell: (params) => {
           const timeWindows = Array.isArray(params.value) ? params.value : [];
-          return <DisplayTimeWindow timeWindows={timeWindows} />
+          return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.time_zone} />
         },
         filterable: false
       }

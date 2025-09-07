@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import StudentForm from './StudentForm';
-import { Student } from '../../api/types';
+import StudentForm from '../pages/students/StudentForm';
+import { Student } from '../api/types';
 
 interface Props {
   mode: 'add' | 'edit';

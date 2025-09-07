@@ -30,7 +30,7 @@ abstract class EntityService<T extends Entity> {
             let query: any = supabaseClient
                 .from(this.tableName)
                 .select(select ?? '*', { count: 'exact' })
-                .range(queryModel.page * queryModel.pageSize, (queryModel.page + 1) * queryModel.pageSize)
+                .range(queryModel.page * queryModel.pageSize, (queryModel.page + 1) * queryModel.pageSize -1)
                 .order(queryModel.sortField, { ascending: queryModel.sortDirection === 'asc' });
             if (fModel.filterField && fModel.filterOperator && fModel.filterValue) {
                 switch (fModel.filterOperator) {

@@ -1,17 +1,40 @@
 import { TimeWindow } from "../api/types";
 import { Typography, Box } from "@mui/material";
+import { toZonedTime, format } from "date-fns-tz";
+import { useContext, useEffect, useState } from "react";
+import { ShowLocalTimeContext } from "./ShowLocalTimeContext";
 
 interface Props {
-  timeWindows: Partial<TimeWindow>[]
+  timeWindows: Partial<TimeWindow>[],
+  timezone: string
 }
 
-const DisplayTimeWindow: React.FC<Props> = ( { timeWindows } ) => {
+const DisplayTimeWindow: React.FC<Props> = ({ timeWindows, timezone }) => {
 
-  const timeWindowList = timeWindows.map((tw, index) => (
-    <Typography key={index} variant='body2'>
-      {tw.day_in_week}: {tw.start_t} - {tw.end_t}
-    </Typography>
-  ));
+  const [timeWindowList, setTimeWindowList] = useState<React.ReactNode[]>([]);
+  const { showLocalTime } = useContext(ShowLocalTimeContext);
+
+  useEffect(() => {
+    setTimeWindowList(timeWindows.map((tw, index) => {
+      const startString = showLocalTime
+        ? format(tw.start_date_time!, "hh:mm a z")
+        : format(
+          toZonedTime(tw.start_date_time!, timezone),
+          "hh:mm a z",
+          { timeZone: timezone });
+      const endString = showLocalTime
+        ? format(tw.end_date_time!, "hh:mm a z")
+        : format(
+          toZonedTime(tw.end_date_time!, timezone),
+          "hh:mm a z",
+          { timeZone: timezone })
+      return (
+        <Typography key={index} variant='body2'>
+          {format(tw.start_date_time!, "EEE")}: {startString} - {endString}
+        </Typography>
+      )
+    }));
+  }, [timeWindows, timezone, showLocalTime]);
 
   return (
     <Box py={2}>

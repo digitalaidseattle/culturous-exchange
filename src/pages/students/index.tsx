@@ -5,14 +5,6 @@
  *
  */
 import { useContext, useState } from 'react';
-
-/**
- *  students/index.tsx
- *
- *  @copyright 2025 Digital Aid Seattle
- *
- */
-
 // material-ui
 import { Button, Stack } from '@mui/material';
 
@@ -24,8 +16,10 @@ import { createContext } from 'react';
 import { studentService } from '../../api/ceStudentService';
 import { timeWindowService } from '../../api/ceTimeWindowService';
 import { FailedStudent, Student } from '../../api/types';
+import { ShowLocalTimeContext } from '../../components/ShowLocalTimeContext';
+import StudentModal from '../../components/StudentModal';
+import { TimeToggle } from '../../components/TimeToggle';
 import FailedStudentsModal from './FailedStudentsModal';
-import StudentModal from './StudentModal';
 import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
 
@@ -49,7 +43,8 @@ export const TimeWindowSelectionContext = createContext<TimeWindowContextType>({
     setSelection: () => []
 })
 
-const UploadSection = () => {
+
+const ToolsSection = () => {
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
@@ -102,21 +97,24 @@ const UploadSection = () => {
 
     return (
         <Stack>
-            <Stack spacing={2} m={2} direction={'row'}>
-                <Button
-                    title='Upload Student'
-                    variant="contained"
-                    color="primary"
-                    onClick={() => setShowDropzone(!showDropzone)}>
-                    Upload
-                </Button>
-                <Button
-                    title='Add Student'
-                    variant="contained"
-                    color="primary"
-                    onClick={() => setIsAddStudentModalOpen(true)}>
-                    Add Student
-                </Button>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Stack spacing={2} m={2} direction={'row'}>
+                    <Button
+                        title='Upload Student'
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setShowDropzone(!showDropzone)}>
+                        Upload
+                    </Button>
+                    <Button
+                        title='Add Student'
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setIsAddStudentModalOpen(true)}>
+                        Add Student
+                    </Button>
+                </Stack>
+                <TimeToggle />
             </Stack>
             {showDropzone &&
                 <StudentUploader onChange={handleUpdate} />
@@ -138,13 +136,17 @@ const UploadSection = () => {
 const StudentsPage: React.FC = () => {
     const [student, setStudent] = useState<Student>({} as Student);
     const [selection, setSelection] = useState<string[]>([]);
+    const [showLocalTime, setShowLocalTime] = useState<boolean>(false);
+
     return (
         <StudentContext.Provider value={{ student, setStudent }}>
             <TimeWindowSelectionContext.Provider value={{ selection, setSelection }}>
-                <MainCard title="Students Page">
-                    <UploadSection />
-                    <StudentsDetailsTable />
-                </MainCard>
+                <ShowLocalTimeContext.Provider value={{ showLocalTime, setShowLocalTime }}>
+                    <MainCard title="Students Page">
+                        <ToolsSection />
+                        <StudentsDetailsTable />
+                    </MainCard>
+                </ShowLocalTimeContext.Provider>
             </TimeWindowSelectionContext.Provider>
         </StudentContext.Provider>
     )
