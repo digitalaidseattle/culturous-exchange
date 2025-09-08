@@ -89,11 +89,11 @@ const UploadSection = () => {
 
                 studentService.save(updated)
                     .then(saved => {
-                        console.log('saved', saved)
 
                         notifications.success(`Success. Added student: ${saved.name}`);
                         handleCloseAddStudentModal();
                     })
+
                 notifications.success(`Success. Added student: ${updated.name}`);
                 handleCloseAddStudentModal();
                 setRefresh(refresh + 1)
