@@ -93,10 +93,13 @@ describe("SpeadsheetValidationService", () => {
             timeWindows: [] as TimeWindow[]
         } as Student;
 
-        student.timeWindows = [{ day_in_week: "Friday", start_t: "07:00:00", end_t: "12:00:00" } as TimeWindow];
         let response = validator.validate(student);
-        expect(response.length).toBe(0);
+        expect(response.length).toBe(1);
+        expect(response[0].message).toBe('A time window is required.');
 
+        student.timeWindows = [{ day_in_week: "Friday", start_t: "07:00:00", end_t: "12:00:00" } as TimeWindow];
+        response = validator.validate(student);
+        expect(response.length).toBe(0);
     });
 
 

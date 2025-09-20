@@ -4,20 +4,20 @@ export interface Validator<T> {
   validate(data: T): ValidationError[];
 }
 
+const MIN_NAME_LENGTH = 4;
 export class NameValidator implements Validator<Student> {
-  minLength = 3;
   validate(student: Student): ValidationError[] {
-    if (student.name.trim().length <= this.minLength) {
-      return [{ isValid: false, field: 'name', message: 'Name must be at least four characters' }]
+    if (student.name.trim().length < MIN_NAME_LENGTH) {
+      return [{ isValid: false, field: 'name', message: `Name must be at least ${MIN_NAME_LENGTH} characters` }]
     }
     return []
   }
 }
 
+const EMAIL_REGEX = new RegExp('^[a-zA-Z0-9._]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9]+)+$');
 export class EmailValidator implements Validator<Student> {
-  regExp = new RegExp('^[a-zA-Z0-9._]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9]+)+$');
   validate(student: Student): ValidationError[] {
-    if (!student.email || !this.regExp.test(student.email)) {
+    if (!student.email || !EMAIL_REGEX.test(student.email)) {
       return [{ isValid: false, field: 'email', message: 'Invalid email format' }]
     }
     return []
@@ -26,7 +26,6 @@ export class EmailValidator implements Validator<Student> {
 
 const MIN_CITY_LENGTH = 1;
 export class CityValidator implements Validator<Student> {
-  minlength = 1;
   validate(student: Student): ValidationError[] {
     if (student.city!.trim().length < MIN_CITY_LENGTH) {
       return [{ isValid: false, field: 'city', message: 'City is required' }]
@@ -37,7 +36,6 @@ export class CityValidator implements Validator<Student> {
 
 const MIN_STUDENT_AGE = 13;
 const MAX_STUDENT_AGE = 19;
-
 export class AgeValidator implements Validator<Student> {
   validate(student: Student): ValidationError[] {
     if (!student.age) {
@@ -60,28 +58,31 @@ export class CountryValidator implements Validator<Student> {
   }
 }
 
+const VALID_DAYS = ['Friday', 'Saturday', 'Sunday'];
+const VALID_TIME_WINDOW_REGEX = new RegExp('^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$');
 export class TimeWindowValidator implements Validator<Student> {
-  validDays: string[] = ['Friday', 'Saturday', 'Sunday'];
-  validTimeFormatRegExp: RegExp = new RegExp('^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$')
 
   validate(student: Student): ValidationError[] {
     const timeWindowErrors: ValidationError[] = [];
 
+    if (!student.timeWindows || student.timeWindows.length === 0) {
+      timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: `A time window is required.` });
+    }
+
     for (const tw of student.timeWindows!) {
-      if (!tw.day_in_week || !this.validDays.includes(tw.day_in_week.trim())) {
+      if (!tw.day_in_week || !VALID_DAYS.includes(tw.day_in_week.trim())) {
         timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: `Day of week must be "Friday", "Saturday", or "Sunday"` });
       }
-      if (!tw.start_t || !this.validTimeFormatRegExp.test(tw.start_t)) {
+      if (!tw.start_t || !VALID_TIME_WINDOW_REGEX.test(tw.start_t)) {
         timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: `Start time invalid` });
       }
-      if (!tw.end_t || !this.validTimeFormatRegExp.test(tw.end_t)) {
+      if (!tw.end_t || !VALID_TIME_WINDOW_REGEX.test(tw.end_t)) {
         timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: `End time invalid` });
       }
     }
     return timeWindowErrors;
   }
 }
-
 
 export class SpeadsheetValidationService {
   validators = [
@@ -98,3 +99,5 @@ export class SpeadsheetValidationService {
   }
 }
 
+const studentValidationService = new SpeadsheetValidationService();
+export { studentValidationService }
