@@ -73,7 +73,6 @@ class PlanExporter {
         }
 
         const waitlisted = (plan.placements ?? []).filter(this.isWaitlisted);
-        console.log(`Found ${waitlisted.length} waitlisted placements`);
 
         // Waitlisted students
         for (const placement of waitlisted) {
@@ -95,15 +94,12 @@ class PlanExporter {
             });
         }
 
-
-        console.log("Export data:", data);
         return data;
 
     }
 
 
     async exportPlan(plan: Plan): Promise<boolean> {
-        console.log('PlanExporter.exportPlan', plan);
         const data = this.studentRows(plan);
 
         const worksheet = XLSX.utils.json_to_sheet(data);
