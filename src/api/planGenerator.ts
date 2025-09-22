@@ -66,7 +66,7 @@ class PlanGenerator {
     const planEvaluatedWithAnchors = await planEvaluator.evaluate(planWithAnchors); // to update group.time_windows and country counts
     const planWithAllStudents = await planGenerator.assignedByTimewindow(planEvaluatedWithAnchors, nonAnchorPlacements);
     const finalPlan = await planEvaluator.evaluate(planWithAllStudents); // to update group.time_windows and country counts
-
+    
     return finalPlan;
   }
 

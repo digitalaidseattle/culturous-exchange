@@ -165,6 +165,15 @@ export const GroupBoard: React.FC = () => {
     };
 
     function exportPlan(): void {
+        console.group('Export click');
+        console.log('plan at export:', {
+            name: plan?.name,
+            groupsLen: plan?.groups?.length,
+            placementsLen: plan?.placements?.length,
+            hasGroups: Array.isArray(plan?.groups),
+            hasPlacements: Array.isArray(plan?.placements),
+        });
+  
         planExporter.exportPlan(plan!)
             .then((exported) => {
                 if (exported) {
