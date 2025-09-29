@@ -6,7 +6,7 @@
  */
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
-import { addHours, format, isEqual, parseISO } from "date-fns";
+import { addHours, format, isEqual, parseISO, isFriday, getHours, isSaturday, isSunday } from "date-fns";
 import { EntityService } from "./entityService";
 import { Identifier, Student, TimeWindow } from "./types";
 import { v4 as uuid } from 'uuid';
@@ -29,6 +29,36 @@ function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
 // }
 
 class CETimeWindowService extends EntityService<TimeWindow> {
+  /**
+   * 
+   * @param time_windows
+   * @param timezoneOffset
+   * @returns array of 16 booleans for Friday, Saturday, and Sunday each representing 7am to 10pm
+   */
+  calcAvailability(time_windows: TimeWindow[], timezoneOffset: number): { friday: any; saturday: any; sunday: any; } {
+    const friday = Array(16).fill(false);
+    const saturday = Array(16).fill(false);
+    const sunday = Array(16).fill(false);
+    time_windows.forEach(tw => {
+      const localStart = addHours(tw.start_date_time, -timezoneOffset);
+      const localEnd = addHours(tw.end_date_time, -timezoneOffset);
+
+      for (let i = getHours(localStart); i <= getHours(localEnd); i++) {
+        if (isFriday(localStart) && i >= 7 && i < 23) {
+          friday[i - 7] = true;
+        } else if (isSaturday(localStart) && i >= 7 && i < 23) {
+          saturday[i - 7] = true;
+        } else if (isSunday(localEnd) && i >= 7 && i < 23) {
+          sunday[i - 7] = true;
+        }
+      }
+    });
+    return {
+      friday: friday,
+      saturday: saturday,
+      sunday: sunday
+    }
+  }
 
 
   unionTimeWindows(timeWindowsA: TimeWindow, timeWindowsB: TimeWindow): TimeWindow[] {

@@ -14,7 +14,7 @@ import { planEvaluator } from './planEvaluator';
 import { Group, Placement, Plan, TimeWindow } from "./types";
 
 const MAX_SIZE = 10;
-const DEFAULT_TZ_OFFSET = -8; // PST
+const DEFAULT_TZ_OFFSET = 8; // PST
 
 class PlanGenerator {
 
@@ -103,8 +103,8 @@ class PlanGenerator {
       start_t: '07:00:00',
       end_t: '22:00:00',
     } as TimeWindow
-    sunday.start_date_time = timeWindowService.toDateTime(1, sunday.start_t, DEFAULT_TZ_OFFSET);
-    sunday.end_date_time = timeWindowService.toDateTime(1, sunday.end_t, DEFAULT_TZ_OFFSET);
+    sunday.start_date_time = timeWindowService.toDateTime(2, sunday.start_t, DEFAULT_TZ_OFFSET);
+    sunday.end_date_time = timeWindowService.toDateTime(2, sunday.end_t, DEFAULT_TZ_OFFSET);
 
     return [friday, saturday, sunday];
   }
