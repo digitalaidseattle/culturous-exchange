@@ -60,7 +60,7 @@ class PlanGenerator {
 
   async createGroups(plan: Plan, nCount: number): Promise<Group[]> {
     const groups: Group[] = [];
-    for (let groupNo = 0; groupNo < nCount; groupNo++) {
+    for (let groupNo = 1; groupNo <= nCount; groupNo++) {
       const group = {
         id: uuid(),
         plan_id: plan.id,
