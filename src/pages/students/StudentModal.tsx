@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import StudentForm from './StudentForm';
-import { Student } from '../../api/types';
+import { Student, ValidationError } from '../../api/types';
 
 interface Props {
   mode: 'add' | 'edit';
@@ -14,6 +14,11 @@ interface Props {
 const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange }) => {
   const [updated, setUpdated] = useState<Student>(student);
   const [hasErrors, setHasErrors] = useState(false);
+
+  const handleStudentChange = (updatedStudent: Student, validationErrors: ValidationError[]) => {
+    setUpdated(updatedStudent);
+    setHasErrors(validationErrors.length > 0);
+  };
 
   return (
     <React.Fragment>
@@ -28,8 +33,7 @@ const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange 
         <DialogContent>
           <StudentForm
             student={updated}
-            onChange={setUpdated}
-            onValidationChange={setHasErrors}
+            onChange={handleStudentChange}
           />
         </DialogContent>
         <DialogActions>
