@@ -13,6 +13,7 @@ interface Props {
 
 const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange }) => {
   const [updated, setUpdated] = useState<Student>(student);
+  const [hasErrors, setHasErrors] = useState(false);
 
   return (
     <React.Fragment>
@@ -27,7 +28,9 @@ const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange 
         <DialogContent>
           <StudentForm
             student={updated}
-            onChange={setUpdated} />
+            onChange={setUpdated}
+            onValidationChange={setHasErrors}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
@@ -35,6 +38,7 @@ const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange 
             type="submit"
             color="primary"
             variant="contained"
+            disabled={hasErrors}
             onClick={() =>{ 
               onChange(updated)
             }}

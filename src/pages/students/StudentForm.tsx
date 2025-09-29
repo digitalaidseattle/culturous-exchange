@@ -6,6 +6,7 @@ import {
   FormControl,
   FormControlLabel,
   FormLabel,
+  FormHelperText,
   Input,
   ListItemText,
   MenuItem,
@@ -18,6 +19,7 @@ import { Cohort, Student, TimeWindow } from '../../api/types';
 import { v4 as uuid } from 'uuid';
 import { GENDER_OPTION, TimeSlot, TIME_SLOTS } from '../../constants';
 import { studentService } from '../../api/ceStudentService';
+import { studentValidationService } from '../../api/spreadsheetValidationService';
 
 
 function findTimeSlot(timeWindow: TimeWindow): TimeSlot | null {
@@ -40,12 +42,23 @@ interface CETextInputProps {
   required: boolean;
   type: string;
   handleFieldChange: (event: any) => void;
+  isError?: boolean;
+  errorText?: string;
 }
 
-const CETextInput: React.FC<CETextInputProps> = ({ name, value, label, required, type, handleFieldChange }) => {
+const CETextInput: React.FC<CETextInputProps> = ({ 
+  name, 
+  value, 
+  label, 
+  required, 
+  type, 
+  handleFieldChange,
+  isError,
+  errorText
+}) => {
   return (
     <FormControl key={name} fullWidth>
-      <FormLabel id="gender-group" required>{label}</FormLabel>
+      <FormLabel required={required}>{label}</FormLabel>
       <TextField
         autoFocus
         required={required}
@@ -56,6 +69,8 @@ const CETextInput: React.FC<CETextInputProps> = ({ name, value, label, required,
         variant="standard"
         value={value ?? ''}
         onChange={handleFieldChange}
+        error={Boolean(isError)}
+        helperText={isError ? (errorText || ' ') : ' '}
       />
     </FormControl>);
 }
@@ -63,11 +78,15 @@ const CETextInput: React.FC<CETextInputProps> = ({ name, value, label, required,
 interface Props {
   student: Student;
   onChange: (student: Student) => void;
+  onValidationChange?: (hasErrors: boolean) => void;
 }
 
-const StudentForm: React.FC<Props> = ({ student, onChange }) => {
+const StudentForm: React.FC<Props> = ({ student, onChange, onValidationChange }) => {
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [updated, setUpdated] = useState<Student>(student);
+
+  type FieldErrors = Partial<Record<'name'|'email'|'city'|'country'|'age'|'timeWindows', string>>;
+  const [errors, setErrors] = useState<FieldErrors>({});
 
   useEffect(() => {
     setUpdated(student)
@@ -78,22 +97,36 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
       .then(ccs => setCohorts(ccs))
   }, [updated]);
 
-  const handleFieldChange = (event: any) => {
+  const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    onChange({
-      ...updated,
-      [name]: value
-    })
+    const next = { ...updated, [name]: value };
+    setUpdated(next);
+    onChange(next);
+
+    updateValidationErrors(next, name);
   }
+
+  const updateValidationErrors = (student: Student, fieldName: string) => {
+    const allErrors = studentValidationService.validateStudent(student);
+    const fieldErrors = allErrors.filter(err => err.field === fieldName);
+    const errorMessage = fieldErrors.length > 0 ? fieldErrors[0].message : '';
+
+    const newErrors = { ...errors, [fieldName]: errorMessage };
+    setErrors(newErrors);
+    
+    if (onValidationChange) {
+      const hasAnyErrors = Object.values(newErrors).some(msg => msg !== '');
+      onValidationChange(hasAnyErrors);
+    }
+  }
+
 
   const handleAnchorChange = async (student: Student) => {
     try {
-      handleFieldChange({
-        target: {
-          name: 'anchor',
-          value: !student.anchor
-        }
-      })
+      const next = { ...updated, anchor: !student.anchor };
+      setUpdated(next);
+      onChange(next);
+      updateValidationErrors(next, 'anchor');
     } catch (error) {
       console.error('Error toggling anchor:', error);
     }
@@ -120,12 +153,11 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
         }
       })
 
-    handleFieldChange({
-      target: {
-        name: 'timeWindows',
-        value: newTimeWindows
-      }
-    });
+    const next = { ...updated, timeWindows: newTimeWindows };
+    setUpdated(next);
+    onChange(next);
+
+    updateValidationErrors(next, 'timeWindows');
   }
 
   function isChecked(ts: TimeSlot): boolean {
@@ -140,14 +172,20 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
         label="Full Name"
         required={true}
         type="text"
-        handleFieldChange={handleFieldChange} />
+        handleFieldChange={handleFieldChange}
+        isError={Boolean(errors.name)}
+        errorText={errors.name}
+      />
       <CETextInput
         name="email"
         value={updated.email || ''}
         label="Email"
         required={true}
         type="email"
-        handleFieldChange={handleFieldChange} />
+        handleFieldChange={handleFieldChange}
+        isError={Boolean(errors.email)}
+        errorText={errors.email}
+      />
       <Box display="flex" gap={1} flexDirection={"row"}>
         <CETextInput
           name="city"
@@ -155,14 +193,20 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
           label="City"
           required={true}
           type="text"
-          handleFieldChange={handleFieldChange} />
+          handleFieldChange={handleFieldChange}
+          isError={Boolean(errors.city)}
+          errorText={errors.city}
+        />
         <CETextInput
           name="country"
           value={updated.country || ''}
           label="Country"
           required={true}
           type="text"
-          handleFieldChange={handleFieldChange} />
+          handleFieldChange={handleFieldChange}
+          isError={Boolean(errors.country)}
+          errorText={errors.country}
+        />
       </Box>
       <Box display="flex" gap={1} flexDirection={"row"}>
         <FormControl fullWidth>
@@ -181,7 +225,10 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
           label="Age"
           required={true}
           type="number"
-          handleFieldChange={handleFieldChange} />
+          handleFieldChange={handleFieldChange}
+          isError={Boolean(errors.age)}
+          errorText={errors.age}
+        />
         <FormControl fullWidth>
           <FormLabel id="gender-group" required>Gender</FormLabel>
           <RadioGroup
@@ -203,7 +250,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
           </RadioGroup>
         </FormControl>
       </Box>
-      <FormControl fullWidth>
+      <FormControl fullWidth error={Boolean(errors.timeWindows)}>
         <FormLabel id="time-window-label" required>Time Slot(s)</FormLabel>
         <Select
           labelId="time-window-label"
@@ -224,7 +271,9 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
             </MenuItem>
           ))}
         </Select>
+        <FormHelperText>{errors.timeWindows || ' '}</FormHelperText>
       </FormControl>
+      
       <FormControl fullWidth>
         <FormLabel htmlFor="cohort-display">Cohorts</FormLabel>
         <TextField
