@@ -16,7 +16,6 @@ describe("timeWindowService", () => {
         } as TimeWindow;
 
         const merged = timeWindowService.unionTimeWindows(timeA, timeB);
-        console.log(merged);
         expect(merged).toBeDefined();
         expect(merged.length).toBe(2);
         expect(merged[0].start_date_time?.getHours()).toBe(8);
@@ -37,7 +36,6 @@ describe("timeWindowService", () => {
         } as TimeWindow;
 
         const merged = timeWindowService.unionTimeWindows(timeA, timeB);
-        console.log(merged);
         expect(merged).toBeDefined();
         expect(merged.length).toBe(1);
         expect(merged[0].start_date_time?.getHours()).toBe(8);
@@ -57,7 +55,6 @@ describe("timeWindowService", () => {
         } as TimeWindow;
 
         const merged = timeWindowService.unionTimeWindows(timeA, timeB);
-        console.log(merged);
         expect(merged).toBeDefined();
         expect(merged.length).toBe(1);
         expect(merged[0].start_date_time?.getHours()).toBe(8);
@@ -77,7 +74,6 @@ describe("timeWindowService", () => {
         } as TimeWindow;
 
         const merged = timeWindowService.unionTimeWindows(timeA, timeB);
-        console.log(merged);
         expect(merged).toBeDefined();
         expect(merged.length).toBe(1);
         expect(merged[0].start_date_time?.getHours()).toBe(8);
