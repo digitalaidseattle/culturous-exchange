@@ -17,7 +17,6 @@ describe("timeWindowService", () => {
         } as TimeWindow;
 
         const result = timeWindowService.calcAvailability([timeA, timeB], 8);
-        console.log(result)
         expect(result.friday).toStrictEqual([
             false, true, true,
             true, false, false,

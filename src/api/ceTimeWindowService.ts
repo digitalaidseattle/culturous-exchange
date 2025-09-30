@@ -29,6 +29,10 @@ function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
 // }
 
 class CETimeWindowService extends EntityService<TimeWindow> {
+
+  startingHour = 7;
+  endingHour = 22;
+
   /**
    * 
    * @param time_windows
@@ -36,20 +40,20 @@ class CETimeWindowService extends EntityService<TimeWindow> {
    * @returns array of 16 booleans for Friday, Saturday, and Sunday each representing 7am to 10pm
    */
   calcAvailability(time_windows: TimeWindow[], timezoneOffset: number): { friday: any; saturday: any; sunday: any; } {
-    const friday = Array(16).fill(false);
-    const saturday = Array(16).fill(false);
-    const sunday = Array(16).fill(false);
+    const friday = Array(this.endingHour - this.startingHour + 1).fill(false);
+    const saturday = Array(this.endingHour - this.startingHour + 1).fill(false);
+    const sunday = Array(this.endingHour - this.startingHour + 1).fill(false);
     time_windows.forEach(tw => {
       const localStart = addHours(tw.start_date_time, -timezoneOffset);
       const localEnd = addHours(tw.end_date_time, -timezoneOffset);
 
       for (let i = getHours(localStart); i <= getHours(localEnd); i++) {
-        if (isFriday(localStart) && i >= 7 && i < 23) {
-          friday[i - 7] = true;
-        } else if (isSaturday(localStart) && i >= 7 && i < 23) {
-          saturday[i - 7] = true;
-        } else if (isSunday(localEnd) && i >= 7 && i < 23) {
-          sunday[i - 7] = true;
+        if (isFriday(localStart) && i >= this.startingHour && i < this.endingHour + 1) {
+          friday[i - this.startingHour] = true;
+        } else if (isSaturday(localStart) && i >= this.startingHour && i < this.endingHour + 1) {
+          saturday[i - this.startingHour] = true;
+        } else if (isSunday(localEnd) && i >= this.startingHour && i < this.endingHour + 1) {
+          sunday[i - this.startingHour] = true;
         }
       }
     });
