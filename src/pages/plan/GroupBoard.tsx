@@ -37,7 +37,7 @@ import { PlanContext } from "./PlanContext";
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
     const timeWindows = group ? group.time_windows ?? [] : [];
     return (group &&
-        <Card sx={{ alignContent: "top" }}>
+        <Card key={group.id} sx={{ alignContent: "top" }}>
             <CardContent>
                 <Typography variant="h6" fontWeight={600}>{group.name}</Typography>
             </CardContent>

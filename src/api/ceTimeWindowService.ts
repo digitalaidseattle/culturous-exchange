@@ -202,14 +202,13 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     const intersect: TimeWindow[] = [];
     timeWindowsA.forEach(twA => {
       timeWindowsB.forEach(twB => {
-
         const intersection = this.intersectionTimeWindows(twA, twB);
         if (intersection) {
           intersect.push(intersection);
         }
       });
     });
-    return intersect;
+    return this.mergeTimeWindows(intersect);
   }
 
   mapTimeWindows(entries: string[]): Partial<TimeWindow>[] {
