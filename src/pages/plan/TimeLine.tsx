@@ -114,9 +114,9 @@ export const TimeLine: React.FC = () => {
                 id: WAITLIST_ID,
                 label: "Waitlist",
                 type: 'waitlist',
-                friday: [],
-                saturday: [],
-                sunday: [],
+                friday: Array(endingHour - startingHour + 1).fill(false),
+                saturday: Array(endingHour - startingHour + 1).fill(false),
+                sunday: Array(endingHour - startingHour + 1).fill(false),
                 children: children
             } as TimeRow
             setRows([...tempRows, waitlist]);
@@ -134,10 +134,10 @@ export const TimeLine: React.FC = () => {
                 <Typography>No plan found.</Typography>
             }
             {initialized &&
-                <table border={1} style={{ borderCollapse: 'collapse' }}>
+                <table border={1} style={{ borderCollapse: 'collapse', width: '100%' }}>
                     <thead>
                         <tr>
-                            <th style={{ width: 200 }} rowSpan={2}>
+                            <th style={{ minWidth: 200 }} rowSpan={2}>
                             </th>
                             <th colSpan={OFFICE_HOURS.length} style={{ textAlign: 'center' }}>
                                 Friday
@@ -151,17 +151,17 @@ export const TimeLine: React.FC = () => {
                         </tr>
                         <tr>
                             {OFFICE_HOURS.map(hour =>
-                                <th style={{ width: "25px", textAlign: 'center' }}>
+                                <th style={{ width: "30px", textAlign: 'center' }}>
                                     {hour}
                                 </th>
                             )}
                             {OFFICE_HOURS.map(hour =>
-                                <th style={{ width: "25px", textAlign: 'center' }}>
+                                <th style={{ width: "30px", textAlign: 'center' }}>
                                     {hour}
                                 </th>
                             )}
                             {OFFICE_HOURS.map(hour =>
-                                <th style={{ width: "25px", textAlign: 'center' }}>
+                                <th style={{ width: "30px", textAlign: 'center' }}>
                                     {hour}
                                 </th>
                             )}
@@ -172,7 +172,7 @@ export const TimeLine: React.FC = () => {
                             <Fragment key={r.id} >
                                 <tr key={r.id} style={{ borderTop: '2px solid black', borderBottom: '2px solid black' }}>
                                     <td>
-                                        {r.label}
+                                        <Typography fontWeight={600}>{r.label}</Typography>
                                     </td>
                                     <Fragment key={r.id} >
                                         {r.friday.map((available, idx) =>
