@@ -5,7 +5,6 @@
  *
  */
 
-import { time } from "console";
 import { groupService } from "./ceGroupService";
 import { timeWindowService } from "./ceTimeWindowService";
 import { Group, Plan, TimeWindow } from "./types";
