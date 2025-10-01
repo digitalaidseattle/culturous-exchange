@@ -119,7 +119,8 @@ class CEStudentService extends EntityService<Student> {
   async save(student: Student): Promise<Student> {
     // inserting group before tw is required.  Group must exist before timewindow added.
     const json = { ...student }
-    delete student.timeWindows;
+    delete json.timeWindows;
+    
     await this.insert(json);
 
     for (const tw of student.timeWindows!) {
