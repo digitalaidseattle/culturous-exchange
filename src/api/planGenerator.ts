@@ -14,7 +14,6 @@ import { planEvaluator } from './planEvaluator';
 import { Group, Placement, Plan, TimeWindow } from "./types";
 
 const MAX_SIZE = 10;
-const DEFAULT_TZ_OFFSET = 8; // PST
 
 class PlanGenerator {
 
@@ -69,44 +68,10 @@ class PlanGenerator {
         time_windows: [],
         placements: []
       } as Group;
-      group.time_windows = await this.createTimewindows(group);
+      group.time_windows = groupService.createDefaultTimewindows(group);
       groups.push(group);
     }
     return groups;
-  }
-
-  async createTimewindows(group: Group): Promise<TimeWindow[]> {
-    const friday = {
-      student_id: null,
-      group_id: group.id,
-      day_in_week: 'Friday',
-      start_t: '07:00:00',
-      end_t: '22:00:00',
-    } as TimeWindow
-    friday.start_date_time = timeWindowService.toDateTime(0, friday.start_t, DEFAULT_TZ_OFFSET);
-    friday.end_date_time = timeWindowService.toDateTime(0, friday.end_t, DEFAULT_TZ_OFFSET);
-
-    const saturday = {
-      student_id: null,
-      group_id: group.id,
-      day_in_week: 'Saturday',
-      start_t: '07:00:00',
-      end_t: '22:00:00',
-    } as TimeWindow
-    saturday.start_date_time = timeWindowService.toDateTime(1, saturday.start_t, DEFAULT_TZ_OFFSET);
-    saturday.end_date_time = timeWindowService.toDateTime(1, saturday.end_t, DEFAULT_TZ_OFFSET);
-
-    const sunday = {
-      student_id: null,
-      group_id: group.id,
-      day_in_week: 'Sunday',
-      start_t: '07:00:00',
-      end_t: '22:00:00',
-    } as TimeWindow
-    sunday.start_date_time = timeWindowService.toDateTime(2, sunday.start_t, DEFAULT_TZ_OFFSET);
-    sunday.end_date_time = timeWindowService.toDateTime(2, sunday.end_t, DEFAULT_TZ_OFFSET);
-
-    return [friday, saturday, sunday];
   }
 
   async assignByGreedy(plan: Plan, placements: Placement[]): Promise<Plan> {

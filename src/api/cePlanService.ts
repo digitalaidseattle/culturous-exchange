@@ -11,7 +11,7 @@ import { enrollmentService } from "./ceEnrollmentService";
 import { groupService } from "./ceGroupService";
 import { placementService } from "./cePlacementService";
 import { EntityService } from "./entityService";
-import { Cohort, Identifier, Placement, Plan, Student } from "./types";
+import { Cohort, Group, Identifier, Placement, Plan, Student } from "./types";
 
 // TODO consider joining to student
 const DEFAULT_SELECT = '*, placement(*, student(*, timewindow(*))), grouptable(*, timewindow(*))';
@@ -83,8 +83,15 @@ class CEPlanService extends EntityService<Plan> {
 
     delete plan.placement;
     delete plan.grouptable;
-    return plan as Plan;
 
+    plan.groups.forEach((group: Group) => group.placements = []);
+    plan.placements.forEach((p: Placement) => {
+      const group = plan.groups.find((g: Group) => g.id === p.group_id);
+      if (group) {
+        group.placements.push(p);
+      }
+    });
+    return plan as Plan;
   }
 
   async insert(entity: Plan, select?: string): Promise<Plan> {

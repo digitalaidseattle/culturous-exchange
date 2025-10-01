@@ -5,9 +5,9 @@
  *
  */
 
+import { groupService } from "./ceGroupService";
 import { timeWindowService } from "./ceTimeWindowService";
 import { Plan, TimeWindow } from "./types";
-
 
 class PlanEvaluator {
 
@@ -16,27 +16,28 @@ class PlanEvaluator {
         // mutate group objects inside the plan object, and return plan
         // Update each group time_windows with by the intersections with students
         plan.groups.forEach(group => {
-            group.placements!.forEach(placement => {
-                group.time_windows = this.updateGroupTimeWindows(group.time_windows, placement.student!.timeWindows!)
-                    .map(tw => {
-                        tw.group_id = group.id;
-                        return tw
-                    })
-            });
-            group.country_count = new Set(group.placements!.map(p => p.student?.country.toLocaleUpperCase())).size;
+            if (group.placements === undefined || group.placements.length === 0) {
+                group.time_windows = groupService.createDefaultTimewindows(group);
+                group.country_count = 0;
+            } else {
+                group.placements!.forEach(placement => {
+                    group.time_windows = this.updateGroupTimeWindows(group.time_windows!, placement.student!.timeWindows!)
+                        .map(tw => {
+                            tw.group_id = group.id;
+                            return tw
+                        })
+                });
+                group.country_count = new Set(group.placements!.map(p => p.student?.country.toLocaleUpperCase())).size;
+            }
         })
         return plan
     }
 
-
-    updateGroupTimeWindows(
-        currentGroupWindows: TimeWindow[] | undefined,
-        studentWindows: TimeWindow[]): TimeWindow[] {
-        if (!currentGroupWindows || currentGroupWindows.length === 0) {
-            return [...studentWindows];
-        }
-        const intersection = timeWindowService.intersectionTimeWindowsMultiple(currentGroupWindows, studentWindows);
-        return [...intersection];
+    updateGroupTimeWindows(currentGroupWindows: TimeWindow[], studentWindows: TimeWindow[]): TimeWindow[] {
+        const updatedWindows = currentGroupWindows.length === 0
+            ? studentWindows
+            : timeWindowService.intersectionTimeWindowsMultiple(currentGroupWindows, studentWindows);
+        return timeWindowService.mergeTimeWindows(updatedWindows)
     }
 
 }
