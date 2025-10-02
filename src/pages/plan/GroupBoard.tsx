@@ -51,7 +51,13 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
                     </CardContent>
                     <CardContent>
                         <Typography fontWeight={600}>Time Windows</Typography>
-                        {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                        {timeWindows.map(tw => {
+                            const day = format(tw.start_date_time!, "EEE");
+                            const start = format(tw.start_date_time!, "haaa");
+                            const end = format(tw.end_date_time!, "haaa");
+                            return <Typography>{day} {start} - {end}
+                            </Typography>
+                        })}
                     </CardContent>
                 </>
             }
@@ -137,8 +143,6 @@ export const GroupBoard: React.FC = () => {
                     newGroup.placements.push(planPlacement)
                 }
                 planPlacement.group_id = newGroupId === WAITLIST_ID ? null : newGroupId;
-
-                console.log('handleChange', plan);
 
                 planEvaluator
                     .evaluate(plan)

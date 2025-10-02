@@ -6,10 +6,11 @@
  */
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
-import { addHours, format, isEqual, parseISO, isFriday, getHours, isSaturday, isSunday } from "date-fns";
+import { addHours, format, getHours, isEqual, isFriday, isSaturday, isSunday, parseISO } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
+import { v4 as uuid } from 'uuid';
 import { EntityService } from "./entityService";
 import { Identifier, Student, TimeWindow } from "./types";
-import { v4 as uuid } from 'uuid';
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
   if (arr1.length !== arr2.length) {
@@ -28,6 +29,8 @@ function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
 //         (isAfter(timeWindowsB.start_date_time!, timeWindowsA.start_date_time!) && isBefore(timeWindowsB.start_date_time!, timeWindowsA.end_date_time!));
 // }
 
+export const DEFAULT_TIMEZONE = "America/Los_Angeles";
+
 class CETimeWindowService extends EntityService<TimeWindow> {
 
   startingHour = 7;
@@ -39,13 +42,13 @@ class CETimeWindowService extends EntityService<TimeWindow> {
    * @param timezoneOffset
    * @returns array of 16 booleans for Friday, Saturday, and Sunday each representing 7am to 10pm
    */
-  calcAvailability(time_windows: TimeWindow[], timezoneOffset: number): { friday: any; saturday: any; sunday: any; } {
+  calcAvailability(time_windows: TimeWindow[]): { friday: any; saturday: any; sunday: any; } {
     const friday = Array(this.endingHour - this.startingHour + 1).fill(false);
     const saturday = Array(this.endingHour - this.startingHour + 1).fill(false);
     const sunday = Array(this.endingHour - this.startingHour + 1).fill(false);
     time_windows.forEach(tw => {
-      const localStart = addHours(tw.start_date_time, -timezoneOffset);
-      const localEnd = addHours(tw.end_date_time, -timezoneOffset);
+      const localStart = tw.start_date_time;
+      const localEnd = tw.end_date_time;
 
       for (let i = getHours(localStart); i <= getHours(localEnd); i++) {
         if (isFriday(localStart) && i >= this.startingHour && i < this.endingHour + 1) {
@@ -250,21 +253,16 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     }
   }
 
+  //  Arbitrairly chose year 2000, September (month 8), and day 1 + dayOffset
   // dayOffset is 0 for Friday, 1 for Saturday, and 2 for Sunday
-  toDateTime(dayOffset: number, time: string, offset: number): Date {
+  toZonedTime(dayOffset: number, time: string, timezone: string): Date {
     const sTimes = time
       .split(':')
       .map((s) => Number.parseInt(s));
     const dateTime = new Date(2000, 8, dayOffset + 1, sTimes[0], sTimes[1], sTimes[2])
-    return addHours(dateTime, offset);
+    return toZonedTime(dateTime, timezone);
   }
 
-  toTimeWindowDate(dateTime: Date, offset: number): { day: number, time: string } {
-    const local = addHours(dateTime, -offset);
-    const day = local.getDay();
-    const time = local.toTimeString().split(' ')[0]; // Get time in HH:MM:SS format
-    return { day: day, time: time };
-  }
 
   adjustTimeWindows(student: Student) {
     if (student.timeWindows) {
@@ -272,8 +270,8 @@ class CETimeWindowService extends EntityService<TimeWindow> {
         .forEach(timeWindow => {
           const dayOffset = timeWindow.day_in_week === 'Friday' ? 0
             : timeWindow.day_in_week === 'Saturday' ? 1 : 2;
-          timeWindow.start_date_time = this.toDateTime(dayOffset, timeWindow.start_t, student.tz_offset);
-          timeWindow.end_date_time = this.toDateTime(dayOffset, timeWindow.end_t, student.tz_offset);
+          timeWindow.start_date_time = this.toZonedTime(dayOffset, timeWindow.start_t, student.time_zone!);
+          timeWindow.end_date_time = this.toZonedTime(dayOffset, timeWindow.end_t, student.time_zone!);
         });
     }
   }

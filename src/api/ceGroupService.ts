@@ -6,11 +6,10 @@
  */
 
 import { v4 as uuid } from 'uuid';
-import { timeWindowService } from "./ceTimeWindowService";
+import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
 import { EntityService } from "./entityService";
 import { Group, Identifier, TimeWindow } from "./types";
 
-const DEFAULT_TZ_OFFSET = -8; // PST
 
 class CEGroupService extends EntityService<Group> {
 
@@ -73,8 +72,8 @@ class CEGroupService extends EntityService<Group> {
       start_t: '07:00:00',
       end_t: '22:00:00',
     } as TimeWindow
-    friday.start_date_time = timeWindowService.toDateTime(0, friday.start_t, -DEFAULT_TZ_OFFSET);
-    friday.end_date_time = timeWindowService.toDateTime(0, friday.end_t, -DEFAULT_TZ_OFFSET);
+    friday.start_date_time = timeWindowService.toZonedTime(0, friday.start_t, DEFAULT_TIMEZONE);
+    friday.end_date_time = timeWindowService.toZonedTime(0, friday.end_t, DEFAULT_TIMEZONE);
 
     const saturday = {
       id: uuid(),
@@ -84,8 +83,8 @@ class CEGroupService extends EntityService<Group> {
       start_t: '07:00:00',
       end_t: '22:00:00',
     } as TimeWindow
-    saturday.start_date_time = timeWindowService.toDateTime(1, saturday.start_t, -DEFAULT_TZ_OFFSET);
-    saturday.end_date_time = timeWindowService.toDateTime(1, saturday.end_t, -DEFAULT_TZ_OFFSET);
+    saturday.start_date_time = timeWindowService.toZonedTime(1, saturday.start_t, DEFAULT_TIMEZONE);
+    saturday.end_date_time = timeWindowService.toZonedTime(1, saturday.end_t, DEFAULT_TIMEZONE);
 
     const sunday = {
       id: uuid(),
@@ -95,8 +94,8 @@ class CEGroupService extends EntityService<Group> {
       start_t: '07:00:00',
       end_t: '22:00:00',
     } as TimeWindow
-    sunday.start_date_time = timeWindowService.toDateTime(2, sunday.start_t, -DEFAULT_TZ_OFFSET);
-    sunday.end_date_time = timeWindowService.toDateTime(2, sunday.end_t, -DEFAULT_TZ_OFFSET);
+    sunday.start_date_time = timeWindowService.toZonedTime(2, sunday.start_t, DEFAULT_TIMEZONE);
+    sunday.end_date_time = timeWindowService.toZonedTime(2, sunday.end_t, DEFAULT_TIMEZONE);
 
     return [friday, saturday, sunday];
   }
