@@ -9,18 +9,21 @@
 import { Fragment, useContext, useEffect, useState } from "react";
 
 import {
+    Stack,
     Typography
 } from "@mui/material";
 import { addHours, getHours, isFriday, isSaturday, isSunday } from "date-fns";
 
+import { StarFilled, StarOutlined } from "@ant-design/icons";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
-import { TimeWindow } from "../../api/types";
+import { Plan, Student, TimeWindow } from "../../api/types";
+import StudentModal from "../students/StudentModal";
 import { PlanContext } from "./PlanContext";
 
 type TimeRow = {
     id: string;
     label: string;
-    type: 'group' | 'student' | 'waitlist';
+    type: 'group' | 'anchor' | 'student' | 'waitlist';
     friday: boolean[];
     saturday: boolean[];
     sunday: boolean[];
@@ -39,6 +42,7 @@ function calcAvailability(time_windows: TimeWindow[], timezoneOffset: number): {
     time_windows.forEach(tw => {
         const localStart = addHours(tw.start_date_time, -timezoneOffset);
         const localEnd = addHours(tw.end_date_time, -timezoneOffset);
+        console.log(tw.start_date_time, localStart)
 
         for (let i = getHours(localStart); i <= getHours(localEnd); i++) {
             if (isFriday(localStart) && i >= startingHour && i < endingHour + 1) {
@@ -61,72 +65,81 @@ export const TimeLine: React.FC = () => {
     const { plan } = useContext(PlanContext);
     const [initialized, setInitialized] = useState<boolean>(false);
     const [rows, setRows] = useState<TimeRow[]>([]);
+    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+
+    const START_TIME = 7;
+    const END_TIME = 22;
+    const OFFICE_HOURS = Array.from({ length: END_TIME - START_TIME + 1 }, (_, i) => START_TIME + i)
 
     useEffect(() => {
         // If plan is not defined, we don't want to initialize
         if (plan) {
             setInitialized(false);
+            setRows(calculateRows(plan));
+            setInitialized(true);
+        }
+    }, [plan, initialized])
 
-            plan.groups.sort((g0, g1) => g0.name.localeCompare(g1.name));
-            const tempRows = plan.groups.map(group => {
-                const children: TimeRow[] =
-                    plan.placements
-                        .filter(p => p.group_id === group.id)
-                        .map(placement => {
-                            const { friday, saturday, sunday } = calcAvailability(placement.student?.timeWindows!, -PST_OFFSET)
-                            return {
-                                id: `${placement.plan_id}:${placement.student_id}`,
-                                label: placement.student ? placement.student.name : '',
-                                type: 'student',
-                                friday: friday,
-                                saturday: saturday,
-                                sunday: sunday,
-                                children: []
-                            } as TimeRow
-                        }).sort((r0, r1) => r0.label.localeCompare(r1.label));
-                const { friday, saturday, sunday } = calcAvailability(group.time_windows!, PST_OFFSET)
-                return {
-                    id: group.id!,
-                    label: group.name,
-                    type: 'group',
-                    friday: friday,
-                    saturday: saturday,
-                    sunday: sunday,
-                    children: children
-                } as TimeRow
-            });
+    function calculateRows(plan: Plan): TimeRow[] {
+        plan.groups.sort((g0, g1) => g0.name.localeCompare(g1.name));
+        const tempRows = plan.groups.map(group => {
             const children: TimeRow[] =
                 plan.placements
-                    .filter(p => p.group_id === null)
+                    .filter(p => p.group_id === group.id)
                     .map(placement => {
-                        const { friday, saturday, sunday } = calcAvailability(placement.student?.timeWindows!, PST_OFFSET)
+                        const { friday, saturday, sunday } = calcAvailability(placement.student?.timeWindows!, 0)
                         return {
                             id: `${placement.plan_id}:${placement.student_id}`,
                             label: placement.student ? placement.student.name : '',
-                            type: 'student',
+                            type: placement.anchor ? 'anchor' : 'student',
                             friday: friday,
                             saturday: saturday,
                             sunday: sunday,
                             children: []
                         } as TimeRow
                     }).sort((r0, r1) => r0.label.localeCompare(r1.label));
-            const waitlist = {
-                id: WAITLIST_ID,
-                label: "Waitlist",
-                type: 'waitlist',
-                friday: Array(endingHour - startingHour + 1).fill(false),
-                saturday: Array(endingHour - startingHour + 1).fill(false),
-                sunday: Array(endingHour - startingHour + 1).fill(false),
+            const { friday, saturday, sunday } = calcAvailability(group.time_windows!, 0)
+            return {
+                id: group.id!,
+                label: group.name,
+                type: 'group',
+                friday: friday,
+                saturday: saturday,
+                sunday: sunday,
                 children: children
             } as TimeRow
-            setRows([...tempRows, waitlist]);
-            setInitialized(true);
-        }
-    }, [plan, initialized])
+        });
+        const children: TimeRow[] =
+            plan.placements
+                .filter(p => p.group_id === null)
+                .map(placement => {
+                    const { friday, saturday, sunday } = calcAvailability(placement.student?.timeWindows!, 0)
+                    return {
+                        id: `${placement.plan_id}:${placement.student_id}`,
+                        label: placement.student ? placement.student.name : '',
+                        type: placement.anchor ? 'anchor' : 'student',
+                        friday: friday,
+                        saturday: saturday,
+                        sunday: sunday,
+                        children: []
+                    } as TimeRow
+                }).sort((r0, r1) => r0.label.localeCompare(r1.label));
+        const waitlist = {
+            id: WAITLIST_ID,
+            label: "Waitlist",
+            type: 'waitlist',
+            friday: Array(endingHour - startingHour + 1).fill(false),
+            saturday: Array(endingHour - startingHour + 1).fill(false),
+            sunday: Array(endingHour - startingHour + 1).fill(false),
+            children: children
+        } as TimeRow
+        return [...tempRows, waitlist];
+    }
 
-    const START_TIME = 7;
-    const END_TIME = 22;
-    const OFFICE_HOURS = Array.from({ length: END_TIME - START_TIME + 1 }, (_, i) => START_TIME + i)
+    function handleClildRowClick(row: TimeRow) {
+        const placement = plan.placements.find(p => p.student_id === row.id.split(':')[1]);
+        setSelectedStudent(placement ? placement.student! : null);
+    }
 
     return (
         <>
@@ -194,9 +207,17 @@ export const TimeLine: React.FC = () => {
                                 </tr>
                                 {r.children.map(child =>
                                     <Fragment key={child.id} >
-                                        <tr>
+                                        <tr onClick={() => handleClildRowClick(child)} style={{ cursor: 'pointer' }}>
                                             <td>
-                                                {child.label}
+                                                <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
+                                                    {child.type === 'anchor' &&
+                                                        <StarFilled style={{ fontSize: '150%', color: 'green' }} />
+                                                    }
+                                                    {child.type === 'student' &&
+                                                        <StarOutlined style={{ fontSize: '150%', color: 'gray' }} />
+                                                    }
+                                                    <Typography>{child.label}</Typography>
+                                                </Stack>
                                             </td>
                                             {child.friday.map((cAvailable, idx) =>
                                                 <td key={`${child.id}-f-${idx}`} style={{ backgroundColor: cAvailable ? '#90e9eeff' : 'white' }}>
@@ -219,6 +240,14 @@ export const TimeLine: React.FC = () => {
                         )}
                     </tbody>
                 </table>}
+            {selectedStudent &&
+                <StudentModal
+                    mode={'edit'}
+                    student={selectedStudent!}
+                    open={selectedStudent !== null}
+                    onClose={() => setSelectedStudent(null)}
+                    onChange={() => setSelectedStudent(null)} />
+            }
         </>
     )
 };
