@@ -16,7 +16,7 @@ describe("timeWindowService", () => {
             end_date_time: timeWindowService.toZonedTime(1, "15:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
-        const result = timeWindowService.calcAvailability([timeA, timeB], 8);
+        const result = timeWindowService.calcAvailability([timeA, timeB]);
         expect(result.friday).toStrictEqual([
             false, true, true,
             true, false, false,
