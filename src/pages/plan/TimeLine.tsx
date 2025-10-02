@@ -31,7 +31,6 @@ type TimeRow = {
 }
 
 const WAITLIST_ID = 'WAITLIST';
-const PST_OFFSET = -8;
 const startingHour = 7;
 const endingHour = 22;
 
