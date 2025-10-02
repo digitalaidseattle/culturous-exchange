@@ -26,9 +26,9 @@ import { timeWindowService } from '../../api/ceTimeWindowService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import StudentModal from '../../components/StudentModal';
+import { TimeSlots } from '../../components/TimeSlots';
 
-const PAGE_SIZE = 10;
-
+const PAGE_SIZE = 25;
 
 const StudentsDetailsTable: React.FC = () => {
   const { setLoading } = useContext(LoadingContext);
@@ -75,7 +75,7 @@ const StudentsDetailsTable: React.FC = () => {
         .catch((err) => console.error(err))
         .finally(() => setLoading(false));
     }
-  }, [refresh, paginationModel, sortModel, filterModel]);
+  }, [paginationModel, sortModel, filterModel]);
 
   const toggleAnchor = async (student: Student) => {
     try {
@@ -182,7 +182,7 @@ const StudentsDetailsTable: React.FC = () => {
       {
         field: 'country',
         headerName: 'Country',
-        width: 150,
+        width: 100,
         filterOperators: getGridStringOperators()
           .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
       },
@@ -217,6 +217,22 @@ const StudentsDetailsTable: React.FC = () => {
         width: 100,
         filterOperators: getGridStringOperators()
           .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
+      },
+      {
+        field: 'time_zone',
+        headerName: 'Time Zone',
+        width: 150,
+        filterOperators: getGridStringOperators()
+          .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
+      },
+      {
+        field: 'preferences',
+        headerName: 'Time Slots',
+        width: 200,
+        renderCell: (params) => {
+          return <TimeSlots timeWindows={params.row.timeWindows} />
+        },
+        filterable: false
       },
       {
         field: 'timeWindows',
