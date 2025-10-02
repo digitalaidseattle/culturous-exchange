@@ -333,7 +333,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     return `${tw.day_in_week} ${format(start_time, "haaa")} - ${format(end_time, "haaa")}`
   }
 
-  async overlapDuration(timeWindows: TimeWindow[]): Promise<number> {
+  overlapDuration(timeWindows: TimeWindow[]): number {
     // get the total overlapping hours
     return timeWindows.reduce((acc, tw) => acc +
       ((tw.end_date_time?.getTime() ?? 0) - (tw.start_date_time?.getTime() ?? 0)) / (1000 * 60 * 60), 0);
