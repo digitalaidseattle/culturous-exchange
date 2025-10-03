@@ -57,7 +57,7 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
         setAnchorEl(null);
     };
 
-    const handleRemove= () => {
+    const handleRemove = () => {
         // setOpenDeleteDialog(true)
         setAnchorEl(null);
     };
@@ -119,7 +119,12 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
                     <CardContent>
                         <Typography>{placement.student!.country}</Typography>
                         <Typography fontWeight={600}>Time Windows</Typography>
-                        {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                        {timeWindows.map((tw, idx) => {
+                            const day = format(tw.start_date_time!, "EEE");
+                            const start = format(tw.start_date_time!, "haaa");
+                            const end = format(tw.end_date_time!, "haaa");
+                            return <Typography key={idx}>{day} {start} - {end}</Typography>
+                        })}
                     </CardContent>
                 }
             </CardContent>

@@ -12,7 +12,7 @@ import { Group } from '../api/types';
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
     const timeWindows = group ? group.time_windows ?? [] : [];
     return (group &&
-        <Card sx={{ alignContent: "top" }}>
+        <Card key={group.id} sx={{ alignContent: "top" }}>
             <CardContent>
                 <Typography variant="h6" fontWeight={600}>{group.name}</Typography>
             </CardContent>
@@ -26,7 +26,12 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
                     </CardContent>
                     <CardContent>
                         <Typography fontWeight={600}>Time Windows</Typography>
-                        {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                        {timeWindows.map((tw, idx) => {
+                            const day = format(tw.start_date_time!, "EEE");
+                            const start = format(tw.start_date_time!, "haaa");
+                            const end = format(tw.end_date_time!, "haaa");
+                            return <Typography key={idx}>{day} {start} - {end}</Typography>
+                        })}
                     </CardContent>
                 </>
             }

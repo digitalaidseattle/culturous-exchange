@@ -1,8 +1,8 @@
 
 /**
- *  SprintPanel.tsx
+ *  GroupBoard.tsx
  *
- *  @copyright 2024 Digital Aid Seattle
+ *  @copyright 2025 Digital Aid Seattle
  *
  */
 
@@ -11,69 +11,26 @@ import { ReactNode, useContext, useEffect, useState } from "react";
 import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
 import {
     Box,
-    Card,
-    CardContent,
     IconButton,
-    Stack,
     Toolbar,
     Tooltip,
     Typography
 } from "@mui/material";
 
-import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
-import { format } from "date-fns";
+import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 
 import { useNotifications } from "@digitalaidseattle/core";
-import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
+import { DDCategory, DDType, DragAndDrop } from '@digitalaidseattle/draganddrop';
+import { Group, Identifier, Placement, Plan } from "../../api/types";
+
 import { planService } from "../../api/cePlanService";
 import { planEvaluator } from "../../api/planEvaluator";
 import { planExporter } from "../../api/planExporter";
 import { planGenerator } from "../../api/planGenerator";
-import { Group, Identifier, Placement, Plan } from "../../api/types";
+import { GroupCard } from "../../components/GroupCard";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { StudentCard } from "../../components/StudentCard";
 import { PlanContext } from "./PlanContext";
-
-export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
-    const timeWindows = group ? group.time_windows ?? [] : [];
-    return (group &&
-        <Card key={group.id} sx={{ alignContent: "top" }}>
-            <CardContent>
-                <Typography variant="h6" fontWeight={600}>{group.name}</Typography>
-            </CardContent>
-            {showDetails &&
-                <>
-                    <CardContent>
-                        <Stack direction={'row'} spacing={1} >
-                            <Typography fontWeight={600}>Countries: </Typography>
-                            <Typography>{group.country_count}</Typography>
-                        </Stack>
-                    </CardContent>
-                    <CardContent>
-                        <Typography fontWeight={600}>Time Windows</Typography>
-                        {timeWindows.map(tw => {
-                            const day = format(tw.start_date_time!, "EEE");
-                            const start = format(tw.start_date_time!, "haaa");
-                            const end = format(tw.end_date_time!, "haaa");
-                            return <Typography>{day} {start} - {end}
-                            </Typography>
-                        })}
-                    </CardContent>
-                </>
-            }
-        </Card>
-    );
-}
-
-export const WaitlistedCard: React.FC<{}> = () => {
-    return (
-        <Card sx={{ alignContent: "top" }}>
-            <CardContent>
-                <Typography variant="h6" fontWeight={600}>Waitlisted</Typography>
-            </CardContent>
-        </Card>
-    );
-}
 
 type PlacementWrapper = Placement & DDType
 
@@ -162,9 +119,13 @@ export const GroupBoard: React.FC = () => {
     const headerRenderer = (cat: DDCategory<string>): ReactNode => {
         const group = plan!.groups.find(g => g.id === cat.value);
         if (group) {
-            return <GroupCard group={group} showDetails={showGroupDetails} />
+            return <GroupCard
+                group={group}
+                showDetails={showGroupDetails} />
         } else {
-            return <WaitlistedCard />
+            return <GroupCard
+                group={{ id: WAITLIST_ID, name: "Waitlisted" } as Group}
+                showDetails={false} />
         }
     };
 
