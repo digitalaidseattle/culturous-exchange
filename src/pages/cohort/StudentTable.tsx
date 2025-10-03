@@ -6,7 +6,7 @@
 import { useContext, useEffect, useState } from "react";
 
 // material-ui
-import { Box, Button, ButtonGroup, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import {
   DataGrid,
   getGridNumericOperators,
@@ -25,7 +25,7 @@ import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { PageInfo } from "@digitalaidseattle/supabase";
 
-import { CheckOutlined, StarFilled } from "@ant-design/icons";
+import { StarFilled } from "@ant-design/icons";
 import { CohortContext } from ".";
 import { cohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
