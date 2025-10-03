@@ -21,18 +21,20 @@ import {
 // third-party
 
 // project import
-import { PageInfo } from "@digitalaidseattle/supabase";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
+import { PageInfo } from "@digitalaidseattle/supabase";
 
+import { StarFilled } from "@ant-design/icons";
 import { CohortContext } from ".";
 import { cohortService } from "../../api/ceCohortService";
+import { enrollmentService } from "../../api/ceEnrollmentService";
 import { studentService } from "../../api/ceStudentService";
 import { Enrollment, Identifier, Student } from "../../api/types";
 import AddStudentModal from "../../components/AddStudentModal";
-import { StarFilled } from "@ant-design/icons";
-import { enrollmentService } from "../../api/ceEnrollmentService";
 import DisplayTimeWindow from "../../components/DisplayTimeWindow";
+import { ShowLocalTimeContext } from "../../components/ShowLocalTimeContext";
+import { TimeToggle } from "../../components/TimeToggle";
 
 const PAGE_SIZE = 10;
 
@@ -51,6 +53,7 @@ export const StudentTable: React.FC = () => {
   const [showAddStudent, setShowAddStudent] = useState<boolean>(false);
   const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
 
+  const [showLocalTime, setShowLocalTime] = useState<boolean>(false);
 
   useEffect(() => {
     setPageInfo({
@@ -189,10 +192,10 @@ export const StudentTable: React.FC = () => {
       {
         field: 'timeWindows',
         headerName: 'Availabilities',
-        width: 150,
+        width: 250,
         renderCell: (params) => {
           const timeWindows = Array.isArray(params.row.student.timeWindows) ? params.row.student.timeWindows : [];
-          return <DisplayTimeWindow timeWindows={timeWindows} />
+          return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.student.time_zone} />
         },
         filterable: false
       }
@@ -201,55 +204,60 @@ export const StudentTable: React.FC = () => {
 
   return (
     <Box>
-      <Stack margin={1} gap={1} direction="row" spacing={'1rem'}>
-        <Button
-          title='Add Student'
-          variant="contained"
-          color="primary"
-          onClick={addStudent}>
-          {'Add Student'}
-        </Button>
-        <Button
-          title='RemoveStudent'
-          variant="contained"
-          color="primary"
-          disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
-          onClick={removeStudent}>
-          {'Remove student'}
-        </Button>
-      </Stack>
-      {cohort &&
-        <DataGrid
-          apiRef={apiRef}
-          rows={pageInfo.rows}
-          getRowId={(row) => row.student_id}
-          columns={getColumns()}
+      <ShowLocalTimeContext.Provider value={{ showLocalTime, setShowLocalTime }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Stack margin={1} gap={1} direction="row" spacing={'1rem'}>
+            <Button
+              title='Add Student'
+              variant="contained"
+              color="primary"
+              onClick={addStudent}>
+              {'Add Student'}
+            </Button>
+            <Button
+              title='RemoveStudent'
+              variant="contained"
+              color="primary"
+              disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
+              onClick={removeStudent}>
+              {'Remove student'}
+            </Button>
+          </Stack>
+          <TimeToggle />
+        </Stack>
+        {cohort &&
+          <DataGrid
+            apiRef={apiRef}
+            rows={pageInfo.rows}
+            getRowId={(row) => row.student_id}
+            columns={getColumns()}
 
-          paginationMode='client'
-          paginationModel={paginationModel}
-          rowCount={pageInfo.totalRowCount}
-          onPaginationModelChange={setPaginationModel}
+            paginationMode='client'
+            paginationModel={paginationModel}
+            rowCount={pageInfo.totalRowCount}
+            onPaginationModelChange={setPaginationModel}
 
-          sortingMode='client'
-          sortModel={sortModel}
-          onSortModelChange={setSortModel}
+            sortingMode='client'
+            sortModel={sortModel}
+            onSortModelChange={setSortModel}
 
-          pageSizeOptions={[5, 10, 25, 100]}
-          checkboxSelection
-          onRowSelectionModelChange={setRowSelectionModel}
-          disableRowSelectionOnClick={true}
-        />
-      }
-      <ConfirmationDialog
-        message={`Delete selected students?`}
-        open={openDeleteDialog}
-        handleConfirm={() => doDelete()}
-        handleCancel={() => setOpenDeleteDialog(false)} />
-      <AddStudentModal
-        students={unEnrolled}
-        isOpen={showAddStudent}
-        onClose={handleCloseStudentModal}
-        onSubmit={handleAddStudent} />
+            pageSizeOptions={[5, 10, 25, 100]}
+            checkboxSelection
+            onRowSelectionModelChange={setRowSelectionModel}
+            disableRowSelectionOnClick={true}
+          />
+        }
+        <ConfirmationDialog
+          message={`Delete selected students?`}
+          open={openDeleteDialog}
+          handleConfirm={() => doDelete()}
+          handleCancel={() => setOpenDeleteDialog(false)} />
+        <AddStudentModal
+          students={unEnrolled}
+          isOpen={showAddStudent}
+          onClose={handleCloseStudentModal}
+          onSubmit={handleAddStudent} />
+      </ShowLocalTimeContext.Provider>
     </Box>
   );
 }
