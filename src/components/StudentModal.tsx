@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import StudentForm from './StudentForm';
-import { Student, ValidationError } from '../../api/types';
+import { Student, ValidationError } from '../api/types';
+import StudentForm from '../pages/students/StudentForm';
 
 interface Props {
   mode: 'add' | 'edit';
