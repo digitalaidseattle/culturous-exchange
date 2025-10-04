@@ -32,31 +32,7 @@ class PlanGenerator {
     return await planService.getById(plan.id);
   }
 
-  async getTotalAvailableHours(timeWindows: TimeWindow[]): Promise<number> {
-    if (!timeWindows || timeWindows.length === 0) return 0;
-    return timeWindows.reduce((sum, tw) => {
-      if (!tw.start_date_time || !tw.end_date_time) return sum;
-      return sum + (new Date(tw.end_date_time).getTime() - new Date(tw.start_date_time).getTime()) / (1000 * 60 * 60);
-    }, 0);
-  }
-
   async seedPlan(plan: Plan): Promise<Plan> {
-    const cleaned = await this.emptyPlan(plan)
-
-    const nGroups = Math.ceil(cleaned.placements.length / (plan.group_size ?? MAX_SIZE));
-    cleaned.groups = await this.createGroups(cleaned, nGroups);
-
-    const anchorPlacements = cleaned.placements.filter(p => p.anchor)
-    const nonAnchorPlacements = cleaned.placements.filter(p => !p.anchor);
-
-    const planWithAnchors = await this.assignByGreedy(cleaned, anchorPlacements);
-    const planEvaluatedWithAnchors = await planEvaluator.evaluate(planWithAnchors); // to update group.time_windows and country counts
-    const planWithAllStudents = await this.assignedByTimewindow(planEvaluatedWithAnchors, nonAnchorPlacements);
-    const finalPlan = await planEvaluator.evaluate(planWithAllStudents); // to update group.time_windows and country counts
-    return finalPlan;
-  }
-
-  async seedPlan2(plan: Plan): Promise<Plan> {
     const cleaned = await this.emptyPlan(plan)
 
     const nGroups = Math.ceil(cleaned.placements.length / (plan.group_size ?? MAX_SIZE));
@@ -88,105 +64,53 @@ class PlanGenerator {
     return groups;
   }
 
-  async assignStudents(plan: Plan, placements: Placement[]): Promise<Plan> {
-    for (const placement of placements) {
-      const group = this.findBestGroup(plan, placement);
-      if (group) {
-        const pGroup = plan.groups.find(g => g.id === group.id)!;
-        pGroup.placements?.push(placement);
-        placement.group_id = pGroup.id;
-        pGroup.time_windows = timeWindowService.intersectionTimeWindowsMultiple(
-          group.time_windows ?? [],
-          placement.student?.timeWindows ?? []
-        );
+  // Algorithm to assign students to groups by time windows
+  async assignStudents(plan: Plan, remainingPlacements: Placement[]): Promise<Plan> {
+    // Assign each placement to the best group based on time windows
+    for (const placement of remainingPlacements) {
+      let response = await this.getBestOverlap(plan, placement);
+      // Assign studnets that has no overlap to the first group
+      if (response === null) {
+        console.log("No suitable group found for placement", placement.student_id);
+        placement.group_id = null;
       } else {
-        placement.group_id = null; // No suitable group found
-        console.log("No suitable group found for placement", placement);
+        placement.group_id = response.group.id;
+        response.group.placements!.push(placement);
+        response.group.time_windows = response.intersect;
       }
     }
     return plan;
   }
 
-  findBestGroup(plan: Plan, placement: Placement): Group | null {
-    const tempGroups = plan.groups
-      .filter(g => (g.placements?.length ?? 0) < (plan.group_size ?? MAX_SIZE)) // Only consider groups that are not full
-      .map(g => {
-        const intersect = timeWindowService
-          .intersectionTimeWindowsMultiple(g.time_windows ?? [], placement.student?.timeWindows ?? []);
-        const overlap = timeWindowService.overlapDuration(intersect);
-        return { group: g, duration: overlap }
-      })
-      .filter(tuple => tuple.duration > 0)
-      .sort((a, b) => {
-        const spread = b.duration - a.duration;
-        if (spread !== 0) return spread; // Descending order by overlap duration
-        return (a.group.placements?.length ?? 0) - (b.group.placements?.length ?? 0);
-      }
-      ); // Ascending order by current size
-    return tempGroups.length > 0 ? tempGroups[0].group : null; // Return the smallest group or null if all are full 
-  }
-
-  async assignByGreedy(plan: Plan, placements: Placement[]): Promise<Plan> {
-    // Greedy algorithm to assign first row students into groups 
-    // Output contains one student in each group id
-    // All anchors + other students that fit in the first row
-    // Assign anchor students to the first row (in memory only)
-    placements.forEach((placement, index) => {
-      const group = plan.groups[index % plan.groups.length];
-      group.placements?.push(placement);
-      placement.group_id = group.id;
-    });
-    return plan
-  }
-
-  // Algorithm to assign students to groups by time windows
-  async assignedByTimewindow(plan: Plan, remainingPlacements: Placement[]): Promise<Plan> {
-    // Assign each placement to the best group based on time windows
-    for (const placement of remainingPlacements) {
-      let { bestGroup, bestIntersect } = await this.getBestOverlap(placement, plan.groups, plan.group_size!);
-
-      // Assign studnets that has no overlap to the first group
-      if (!bestGroup) {
-        console.log("No suitable group found for placement", placement.student_id);
-        placement.group_id = null;
-      } else {
-        placement.group_id = bestGroup.id;
-        bestGroup.placements!.push(placement);
-        bestGroup.time_windows = bestIntersect;
-      }
-    }
-    return plan;  // returning in-memory tempPlan
-  }
-
   async getBestOverlap(
-    placement: Placement,
-    groups: Group[],
-    maxSize: number
-  ): Promise<{ bestOverlap: number | 0; bestGroup: Group | null; bestIntersect: TimeWindow[] }> {
-    let bestGroup: Group | null = null;
-    let bestIntersect: TimeWindow[] = [];
-    let bestOverlap = 0;
-
-    for (const group of groups) {
-      if ((group.placements?.length ?? 0) >= maxSize) continue;
-
-      const intersect = timeWindowService.intersectionTimeWindowsMultiple(
-        group.time_windows ?? [],
-        placement.student?.timeWindows ?? []
-      );
-
-      const overlap = timeWindowService.overlapDuration(intersect);
-
-      if (overlap > bestOverlap) {
-        bestOverlap = overlap; // Hours of overlap
-        bestGroup = group; // Group number
-        bestIntersect = intersect; // Time windows intersection
-      }
-    }
-    return { bestOverlap, bestGroup, bestIntersect };
+    plan: Plan,
+    placement: Placement
+  ): Promise<{ duration: number | 0; group: Group; intersect: TimeWindow[] } | null> {
+    const tuples = plan.groups
+      .filter(g => (g.placements?.length ?? 0) < (plan.group_size ?? MAX_SIZE)) // Only consider groups that are not full
+      .map(group => {
+        const intersect = timeWindowService.intersectionTimeWindowsMultiple(
+          group.time_windows ?? [],
+          placement.student?.timeWindows ?? []
+        );
+        const overlap = timeWindowService.overlapDuration(intersect);
+        return { duration: overlap, group: group, intersect: intersect };
+      })
+      .filter(tuple => tuple.duration > 0)  // Only consider groups with some overlap
+      .sort((a, b) => {
+         // Biggest overlap - descending order by overlap duration 
+        const spread = b.duration - a.duration;
+        if (spread !== 0) {
+          return spread;
+        }
+         // Fill empty groups first - Ascending order by number of placements 
+        return (a.group.placements?.length ?? 0) - (b.group.placements?.length ?? 0);
+      })
+    return tuples.length > 0 ? tuples[0] : null; // Return the best group or null no match
   }
 
 }
 
+
 const planGenerator = new PlanGenerator()
-export { planGenerator };
+export { PlanGenerator, planGenerator };
