@@ -84,6 +84,7 @@ class CEPlanService extends EntityService<Plan> {
     delete plan.placement;
     delete plan.grouptable;
 
+    // initialize placements in each group
     plan.groups.forEach((group: Group) => group.placements = []);
     plan.placements.forEach((p: Placement) => {
       const group = plan.groups.find((g: Group) => g.id === p.group_id);
