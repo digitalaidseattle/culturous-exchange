@@ -13,7 +13,7 @@ import { timeWindowService } from './ceTimeWindowService';
 import { planEvaluator } from './planEvaluator';
 import { Group, Placement, Plan, TimeWindow } from "./types";
 
-const MAX_SIZE = 10;
+const MAX_GROUP_SIZE = 10;
 
 class PlanGenerator {
 
@@ -35,7 +35,7 @@ class PlanGenerator {
   async seedPlan(plan: Plan): Promise<Plan> {
     const cleaned = await this.emptyPlan(plan)
 
-    const nGroups = Math.ceil(cleaned.placements.length / (plan.group_size ?? MAX_SIZE));
+    const nGroups = Math.ceil(cleaned.placements.length / (plan.group_size ?? MAX_GROUP_SIZE));
     cleaned.groups = await this.createGroups(cleaned, nGroups);
 
     const anchorPlacements = cleaned.placements.filter(p => p.anchor)
@@ -43,7 +43,7 @@ class PlanGenerator {
 
     const planWithAnchors = await this.assignStudents(cleaned, anchorPlacements);
     const planWithAllStudents = await this.assignStudents(planWithAnchors, nonAnchorPlacements);
-    const finalPlan = await planEvaluator.evaluate(planWithAllStudents); // to update group.time_windows and country counts
+    const finalPlan = await planEvaluator.evaluate(planWithAllStudents); // to update country counts
     return finalPlan;
   }
 
@@ -87,7 +87,7 @@ class PlanGenerator {
     placement: Placement
   ): Promise<{ duration: number | 0; group: Group; intersect: TimeWindow[] } | null> {
     const tuples = plan.groups
-      .filter(g => (g.placements?.length ?? 0) < (plan.group_size ?? MAX_SIZE)) // Only consider groups that are not full
+      .filter(g => (g.placements?.length ?? 0) < (plan.group_size ?? MAX_GROUP_SIZE)) // Only consider groups that are not full
       .map(group => {
         const intersect = timeWindowService.intersectionTimeWindowsMultiple(
           group.time_windows ?? [],
