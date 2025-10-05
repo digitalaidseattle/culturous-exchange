@@ -346,8 +346,8 @@ class CETimeWindowService extends EntityService<TimeWindow> {
   mapJson(json: any): TimeWindow {
     return {
       ...json,
-      start_date_time: json.start_date_time ? parseISO(json.start_date_time) : undefined,
-      end_date_time: json.end_date_time ? parseISO(json.end_date_time) : undefined
+      start_date_time: json.start_date_time ? new Date(json.start_date_time + 'Z') : undefined,
+      end_date_time: json.end_date_time ? new Date(json.end_date_time + 'Z') : undefined
     }
   }
 
