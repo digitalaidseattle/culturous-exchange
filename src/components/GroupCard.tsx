@@ -12,12 +12,6 @@ import { Group } from '../api/types';
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
     const timeWindows = group ? group.time_windows ?? [] : [];
 
-    if (group.name === "Group 1") {
-        console.log(group.name, group)
-
-    }
-
-
     return (group &&
         <Card key={group.id} sx={{ alignContent: "top" }}>
             <CardContent>
