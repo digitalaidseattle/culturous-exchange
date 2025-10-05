@@ -350,6 +350,43 @@ class CETimeWindowService extends EntityService<TimeWindow> {
       end_date_time: json.end_date_time ? parseISO(json.end_date_time) : undefined
     }
   }
+
+  async deleteByGroupId(groupId: Identifier): Promise<boolean> {
+    try {
+      const { error } = await supabaseClient
+        .from(this.tableName)
+        .delete()
+        .eq('group_id', groupId);
+
+      if (error) {
+        console.error('Error deleting entity:', error.message);
+        throw new Error('Failed to delete entity');
+      }
+      return true;
+    } catch (err) {
+      console.error('Unexpected error during deletion:', err);
+      throw err;
+    }
+  }
+
+  async deleteByStudentId(studentId: Identifier): Promise<boolean> {
+    try {
+      const { error } = await supabaseClient
+        .from(this.tableName)
+        .delete()
+        .eq('student_id', studentId);
+
+      if (error) {
+        console.error('Error deleting entity:', error.message);
+        throw new Error('Failed to delete entity');
+      }
+      return true;
+    } catch (err) {
+      console.error('Unexpected error during deletion:', err);
+      throw err;
+    }
+  }
+
 }
 
 const timeWindowService = new CETimeWindowService('timewindow')

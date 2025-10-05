@@ -49,6 +49,7 @@ class CEGroupService extends EntityService<Group> {
     delete json.time_windows;
     await this.insert(json);
 
+    await timeWindowService.deleteByGroupId(group.id);
     for (const tw of group.time_windows!) {
       await timeWindowService.save(tw)
     }
