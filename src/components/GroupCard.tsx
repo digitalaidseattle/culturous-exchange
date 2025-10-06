@@ -6,7 +6,7 @@
  */
 
 import { Card, CardContent, Stack, Typography } from '@mui/material';
-import { format } from "date-fns";
+import { timeWindowService } from '../api/ceTimeWindowService';
 import { Group } from '../api/types';
 
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group, showDetails }) => {
@@ -27,12 +27,7 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
                     </CardContent>
                     <CardContent>
                         <Typography fontWeight={600}>Time Windows</Typography>
-                        {timeWindows.map((tw, idx) => {
-                            const day = format(tw.start_date_time!, "EEE");
-                            const start = format(tw.start_date_time!, "haaa");
-                            const end = format(tw.end_date_time!, "haaa");
-                            return <Typography key={idx}>{day} {start} - {end}</Typography>
-                        })}
+                        {timeWindows.map((tw, idx) => <Typography key={idx}>{timeWindowService.toString(tw)}</Typography>)}
                     </CardContent>
                 </>
             }

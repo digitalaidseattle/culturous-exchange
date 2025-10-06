@@ -16,11 +16,11 @@ import {
     Theme,
     Typography
 } from "@mui/material";
-import { format } from "date-fns";
 
 import { useContext, useState } from "react";
 import { placementService } from "../api/cePlacementService";
 import { planService } from "../api/cePlanService";
+import { timeWindowService } from "../api/ceTimeWindowService";
 import { Placement } from "../api/types";
 import { PlanContext } from "../pages/plan/PlanContext";
 
@@ -53,11 +53,13 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
     };
 
     const handleOpen = () => {
+        // FIXME  not implemented
         // navigate(`/plan/${props.plan.id}`);
         setAnchorEl(null);
     };
 
     const handleRemove = () => {
+        // FIXME  not implemented
         // setOpenDeleteDialog(true)
         setAnchorEl(null);
     };
@@ -119,12 +121,7 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
                     <CardContent>
                         <Typography>{placement.student!.country}</Typography>
                         <Typography fontWeight={600}>Time Windows</Typography>
-                        {timeWindows.map((tw, idx) => {
-                            const day = format(tw.start_date_time!, "EEE");
-                            const start = format(tw.start_date_time!, "haaa");
-                            const end = format(tw.end_date_time!, "haaa");
-                            return <Typography key={idx}>{day} {start} - {end}</Typography>
-                        })}
+                        {timeWindows.map((tw, idx) => <Typography key={idx}>{timeWindowService.toString(tw)}</Typography>)}
                     </CardContent>
                 }
             </CardContent>

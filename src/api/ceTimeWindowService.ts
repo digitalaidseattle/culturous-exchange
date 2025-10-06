@@ -33,41 +33,6 @@ export const DEFAULT_TIMEZONE = "America/Los_Angeles";
 
 class CETimeWindowService extends EntityService<TimeWindow> {
 
-  startingHour = 7;
-  endingHour = 22;
-
-  /**
-   * 
-   * @param time_windows
-   * @param timezoneOffset
-   * @returns array of 16 booleans for Friday, Saturday, and Sunday each representing 7am to 10pm
-   */
-  calcAvailability(time_windows: TimeWindow[]): { friday: any; saturday: any; sunday: any; } {
-    const friday = Array(this.endingHour - this.startingHour + 1).fill(false);
-    const saturday = Array(this.endingHour - this.startingHour + 1).fill(false);
-    const sunday = Array(this.endingHour - this.startingHour + 1).fill(false);
-    time_windows.forEach(tw => {
-      const localStart = tw.start_date_time;
-      const localEnd = tw.end_date_time;
-
-      for (let i = getHours(localStart); i <= getHours(localEnd); i++) {
-        if (isFriday(localStart) && i >= this.startingHour && i < this.endingHour + 1) {
-          friday[i - this.startingHour] = true;
-        } else if (isSaturday(localStart) && i >= this.startingHour && i < this.endingHour + 1) {
-          saturday[i - this.startingHour] = true;
-        } else if (isSunday(localEnd) && i >= this.startingHour && i < this.endingHour + 1) {
-          sunday[i - this.startingHour] = true;
-        }
-      }
-    });
-    return {
-      friday: friday,
-      saturday: saturday,
-      sunday: sunday
-    }
-  }
-
-
   unionTimeWindows(timeWindowsA: TimeWindow, timeWindowsB: TimeWindow): TimeWindow[] {
     const timeArray = [
       { name: 'AS', date: timeWindowsA.start_date_time! },
@@ -325,10 +290,14 @@ class CETimeWindowService extends EntityService<TimeWindow> {
       })
   }
 
-  toString(tw: TimeWindow, offset?: number): string {
-    let start_time = offset ? addHours(tw.start_date_time!, -offset) : tw.start_date_time!;
-    let end_time = offset ? addHours(tw.end_date_time!, -offset) : tw.end_date_time!;
-    return `${tw.day_in_week} ${format(start_time, "haaa")} - ${format(end_time, "haaa")}`
+  toString(tw: TimeWindow, timeZone?: string): string {
+    let start_time = toZonedTime(tw.start_date_time, timeZone ?? DEFAULT_TIMEZONE)
+    let end_time = toZonedTime(tw.end_date_time, timeZone ?? DEFAULT_TIMEZONE)
+    const day = format(start_time, "EEE");
+    const start = format(end_time, "haaa");
+    const end = format(start_time, "haaa");
+
+    return `${day} ${start} - ${end}`
   }
 
   overlapDuration(timeWindows: TimeWindow[]): number {
