@@ -6,7 +6,7 @@
  */
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
-import { addHours, format, getHours, isEqual, isFriday, isSaturday, isSunday, parseISO } from "date-fns";
+import { addHours, format, getHours, isEqual, isFriday, isSaturday, isSunday } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { v4 as uuid } from 'uuid';
 import { EntityService } from "./entityService";
