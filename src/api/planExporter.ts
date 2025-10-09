@@ -5,7 +5,7 @@
  *
  */
 
-import { Plan, Student } from "./types";
+import { Plan, Student, TimeWindow } from "./types";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { timeWindowService } from "./ceTimeWindowService";
@@ -52,50 +52,45 @@ class PlanExporter {
 
     studentRows(plan: Plan): any[] {
         const data: any[] = [];
+
+        const makeStudentRow = (
+            student: Student,
+            groupName: string,
+            groupTimes?: TimeWindow[]
+        ) => ({
+            "Group": groupName,
+            "Group Times (PST)": groupTimes?.map(tw =>
+                timeWindowService.toString(tw, PlanExporter.PST_OFFSET)
+            ).join(", ") || "",
+            "Group Times (Student TZ)": groupTimes?.map(tw =>
+                timeWindowService.toString(tw, student.tz_offset)
+            ).join(", ") || "",
+            "Name": student.name || "",
+            "Anchor": student.anchor ? "yes" : "",
+            "Email": student.email || "",
+            "Country": student.country,
+            "Time Zone": student.time_zone,
+            "Student Times": student.timeWindows?.map(tw =>
+                timeWindowService.toString(tw)
+            ).join(", ") || "",
+        });
+
+        // 1. Add students by group (ordered)
         for (const group of plan.groups) {
             for (const placement of group.placements || []) {
-                let student: Student = placement.student! || {};
-
-                // Build one row per student
-                const row: any = {
-                    "Group": group.name,
-                    "Group Times (PST)": group.time_windows?.map(tw => timeWindowService.toString(tw, PlanExporter.PST_OFFSET)).join(', ') || "",
-                    "Group Times (Student TZ)": group.time_windows?.map(tw => timeWindowService.toString(tw, student.tz_offset)).join(', ') || "",
-                    "Name": student.name || "",
-                    "Anchor": student.anchor ? "yes" : "",
-                    "Email": student.email || "",
-                    "Country": student.country,
-                    "Time Zone": student.time_zone,
-                    "Student Times": student.timeWindows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
-                };
-                data.push(row);
+                const student = placement.student ?? ({} as Student);
+                data.push(makeStudentRow(student, group.name, group.time_windows));
             }
         }
 
+        // 2. Add waitlisted students last
         const waitlisted = (plan.placements ?? []).filter(this.isWaitlisted);
-
-        // Waitlisted students
         for (const placement of waitlisted) {
-            const student: Student = placement.student ?? ({} as Student);
-
-            data.push({
-                "Group": "Waitlist",
-                "Group Times (PST)": "",
-                "Group Times (Student TZ)": "",
-                "Name": student.name || "",
-                "Anchor": student.anchor ? "yes" : "",
-                "Email": student.email || "",
-                "Country": student.country,
-                "Time Zone": student.time_zone,
-                "Student Times":
-                    student.timeWindows?.map(tw =>
-                        timeWindowService.toString(tw)
-                    ).join(", ") || "",
-            });
+            const student = placement.student ?? ({} as Student);
+            data.push(makeStudentRow(student, "Waitlist"));
         }
 
         return data;
-
     }
 
 
