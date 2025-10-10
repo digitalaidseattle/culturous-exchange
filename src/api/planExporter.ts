@@ -59,8 +59,8 @@ class PlanExporter {
                 // Build one row per student
                 const row: any = {
                     "Group": group.name,
-                    "Group Times (PST)": group.time_windows?.map(tw => timeWindowService.toString(tw, PlanExporter.PST_OFFSET)).join(', ') || "",
-                    "Group Times (Student TZ)": group.time_windows?.map(tw => timeWindowService.toString(tw, student.tz_offset)).join(', ') || "",
+                    "Group Times": group.time_windows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
+                    "Group Times (Student TZ)": group.time_windows?.map(tw => timeWindowService.toString(tw, student.time_zone)).join(', ') || "",
                     "Name": student.name || "",
                     "Anchor": student.anchor ? "yes" : "",
                     "Email": student.email || "",
