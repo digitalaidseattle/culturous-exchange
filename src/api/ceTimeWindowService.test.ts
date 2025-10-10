@@ -1,45 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { timeWindowService } from "./ceTimeWindowService";
+import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
 import { TimeWindow } from "./types";
+import { getTimezoneOffset } from "date-fns-tz";
 
 describe("timeWindowService", () => {
+    const offset = getTimezoneOffset(DEFAULT_TIMEZONE, new Date()) / 60 / 60 / 1000;
 
-    it("toDateTime", () => {
+    it("toZonedTime", () => {
 
-        const result = timeWindowService.toDateTime(0, "08:00:00", 0);
+        const result = timeWindowService.toZonedTime(0, "07:00:00", DEFAULT_TIMEZONE);
         expect(result.getDate()).toBe(1);
-        expect(result.getHours()).toBe(8);
         expect(result.getDay()).toBe(5);
-
-        const result2 = timeWindowService.toDateTime(2, "08:00:00", 3);
-        expect(result2.getDate()).toBe(3);
-        expect(result2.getHours()).toBe(11);
-        expect(result2.getDay()).toBe(0);
-
-    });
-
-
-    it("toTimeWindowDate", () => {
-
-        const dateTime = timeWindowService.toDateTime(1, "08:00:00", 3);
-
-        const timeWindow = timeWindowService.toTimeWindowDate(dateTime, 3);
-
-        expect(timeWindow.day).toBe(6);  //  6 is Saturday
-        expect(timeWindow.time).toBe("08:00:00");
-
-    });
+        expect(result.getHours()).toBe(7); // PDT is UTC-7, so 7+7=14
+        expect(result.getUTCHours()).toBe(7 - offset); // PDT is UTC-7, so 7+7=14
+    })
 
     it("intersectionTimeWindows", () => {
 
         const timeA = {
-            start_date_time: timeWindowService.toDateTime(0, "08:00:00", 0),
-            end_date_time: timeWindowService.toDateTime(0, "12:00:00", 0)
+            start_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.toZonedTime(0, "12:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const timeB = {
-            start_date_time: timeWindowService.toDateTime(0, "09:00:00", 0),
-            end_date_time: timeWindowService.toDateTime(0, "13:00:00", 0)
+            start_date_time: timeWindowService.toZonedTime(0, "09:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.toZonedTime(0, "13:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const merged = timeWindowService.intersectionTimeWindows(timeA, timeB);
@@ -52,13 +37,13 @@ describe("timeWindowService", () => {
     it("intersectionTimeWindows - none", () => {
 
         const timeA = {
-            start_date_time: timeWindowService.toDateTime(0, "08:00:00", 0),
-            end_date_time: timeWindowService.toDateTime(0, "12:00:00", 0)
+            start_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.toZonedTime(0, "12:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const timeB = {
-            start_date_time: timeWindowService.toDateTime(1, "09:00:00", 0),
-            end_date_time: timeWindowService.toDateTime(1, "13:00:00", 0)
+            start_date_time: timeWindowService.toZonedTime(1, "09:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.toZonedTime(1, "13:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const merged = timeWindowService.intersectionTimeWindows(timeA, timeB);

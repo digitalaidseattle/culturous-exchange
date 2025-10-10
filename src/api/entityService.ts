@@ -143,14 +143,10 @@ abstract class EntityService<T extends Entity> {
 
     async delete(entityId: Identifier): Promise<void> {
         try {
-
-            // FIXME need to delete timewindows first
-
             const { error } = await supabaseClient
                 .from(this.tableName)
                 .delete()
                 .eq('id', entityId);
-
             if (error) {
                 console.error('Error deleting entity:', error.message);
                 throw new Error('Failed to delete entity');
