@@ -8,19 +8,16 @@
 
 import { ReactNode, useContext, useEffect, useState } from "react";
 
-import {
-    Card,
-    CardContent,
-    Stack,
-    Typography
-} from "@mui/material";
+import { Typography } from "@mui/material";
 
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 
+import { DDCategory, DDType, DragAndDrop } from "@digitalaidseattle/draganddrop";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 import { planService } from "../../api/cePlanService";
 import { planEvaluator } from "../../api/planEvaluator";
 import { Group, Identifier, Placement } from "../../api/types";
+import { GroupCard } from "../../components/GroupCard";
 import { StudentCard } from "../../components/StudentCard";
 import { PlanContext } from "./PlanContext";
 
