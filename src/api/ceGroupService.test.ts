@@ -4,11 +4,11 @@
  *  @copyright 2025 Digital Aid Seattle
  *
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { groupService } from "./ceGroupService";
-import { Group } from "./types";
+import { Group, TimeWindow } from "./types";
 import { getTimezoneOffset } from "date-fns-tz";
-import { DEFAULT_TIMEZONE } from "./ceTimeWindowService";
+import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
 
 describe("groupService", () => {
     const offset = getTimezoneOffset(DEFAULT_TIMEZONE, new Date()) / 60 / 60 / 1000
@@ -29,6 +29,26 @@ describe("groupService", () => {
         expect(result[2].end_date_time.getHours()).toBe(22);
 
     });
+
+    it("deleteGroup", () => {
+        const tw = {
+            id: "twid"
+        } as TimeWindow;
+
+        const group = {
+            id: "test",
+            time_windows: [tw]
+        } as Group;
+
+        vi.spyOn(timeWindowService, "delete").mockResolvedValue();
+        vi.spyOn(groupService, "delete").mockResolvedValue();
+        groupService.deleteGroup(group)
+            .then(_result => {
+                expect(timeWindowService.delete).toBeCalledWith("twid");
+                expect(groupService.delete).toBeCalledWith("test");
+            })
+    });
+
 
 
 });
