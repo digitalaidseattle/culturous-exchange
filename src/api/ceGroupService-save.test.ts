@@ -1,5 +1,5 @@
 /**
- *  planGenerator.test.ts
+ *  ceGroupService-save.test.ts
  *
  *  @copyright 2025 Digital Aid Seattle
  *
@@ -27,6 +27,8 @@ describe("groupService-save", () => {
         const inserted = {
         } as Group;
 
+        // Using a spy here to check if methods are called
+        // Spies are a simpler alternative to mockFunctions. You can specify a mock function to do more that just return a value.
         vi.spyOn(groupService, "insert").mockResolvedValue(inserted);
         vi.spyOn(timeWindowService, "deleteByGroupId").mockResolvedValue(true);
         vi.spyOn(timeWindowService, "save").mockResolvedValue(savedTw);
