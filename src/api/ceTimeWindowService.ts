@@ -294,8 +294,8 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     let start_time = toZonedTime(tw.start_date_time, timeZone ?? DEFAULT_TIMEZONE)
     let end_time = toZonedTime(tw.end_date_time, timeZone ?? DEFAULT_TIMEZONE)
     const day = format(start_time, "EEE");
-    const start = format(end_time, "haaa");
-    const end = format(start_time, "haaa");
+    const start = format(start_time, "haaa");
+    const end = format(end_time, "haaa");
 
     return `${day} ${start} - ${end}`
   }
