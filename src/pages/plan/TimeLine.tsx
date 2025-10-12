@@ -30,18 +30,19 @@ type TimeRow = {
 }
 
 const WAITLIST_ID = 'WAITLIST';
-const startingHour = 7;
-const endingHour = 22;
+const STARTING_HOUR = 7;
+const ENDING_HOUR = 22;
+const OFFICE_HOURS = Array.from({ length: ENDING_HOUR - STARTING_HOUR + 1 }, (_, i) => STARTING_HOUR + i)
 
 function calcAvailability(time_windows: TimeWindow[]): { friday: any; saturday: any; sunday: any; } {
-    const range = endingHour - startingHour + 1
+    const range = ENDING_HOUR - STARTING_HOUR + 1
     const friday = Array(range).fill(false);
     const saturday = Array(range).fill(false);
     const sunday = Array(range).fill(false);
     time_windows.forEach(tw => {
         let timeCounter = tw.start_date_time;
         while (compareAsc(timeCounter, tw.end_date_time) !== 1) {
-            const index = getHours(timeCounter) - startingHour;
+            const index = getHours(timeCounter) - STARTING_HOUR;
             if (index < range) {
                 if (isFriday(timeCounter)) {
                     friday[index] = true;
@@ -66,10 +67,6 @@ export const TimeLine: React.FC = () => {
     const [initialized, setInitialized] = useState<boolean>(false);
     const [rows, setRows] = useState<TimeRow[]>([]);
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-
-    const START_TIME = 7;
-    const END_TIME = 22;
-    const OFFICE_HOURS = Array.from({ length: END_TIME - START_TIME + 1 }, (_, i) => START_TIME + i)
 
     useEffect(() => {
         // If plan is not defined, we don't want to initialize
