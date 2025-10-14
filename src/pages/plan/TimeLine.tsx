@@ -81,7 +81,7 @@ const SortableRow: React.FC<SortableRowProps> = ({ id, row, onClick }) => {
                 ? <StarFilled style={{ fontSize: '150%', color: 'green' }} />
                 : <StarOutlined style={{ fontSize: '150%', color: 'gray' }} />;
             return (
-                <TableCell style={style} onClick={() => onClick ? onClick(row) : console.log('no onclick behavior defined.')}>
+                <TableCell style={style} sx={{ cursor: "pointer" }}  onClick={() => onClick ? onClick(row) : console.log('no onclick behavior defined.')}>
                     <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
                         <IconButton {...attributes} {...listeners} style={{ cursor: "grab" }} size="small">
                             <MoreOutlined />
