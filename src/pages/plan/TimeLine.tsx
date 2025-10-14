@@ -9,138 +9,71 @@
 import { Fragment, useContext, useEffect, useState } from "react";
 
 import {
+    DndContext,
+    DragEndEvent,
+    DragOverlay,
+    DragStartEvent,
+    DropAnimation,
+    KeyboardSensor,
+    PointerSensor,
+    closestCorners,
+    defaultDropAnimation,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import { arrayMove, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
+    IconButton,
     Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
     Typography
 } from "@mui/material";
-import { addHours, compareAsc, getHours, isFriday, isSaturday, isSunday } from "date-fns";
 
-import { StarFilled, StarOutlined } from "@ant-design/icons";
+import { MoreOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
-import { Group, Placement, Plan, Student, TimeWindow } from "../../api/types";
+import { planService } from "../../api/cePlanService";
+import { studentMover } from "../../api/studentMover";
+import { Student } from "../../api/types";
 import StudentModal from "../../components/StudentModal";
 import { PlanContext } from "./PlanContext";
+import { TimeRow, TimeRowCalculator } from "./TimeRowCalculator";
 
-type TimeRow = {
-    id: string;
-    label: string;
-    type: 'group' | 'anchor' | 'student' | 'waitlist';
-    friday: boolean[];
-    saturday: boolean[];
-    sunday: boolean[];
-}
-
-const WAITLIST_ID = 'WAITLIST';
 const STARTING_HOUR = 7;
 const ENDING_HOUR = 22;
 const OFFICE_HOURS = Array.from({ length: ENDING_HOUR - STARTING_HOUR + 1 }, (_, i) => STARTING_HOUR + i)
 
-function calcAvailability(time_windows: TimeWindow[]): { friday: any; saturday: any; sunday: any; } {
-    const range = ENDING_HOUR - STARTING_HOUR + 1
-    const friday = Array(range).fill(false);
-    const saturday = Array(range).fill(false);
-    const sunday = Array(range).fill(false);
-    time_windows.forEach(tw => {
-        let timeCounter = tw.start_date_time;
-        while (compareAsc(timeCounter, tw.end_date_time) !== 1) {
-            const index = getHours(timeCounter) - STARTING_HOUR;
-            if (index < range) {
-                if (isFriday(timeCounter)) {
-                    friday[index] = true;
-                } else if (isSaturday(timeCounter)) {
-                    saturday[index] = true;
-                } else if (isSunday(timeCounter)) {
-                    sunday[index] = true;
-                }
-            }
-            timeCounter = addHours(timeCounter, 1);
-        }
-    });
-    return {
-        friday: friday,
-        saturday: saturday,
-        sunday: sunday
-    }
+interface SortableRowProps {
+    id: string;
+    row: TimeRow;
+    onClick?: (row: TimeRow) => void
 }
 
-export const TimeLine: React.FC = () => {
-    const { plan } = useContext(PlanContext);
-    const [initialized, setInitialized] = useState<boolean>(false);
-    const [rows, setRows] = useState<TimeRow[]>([]);
-    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+const SortableRow: React.FC<SortableRowProps> = ({ id, row, onClick }) => {
 
-    useEffect(() => {
-        // If plan is not defined, we don't want to initialize
-        if (plan) {
-            setInitialized(false);
-            setRows(calculateRows(plan));
-            setInitialized(true);
-        }
-    }, [plan, initialized])
+    const { attributes, listeners, setNodeRef, transform, transition } =
+        useSortable({ id });
 
-    function createStudentRows(placements: Placement[]): TimeRow[] {
-        const rows = placements.map(placement => {
-            const { friday, saturday, sunday } = calcAvailability(placement.student?.timeWindows!)
-            const row = {
-                id: `${placement.plan_id}:${placement.student_id}`,
-                label: placement.student ? placement.student.name : '',
-                type: placement.anchor ? 'anchor' : 'student',
-                friday: friday,
-                saturday: saturday,
-                sunday: sunday,
-            } as TimeRow;
-            return row;
-        })
-        return rows;
-    }
+    const style = {
+        height: '20px',
+        width: '200px',
+        padding: 2,
+        transform: CSS.Transform.toString(transform),
+        transition,
+        borderTop: (row.type === 'group' || row.type === 'waitlist') ? '2px solid black' : '1px solid black',
+        borderBottom: (row.type === 'group' || row.type === 'waitlist') ? '2px solid black' : '1px solid black',
+    };
 
-    function createGroupRow(group: Group): TimeRow {
-        const response = calcAvailability(group.time_windows!)
-        return {
-            id: group.id!,
-            label: group.name,
-            type: 'group',
-            friday: response.friday,
-            saturday: response.saturday,
-            sunday: response.sunday,
-        } as TimeRow
-    }
-
-    function createWaitlistRow(): TimeRow {
-        const response = calcAvailability([])
-        return {
-            id: WAITLIST_ID,
-            label: "Waitlist",
-            type: 'waitlist',
-            friday: response.friday,
-            saturday: response.saturday,
-            sunday: response.sunday,
-        } as TimeRow
-    }
-
-    function calculateRows(plan: Plan): TimeRow[] {
-        const tempRows: TimeRow[] = [];
-        plan.groups
-            .sort((g0, g1) => g0.name.localeCompare(g1.name))
-            .forEach(group => {
-                tempRows.push(createGroupRow(group));
-                createStudentRows(plan.placements.filter(p => p.group_id === group.id))
-                    .forEach(sRow => { tempRows.push(sRow) });
-            });
-        tempRows.push(createWaitlistRow());
-        createStudentRows(plan.placements.filter(p => !p.group_id))
-            .forEach(sRow => { tempRows.push(sRow) });
-        return tempRows;
-    }
-
-    function handleClildRowClick(row: TimeRow) {
-        const placement = plan.placements.find(p => p.student_id === row.id.split(':')[1]);
-        setSelectedStudent(placement ? placement.student! : null);
-    }
-
-    function rowLabel(row: TimeRow) {
+    function labelCell(row: TimeRow) {
         if (row.type === 'group' || row.type === 'waitlist') {
             return (
-                <Typography fontWeight={600}>{row.label}</Typography>
+                <TableCell style={style}>
+                    <Typography fontWeight={600}>{row.label}</Typography>
+                </TableCell>
             )
         }
         else {
@@ -148,35 +81,46 @@ export const TimeLine: React.FC = () => {
                 ? <StarFilled style={{ fontSize: '150%', color: 'green' }} />
                 : <StarOutlined style={{ fontSize: '150%', color: 'gray' }} />;
             return (
-                <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
-                    {icon}
-                    <Typography>{row.label}</Typography>
-                </Stack>
+                <TableCell style={style} onClick={() => onClick ? onClick(row) : console.log('no onclick behavior defined.')}>
+                    <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
+                        <IconButton {...attributes} {...listeners} style={{ cursor: "grab" }} size="small">
+                            <MoreOutlined />
+                        </IconButton>
+                        {icon}
+                        <Typography>{row.label}</Typography>
+                    </Stack>
+                </TableCell>
             )
         }
     }
 
     function dayCells(row: TimeRow) {
+        const size = '20px';
         const color = row.type === 'group'
             ? '#90ee90'
             : '#90e9eeff';
+        const style = {
+            width: size,
+            padding: 0,
+            height: size
+        }
         return (
             <Fragment key={row.id} >
                 {row.friday.map((available, idx) =>
                     <td key={`${row.id}-f-${idx}`}
-                        style={{ backgroundColor: available ? color : 'white', width: 20 }}>
+                        style={{ ...style, backgroundColor: available ? color : 'white' }}>
                         {available ? '✓' : ''}
                     </td>
                 )}
                 {row.saturday.map((available, idx) =>
                     <td key={`${row.id}-f-${idx}`}
-                        style={{ backgroundColor: available ? color : 'white', width: 20 }}>
+                        style={{ ...style, backgroundColor: available ? color : 'white' }}>
                         {available ? '✓' : ''}
                     </td>
                 )}
                 {row.sunday.map((available, idx) =>
                     <td key={`${row.id}-f-${idx}`}
-                        style={{ backgroundColor: available ? color : 'white', width: 20 }}>
+                        style={{ ...style, backgroundColor: available ? color : 'white' }}>
                         {available ? '✓' : ''}
                     </td>
                 )}
@@ -185,64 +129,140 @@ export const TimeLine: React.FC = () => {
     }
 
     return (
+        <TableRow ref={setNodeRef} style={style} hover>
+            {labelCell(row)}
+            {dayCells(row)}
+        </TableRow>
+    );
+}
+
+export const TimeLine: React.FC = () => {
+    const timeRowCalculator = new TimeRowCalculator(STARTING_HOUR, ENDING_HOUR);
+    const { plan, setPlan } = useContext(PlanContext);
+    const [initialized, setInitialized] = useState<boolean>(false);
+    const [rows, setRows] = useState<TimeRow[]>([]);
+    const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+    const [selectedRow, setSelectedRow] = useState<TimeRow>();
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5, // Enable sort function when dragging 5px   💡 here!!!
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+    const dropAnimation: DropAnimation = {
+        ...defaultDropAnimation,
+    };
+
+    useEffect(() => {
+        // If plan is not defined, we don't want to initialize
+        if (plan) {
+            refresh();
+        }
+    }, [plan, initialized]);
+
+    function refresh() {
+        setInitialized(false);
+        setRows(timeRowCalculator.calculate(plan));
+        setInitialized(true);
+    }
+
+    const handleDragStart = ({ active }: DragStartEvent) => {
+        setSelectedRow(rows.find(row => row.id === active.id))
+    };
+
+    const handleDragEnd = ({ active, over }: DragEndEvent) => {
+        if (active.id !== over?.id) {
+            const activeIndex = rows.findIndex((row) => row.id === active.id);
+            const overIndex = rows.findIndex((row) => row.id === over!.id);
+            const activeRow = rows[activeIndex];
+            const overRow = rows[overIndex];
+            if (activeRow !== undefined && overRow !== undefined) {
+                setRows(arrayMove(rows, activeIndex, overIndex));
+                studentMover.run(plan, activeRow.studentId, overRow.groupId)
+                    .then(moved => {
+                        planService.save(moved)
+                            .then(saved => {
+                                setPlan(saved);
+                                refresh();
+                            })
+                    })
+                    .finally(() => setSelectedRow(undefined))
+            }
+        }
+    };
+
+    function handleRowClick(row: TimeRow) {
+        if (row.type === 'student' || row.type === 'anchor') {
+            const placement = plan.placements
+                .find(p => p.student_id === row.studentId)
+            setSelectedStudent(placement ? placement.student! : null)
+        }
+    }
+
+    return (
         <>
             {!plan &&
                 <Typography>No plan found.</Typography>
             }
             {initialized &&
-                <table border={1} style={{ borderCollapse: 'collapse', width: '100%' }}>
-                    <thead>
-                        <tr>
-                            <th style={{ minWidth: 200 }} rowSpan={2}>
-                            </th>
-                            <th colSpan={OFFICE_HOURS.length} style={{ textAlign: 'center' }}>
-                                Friday
-                            </th>
-                            <th colSpan={OFFICE_HOURS.length} style={{ textAlign: 'center' }}>
-                                Saturday
-                            </th>
-                            <th colSpan={OFFICE_HOURS.length} style={{ textAlign: 'center' }}>
-                                Sunday
-                            </th>
-                        </tr>
-                        <tr>
-                            {OFFICE_HOURS.map(hour =>
-                                <th style={{ width: "30px", textAlign: 'center' }}>
-                                    {hour}
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCorners}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                >
+                    <Table border={1} style={{ borderCollapse: 'collapse', width: '100%' }}>
+                        <TableHead>
+                            <tr>
+                                <th style={{ minWidth: '250px' }} rowSpan={2}>
                                 </th>
-                            )}
-                            {OFFICE_HOURS.map(hour =>
-                                <th style={{ width: "30px", textAlign: 'center' }}>
-                                    {hour}
+                                <th colSpan={OFFICE_HOURS.length} style={{ textAlign: 'center' }}>
+                                    Friday
                                 </th>
-                            )}
-                            {OFFICE_HOURS.map(hour =>
-                                <th style={{ width: "30px", textAlign: 'center' }}>
-                                    {hour}
+                                <th colSpan={OFFICE_HOURS.length} style={{ textAlign: 'center' }}>
+                                    Saturday
                                 </th>
+                                <th colSpan={OFFICE_HOURS.length} style={{ textAlign: 'center' }}>
+                                    Sunday
+                                </th>
+                            </tr>
+                            <tr>
+                                {OFFICE_HOURS.map((hour, idx) =>
+                                    <th key={`fri-${idx}`} style={{ width: "30px", textAlign: 'center' }}>
+                                        {hour}
+                                    </th>
+                                )}
+                                {OFFICE_HOURS.map((hour, idx) =>
+                                    <th key={`sat-${idx}`} style={{ width: "30px", textAlign: 'center' }}>
+                                        {hour}
+                                    </th>
+                                )}
+                                {OFFICE_HOURS.map((hour, idx) =>
+                                    <th key={`sun-${idx}`} style={{ width: "30px", textAlign: 'center' }}>
+                                        {hour}
+                                    </th>
+                                )}
+                            </tr>
+                        </TableHead>
+                        <TableBody>
+                            {rows.map((row, idx) =>
+                                <SortableRow key={idx} id={`${row.id}`} row={row} onClick={handleRowClick} />
                             )}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows.map(r =>
-                            <Fragment key={r.id} >
-                                <tr key={r.id}
-                                    style={{
-                                        borderTop: (r.type === 'group' || r.type === 'waitlist') ? '2px solid black' : '',
-                                        borderBottom: (r.type === 'group' || r.type === 'waitlist') ? '2px solid black' : '',
-                                        cursor: 'pointer'
-                                    }}
-                                    onClick={() => handleClildRowClick(r)}>
-                                    <td>
-                                        {rowLabel(r)}
-                                    </td>
-                                    {dayCells(r)}
-                                </tr>
-                            </Fragment>
-                        )}
-                    </tbody>
-                </table>}
-            {selectedStudent &&
+                        </TableBody>
+                        <DragOverlay dropAnimation={dropAnimation}>
+                            {selectedRow ?
+                                <SortableRow id={`${selectedRow.id}`} row={selectedRow} />
+                                : null}
+                        </DragOverlay>
+                    </Table>
+                </DndContext >
+            }
+            {
+                selectedStudent &&
                 <StudentModal
                     mode={'edit'}
                     student={selectedStudent!}
