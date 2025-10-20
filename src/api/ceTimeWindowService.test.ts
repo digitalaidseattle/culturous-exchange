@@ -6,6 +6,15 @@ import { getTimezoneOffset } from "date-fns-tz";
 describe("timeWindowService", () => {
     const offset = getTimezoneOffset(DEFAULT_TIMEZONE, new Date()) / 60 / 60 / 1000;
 
+    it("toString", () => {
+        const tw = {
+            start_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.toZonedTime(0, "14:00:00", DEFAULT_TIMEZONE)
+        } as TimeWindow
+        const result = timeWindowService.toString(tw);
+        expect(result).toBe('Fri 8am - 2pm');
+    })
+
     it("toZonedTime", () => {
 
         const result = timeWindowService.toZonedTime(0, "07:00:00", DEFAULT_TIMEZONE);
