@@ -16,13 +16,20 @@ describe("timeWindowService", () => {
     })
 
     it("toZonedTime", () => {
-
         const result = timeWindowService.toZonedTime(0, "07:00:00", DEFAULT_TIMEZONE);
         expect(result.getDate()).toBe(1);
         expect(result.getDay()).toBe(5);
         expect(result.getHours()).toBe(7); // PDT is UTC-7, so 7+7=14
         expect(result.getUTCHours()).toBe(7 - offset); // PDT is UTC-7, so 7+7=14
-    })
+    });
+
+    it("toZonedTime - Mexico_City", () => {
+        const result = timeWindowService.toZonedTime(0, "07:00:00", "America/Mexico_City");
+        expect(result.getDate()).toBe(1);
+        expect(result.getDay()).toBe(5);
+        expect(result.getHours()).toBe(9);
+        expect(result.getUTCHours()).toBe(9 - offset); // PDT is UTC-7, so 7+7=14
+    });
 
     it("intersectionTimeWindows", () => {
 

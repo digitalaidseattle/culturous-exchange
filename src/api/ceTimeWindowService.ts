@@ -190,10 +190,17 @@ class CETimeWindowService extends EntityService<TimeWindow> {
   createTimeWindows(entry: string): Partial<TimeWindow>[] {
     switch (entry.trim()) {
       case "All options work for me":
+        // return all possible windows.  Merging block rendering dropdowns
         return [
-          { day_in_week: 'Friday', start_t: '07:00:00', end_t: '22:00:00' },
-          { day_in_week: 'Saturday', start_t: '07:00:00', end_t: '22:00:00' },
-          { day_in_week: 'Sunday', start_t: '07:00:00', end_t: '22:00:00' },
+          { day_in_week: 'Friday', start_t: '07:00:00', end_t: '12:00:00' },
+          { day_in_week: 'Friday', start_t: '12:00:00', end_t: '17:00:00' },
+          { day_in_week: 'Friday', start_t: '17:00:00', end_t: '22:00:00' },
+          { day_in_week: 'Saturday', start_t: '07:00:00', end_t: '12:00:00' },
+          { day_in_week: 'Saturday', start_t: '12:00:00', end_t: '17:00:00' },
+          { day_in_week: 'Saturday', start_t: '17:00:00', end_t: '22:00:00' },
+          { day_in_week: 'Sunday', start_t: '07:00:00', end_t: '12:00:00' },
+          { day_in_week: 'Sunday', start_t: '12:00:00', end_t: '17:00:00' },
+          { day_in_week: 'Sunday', start_t: '17:00:00', end_t: '22:00:00' }
         ];
       case "Friday morning (7am-12pm)":
         return [{ day_in_week: 'Friday', start_t: '07:00:00', end_t: '12:00:00' }];
