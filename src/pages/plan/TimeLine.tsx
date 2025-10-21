@@ -1,8 +1,8 @@
 
 /**
- *  SprintPanel.tsx
+ *  TimeLine.tsx
  *
- *  @copyright 2024 Digital Aid Seattle
+ *  @copyright 2025 Digital Aid Seattle
  *
  */
 
@@ -12,14 +12,13 @@ import {
     Stack,
     Typography
 } from "@mui/material";
-import { getHours, isFriday, isSaturday, isSunday } from "date-fns";
+import { addHours, compareAsc, getHours, isFriday, isSaturday, isSunday } from "date-fns";
 
 import { StarFilled, StarOutlined } from "@ant-design/icons";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 import { Group, Placement, Plan, Student, TimeWindow } from "../../api/types";
 import StudentModal from "../../components/StudentModal";
 import { PlanContext } from "./PlanContext";
-import { toZonedTime } from "date-fns-tz";
 
 type TimeRow = {
     id: string;
@@ -28,31 +27,32 @@ type TimeRow = {
     friday: boolean[];
     saturday: boolean[];
     sunday: boolean[];
-    children: TimeRow[];
 }
 
 const WAITLIST_ID = 'WAITLIST';
-const startingHour = 7;
-const endingHour = 22;
-
+const STARTING_HOUR = 7;
+const ENDING_HOUR = 22;
+const OFFICE_HOURS = Array.from({ length: ENDING_HOUR - STARTING_HOUR + 1 }, (_, i) => STARTING_HOUR + i)
 
 function calcAvailability(time_windows: TimeWindow[]): { friday: any; saturday: any; sunday: any; } {
-
-    const friday = Array(endingHour - startingHour + 1).fill(false);
-    const saturday = Array(endingHour - startingHour + 1).fill(false);
-    const sunday = Array(endingHour - startingHour + 1).fill(false);
+    const range = ENDING_HOUR - STARTING_HOUR + 1
+    const friday = Array(range).fill(false);
+    const saturday = Array(range).fill(false);
+    const sunday = Array(range).fill(false);
     time_windows.forEach(tw => {
-        const localStart = toZonedTime(tw.start_date_time!, "America/Los_Angeles");
-        const localEnd = toZonedTime(tw.end_date_time, "America/Los_Angeles");
-
-        for (let i = getHours(localStart); i <= getHours(localEnd); i++) {
-            if (isFriday(localStart) && i >= startingHour && i < endingHour + 1) {
-                friday[i - startingHour] = true;
-            } else if (isSaturday(localStart) && i >= startingHour && i < endingHour + 1) {
-                saturday[i - startingHour] = true;
-            } else if (isSunday(localEnd) && i >= startingHour && i < endingHour + 1) {
-                sunday[i - startingHour] = true;
+        let timeCounter = tw.start_date_time;
+        while (compareAsc(timeCounter, tw.end_date_time) !== 1) {
+            const index = getHours(timeCounter) - STARTING_HOUR;
+            if (index < range) {
+                if (isFriday(timeCounter)) {
+                    friday[index] = true;
+                } else if (isSaturday(timeCounter)) {
+                    saturday[index] = true;
+                } else if (isSunday(timeCounter)) {
+                    sunday[index] = true;
+                }
             }
+            timeCounter = addHours(timeCounter, 1);
         }
     });
     return {
@@ -68,10 +68,6 @@ export const TimeLine: React.FC = () => {
     const [rows, setRows] = useState<TimeRow[]>([]);
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
-    const START_TIME = 7;
-    const END_TIME = 22;
-    const OFFICE_HOURS = Array.from({ length: END_TIME - START_TIME + 1 }, (_, i) => START_TIME + i)
-
     useEffect(() => {
         // If plan is not defined, we don't want to initialize
         if (plan) {
@@ -82,24 +78,23 @@ export const TimeLine: React.FC = () => {
     }, [plan, initialized])
 
     function createStudentRows(placements: Placement[]): TimeRow[] {
-        return placements.map(placement => {
+        const rows = placements.map(placement => {
             const { friday, saturday, sunday } = calcAvailability(placement.student?.timeWindows!)
-            return {
+            const row = {
                 id: `${placement.plan_id}:${placement.student_id}`,
                 label: placement.student ? placement.student.name : '',
                 type: placement.anchor ? 'anchor' : 'student',
                 friday: friday,
                 saturday: saturday,
                 sunday: sunday,
-                children: []
-            } as TimeRow
+            } as TimeRow;
+            return row;
         })
+        return rows;
     }
 
-    function createGroupRow(group: Group, children: TimeRow[]): TimeRow {
-        console.log('Creating group row for group:', group);
+    function createGroupRow(group: Group): TimeRow {
         const response = calcAvailability(group.time_windows!)
-        console.log('Creating group row for group: response', response);
         return {
             id: group.id!,
             label: group.name,
@@ -107,33 +102,86 @@ export const TimeLine: React.FC = () => {
             friday: response.friday,
             saturday: response.saturday,
             sunday: response.sunday,
-            children: children
         } as TimeRow
     }
 
-    function createWaitlistRow(children: TimeRow[]): TimeRow {
+    function createWaitlistRow(): TimeRow {
+        const response = calcAvailability([])
         return {
             id: WAITLIST_ID,
             label: "Waitlist",
             type: 'waitlist',
-            friday: Array(endingHour - startingHour + 1).fill(false),
-            saturday: Array(endingHour - startingHour + 1).fill(false),
-            sunday: Array(endingHour - startingHour + 1).fill(false),
-            children: children
+            friday: response.friday,
+            saturday: response.saturday,
+            sunday: response.sunday,
         } as TimeRow
     }
 
     function calculateRows(plan: Plan): TimeRow[] {
-        const tempRows = plan.groups
+        const tempRows: TimeRow[] = [];
+        plan.groups
             .sort((g0, g1) => g0.name.localeCompare(g1.name))
-            .map(group => createGroupRow(group, createStudentRows(plan.placements.filter(p => p.group_id === group.id))));
-        const waitlist = createWaitlistRow(createStudentRows(plan.placements.filter(p => !p.group_id)));
-        return [...tempRows, waitlist];
+            .forEach(group => {
+                tempRows.push(createGroupRow(group));
+                createStudentRows(plan.placements.filter(p => p.group_id === group.id))
+                    .forEach(sRow => { tempRows.push(sRow) });
+            });
+        tempRows.push(createWaitlistRow());
+        createStudentRows(plan.placements.filter(p => !p.group_id))
+            .forEach(sRow => { tempRows.push(sRow) });
+        return tempRows;
     }
 
     function handleClildRowClick(row: TimeRow) {
         const placement = plan.placements.find(p => p.student_id === row.id.split(':')[1]);
         setSelectedStudent(placement ? placement.student! : null);
+    }
+
+    function rowLabel(row: TimeRow) {
+        if (row.type === 'group' || row.type === 'waitlist') {
+            return (
+                <Typography fontWeight={600}>{row.label}</Typography>
+            )
+        }
+        else {
+            const icon = row.type === 'anchor'
+                ? <StarFilled style={{ fontSize: '150%', color: 'green' }} />
+                : <StarOutlined style={{ fontSize: '150%', color: 'gray' }} />;
+            return (
+                <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
+                    {icon}
+                    <Typography>{row.label}</Typography>
+                </Stack>
+            )
+        }
+    }
+
+    function dayCells(row: TimeRow) {
+        const color = row.type === 'group'
+            ? '#90ee90'
+            : '#90e9eeff';
+        return (
+            <Fragment key={row.id} >
+                {row.friday.map((available, idx) =>
+                    <td key={`${row.id}-f-${idx}`}
+                        style={{ backgroundColor: available ? color : 'white', width: 20 }}>
+                        {available ? '✓' : ''}
+                    </td>
+                )}
+                {row.saturday.map((available, idx) =>
+                    <td key={`${row.id}-f-${idx}`}
+                        style={{ backgroundColor: available ? color : 'white', width: 20 }}>
+                        {available ? '✓' : ''}
+                    </td>
+                )}
+                {row.sunday.map((available, idx) =>
+                    <td key={`${row.id}-f-${idx}`}
+                        style={{ backgroundColor: available ? color : 'white', width: 20 }}>
+                        {available ? '✓' : ''}
+                    </td>
+                )}
+            </Fragment>
+        )
     }
 
     return (
@@ -178,59 +226,18 @@ export const TimeLine: React.FC = () => {
                     <tbody>
                         {rows.map(r =>
                             <Fragment key={r.id} >
-                                <tr key={r.id} style={{ borderTop: '2px solid black', borderBottom: '2px solid black' }}>
+                                <tr key={r.id}
+                                    style={{
+                                        borderTop: (r.type === 'group' || r.type === 'waitlist') ? '2px solid black' : '',
+                                        borderBottom: (r.type === 'group' || r.type === 'waitlist') ? '2px solid black' : '',
+                                        cursor: 'pointer'
+                                    }}
+                                    onClick={() => handleClildRowClick(r)}>
                                     <td>
-                                        <Typography fontWeight={600}>{r.label}</Typography>
+                                        {rowLabel(r)}
                                     </td>
-                                    <Fragment key={r.id} >
-                                        {r.friday.map((available, idx) =>
-                                            <td key={`${r.id}-f-${idx}`} style={{ backgroundColor: available ? '#90ee90' : 'white' }}>
-                                                {available ? '✓' : ''}
-                                            </td>
-                                        )}
-                                        {r.saturday.map((available, idx) =>
-                                            <td key={`${r.id}-f-${idx}`} style={{ backgroundColor: available ? '#90ee90' : 'white' }}>
-                                                {available ? '✓' : ''}
-                                            </td>
-                                        )}
-                                        {r.sunday.map((available, idx) =>
-                                            <td key={`${r.id}-f-${idx}`} style={{ backgroundColor: available ? '#90ee90' : 'white' }}>
-                                                {available ? '✓' : ''}
-                                            </td>
-                                        )}
-                                    </Fragment>
+                                    {dayCells(r)}
                                 </tr>
-                                {r.children.map(child =>
-                                    <Fragment key={child.id} >
-                                        <tr onClick={() => handleClildRowClick(child)} style={{ cursor: 'pointer' }}>
-                                            <td>
-                                                <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
-                                                    {child.type === 'anchor' &&
-                                                        <StarFilled style={{ fontSize: '150%', color: 'green' }} />
-                                                    }
-                                                    {child.type === 'student' &&
-                                                        <StarOutlined style={{ fontSize: '150%', color: 'gray' }} />
-                                                    }
-                                                    <Typography>{child.label}</Typography>
-                                                </Stack>
-                                            </td>
-                                            {child.friday.map((cAvailable, idx) =>
-                                                <td key={`${child.id}-f-${idx}`} style={{ backgroundColor: cAvailable ? '#90e9eeff' : 'white' }}>
-                                                    {cAvailable ? '✓' : ''}
-                                                </td>
-                                            )}
-                                            {child.saturday.map((cAvailable, idx) =>
-                                                <td key={`${child.id}-f-${idx}`} style={{ backgroundColor: cAvailable ? '#90e9eeff' : 'white' }}>
-                                                    {cAvailable ? '✓' : ''}
-                                                </td>
-                                            )}
-                                            {child.sunday.map((cAvailable, idx) =>
-                                                <td key={`${child.id}-f-${idx}`} style={{ backgroundColor: cAvailable ? '#90e9eeff' : 'white' }}>
-                                                    {cAvailable ? '✓' : ''}
-                                                </td>
-                                            )}
-                                        </tr>
-                                    </Fragment>)}
                             </Fragment>
                         )}
                     </tbody>
