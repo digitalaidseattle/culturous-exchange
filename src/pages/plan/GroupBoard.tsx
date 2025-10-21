@@ -15,7 +15,7 @@ import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 import { DDCategory, DDType, DragAndDrop } from "@digitalaidseattle/draganddrop";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 import { planService } from "../../api/cePlanService";
-import { planEvaluator } from "../../api/planEvaluator";
+import { studentMover } from "../../api/studentMover";
 import { Group, Identifier, Placement } from "../../api/types";
 import { GroupCard } from "../../components/GroupCard";
 import { StudentCard } from "../../components/StudentCard";
@@ -69,35 +69,12 @@ export const GroupBoard: React.FC<GroupBoardProps> = ({ showStudentDetails, show
     }, [plan, initialized])
 
     function handleChange(container: Map<string, unknown>, placement: Placement) {
-        if (plan) {
-
-            const planPlacement = plan.placements.find(p => p.student_id === placement.student_id);
-            if (planPlacement) {
-                const newGroupId = container.get('containerId') as Identifier;
-                const oldGroup = plan.groups.find(g => g.id === planPlacement.group_id);
-                const newGroup = plan.groups.find(g => g.id === newGroupId);
-
-                if (oldGroup && oldGroup.placements) {
-                    const oldIndex = oldGroup.placements.findIndex(p => p.student_id === planPlacement.student_id);
-                    oldGroup.placements.splice(oldIndex, 1);
-                    // TODO  reorder / resequence group
-                }
-
-                if (newGroup && newGroup.placements) {
-                    // TODO  reorder / resequence group
-                    newGroup.placements.push(planPlacement)
-                }
-                planPlacement.group_id = newGroupId === WAITLIST_ID ? null : newGroupId;
-
-                planEvaluator
-                    .evaluate(plan)
-                    .then(evaluated => {
-                        planService
-                            .save(evaluated)
-                            .then((saved) => setPlan(saved))
-                    })
-            }
-        }
+        studentMover.run(plan, placement.student_id, container.get('containerId') as Identifier)
+            .then(moved => {
+                planService
+                    .save(moved)
+                    .then((saved) => setPlan(saved))
+            })
     }
 
     function cellRender(item: PlacementWrapper): ReactNode {
