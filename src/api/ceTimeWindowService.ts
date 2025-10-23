@@ -1,5 +1,5 @@
 /**
- *  ceCohortService.ts
+ *  ceTimeWindowSerivce.ts
  *
  *  @copyright 2025 Digital Aid Seattle
  *
@@ -9,6 +9,7 @@ import { supabaseClient } from "@digitalaidseattle/supabase";
 import { addHours, format, isEqual } from "date-fns";
 import { EntityService } from "./entityService";
 import { Identifier, Student, TimeWindow } from "./types";
+import { v4 as uuid } from 'uuid';
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
   if (arr1.length !== arr2.length) {
@@ -29,6 +30,82 @@ function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
 
 class CETimeWindowService extends EntityService<TimeWindow> {
 
+  unionTimeWindows(timeWindowsA: TimeWindow, timeWindowsB: TimeWindow): TimeWindow[] {
+    const timeArray = [
+      { name: 'AS', date: timeWindowsA.start_date_time! },
+      { name: 'AE', date: timeWindowsA.end_date_time! },
+      { name: 'BS', date: timeWindowsB.start_date_time! },
+      { name: 'BE', date: timeWindowsB.end_date_time! }
+    ]
+    const sortedTimeArray = timeArray.sort((a, b) => a.date.getTime() - b.date.getTime()).map((t) => t.name);
+    if (areStringArraysEqual(sortedTimeArray, ['AS', 'AE', 'BS', 'BE'])) {
+      if (isEqual(timeWindowsA.end_date_time!, timeWindowsB.start_date_time!)) {
+        return [{
+          id: uuid(),
+          day_in_week: timeWindowsA.day_in_week,
+          start_date_time: timeWindowsA.start_date_time,
+          start_t: timeWindowsA.start_t,
+          end_date_time: timeWindowsB.end_date_time,
+          end_t: timeWindowsB.end_t
+        } as TimeWindow];
+      } else {
+        return [timeWindowsA, timeWindowsB];
+      }
+    } else if (areStringArraysEqual(sortedTimeArray, ['AS', 'BS', 'AE', 'BE'])) {
+      return [{
+        id: uuid(),
+        day_in_week: timeWindowsA.day_in_week,
+        start_date_time: timeWindowsA.start_date_time,
+        start_t: timeWindowsA.start_t,
+        end_date_time: timeWindowsB.end_date_time,
+        end_t: timeWindowsB.end_t
+      } as TimeWindow];
+    } else if (areStringArraysEqual(sortedTimeArray, ['AS', 'BS', 'BE', 'AE'])) {
+      return [{
+        id: uuid(),
+        day_in_week: timeWindowsA.day_in_week,
+        start_date_time: timeWindowsB.start_date_time,
+        start_t: timeWindowsB.start_t,
+        end_date_time: timeWindowsA.end_date_time,
+        end_t: timeWindowsA.end_t
+      } as TimeWindow];
+    } else if (areStringArraysEqual(sortedTimeArray, ['BS', 'AS', 'BE', 'AE'])) {
+      return [{
+        id: uuid(),
+        day_in_week: timeWindowsB.day_in_week,
+        start_date_time: timeWindowsB.start_date_time,
+        start_t: timeWindowsB.start_t,
+        end_date_time: timeWindowsA.end_date_time,
+        end_t: timeWindowsA.end_t
+      } as TimeWindow];
+    } else if (areStringArraysEqual(sortedTimeArray, ['BS', 'AS', 'AE', 'BE'])) {
+      return [{
+        id: uuid(),
+        day_in_week: timeWindowsB.day_in_week,
+        start_date_time: timeWindowsB.start_date_time,
+        start_t: timeWindowsB.start_t,
+        end_date_time: timeWindowsB.end_date_time,
+        end_t: timeWindowsB.end_t
+      } as TimeWindow];
+    } else if (areStringArraysEqual(sortedTimeArray, ['BS', 'BE', 'AS', 'AE'])) {
+      if (isEqual(timeWindowsB.end_date_time!, timeWindowsA.start_date_time!)) {
+        return [{
+          id: uuid(),
+          day_in_week: timeWindowsB.day_in_week,
+          start_date_time: timeWindowsB.start_date_time,
+          start_t: timeWindowsB.start_t,
+          end_date_time: timeWindowsA.end_date_time,
+          end_t: timeWindowsA.end_t
+        } as TimeWindow];
+      } else {
+        return [timeWindowsB, timeWindowsA];
+      }
+    } else {
+      console.error('Unexpected time window intersection:', timeWindowsA, timeWindowsB, sortedTimeArray);
+      throw new Error('Unexpected time window intersection:');
+    }
+  }
+
   intersectionTimeWindows(timeWindowsA: TimeWindow, timeWindowsB: TimeWindow): TimeWindow | null {
     const timeArray = [
       { name: 'AS', date: timeWindowsA.start_date_time! },
@@ -42,6 +119,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     } else if (areStringArraysEqual(sortedTimeArray, ['AS', 'BS', 'AE', 'BE'])) {
       if (!isEqual(timeWindowsB.start_date_time!, timeWindowsA.end_date_time!)) {
         return {
+          id: uuid(),
           day_in_week: timeWindowsA.day_in_week,
           start_date_time: timeWindowsB.start_date_time,
           end_date_time: timeWindowsA.end_date_time
@@ -50,6 +128,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     } else if (areStringArraysEqual(sortedTimeArray, ['AS', 'BS', 'BE', 'AE'])) {
       if (!isEqual(timeWindowsB.start_date_time!, timeWindowsB.end_date_time!)) {
         return {
+          id: uuid(),
           day_in_week: timeWindowsA.day_in_week,
           start_date_time: timeWindowsB.start_date_time,
           end_date_time: timeWindowsB.end_date_time
@@ -58,6 +137,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     } else if (areStringArraysEqual(sortedTimeArray, ['BS', 'AS', 'BE', 'AE'])) {
       if (!isEqual(timeWindowsA.start_date_time!, timeWindowsB.end_date_time!)) {
         return {
+          id: uuid(),
           day_in_week: timeWindowsA.day_in_week,
           start_date_time: timeWindowsA.start_date_time,
           end_date_time: timeWindowsB.end_date_time
@@ -66,6 +146,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     } else if (areStringArraysEqual(sortedTimeArray, ['BS', 'AS', 'AE', 'BE'])) {
       if (!isEqual(timeWindowsA.start_date_time!, timeWindowsA.end_date_time!)) {
         return {
+          id: uuid(),
           day_in_week: timeWindowsA.day_in_week,
           start_date_time: timeWindowsA.start_date_time,
           end_date_time: timeWindowsA.end_date_time
@@ -160,7 +241,29 @@ class CETimeWindowService extends EntityService<TimeWindow> {
           timeWindow.start_date_time = this.toDateTime(dayOffset, timeWindow.start_t, student.tz_offset);
           timeWindow.end_date_time = this.toDateTime(dayOffset, timeWindow.end_t, student.tz_offset);
         });
+      student.timeWindows = this.mergeTimeWindows(student.timeWindows);
     }
+  }
+
+  mergeTimeWindows(timeWindows: TimeWindow[]): TimeWindow[] {
+    if (timeWindows.length <= 1) {
+      return [...timeWindows];
+    }
+
+    let merged: TimeWindow[] = [...timeWindows];
+    let index = 0;
+    do {
+      const union = this.unionTimeWindows(merged[index], merged[index + 1]);
+      if (union.length == 2) {
+        index = index + 1;
+      } else {
+        // slice start all over again
+        merged[index] = union[0];
+        merged.splice(index + 1, 1);
+        index = 0;
+      }
+    } while (index < merged.length - 1);
+    return merged;
   }
 
   async findByGroupId(groupId: Identifier, select?: string): Promise<TimeWindow[]> {
@@ -199,7 +302,11 @@ class CETimeWindowService extends EntityService<TimeWindow> {
       ((tw.end_date_time?.getTime() ?? 0) - (tw.start_date_time?.getTime() ?? 0)) / (1000 * 60 * 60), 0);
   }
 
-
+  async save(timeWindow: TimeWindow): Promise<TimeWindow> {
+    const json = { ...timeWindow }
+    await this.insert(json);
+    return timeWindow;
+  }
 
 }
 
