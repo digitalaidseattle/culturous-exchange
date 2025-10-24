@@ -11,7 +11,6 @@ import { Fragment, useContext, useEffect, useState } from "react";
 import {
     DndContext,
     DragEndEvent,
-    DragOverEvent,
     DragOverlay,
     DragStartEvent,
     DropAnimation,
@@ -20,7 +19,7 @@ import {
     closestCorners,
     defaultDropAnimation,
     useSensor,
-    useSensors,
+    useSensors
 } from '@dnd-kit/core';
 import { arrayMove, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -38,11 +37,11 @@ import { addHours, compareAsc, getHours, isFriday, isSaturday, isSunday } from "
 
 import { MoreOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
+import { planService } from "../../api/cePlanService";
 import { studentMover } from "../../api/studentMover";
 import { Group, Identifier, Placement, Plan, Student, TimeWindow } from "../../api/types";
 import StudentModal from "../../components/StudentModal";
 import { PlanContext } from "./PlanContext";
-import { planService } from "../../api/cePlanService";
 
 type TimeRow = {
     id: Identifier;

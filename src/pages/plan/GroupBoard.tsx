@@ -15,12 +15,11 @@ import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 import { DDCategory, DDType, DragAndDrop } from "@digitalaidseattle/draganddrop";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 import { planService } from "../../api/cePlanService";
-import { planEvaluator } from "../../api/planEvaluator";
+import { studentMover } from "../../api/studentMover";
 import { Group, Identifier, Placement } from "../../api/types";
 import { GroupCard } from "../../components/GroupCard";
 import { StudentCard } from "../../components/StudentCard";
 import { PlanContext } from "./PlanContext";
-import { studentMover } from "../../api/studentMover";
 
 type PlacementWrapper = Placement & DDType
 
