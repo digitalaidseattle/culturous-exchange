@@ -5,7 +5,7 @@
  *
  */
 
-import { Card, CardContent, Stack, Typography } from '@mui/material';
+import { Card, CardContent, CardHeader, Stack, Typography } from '@mui/material';
 import { timeWindowService } from '../api/ceTimeWindowService';
 import { Group } from '../api/types';
 
@@ -14,10 +14,12 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
 
     return (group &&
         <Card key={group.id} sx={{ alignContent: "top" }}>
-            <CardContent>
-                <Typography variant="h6" fontWeight={600}>{group.name}</Typography>
-            </CardContent>
-            {showDetails &&
+            <CardHeader
+                title={group.name}
+                titleTypographyProps={{ fontWeight: 600 }}
+            />
+            {
+                showDetails &&
                 <>
                     <CardContent>
                         <Stack direction={'row'} spacing={1} >
@@ -31,6 +33,6 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
                     </CardContent>
                 </>
             }
-        </Card>
+        </Card >
     );
 }
