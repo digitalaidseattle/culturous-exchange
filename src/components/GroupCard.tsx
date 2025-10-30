@@ -16,7 +16,6 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
         <Card key={group.id} sx={{ alignContent: "top" }}>
             <CardHeader
                 title={group.name}
-                titleTypographyProps={{ fontWeight: 600 }}
             />
             {
                 showDetails &&
