@@ -19,19 +19,22 @@ import {
 
 import { DeleteOutlined, StarFilled } from '@ant-design/icons';
 import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
+import { ConfirmationDialog } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
+import { timeWindowService } from '../../api/ceTimeWindowService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
-import StudentDetailsModal from './StudentDetailsModal';
-import { ConfirmationDialog } from '@digitalaidseattle/mui';
+import StudentModal from '../../components/StudentModal';
+import { TimeSlots } from '../../components/TimeSlots';
 
-const PAGE_SIZE = 10;
-
+const PAGE_SIZE = 25;
 
 const StudentsDetailsTable: React.FC = () => {
   const { setLoading } = useContext(LoadingContext);
   const { refresh, setRefresh } = useContext(RefreshContext);
+
+  const [initialize, setInitialize] = useState<boolean>(true);
   const [columns, setColumns] = useState<GridColDef[]>([]);
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'name', sort: 'asc' }]);
@@ -47,8 +50,11 @@ const StudentsDetailsTable: React.FC = () => {
   const [deleteConfirmation, showDeleteConfirmation] = useState<boolean>(false);
 
   useEffect(() => {
-    setColumns(getColumns());
-  }, []);
+    if (initialize) {
+      setColumns(getColumns());
+      setInitialize(false);
+    }
+  }, [initialize]);
 
   useEffect(() => {
     if (paginationModel && sortModel && filterModel) {
@@ -64,13 +70,12 @@ const StudentsDetailsTable: React.FC = () => {
         filterValue: filterModel.items.length > 0 ? filterModel.items[0].value : undefined,
       } as QueryModel;
       studentService
-        .find(queryModel, '*, timewindow(*)')
+        .find(queryModel)
         .then((pi) => setPageInfo(pi))
         .catch((err) => console.error(err))
         .finally(() => setLoading(false));
     }
-  }, [refresh, paginationModel, sortModel, filterModel]);
-
+  }, [paginationModel, sortModel, filterModel]);
 
   const toggleAnchor = async (student: Student) => {
     try {
@@ -91,8 +96,6 @@ const StudentsDetailsTable: React.FC = () => {
 
   function handleDeleteStudent(param: GridRenderCellParams) {
     return (evt: any) => {
-      console.log('handleDeleteStudent', param.row.id, param.row.name);
-
       studentService.getCohortsForStudent(param.row)
         .then((cohorts) => {
           if (cohorts.length > 0) {
@@ -122,6 +125,25 @@ const StudentsDetailsTable: React.FC = () => {
         .finally(() => {
           setSelectedStudent(null);
           showDeleteConfirmation(false);
+        })
+    }
+  }
+
+  function doUpdateStudent(student: Student) {
+    if (student) {
+      timeWindowService.adjustTimeWindows(student);
+      studentService.save(student)
+        .then(() => {
+          notifications.success(`Student ${student.name} updated successfully`);
+          setRefresh(refresh + 1);
+        })
+        .catch((err) => {
+          console.error(`Update failed: ${err.message}`);
+          notifications.error(`Update failed: ${err.message}`);
+        })
+        .finally(() => {
+          setSelectedStudent(null);
+          setShowDetails(false);
         })
     }
   }
@@ -160,7 +182,7 @@ const StudentsDetailsTable: React.FC = () => {
       {
         field: 'country',
         headerName: 'Country',
-        width: 150,
+        width: 100,
         filterOperators: getGridStringOperators()
           .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
       },
@@ -197,19 +219,35 @@ const StudentsDetailsTable: React.FC = () => {
           .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
       },
       {
+        field: 'time_zone',
+        headerName: 'Time Zone',
+        width: 150,
+        filterOperators: getGridStringOperators()
+          .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
+      },
+      {
+        field: 'preferences',
+        headerName: 'Time Slots',
+        width: 200,
+        renderCell: (params) => {
+          return <TimeSlots timeWindows={params.row.timeWindows} />
+        },
+        filterable: false
+      },
+      {
         field: 'timeWindows',
         headerName: 'Availabilities',
-        width: 150,
+        width: 450,
         renderCell: (params) => {
           const timeWindows = Array.isArray(params.value) ? params.value : [];
-          return <DisplayTimeWindow timeWindows={timeWindows} />
+          return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.time_zone} />
         },
         filterable: false
       }
     ];
   };
 
-  return (
+  return (columns &&
     <>
       <DataGrid
         rows={pageInfo.rows}
@@ -235,11 +273,15 @@ const StudentsDetailsTable: React.FC = () => {
         }}
       />
       {selectedStudent && (
-        <StudentDetailsModal
+        <StudentModal
+          mode={'edit'}
           student={selectedStudent}
-          isModalOpen={showDetails}
-          onClose={() => setShowDetails(false)}
-        />
+          open={showDetails}
+          onClose={() => {
+            setSelectedStudent(null);
+            setShowDetails(false);
+          }}
+          onChange={doUpdateStudent} />
       )}
       <ConfirmationDialog
         message={deleteMessage}

@@ -1,29 +1,25 @@
-import { StudentField } from "./api/types";
+import { TimeWindow } from "./api/types";
 
-const TIME_SLOTS: string[] = [
-  "Friday morning (7am-12pm)",
-  "Friday afternoon (12pm-5pm)",
-  "Friday evening (5pm-10pm)",
-  "Saturday morning (7am-12pm)",
-  "Saturday afternoon (12pm-5pm)",
-  "Saturday evening (5pm-10pm)",
-  "Sunday morning (7am-12pm)",
-  "Sunday afternoon (12pm-5pm)",
-  "Sunday evening (5pm-10pm)",
-  "All options work for me"
+export type TimeSlot = Partial<TimeWindow> & {
+  label: string;
+  day_in_week: string;
+  start_t: string;
+  end_t: string;
+}
+
+const TIME_SLOTS: TimeSlot[] = [
+  { label: "Friday morning (7am-12pm)", day_in_week: "Friday", start_t: "07:00:00", end_t: "12:00:00" },
+  { label: "Friday afternoon (12pm-5pm)", day_in_week: "Friday", start_t: "12:00:00", end_t: "17:00:00" },
+  { label: "Friday evening (5pm-10pm)", day_in_week: "Friday", start_t: "17:00:00", end_t: "22:00:00" },
+  { label: "Saturday morning (7am-12pm)", day_in_week: "Saturday", start_t: "07:00:00", end_t: "12:00:00" },
+  { label: "Saturday afternoon (12pm-5pm)", day_in_week: "Saturday", start_t: "12:00:00", end_t: "17:00:00" },
+  { label: "Saturday evening (5pm-10pm)", day_in_week: "Saturday", start_t: "17:00:00", end_t: "22:00:00" },
+  { label: "Sunday morning (7am-12pm)", day_in_week: "Sunday", start_t: "07:00:00", end_t: "12:00:00" },
+  { label: "Sunday afternoon (12pm-5pm)", day_in_week: "Sunday", start_t: "12:00:00", end_t: "17:00:00" },
+  { label: "Sunday evening (5pm-10pm)", day_in_week: "Sunday", start_t: "17:00:00", end_t: "22:00:00" },
 ]
 
-const STUDENT_FIELD: StudentField[] = [
-  { key: 'name', label: 'Full Name', type: 'string', required: true },
-  { key: 'email', label: 'Email', type: 'email', required: true },
-  { key: 'age', label: 'Age', type: 'number', required: true },
-  { key: 'city', label: 'City', type: 'string', required: true },
-  { key: 'country', label: 'Country', type: 'string', required: true },
-  { key: 'gender', label: 'Gender', type: 'string', required: true },
-];
-
-const GENDER_OPTION = ['female', 'male', 'other']
+const GENDER_OPTION = ['Female', 'Male', 'Other']
 
 
-
-export { TIME_SLOTS, STUDENT_FIELD, GENDER_OPTION }
+export { GENDER_OPTION, TIME_SLOTS };

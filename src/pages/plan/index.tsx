@@ -4,24 +4,32 @@ import { useParams } from "react-router";
 // material-ui
 
 // project import
-import { Box, Breadcrumbs, CircularProgress, Link, Stack, Typography } from "@mui/material";
+import { Box, Breadcrumbs, CircularProgress, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
 
 import { useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { cohortService } from "../../api/ceCohortService";
 import { planService } from "../../api/cePlanService";
-import { planGenerator } from "../../api/planGenerator";
 import { Cohort, Identifier, Plan } from "../../api/types";
 import { TextEdit } from "../../components/TextEdit";
 import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
 import { PlanContext } from "./PlanContext";
+import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { planExporter } from "../../api/planExporter";
+import { planGenerator } from "../../api/planGenerator";
+import PlanSettingsDialog from "../../components/PlanSettingsDialog";
+import { TimeLine } from "./TimeLine";
 
 const PlanPage: React.FC = () => {
   const { id: planId } = useParams<string>();
   const [plan, setPlan] = useState<Plan>();
   const [cohort, setCohort] = useState<Cohort>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
+  const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
+  const [showSettings, setShowSettings] = useState<boolean>(false);
+  const [viewType, setViewType] = useState<"board" | "timeline">("board");
 
   const notifications = useNotifications();;
 
@@ -40,15 +48,18 @@ const PlanPage: React.FC = () => {
             console.error(`Cohort not found ${plan.cohort_id}`);
           }
         });
-    } 
+    }
   }, [plan]);
 
   function refreshPlan(planId: Identifier) {
     setPlan(undefined);
     setLoading(true);
-    planGenerator.hydratePlan(planId)
-      .then((hydrated) => setPlan(hydrated))
-      .catch((err) => notifications.error(`Error reading ${planId} : ${err}`))
+    planService.getById(planId)
+      .then(resp => setPlan(resp))
+      .catch((err) => {
+        notifications.error(`Error reading ${planId} : ${err}`)
+        console.error(`Error reading ${planId} : ${err}`)
+      })
       .finally(() => setLoading(false));
   }
 
@@ -71,7 +82,45 @@ const PlanPage: React.FC = () => {
         }
       })
   }
+  function exportPlan(): void {
+    planExporter.exportPlan(plan!)
+      .then((exported) => {
+        if (exported) {
+          notifications.success(`${plan!.name} exported successfully`);
+        } else {
+          notifications.error('Plan export failed');
+        }
+      })
+  }
 
+  function handleGroupDetails(): void {
+    setShowGroupDetails(!showGroupDetails);
+  }
+
+  function handleStudentDetails(): void {
+    setStudentDetails(!showStudentDetails);
+  }
+
+  function handleSettings(): void {
+    setShowSettings(!showSettings);
+  }
+
+  function handleSettingsChange(plan: Plan): void {
+    planService.update(plan.id, { group_size: plan.group_size! })
+      .then(updatedPlan => {
+        planGenerator.seedPlan(updatedPlan)
+          .then((seededPlan) => {
+            notifications.success(`Plan ${seededPlan.name} updated successfully`);
+            setLoading(false)
+            setPlan(seededPlan);
+            setShowSettings(false);
+          })
+          .catch((error) => {
+            notifications.error(`Failed to update plan: ${error.message}`);
+          });
+      })
+
+  }
   return (loading ?
     <Box sx={{
       height: '100vh',
@@ -105,7 +154,44 @@ const PlanPage: React.FC = () => {
               <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
             </Stack>
             {/* <PlanDetails /> */}
-            <GroupBoard />
+            <Box sx={{ marginTop: 1 }}  >
+              <Toolbar>
+                <Typography variant="h3" component="div" sx={{ flexGrow: 1 }} onClick={() => setViewType(viewType === "board" ? "timeline" : "board") } style={{ cursor: 'pointer' }}>
+                  Groups
+                </Typography>
+
+                <Tooltip title="Export plan">
+                  <IconButton color="inherit" onClick={exportPlan}>
+                    <ExportOutlined />
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Toggle group details">
+                  <IconButton color="inherit" onClick={handleGroupDetails}>
+                    <TeamOutlined />
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Toggle student details">
+                  <IconButton color="inherit" onClick={handleStudentDetails}>
+                    <UserOutlined />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Show plan settings">
+                  <IconButton color="inherit" onClick={handleSettings}>
+                    <SettingOutlined />
+                  </IconButton>
+                </Tooltip>
+              </Toolbar>
+              {!loading && viewType === "board" && <GroupBoard showGroupDetails={showGroupDetails} showStudentDetails={showStudentDetails} />}
+              {!loading && viewType === "timeline" && <TimeLine />}
+              <PlanSettingsDialog
+                plan={plan!}
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                onSubmit={handleSettingsChange}
+              />
+            </Box>
           </MainCard>
         </Stack>
       </CohortContext.Provider>

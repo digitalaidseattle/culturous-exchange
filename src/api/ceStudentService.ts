@@ -6,11 +6,30 @@
  */
 import { PageInfo, QueryModel, supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
+import { GENDER_OPTION } from '../constants';
 import { timeWindowService } from './ceTimeWindowService';
 import { EntityService } from "./entityService";
-import { Cohort, FailedStudent, Student, TimeWindow } from "./types";
+import { Cohort, Identifier, Student } from "./types";
+
+const DEFAULT_SELECT = '*, timewindow(*)';
 
 class CEStudentService extends EntityService<Student> {
+
+  emptyStudent(): Student {
+    return {
+      id: uuid(),
+      name: '',
+      email: '',
+      city: '',
+      country: '',
+      age: 15,
+      time_zone: '',
+      tz_offset: 0,
+      anchor: false,
+      gender: GENDER_OPTION[0],
+      timeWindows: []
+    } as Student;
+  }
 
   async getCohortsForStudent(student: Student): Promise<Cohort[]> {
     try {
@@ -36,11 +55,11 @@ class CEStudentService extends EntityService<Student> {
         })
       return supabaseClient
         .from('student')
-        .select('*')
+        .select(DEFAULT_SELECT)
         .not('id', 'in', `(${enrollment_ids})`)
         .then((resp: any) => {
           if (resp.data) {
-            return resp.data as Student[]
+            return resp.data.map((student: any) => this.mapJson(student))
           }
           else {
             throw new Error('Could not execute query.')
@@ -54,61 +73,54 @@ class CEStudentService extends EntityService<Student> {
 
   async find(queryModel: QueryModel, select?: string): Promise<PageInfo<Student>> {
     return super
-      .find(queryModel, select ?? '*, timewindow(*)')
-      .then((pi) => {
-        const updatedRows = pi.rows.map((student: any) => {
-          const timeWindows = [...student.timewindow as TimeWindow[]];
-          delete student.timewindow;
-          return ({
-            ...student,
-            timeWindows: timeWindows
-          })
-        }
-        );
-        return { rows: updatedRows, totalRowCount: pi.totalRowCount }
+      .find(queryModel, select ?? DEFAULT_SELECT)
+      .then((pageInfo) => {
+        const updatedRows = pageInfo.rows.map((student: any) => this.mapJson(student))
+        return { rows: updatedRows, totalRowCount: pageInfo.totalRowCount }
       })
   }
 
-  async insert(entity: Partial<Student>, select?: string): Promise<Student> {
-    if (!entity.name || !entity.age || !entity.country || !entity.email) {
-      throw new Error("Name and Email are required fields.");
-    }
-    const studentId = uuid();
-    const studentWithId: Student = {
-      ...entity,
-      id: studentId
-    } as Student;
-    //Remove timeWindow from the student before insert
-    delete studentWithId.timeWindows;
-    const updatedStudent = await super.insert(studentWithId, select);
+  async update(entityId: Identifier, updatedFields: Partial<Student>, select?: string): Promise<Student> {
+    const json = { ...updatedFields } as any;
+    delete json.timeWindows;
 
-    const timeWindows = entity.timeWindows!.map(orig => {
-      return {
-        ...orig,
-        id: uuid(),
-        student_id: studentId
-      } as TimeWindow
-    })
-    await timeWindowService.batchInsert(timeWindows)
-    return updatedStudent;
+    return super.update(entityId, json, select)
+      .then(updated => this.mapJson(updated)!);
   }
 
-  async insertSingle(student: Student, selection: string[]): Promise<{ success: boolean, student: Student | FailedStudent }> {
-    try {
-      const partialWindows = timeWindowService.mapTimeWindows(selection);
-      student.timeWindows = partialWindows as TimeWindow[];
-      const tzData = await timeWindowService.getTimeZone(student.city!, student.country);
-      student.time_zone = tzData.timezone;
-      student.tz_offset = tzData.offset;
-      timeWindowService.adjustTimeWindows(student);
-      const inserted = await this.insert(student);
-      return { success: true, student: inserted }
-    } catch (err: any) {
-      console.error(`Failed to insert student ${student.name}`, err);
-      return { success: false, student: { ...student, failedError: err.message } }
+  mapJson(json: any): Student {
+    const student = {
+      ...json,
+      timeWindows: json.timewindow.map((js: any) => timeWindowService.mapJson(js))
     }
+    delete student.timewindow
+    return student
   }
 
+  async save(student: Student): Promise<Student> {
+    // inserting group before tw is required.  Group must exist before timewindow added.
+    const json = { ...student }
+    delete json.timeWindows;
+
+    await this.insert(json);
+
+    await timeWindowService.deleteByStudentId(student.id);
+    for (const tw of student.timeWindows!) {
+      await timeWindowService.save(tw)
+    }
+    // TODO get fresh instance?
+    return student
+  }
+
+  async getAll(select?: string): Promise<Student[]> {
+    return supabaseClient
+      .from(this.tableName)
+      .select(select ?? DEFAULT_SELECT)
+      .then((resp: any) => {
+        const json = resp.data ?? [];
+        return json.map((jStudent: any) => this.mapJson(jStudent));
+      })
+  }
 }
 
 const studentService = new CEStudentService('student');
