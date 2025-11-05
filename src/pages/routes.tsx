@@ -12,6 +12,7 @@ import StudentPage from './student';
 import StudentsPage from './students';
 import PlanPage from "./plan";
 import HomePage from "./home";
+import DashboardPage from "./home/dashboard";
 
 const routes = [
   {
@@ -50,6 +51,10 @@ const routes = [
       {
         path: "privacy",
         element: <MarkdownPage filepath='privacy.md'/>,
+      },
+      {
+        path: "dashboard-overview",
+        element: <DashboardPage />,
       }
     ]
   },

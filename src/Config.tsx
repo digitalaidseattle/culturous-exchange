@@ -44,11 +44,25 @@ const entities = {
   ]
 } as MenuItem;
 
+const dashboard = {
+  id: 'dashboard',
+  type: 'group',
+  children: [
+    {
+      id: 'dashboard',
+      title: 'Dashboard Overview',
+      type: 'item',
+      url: '/dashboard-overview',
+      icon: <HomeOutlined />
+    } as MenuItem
+  ]
+} as MenuItem;
+
 export const Config = {
   appName: 'Culturous Exchange',
   logoUrl: logo,
-  drawerWidth: 240,
-  menuItems: [home, entities],
+  drawerWidth: 250,
+  menuItems: [home, entities, dashboard],
   toolbarItems: [],
   authProviders: ["google"],
   version: packageJson.version
