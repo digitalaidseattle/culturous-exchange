@@ -67,6 +67,10 @@ type Plan = Entity & {
     name: string;
     cohort_id: Identifier;
     note: string;
+    /**
+     * Whether the plan is active. Optional because older rows may not have this field.
+     */
+    active?: boolean;
     group_size?: number; // Optional, can be set to override default group size
     placements: Placement[]
     groups: Group[];

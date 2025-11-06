@@ -168,6 +168,36 @@ class CEPlanService extends EntityService<Plan> {
       .then(updated => this.mapToPlan(updated)!);
   }
 
+  /**
+   * Set the active flag for a plan.
+   * Returns the updated Plan.
+   */
+  async setActive(entityId: Identifier, active: boolean): Promise<Plan> {
+    // Use the existing update method which will map the response back to a Plan
+    return this.update(entityId, { active } as Partial<Plan>);
+  }
+
+  /**
+   * Fetch only the `active` column for a plan by id.
+   * Returns boolean or null if not found.
+   */
+  async getActiveById(entityId: Identifier): Promise<boolean | null> {
+    try {
+      const resp = await supabaseClient
+        .from(this.tableName)
+        .select('active')
+        .eq('id', entityId)
+        .single();
+      if (resp.error) {
+        throw resp.error;
+      }
+      return resp.data ? !!(resp.data as any).active : null;
+    } catch (err) {
+      console.error('Unexpected error during select active:', err);
+      throw err;
+    }
+  }
+
   async save(plan: Plan): Promise<Plan> {
     for (const placement of plan.placements) {
       await placementService.save(placement)
