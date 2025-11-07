@@ -8,6 +8,7 @@
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { enrollmentService } from "./ceEnrollmentService";
 import { Cohort, Group, Identifier, Placement, Plan, Student } from "./types";
+import { studentService } from "./ceStudentService";
 
 
 class CEPlacementService {
@@ -15,6 +16,13 @@ class CEPlacementService {
 
   constructor(tableName: string) {
     this.tableName = tableName;
+  }
+
+  mapJson(json: any): Placement {
+    return {
+      ...json,
+      student: studentService.mapJson(json.student)
+    }
   }
 
   // TODO : NEW, there's something wrong with original findByPlanId need FIX.
@@ -133,9 +141,14 @@ class CEPlacementService {
 
   async batchInsert(entities: Placement[], select?: string): Promise<Placement[]> {
     try {
+      const json = entities.map(entity => {
+        const js = { ...entity }
+        delete js.student
+        return js
+      })
       const { data, error } = await supabaseClient
         .from(this.tableName)
-        .upsert(entities)
+        .upsert(json)
         .select(select ?? '*');
       if (error) {
         console.error('Error inserting entity:', error);

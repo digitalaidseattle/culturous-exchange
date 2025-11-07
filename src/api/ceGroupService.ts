@@ -1,32 +1,28 @@
 /**
- *  cePlacementService.ts
+ *  ceGroupService.ts
  *
  *  @copyright 2025 Digital Aid Seattle
  *
  */
 
-import { parseISO } from "date-fns";
-import { timeWindowService } from "./ceTimeWindowService";
+import { v4 as uuid } from 'uuid';
+import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
 import { EntityService } from "./entityService";
-import { Group, Identifier, Placement, TimeWindow } from "./types";
+import { Group, Identifier, TimeWindow } from "./types";
 
 
 class CEGroupService extends EntityService<Group> {
 
-  private mapToGroup(json: any): Group | null {
+  mapJson(json: any): Group | null {
     if (json) {
       const group = {
         ...json,
         placements: json.placement,
-        time_windows: json.time_window
+        time_windows: json.timewindow.map((js: any) => timeWindowService.mapJson(js))
       }
+
       delete group.placement;
       delete group.timewindow;
-
-      group.timewindows.forEach((tw: TimeWindow) => {
-        tw.start_date_time = parseISO(tw.start_date_time! as unknown as string);
-        tw.end_date_time = parseISO(tw.end_date_time! as unknown as string);
-      });
       return group as Group;
     }
     else {
@@ -34,53 +30,77 @@ class CEGroupService extends EntityService<Group> {
     }
   }
 
-  async getBestOverlap(
-    placement: Placement,
-    groups: Group[],
-    maxSize: number
-  ): Promise<{ bestOverlap: number | 0; bestGroup: Group | null; bestIntersect: TimeWindow[] }> {
-    let bestGroup: Group | null = null;
-    let bestIntersect: TimeWindow[] = [];
-    let bestOverlap = 0;
-
-    for (const group of groups) {
-      if ((group.placements?.length ?? 0) >= maxSize) continue;
-
-      const intersect = timeWindowService.intersectionTimeWindowsMultiple(
-        group.time_windows ?? [],
-        placement.student?.timeWindows ?? []
-      );
-
-      const overlap = await timeWindowService.overlapDuration(intersect);
-
-      if (overlap > bestOverlap) {
-        bestOverlap = overlap; // Hours of overlap
-        bestGroup = group; // Group number
-        bestIntersect = intersect; // Time windows intersection
-      }
-    }
-    return { bestOverlap, bestGroup, bestIntersect };
-  }
-
   async update(entityId: Identifier, updatedFields: Partial<Group>, select?: string): Promise<Group> {
+    /* The update() method updates a Group entity in the database 'grouptable', 
+      excluding nested fields like placements and time_windows. */
+
     const json = { ...updatedFields } as any;
     delete json.placements;
     delete json.time_windows;
 
     return super.update(entityId, json, select)
-      .then(updated => this.mapToGroup(updated)!);
+      .then(updated => this.mapJson(updated)!);
   }
 
   async save(group: Group): Promise<Group> {
+    // inserting group before tw is required.  Group must exist before timewindow added.
+    const json = { ...group }
+    delete json.placements;
+    delete json.time_windows;
+    await this.insert(json);
+
+    await timeWindowService.deleteByGroupId(group.id);
     for (const tw of group.time_windows!) {
       await timeWindowService.save(tw)
     }
 
-    const json = { ...group }
-    delete json.placements;
-    delete json.time_windows;
-    return this.update(group.id, json);
+    return group
   }
+
+  async deleteGroup(group: Group) {
+    for (const tw of group.time_windows!) {
+      await timeWindowService.delete(tw.id)
+    }
+    return await this.delete(group.id)
+  }
+
+  createDefaultTimewindows(group: Group): TimeWindow[] {
+    const friday = {
+      id: uuid(),
+      student_id: null,
+      group_id: group.id,
+      day_in_week: 'Friday',
+      start_t: '07:00:00',
+      end_t: '22:00:00',
+    } as TimeWindow
+    friday.start_date_time = timeWindowService.toZonedTime(0, friday.start_t, DEFAULT_TIMEZONE);
+    friday.end_date_time = timeWindowService.toZonedTime(0, friday.end_t, DEFAULT_TIMEZONE);
+
+    const saturday = {
+      id: uuid(),
+      student_id: null,
+      group_id: group.id,
+      day_in_week: 'Saturday',
+      start_t: '07:00:00',
+      end_t: '22:00:00',
+    } as TimeWindow
+    saturday.start_date_time = timeWindowService.toZonedTime(1, saturday.start_t, DEFAULT_TIMEZONE);
+    saturday.end_date_time = timeWindowService.toZonedTime(1, saturday.end_t, DEFAULT_TIMEZONE);
+
+    const sunday = {
+      id: uuid(),
+      student_id: null,
+      group_id: group.id,
+      day_in_week: 'Sunday',
+      start_t: '07:00:00',
+      end_t: '22:00:00',
+    } as TimeWindow
+    sunday.start_date_time = timeWindowService.toZonedTime(2, sunday.start_t, DEFAULT_TIMEZONE);
+    sunday.end_date_time = timeWindowService.toZonedTime(2, sunday.end_t, DEFAULT_TIMEZONE);
+
+    return [friday, saturday, sunday];
+  }
+
 }
 
 const groupService = new CEGroupService('grouptable')

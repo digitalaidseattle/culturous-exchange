@@ -9,18 +9,17 @@ import { MoreOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
 import {
     Card,
     CardContent,
+    CardHeader,
     IconButton,
     Menu,
     MenuItem,
-    Stack,
-    Theme,
     Typography
 } from "@mui/material";
-import { format } from "date-fns";
 
 import { useContext, useState } from "react";
 import { placementService } from "../api/cePlacementService";
-import { planGenerator } from "../api/planGenerator";
+import { planService } from "../api/cePlanService";
+import { timeWindowService } from "../api/ceTimeWindowService";
 import { Placement } from "../api/types";
 import { PlanContext } from "../pages/plan/PlanContext";
 
@@ -53,20 +52,21 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
     };
 
     const handleOpen = () => {
+        // FIXME  not implemented
         // navigate(`/plan/${props.plan.id}`);
         setAnchorEl(null);
     };
 
-    const handleRemove= () => {
+    const handleRemove = () => {
+        // FIXME  not implemented
         // setOpenDeleteDialog(true)
         setAnchorEl(null);
     };
 
     function refreshPlan() {
-        planGenerator.hydratePlan(plan.id)
-            .then((hydrated) => setPlan(hydrated))
+        planService.getById(plan.id)
+            .then((resp) => setPlan(resp))
     }
-
 
     return (placement &&
         <Card
@@ -74,18 +74,28 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
             key={placement.student_id}
             sx={{
                 pointerEvents: 'auto',
-                margin: 0,
                 position: "relative",
             }}>
-            <IconButton
-                onClick={handleClick}
-                aria-label="close"
-                sx={{
-                    position: "absolute", top: 8, right: 8,
-                    color: (theme: Theme) => theme.palette.grey[500],
-                }}>
-                <MoreOutlined />
-            </IconButton>
+            <CardHeader
+                avatar={<>
+                    {placement.anchor &&
+                        <StarFilled style={{ margin: 0, fontSize: '150%', color: anchor }}
+                            onClick={() => toggleAnchor(placement)} />
+                    }
+                    {!placement.anchor &&
+                        <StarOutlined style={{ margin: 0, fontSize: '150%', color: anchor }}
+                            onClick={() => toggleAnchor(placement)} />
+                    }
+                </>}
+                title={placement.student!.name}
+                titleTypographyProps={{ fontWeight: 600 }}
+                action={
+                    <IconButton
+                        onClick={handleClick}
+                        aria-label="more">
+                        <MoreOutlined />
+                    </IconButton>
+                } />
             <Menu
                 id="demo-positioned-menu"
                 aria-labelledby="demo-positioned-button"
@@ -105,22 +115,11 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
                 <MenuItem onClick={handleRemove}>Remove...</MenuItem>
             </Menu>
             <CardContent>
-                <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
-                    {placement.anchor &&
-                        <StarFilled style={{ fontSize: '150%', color: anchor }}
-                            onClick={() => toggleAnchor(placement)} />
-                    }
-                    {!placement.anchor &&
-                        <StarOutlined style={{ fontSize: '150%', color: anchor }}
-                            onClick={() => toggleAnchor(placement)} />
-                    }
-                    <Typography fontWeight={600}>{placement.student!.name}</Typography>
-                </Stack>
                 {showDetails &&
                     <CardContent>
                         <Typography>{placement.student!.country}</Typography>
                         <Typography fontWeight={600}>Time Windows</Typography>
-                        {timeWindows.map(tw => <Typography>{tw.day_in_week} {format(tw.start_date_time!, "haaa")} - {format(tw.end_date_time!, "haaa")}</Typography>)}
+                        {timeWindows.map((tw, idx) => <Typography key={idx}>{timeWindowService.toString(tw)}</Typography>)}
                     </CardContent>
                 }
             </CardContent>
