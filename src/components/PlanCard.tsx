@@ -25,16 +25,16 @@ export const PlanCard = (props: { planId: Identifier }) => {
     const { refresh, setRefresh } = useContext(RefreshContext);
 
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
-    const [active, setActive] = useState<boolean>(props.plan.active ?? false);
+    const [active, setActive] = useState<boolean>(false);
     const [isUpdating, setIsUpdating] = useState<boolean>(false);
     const theme = useTheme();
 
     // Fetch latest plan from DB to ensure active state is current
     useEffect(() => {
         let mounted = true;
-        if (!props.plan?.id) return;
+        if (!props.planId) return;
         // fetch only the active flag to keep payload small
-        planService.getActiveById(props.plan.id)
+        planService.getActiveById(props.planId)
             .then((freshActive) => {
                 if (mounted && freshActive !== null) {
                     setActive(!!freshActive);
@@ -44,15 +44,15 @@ export const PlanCard = (props: { planId: Identifier }) => {
                 console.error('Failed to fetch plan active state', err);
             });
         return () => { mounted = false; };
-    }, [props.plan.id]);
+    }, [props.planId]);
 
     const navigate = useNavigate();
 
     useEffect(() => {
         if (props.planId) {
-            planService.
-                getById(props.planId)
+            planService.getById(props.planId)
                 .then((resp) => setPlan(resp!))
+                .catch(err => console.error('Failed to load plan', err));
         }
     }, [props.planId]);
 
@@ -86,7 +86,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
     const handleActivePlanToggle = async (value: boolean) => {
         setIsUpdating(true);
         try {
-            const updatedPlan = await planService.setActive(props.plan.id, value);
+            const updatedPlan = await planService.setActive(props.planId, value);
             setActive(!!updatedPlan.active);
             setAnchorEl(null);
             setRefresh(refresh + 1);
