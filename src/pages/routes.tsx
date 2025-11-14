@@ -3,16 +3,16 @@ import {
   Login,
   MainLayout,
   MarkdownPage,
-  MinimalLayout
+  MinimalLayout,
 } from "@digitalaidseattle/mui";
 
 import CohortPage from "./cohort";
 import CohortsPage from "./cohorts";
-import StudentPage from './student';
-import StudentsPage from './students';
+import StudentPage from "./student";
+import StudentsPage from "./students";
 import PlanPage from "./plan";
 import HomePage from "./home";
-import DashboardPage from "./home/dashboard";
+import DashboardPage from "./dashboard";
 
 const routes = [
   {
@@ -42,7 +42,6 @@ const routes = [
       {
         path: "students",
         element: <StudentsPage />,
-
       },
       {
         path: "student/:id",
@@ -50,34 +49,34 @@ const routes = [
       },
       {
         path: "privacy",
-        element: <MarkdownPage filepath='privacy.md'/>,
+        element: <MarkdownPage filepath="privacy.md" />,
       },
       {
         path: "dashboard-overview",
         element: <DashboardPage />,
-      }
-    ]
+      },
+    ],
   },
   {
     path: "/",
     element: <MinimalLayout />,
     children: [
       {
-        path: 'login',
-        element: <Login />
-      }
-    ]
+        path: "login",
+        element: <Login />,
+      },
+    ],
   },
   {
     path: "*",
     element: <MinimalLayout />,
     children: [
       {
-        path: '*',
-        element: <Error />
-      }
-    ]
-  }
+        path: "*",
+        element: <Error />,
+      },
+    ],
+  },
 ];
 
 export { routes };

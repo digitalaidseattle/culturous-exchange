@@ -1,3 +1,4 @@
+import { List } from "lodash";
 import { cohortService } from "./ceCohortService";
 import { studentService } from "./ceStudentService";
 import { Student } from "./types";
@@ -29,36 +30,33 @@ interface CohortStats {
 
 
 class DashboardService {
-    // getStudentCount(students: Student[]): number {
-    //     return students.length;
-    // }
-
-    // getCountryCount(students: Student[]): number {
-    //     const countries = new Set(students.map((student) => student.country));
-    //     return countries.size;
-    // }
+    readonly countryMap: Record<string, string> = {
+        "USA": "united states",
+        "us": "united states",
+        "usa": "united states",
+        "peru": "Peru",
+        "perú": "Peru",
+    }
 
     // Note: Good to define types for the returned data
     async getData(): Promise<any> {
         const cohorts = await cohortService.getAll();
-        const students = await studentService.getAll(); 
         return  {
-            totalStudents: this.getStudentCount(students),
-            totalCountries: this.getCountryCount(students),
             cohortDetail: {
                 cohorts: cohorts,
                 cohortById: cohortService.getById("e839993a-7d68-478d-9652-af636c8b7d03")
-            },
-            students: {
-                students: students,
             }
-            
         }
     }
 
     // STUDENT-STATS Helper Functions
     getStudentCount(students: Student[]): number {
         return students.length;
+    }
+
+    getCountryCount(students: Student[]): number {
+        const countries = new Set(students.map((student) => student.country));
+        return countries.size;
     }
 
     getAgesBreakdown(students: Student[]): Record<string, number> {
@@ -87,18 +85,12 @@ class DashboardService {
         return races;
     }
 
-    
-
-    getCountryCount(students: Student[]): number {
-        const countries = new Set(students.map((student) => student.country));
-        return countries.size;
-    }
-
     getCountryBreakdown(students: Student[]): Record<string, number> {
         const countries:Record<string, number> = {};
 
         students.forEach((student) => {
-            const country = student.country || "Somewhere on Earth";
+            const inputCountry = student.country?.trim().toLowerCase() || "Somewhere on Earth";
+            const country = this.countryMap[inputCountry] || inputCountry;
             countries[country] = (countries[country] || 0) + 1;
         });
         return countries;
@@ -134,9 +126,15 @@ class DashboardService {
 
     // get cohort stats function
     // cohortservice -> get cohorts -> for each cohort get students -> calculate anchor students, waiting students, countries represented
-    async getCohortStats(): Promise<CohortStats> {
+    async getCohortStats(): Promise<List<CohortStats>> {
         const cohorts = await cohortService.getAll();
-        return {} as CohortStats;
+
+        const listOfCohortStats: List<CohortStats> = [];
+        
+
+
+
+        return listOfCohortStats;
     }
 
 
