@@ -15,6 +15,7 @@ const DEFAULT_SELECT = '*, timewindow(*)';
 
 class CEStudentService extends EntityService<Student> {
 
+  // Creates an empty student object with default values (used when creating a new student form)
   emptyStudent(): Student {
     return {
       id: uuid(),
@@ -31,6 +32,7 @@ class CEStudentService extends EntityService<Student> {
     } as Student;
   }
 
+  // Fetches all cohorts that a specific student is enrolled in
   async getCohortsForStudent(student: Student): Promise<Cohort[]> {
     try {
       return await supabaseClient
@@ -44,6 +46,7 @@ class CEStudentService extends EntityService<Student> {
     }
   }
 
+  // Finds all students who are not enrolled in any cohort
   async findUnenrolled(): Promise<Student[]> {
     try {
       // TODO Scaling this may require using edge function

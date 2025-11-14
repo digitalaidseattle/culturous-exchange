@@ -1,16 +1,74 @@
 import {useEffect, useState} from 'react';
-import { useNavigate } from 'react-router';
+import { dashboardService } from '../../../api/dashboardService';
 
 
 
 export default function DashboardPage() {
+    const [dashboardData, setDashboardData] = useState<any>({});
 
+    useEffect(() => {
+        fetchDashboardData();
+    }, []);
 
-
+    function fetchDashboardData() {
+        dashboardService.getData().then((data) => {
+            console.log("Dashboard Data: ", data);
+            setDashboardData(data);
+        });
+    }
 
     return (
         <div>
             Dashboard Page
+
+            <div>
+                <h3>Total number of candidates:</h3>
+                <span>{dashboardData.totalStudents}</span>
+            </div>
+            <div>
+                <h3>Total number of matched/accepted participants: </h3>
+                <span>0</span>
+            </div>
+            <div>
+                <h3>Total number of countries represented: </h3>
+                <span>{dashboardData.totalCountries}</span>
+            </div>
+            <div>
+                <h3>Total number of groups successfully formed: </h3>
+                <span>0</span>
+            </div>
+            <div>
+                <h3>Not Priority: Breakdown of Age Groups </h3>
+                <span>0</span>
+            </div>
+            <div>
+                <h3>Not Priority: Breakdown of Gender </h3>
+                <span>0</span>
+            </div>
+            <div>
+                <h3>Not Priority: Breakdown of race/ethnic background </h3>
+                <span>0</span>
+            </div>
+            <div>
+                <h2> A New/Current Cohort Detail:</h2>
+                <h4>Cohort Name: </h4>
+
+                <div>
+                    <h3>Number of countries represented in this cohort</h3>
+                    <span>0</span>
+                </div>
+
+                <div>
+                    <h3>Number of anchor candidates</h3>
+                    <span>0</span>
+                </div>
+
+                <div>
+                    <h3>Number of candidates waiting to be matched</h3>
+                    <span>0</span>
+                </div>
+
+            </div>
         </div>
     );
 }

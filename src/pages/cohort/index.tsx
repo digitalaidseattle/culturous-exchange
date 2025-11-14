@@ -56,6 +56,7 @@ const CohortPage: React.FC = () => {
                   }
                 });
                 setCohort(cohort);
+                console.log("Cohort loaded: ", cohort);
               });
           } else {
             console.error(`Cohort not found ${cohortId}`);

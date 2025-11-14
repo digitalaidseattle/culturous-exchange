@@ -156,9 +156,7 @@ const StudentsDetailsTable: React.FC = () => {
         width: 75,
         renderCell: (param: GridRenderCellParams) => {
           return (
-            <Button
-              color='error'
-              onClick={handleDeleteStudent(param)} >
+            <Button color='error' onClick={handleDeleteStudent(param)} >
               <DeleteOutlined />
             </Button>
           );
@@ -246,8 +244,8 @@ const StudentsDetailsTable: React.FC = () => {
       }
     ];
   };
-
-  return (columns &&
+  return (
+    columns &&
     <>
       <DataGrid
         rows={pageInfo.rows}

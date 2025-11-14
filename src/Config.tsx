@@ -2,7 +2,8 @@
 import {
   CalendarOutlined,
   HomeOutlined,
-  UserOutlined
+  UserOutlined,
+  DashboardOutlined
 } from '@ant-design/icons';
 
 import logo from "./assets/images/culturous.jpg";
@@ -53,7 +54,7 @@ const dashboard = {
       title: 'Dashboard Overview',
       type: 'item',
       url: '/dashboard-overview',
-      icon: <HomeOutlined />
+      icon: <DashboardOutlined />
     } as MenuItem
   ]
 } as MenuItem;
