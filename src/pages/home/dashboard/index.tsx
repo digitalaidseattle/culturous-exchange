@@ -5,9 +5,11 @@ import { dashboardService } from '../../../api/dashboardService';
 
 export default function DashboardPage() {
     const [dashboardData, setDashboardData] = useState<any>({});
+    const [studentStats, setStudentStats] = useState<any>({});
 
     useEffect(() => {
         fetchDashboardData();
+        fetchStudentStats();
     }, []);
 
     function fetchDashboardData() {
@@ -15,6 +17,14 @@ export default function DashboardPage() {
             console.log("Dashboard Data: ", data);
             setDashboardData(data);
         });
+    }
+
+    function fetchStudentStats() {
+        dashboardService.getStudentStats()
+            .then((stats) => {
+                console.log("Student Stats: ", stats);
+                setStudentStats(stats);
+            });
     }
 
     return (
