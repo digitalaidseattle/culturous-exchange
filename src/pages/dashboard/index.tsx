@@ -2,26 +2,25 @@ import { useEffect, useState } from "react";
 import { dashboardService } from "../../api/dashboardService";
 
 export default function DashboardPage() {
-  const [dashboardData, setDashboardData] = useState<any>({});
   const [studentStats, setStudentStats] = useState<any>({});
+  const [cohortStats, setCohortStats] = useState<any>({});
 
   useEffect(() => {
-    fetchDashboardData();
     fetchStudentStats();
+    fetchCohortStats();
   }, []);
-
-  function fetchDashboardData() {
-    dashboardService.getData().then((data) => {
-      console.log("Cohort: ", data);
-
-      setDashboardData(data);
-    });
-  }
 
   function fetchStudentStats() {
     dashboardService.getStudentStats().then((stats) => {
       console.log("Student Stats: ", stats);
       setStudentStats(stats);
+    });
+  }
+
+  function fetchCohortStats() {
+    dashboardService.getCohortStats().then((stats) => {
+      console.log("Cohort Stats: ", stats);
+      setCohortStats(stats);
     });
   }
 
@@ -80,24 +79,40 @@ export default function DashboardPage() {
         <h3>Not Priority: Breakdown of race/ethnic background </h3>
         <span>0</span>
       </div>
+
+
       <div>
         <h2> A New/Current Cohort Detail:</h2>
-        <h4>Cohort Name: </h4>
-
-        <div>
-          <h3>Number of countries represented in this cohort</h3>
-          <span>0</span>
-        </div>
-
-        <div>
-          <h3>Number of anchor candidates</h3>
-          <span>0</span>
-        </div>
-
-        <div>
-          <h3>Number of candidates waiting to be matched</h3>
-          <span>0</span>
-        </div>
+        {
+          Object.entries(cohortStats || {}).map(([index, cohort]) => (
+            <div key={index}>
+              <h3>Cohort Name: {cohort.cohortName}</h3>
+              <h4>Cohort ID: {cohort.cohortId}</h4>
+              <div>
+                <h4>Number of countries represented:</h4>
+                {
+                  Object.entries(cohort.byCountries || {}).map(([country, count]) => (
+                    <li key={country}>
+                      {country}: {count}
+                    </li>
+                  ))
+                }
+              </div>
+              <div>
+                <h4>Number of candidates enrolled:</h4>
+                <span>{cohort.numberOfEnrollments}</span>
+              </div>
+              <div>
+                <h4>Number of anchor candidates:</h4>
+                <span>{cohort.numberOfAnchorStudents}</span>
+              </div>
+              <div>
+                <h4>Number of candidates waiting to be matched:</h4>
+                <span>{cohort.numberOfPendingStudents}</span>
+              </div>
+            </div>
+          ))  
+        }
       </div>
     </div>
   );

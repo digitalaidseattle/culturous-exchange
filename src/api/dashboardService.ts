@@ -1,7 +1,8 @@
 import { List } from "lodash";
 import { cohortService } from "./ceCohortService";
 import { studentService } from "./ceStudentService";
-import { Student } from "./types";
+import { Cohort, Student } from "./types";
+import { enrollmentService } from "./ceEnrollmentService";
 
 
 
@@ -21,11 +22,12 @@ interface StudentStats {
 }
 
 interface CohortStats {
+    cohortId: number | string | null | undefined;
     cohortName: string;
-    cohortId: string;
     byCountries: Record<string, number>;
-    numberOfAnchorCandidates: number;
-    numberOfWaitingCandidates: number;
+    numberOfEnrollments: number;
+    numberOfAnchorStudents: number;
+    numberOfPendingStudents: number;
 }
 
 
@@ -36,17 +38,6 @@ class DashboardService {
         "usa": "united states",
         "peru": "Peru",
         "perú": "Peru",
-    }
-
-    // Note: Good to define types for the returned data
-    async getData(): Promise<any> {
-        const cohorts = await cohortService.getAll();
-        return  {
-            cohortDetail: {
-                cohorts: cohorts,
-                cohortById: cohortService.getById("e839993a-7d68-478d-9652-af636c8b7d03")
-            }
-        }
     }
 
     // STUDENT-STATS Helper Functions
@@ -97,7 +88,6 @@ class DashboardService {
     }
 
 
-
     // COHORT-STATS Helper Functions
 
 
@@ -126,23 +116,41 @@ class DashboardService {
 
     // get cohort stats function
     // cohortservice -> get cohorts -> for each cohort get students -> calculate anchor students, waiting students, countries represented
-    async getCohortStats(): Promise<List<CohortStats>> {
+    async getCohortStats(): Promise<CohortStats[]> {
         const cohorts = await cohortService.getAll();
+        const listOfCohortStats: CohortStats[] = [];
 
-        const listOfCohortStats: List<CohortStats> = [];
-        
-
-
-
+        for (const cohort of cohorts) {
+            const cohortDetails = await this.getCohortDetails(cohort);
+            listOfCohortStats.push(cohortDetails);
+        }
         return listOfCohortStats;
     }
 
 
-    
+    async getCohortDetails(cohort: Cohort): Promise<CohortStats> {
+        // Calculate number of anchor students
+        let totalAnchor = 0;
+        cohort.enrollments.forEach((student) => {
+            if (student.anchor) {
+                totalAnchor++;
+            }
+        });
+
+        // Calculate number of countries represented
+        const students = await enrollmentService.getStudents(cohort);
+        const countriesByCohort = this.getCountryBreakdown(students); 
 
 
-
-    
+        return {
+            cohortId: cohort.id,
+            cohortName: cohort.name,
+            byCountries: countriesByCohort,
+            numberOfEnrollments: cohort.enrollments.length,
+            numberOfAnchorStudents: totalAnchor,
+            numberOfPendingStudents: 0,
+        }
+    }
 }
 
 export const dashboardService = new DashboardService();
