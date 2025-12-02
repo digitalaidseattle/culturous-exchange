@@ -1,0 +1,1 @@
+ALTER TABLE grouptable ADD COLUMN IF NOT EXISTS duration INTEGER;

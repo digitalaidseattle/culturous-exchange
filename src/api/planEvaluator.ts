@@ -23,6 +23,7 @@ class PlanEvaluator {
     evaluateGroup(group: Group): Group {
         group.time_windows = this.calcGroupTimeWindows(group);
         group.country_count = this.calcCountryCount(group);
+        group.duration = this.calcDuration(group);
         return group;
     }
 
@@ -43,6 +44,10 @@ class PlanEvaluator {
             }
         });
         return countries.size;
+    }
+
+    calcDuration(group: Group): number {
+        return timeWindowService.overlapDuration(group.time_windows!);
     }
 }
 

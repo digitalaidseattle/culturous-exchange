@@ -6,12 +6,11 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { groupService } from "./ceGroupService";
+import { timeWindowService } from "./ceTimeWindowService";
 import { Group, TimeWindow } from "./types";
-import { getTimezoneOffset } from "date-fns-tz";
-import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
 
 describe("groupService", () => {
-    const offset = getTimezoneOffset(DEFAULT_TIMEZONE, new Date()) / 60 / 60 / 1000
+    const offset = -7; 
 
     it("createDefaultTimewindows", () => {
 
