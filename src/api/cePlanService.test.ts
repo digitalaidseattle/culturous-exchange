@@ -52,7 +52,6 @@ describe("planService", () => {
         (groupService.mapJson as ReturnType<typeof vi.fn>).mockReturnValue(group);
 
         const result = planService.mapJson(json);
-        console.log(json, result)
         expectTypeOf(result).toMatchTypeOf<Plan>();
         expect(result.id).toBe("plan1");
         expect(result.name).toBe("Test Plan");
