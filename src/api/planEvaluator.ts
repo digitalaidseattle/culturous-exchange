@@ -52,4 +52,4 @@ class PlanEvaluator {
 }
 
 const planEvaluator = new PlanEvaluator()
-export { planEvaluator };
+export { planEvaluator, PlanEvaluator };
