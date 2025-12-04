@@ -8,7 +8,7 @@
 import { MoreOutlined } from "@ant-design/icons";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
-import { Card, CardContent, IconButton, Menu, MenuItem, Theme, Typography } from "@mui/material";
+import { Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import { cohortService } from "../../api/ceCohortService";
@@ -66,15 +66,14 @@ export const CohortCard = (props: { cohort: Cohort }) => {
                 position: "relative",
             }}
             onDoubleClick={handleOpen}>
-            <IconButton
-                onClick={handleClick}
-                aria-label="close"
-                sx={{
-                    position: "absolute", top: 8, right: 8,
-                    color: (theme: Theme) => theme.palette.grey[500],
-                }}>
-                <MoreOutlined />
-            </IconButton>
+            <CardHeader
+                title={props.cohort.name}
+                action={
+                    <IconButton
+                        onClick={handleClick}
+                        aria-label="more">
+                        <MoreOutlined />
+                    </IconButton>} />
             <Menu
                 id="demo-positioned-menu"
                 aria-labelledby="demo-positioned-button"
@@ -94,7 +93,6 @@ export const CohortCard = (props: { cohort: Cohort }) => {
                 <MenuItem onClick={handleDelete}>Delete...</MenuItem>
             </Menu>
             <CardContent>
-                <Typography fontWeight={600}>{props.cohort.name}</Typography>
                 <Typography>Students : {props.cohort.enrollments?.length} </Typography>
                 <Typography>Plans : {props.cohort.plans?.length} </Typography>
                 <ConfirmationDialog

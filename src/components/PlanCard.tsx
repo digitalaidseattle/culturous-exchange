@@ -7,13 +7,13 @@
  */
 
 import { MoreOutlined } from "@ant-design/icons";
+import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
-import { Card, CardContent, IconButton, Menu, MenuItem, Theme, Typography } from "@mui/material";
+import { Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { planService } from "../api/cePlanService";
 import { Identifier, Plan } from "../api/types";
-import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 
 
 export const PlanCard = (props: { planId: Identifier }) => {
@@ -64,7 +64,6 @@ export const PlanCard = (props: { planId: Identifier }) => {
 
     const doDelete = () => {
         if (plan) {
-            console.log(plan)
             planService.deletePlan(plan)
                 .then(() => {
                     setOpenDeleteDialog(false);
@@ -85,15 +84,14 @@ export const PlanCard = (props: { planId: Identifier }) => {
                 position: "relative",
             }}
             onDoubleClick={handleOpen}>
-            <IconButton
-                onClick={handleClick}
-                aria-label="close"
-                sx={{
-                    position: "absolute", top: 8, right: 8,
-                    color: (theme: Theme) => theme.palette.grey[500],
-                }}>
-                <MoreOutlined />
-            </IconButton>
+            <CardHeader
+                title={plan.name}
+                action={<IconButton
+                    onClick={handleClick}
+                    aria-label="more">
+                    <MoreOutlined />
+                </IconButton>
+                } />
             <Menu
                 id="demo-positioned-menu"
                 aria-labelledby="demo-positioned-button"
@@ -114,7 +112,6 @@ export const PlanCard = (props: { planId: Identifier }) => {
                 <MenuItem onClick={handleDelete}>Delete...</MenuItem>
             </Menu>
             <CardContent>
-                <Typography fontWeight={600}>{plan.name}</Typography>
                 <Typography>Notes : {plan.note}</Typography>
                 <Typography>Groups : {plan.groups.length}</Typography>
                 <Typography>Students : {plan.placements.length}</Typography>
@@ -124,6 +121,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
                     handleConfirm={() => doDelete()}
                     handleCancel={() => setOpenDeleteDialog(false)} />
             </CardContent>
+
         </Card>
     );
 }
