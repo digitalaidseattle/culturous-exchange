@@ -8,16 +8,16 @@ import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
 
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
+import { useSearchParams } from "react-router-dom";
 import { cohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { planService } from "../../api/cePlanService";
+import { planGenerator } from "../../api/planGenerator";
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
 import { TextEdit } from "../../components/TextEdit";
 import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
-import { useSearchParams } from "react-router-dom";
-import { planGenerator } from "../../api/planGenerator";
 
 interface CohortContextType {
   cohort: Cohort;
@@ -42,24 +42,25 @@ const CohortPage: React.FC = () => {
 
   useEffect(() => {
     if (cohortId) {
-      cohortService.getById(cohortId).then((cohort) => {
-        if (cohort) {
-          enrollmentService.getStudents(cohort)
-            .then((students) => {
-              cohort.enrollments.forEach(enrollment => {
-                const student = students.find(s => s.id === enrollment.student_id);
-                if (student) {
-                  enrollment.student = student;
-                } else {
-                  console.warn(`Student not found for enrollment: ${enrollment.student_id}`);
-                }
+      cohortService.getById(cohortId)
+        .then((cohort) => {
+          if (cohort) {
+            enrollmentService.getStudents(cohort)
+              .then((students) => {
+                cohort.enrollments.forEach(enrollment => {
+                  const student = students.find(s => s.id === enrollment.student_id);
+                  if (student) {
+                    enrollment.student = student;
+                  } else {
+                    console.warn(`Student not found for enrollment: ${enrollment.student_id}`);
+                  }
+                });
+                setCohort(cohort);
               });
-              setCohort(cohort);
-            });
-        } else {
-          console.error(`Cohort not found ${cohortId}`);
-        }
-      });
+          } else {
+            console.error(`Cohort not found ${cohortId}`);
+          }
+        });
     }
   }, [cohortId, refresh]);
 
@@ -84,8 +85,10 @@ const CohortPage: React.FC = () => {
   async function handleCreatePlan() {
     if (cohort) {
       const created = await planService.create(cohort);
-      const hydrated = await planGenerator.hydratePlan(created.id);
+      const hydrated = await planService.getById(created.id);
       const seededPlan = await planGenerator.seedPlan(hydrated)
+      await planService.save(seededPlan);
+
       navigate(`/plan/${seededPlan.id}`);
       notifications.success(`Plan added to  ${cohort.name}.`);
     }

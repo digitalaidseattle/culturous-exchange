@@ -44,15 +44,23 @@ class PlanExporter {
         return data;
     }
 
+    // Treat placements with group_id == null (or no group) as waitlisted
+    isWaitlisted(placement: any): boolean {
+        // Covers both shapes: explicit group_id or a missing/null group object
+        return placement?.group_id == null;
+    }
+
     studentRows(plan: Plan): any[] {
         const data: any[] = [];
         for (const group of plan.groups) {
             for (const placement of group.placements || []) {
                 let student: Student = placement.student! || {};
+
+                // Build one row per student
                 const row: any = {
                     "Group": group.name,
-                    "Group Times (PST)": group.time_windows?.map(tw => timeWindowService.toString(tw, PlanExporter.PST_OFFSET)).join(', ') || "",
-                    "Group Times (Student TZ)": group.time_windows?.map(tw => timeWindowService.toString(tw, student.tz_offset)).join(', ') || "",
+                    "Group Times": group.time_windows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
+                    "Group Times (Student TZ)": group.time_windows?.map(tw => timeWindowService.toString(tw, student.time_zone)).join(', ') || "",
                     "Name": student.name || "",
                     "Anchor": student.anchor ? "yes" : "",
                     "Email": student.email || "",
@@ -63,12 +71,36 @@ class PlanExporter {
                 data.push(row);
             }
         }
+
+        const waitlisted = (plan.placements ?? []).filter(this.isWaitlisted);
+
+        // Waitlisted students
+        for (const placement of waitlisted) {
+            const student: Student = placement.student ?? ({} as Student);
+
+            data.push({
+                "Group": "Waitlist",
+                "Group Times (PST)": "",
+                "Group Times (Student TZ)": "",
+                "Name": student.name || "",
+                "Anchor": student.anchor ? "yes" : "",
+                "Email": student.email || "",
+                "Country": student.country,
+                "Time Zone": student.time_zone,
+                "Student Times":
+                    student.timeWindows?.map(tw =>
+                        timeWindowService.toString(tw)
+                    ).join(", ") || "",
+            });
+        }
+
         return data;
+
     }
+
 
     async exportPlan(plan: Plan): Promise<boolean> {
         const data = this.studentRows(plan);
-        console.log('Exporting plan', plan.name, 'with data:', data);
 
         const worksheet = XLSX.utils.json_to_sheet(data);
         const workbook = XLSX.utils.book_new();
