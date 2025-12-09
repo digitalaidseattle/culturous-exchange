@@ -66,6 +66,8 @@ type Enrollment = {
 type Plan = Entity & {
     name: string;
     cohort_id: Identifier;
+    /** Whether this plan is active/enabled */
+    active: boolean;
     note: string;
     group_size?: number; // Optional, can be set to override default group size
     placements: Placement[]
