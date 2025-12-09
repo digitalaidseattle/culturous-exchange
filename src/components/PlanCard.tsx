@@ -67,6 +67,11 @@ export const PlanCard = (props: { planId: Identifier }) => {
         setAnchorEl(null);
     };
 
+    const handleActive = () => {
+        handleActivePlanToggle(!active);
+        setAnchorEl(null);
+    };
+
     const doDelete = () => {
         if (plan) {
             planService.deletePlan(plan)
@@ -171,7 +176,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
                 <MenuItem onClick={handleOpen}>Open</MenuItem>
                 <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
                 <MenuItem onClick={handleDelete}>Delete...</MenuItem>
-                <MenuItem disabled={loading} onClick={() => { handleActivePlanToggle(!active); }}>
+                <MenuItem disabled={loading} onClick={handleActive}>
                     {active ? "InActive" : "Active"}
                 </MenuItem>
             </Menu>
