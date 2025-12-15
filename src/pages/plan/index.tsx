@@ -6,19 +6,19 @@ import { useParams } from "react-router";
 // project import
 import { Box, Breadcrumbs, CircularProgress, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
 
+import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
 import { useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { cohortService } from "../../api/ceCohortService";
 import { planService } from "../../api/cePlanService";
-import { Cohort, Identifier, Plan } from "../../api/types";
+import { planExporter } from "../../api/planExporter";
+import { planGenerator } from "../../api/planGenerator";
+import { Cohort, Plan } from "../../api/types";
+import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { TextEdit } from "../../components/TextEdit";
 import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
 import { PlanContext } from "./PlanContext";
-import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
-import { planExporter } from "../../api/planExporter";
-import { planGenerator } from "../../api/planGenerator";
-import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { TimeLine } from "./TimeLine";
 
 const PlanPage: React.FC = () => {
@@ -34,7 +34,7 @@ const PlanPage: React.FC = () => {
   const notifications = useNotifications();;
 
   useEffect(() => {
-    refreshPlan(planId);
+    fetchData();
   }, [planId]);
 
   useEffect(() => {
@@ -51,11 +51,15 @@ const PlanPage: React.FC = () => {
     }
   }, [plan]);
 
-  function refreshPlan(planId: Identifier) {
-    setPlan(undefined);
+  function fetchData() {
+    const lastUpdated = plan ? plan.updated_at : undefined;
     setLoading(true);
     planService.getById(planId)
-      .then(resp => setPlan(resp))
+      .then(resp => {
+        if (resp.updated_at === lastUpdated) {
+          setPlan(resp)
+        }
+      })
       .catch((err) => {
         notifications.error(`Error reading ${planId} : ${err}`)
         console.error(`Error reading ${planId} : ${err}`)
@@ -68,7 +72,7 @@ const PlanPage: React.FC = () => {
       .then(updated => {
         if (updated) {
           notifications.success('Plan updated.');
-          refreshPlan(updated.id);
+          fetchData();
         }
       })
   }
@@ -78,7 +82,7 @@ const PlanPage: React.FC = () => {
       .then(updated => {
         if (updated) {
           notifications.success('Plan updated.');
-          refreshPlan(updated.id);
+          fetchData();
         }
       })
   }
@@ -156,7 +160,7 @@ const PlanPage: React.FC = () => {
             {/* <PlanDetails /> */}
             <Box sx={{ marginTop: 1 }}  >
               <Toolbar>
-                <Typography variant="h3" component="div" sx={{ flexGrow: 1 }} onClick={() => setViewType(viewType === "board" ? "timeline" : "board") } style={{ cursor: 'pointer' }}>
+                <Typography variant="h3" component="div" sx={{ flexGrow: 1 }} onClick={() => setViewType(viewType === "board" ? "timeline" : "board")} style={{ cursor: 'pointer' }}>
                   Groups
                 </Typography>
 
