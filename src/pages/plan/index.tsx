@@ -25,7 +25,7 @@ import { TimeLine } from "./TimeLine";
 const PlanPage: React.FC = () => {
   const { refresh } = useContext(RefreshContext);
   const { setLoading } = useContext(LoadingContext);
-  const { id: planId } = useParams<string>();
+  const { id: planId } = useParams<{ id?: string }>();
   const [plan, setPlan] = useState<Plan>();
   const [cohort, setCohort] = useState<Cohort>();
   const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
@@ -54,22 +54,25 @@ const PlanPage: React.FC = () => {
   }, [plan]);
 
   function fetchData() {
-    setLoading(true);
-    planService.getById(planId)
-      .then(resp => {
-        const lastUpdated = plan ? plan.updated_at : undefined;
-        if (resp.updated_at !== lastUpdated) {
-          setPlan(resp)
-        }
-      })
-      .catch((err) => {
-        notifications.error(`Error reading ${planId} : ${err}`)
-        console.error(`Error reading ${planId} : ${err}`)
-      })
-      .finally(() => setLoading(false));
+    if (planId) {
+      setLoading(true);
+      planService.getById(planId)
+        .then(resp => {
+          const lastUpdated = plan ? plan.updated_at ?? undefined : undefined;
+          if (resp.updated_at !== lastUpdated) {
+            setPlan(resp)
+          }
+        })
+        .catch((err) => {
+          notifications.error(`Error reading ${planId} : ${err}`)
+          console.error(`Error reading ${planId} : ${err}`)
+        })
+        .finally(() => setLoading(false));
+    }
   }
 
   function handleNameUpdate(text: string) {
+    setLoading(true);
     planService.update(plan!.id, { name: text })
       .then(updated => {
         notifications.success('Plan updated.');
@@ -97,6 +100,7 @@ const PlanPage: React.FC = () => {
   }
 
   function exportPlan(): void {
+    setLoading(true);
     planExporter.exportPlan(plan!)
       .then((exported) => {
         if (exported) {
@@ -105,6 +109,12 @@ const PlanPage: React.FC = () => {
           notifications.error('Plan export failed');
         }
       })
+      .catch((err) => {
+        notifications.error(`Error exporting plan ${planId} : ${err}`)
+        console.error(`Error exporting plan ${planId} : ${err}`)
+      })
+      .finally(() => setLoading(false));
+
   }
 
   function handleGroupDetails(): void {
@@ -120,6 +130,7 @@ const PlanPage: React.FC = () => {
   }
 
   function handleSettingsChange(plan: Plan): void {
+    setLoading(true);
     planService.update(plan.id, { group_size: plan.group_size! })
       .then(updatedPlan => {
         planGenerator.seedPlan(updatedPlan)
@@ -130,9 +141,13 @@ const PlanPage: React.FC = () => {
             setShowSettings(false);
           })
           .catch((error) => {
-            notifications.error(`Failed to update plan: ${error.message}`);
+            notifications.error(`Failed to seed the plan: ${error.message}`);
           });
       })
+      .catch((error) => {
+        notifications.error(`Failed to update plan: ${error.message}`);
+      })
+      .finally(() => setLoading(false));
   }
 
   return (
