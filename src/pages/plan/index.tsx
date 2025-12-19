@@ -1,31 +1,33 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 // material-ui
 
 // project import
-import { Box, Breadcrumbs, CircularProgress, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
+import { Box, Breadcrumbs, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
 
-import { useNotifications } from "@digitalaidseattle/core";
+import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { LoadingContext, RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { cohortService } from "../../api/ceCohortService";
 import { planService } from "../../api/cePlanService";
-import { Cohort, Identifier, Plan } from "../../api/types";
+import { planExporter } from "../../api/planExporter";
+import { planGenerator } from "../../api/planGenerator";
+import { Cohort, Plan } from "../../api/types";
+import { LoadingOverlay } from "../../components/LoadingOverlay";
+import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { TextEdit } from "../../components/TextEdit";
 import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
 import { PlanContext } from "./PlanContext";
-import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
-import { planExporter } from "../../api/planExporter";
-import { planGenerator } from "../../api/planGenerator";
-import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { TimeLine } from "./TimeLine";
 
 const PlanPage: React.FC = () => {
-  const { id: planId } = useParams<string>();
+  const { refresh } = useContext(RefreshContext);
+  const { setLoading } = useContext(LoadingContext);
+  const { id: planId } = useParams<{ id?: string }>();
   const [plan, setPlan] = useState<Plan>();
   const [cohort, setCohort] = useState<Cohort>();
-  const [loading, setLoading] = useState<boolean>(false);
   const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
   const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -34,8 +36,8 @@ const PlanPage: React.FC = () => {
   const notifications = useNotifications();;
 
   useEffect(() => {
-    refreshPlan(planId);
-  }, [planId]);
+    fetchData();
+  }, [planId, refresh]);
 
   useEffect(() => {
     setCohort(undefined);
@@ -51,38 +53,59 @@ const PlanPage: React.FC = () => {
     }
   }, [plan]);
 
-  function refreshPlan(planId: Identifier) {
-    setPlan(undefined);
+  function fetchData() {
+    if (planId) {
+      let lastUpdated = undefined;
+      if (plan) {
+        lastUpdated = plan.updated_at;
+      } else {
+        setLoading(true);
+      }
+      planService.getById(planId)
+        .then(resp => {
+          if (resp.updated_at !== lastUpdated) {
+            setLoading(true);
+            setPlan(resp)
+          }
+        })
+        .catch((err) => {
+          notifications.error(`Error reading ${planId} : ${err}`)
+          console.error(`Error reading ${planId} : ${err}`)
+        })
+        .finally(() => setLoading(false));
+    }
+  }
+
+  function handleNameUpdate(text: string) {
     setLoading(true);
-    planService.getById(planId)
-      .then(resp => setPlan(resp))
+    planService.update(plan!.id, { name: text })
+      .then(updated => {
+        notifications.success('Plan updated.');
+        setPlan(updated);
+      })
       .catch((err) => {
-        notifications.error(`Error reading ${planId} : ${err}`)
-        console.error(`Error reading ${planId} : ${err}`)
+        notifications.error(`Error updating plan ${planId} : ${err}`)
+        console.error(`Error updating plan ${planId} : ${err}`)
       })
       .finally(() => setLoading(false));
   }
 
-  function handleNameUpdate(text: string) {
-    planService.update(plan!.id, { name: text })
-      .then(updated => {
-        if (updated) {
-          notifications.success('Plan updated.');
-          refreshPlan(updated.id);
-        }
-      })
-  }
-
   function handleNoteUpdate(text: string) {
+    setLoading(true);
     planService.update(plan!.id, { note: text })
       .then(updated => {
-        if (updated) {
-          notifications.success('Plan updated.');
-          refreshPlan(updated.id);
-        }
+        notifications.success('Plan updated.');
+        setPlan(updated);
       })
+      .catch((err) => {
+        notifications.error(`Error updating plan ${planId} : ${err}`)
+        console.error(`Error updating plan ${planId} : ${err}`)
+      })
+      .finally(() => setLoading(false));
   }
+
   function exportPlan(): void {
+    setLoading(true);
     planExporter.exportPlan(plan!)
       .then((exported) => {
         if (exported) {
@@ -91,6 +114,12 @@ const PlanPage: React.FC = () => {
           notifications.error('Plan export failed');
         }
       })
+      .catch((err) => {
+        notifications.error(`Error exporting plan ${planId} : ${err}`)
+        console.error(`Error exporting plan ${planId} : ${err}`)
+      })
+      .finally(() => setLoading(false));
+
   }
 
   function handleGroupDetails(): void {
@@ -106,6 +135,7 @@ const PlanPage: React.FC = () => {
   }
 
   function handleSettingsChange(plan: Plan): void {
+    setLoading(true);
     planService.update(plan.id, { group_size: plan.group_size! })
       .then(updatedPlan => {
         planGenerator.seedPlan(updatedPlan)
@@ -116,86 +146,86 @@ const PlanPage: React.FC = () => {
             setShowSettings(false);
           })
           .catch((error) => {
-            notifications.error(`Failed to update plan: ${error.message}`);
+            notifications.error(`Failed to seed the plan: ${error.message}`);
           });
       })
-
+      .catch((error) => {
+        notifications.error(`Failed to update plan: ${error.message}`);
+      })
+      .finally(() => setLoading(false));
   }
-  return (loading ?
-    <Box sx={{
-      height: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}>
-      <CircularProgress color="success" />
-    </Box>
-    : plan && cohort &&
-    <PlanContext.Provider value={{ plan, setPlan }}>
-      <CohortContext.Provider value={{ cohort, setCohort }}>
-        <Stack gap={1}>
-          <Breadcrumbs aria-label="breadcrumb">
-            <Link underline="hover" color="inherit"
-              href="/">
-              Home
-            </Link>
-            <Link
-              underline="hover"
-              color="inherit"
-              href={`/cohort/${plan.cohort_id}`}
-            >
-              Cohort: {cohort.name}
-            </Link>
-            <Typography sx={{ color: 'text.primary' }}>Plan: {plan.name}</Typography>
-          </Breadcrumbs>
-          <MainCard sx={{ width: '100%' }}>
-            <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
-              <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
-              <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
+
+  return (
+    <>
+      <LoadingOverlay />
+      {plan && cohort &&
+        <PlanContext.Provider value={{ plan, setPlan }}>
+          <CohortContext.Provider value={{ cohort, setCohort }}>
+            <Stack gap={1}>
+              <Breadcrumbs aria-label="breadcrumb">
+                <Link underline="hover" color="inherit"
+                  href="/">
+                  Home
+                </Link>
+                <Link
+                  underline="hover"
+                  color="inherit"
+                  href={`/cohort/${plan.cohort_id}`}
+                >
+                  Cohort: {cohort.name}
+                </Link>
+                <Typography sx={{ color: 'text.primary' }}>Plan: {plan.name}</Typography>
+              </Breadcrumbs>
+              <MainCard sx={{ width: '100%' }}>
+                <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
+                  <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
+                  <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
+                </Stack>
+                {/* <PlanDetails /> */}
+                <Box sx={{ marginTop: 1 }}  >
+                  <Toolbar>
+                    <Typography variant="h3" component="div" sx={{ flexGrow: 1 }} onClick={() => setViewType(viewType === "board" ? "timeline" : "board")} style={{ cursor: 'pointer' }}>
+                      Groups
+                    </Typography>
+
+                    <Tooltip title="Export plan">
+                      <IconButton color="inherit" onClick={exportPlan}>
+                        <ExportOutlined />
+                      </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Toggle group details">
+                      <IconButton color="inherit" onClick={handleGroupDetails}>
+                        <TeamOutlined />
+                      </IconButton>
+                    </Tooltip>
+
+                    <Tooltip title="Toggle student details">
+                      <IconButton color="inherit" onClick={handleStudentDetails}>
+                        <UserOutlined />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Show plan settings">
+                      <IconButton color="inherit" onClick={handleSettings}>
+                        <SettingOutlined />
+                      </IconButton>
+                    </Tooltip>
+                  </Toolbar>
+                  {viewType === "board" && <GroupBoard showGroupDetails={showGroupDetails} showStudentDetails={showStudentDetails} />}
+                  {viewType === "timeline" && <TimeLine />}
+                  <PlanSettingsDialog
+                    plan={plan!}
+                    isOpen={showSettings}
+                    onClose={() => setShowSettings(false)}
+                    onSubmit={handleSettingsChange}
+                  />
+                </Box>
+              </MainCard>
             </Stack>
-            {/* <PlanDetails /> */}
-            <Box sx={{ marginTop: 1 }}  >
-              <Toolbar>
-                <Typography variant="h3" component="div" sx={{ flexGrow: 1 }} onClick={() => setViewType(viewType === "board" ? "timeline" : "board") } style={{ cursor: 'pointer' }}>
-                  Groups
-                </Typography>
-
-                <Tooltip title="Export plan">
-                  <IconButton color="inherit" onClick={exportPlan}>
-                    <ExportOutlined />
-                  </IconButton>
-                </Tooltip>
-
-                <Tooltip title="Toggle group details">
-                  <IconButton color="inherit" onClick={handleGroupDetails}>
-                    <TeamOutlined />
-                  </IconButton>
-                </Tooltip>
-
-                <Tooltip title="Toggle student details">
-                  <IconButton color="inherit" onClick={handleStudentDetails}>
-                    <UserOutlined />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Show plan settings">
-                  <IconButton color="inherit" onClick={handleSettings}>
-                    <SettingOutlined />
-                  </IconButton>
-                </Tooltip>
-              </Toolbar>
-              {!loading && viewType === "board" && <GroupBoard showGroupDetails={showGroupDetails} showStudentDetails={showStudentDetails} />}
-              {!loading && viewType === "timeline" && <TimeLine />}
-              <PlanSettingsDialog
-                plan={plan!}
-                isOpen={showSettings}
-                onClose={() => setShowSettings(false)}
-                onSubmit={handleSettingsChange}
-              />
-            </Box>
-          </MainCard>
-        </Stack>
-      </CohortContext.Provider>
-    </PlanContext.Provider>
+          </CohortContext.Provider>
+        </PlanContext.Provider>
+      }
+    </>
   );
 };
 

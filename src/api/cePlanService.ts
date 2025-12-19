@@ -26,7 +26,8 @@ class CEPlanService extends EntityService<Plan> {
       note: "",
       group_size: 10,
       placements: [],
-      groups: []
+      groups: [],
+      updated_at: new Date()
     } as Plan;
     await this.save(proposed)
     return this.insert(proposed)

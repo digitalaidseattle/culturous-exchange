@@ -70,6 +70,7 @@ type Plan = Entity & {
     group_size?: number; // Optional, can be set to override default group size
     placements: Placement[]
     groups: Group[];
+    updated_at: Date;
 }
 
 type Placement = {
