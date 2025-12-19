@@ -55,11 +55,16 @@ const PlanPage: React.FC = () => {
 
   function fetchData() {
     if (planId) {
-      setLoading(true);
+      let lastUpdated = undefined;
+      if (plan) {
+        lastUpdated = plan.updated_at;
+      } else {
+        setLoading(true);
+      }
       planService.getById(planId)
         .then(resp => {
-          const lastUpdated = plan ? plan.updated_at ?? undefined : undefined;
           if (resp.updated_at !== lastUpdated) {
+            setLoading(true);
             setPlan(resp)
           }
         })

@@ -197,7 +197,6 @@ export const TimeLine: React.FC = () => {
 
     useEffect(() => {
         // If plan is not defined, we don't want to initialize
-        console.log('plan', plan)
         if (plan) {
             refresh();
         }
