@@ -10,7 +10,7 @@ import { timeWindowService } from "./ceTimeWindowService";
 import { Group, TimeWindow } from "./types";
 
 describe("groupService", () => {
-    const offset = -7; 
+    const offset = -7; // using a fixed offset to make test deterministic; 
 
     it("createDefaultTimewindows", () => {
 

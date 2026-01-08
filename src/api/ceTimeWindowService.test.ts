@@ -79,7 +79,7 @@ describe("timeWindowService", () => {
 
     });
 
-    it("overlapDuration", () => {
+    it("totalDuration", () => {
 
         const timeA = {
             start_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE),
@@ -91,7 +91,7 @@ describe("timeWindowService", () => {
             end_date_time: timeWindowService.toZonedTime(0, "11:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
-        const duration = timeWindowService.overlapDuration([timeA, timeB]);
+        const duration = timeWindowService.totalDuration([timeA, timeB]);
         expect(duration).toBe(7);
 
     });

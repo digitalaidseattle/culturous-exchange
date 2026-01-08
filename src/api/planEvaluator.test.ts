@@ -93,7 +93,7 @@ describe("planEvaluator", () => {
             time_windows: tws
         } as Group;
 
-        const spyDuration = vi.spyOn(timeWindowService, "overlapDuration").mockReturnValue(5);
+        const spyDuration = vi.spyOn(timeWindowService, "totalDuration").mockReturnValue(5);
 
         const result = planEvaluator.calcDuration(groupA)
         expect(spyDuration).toHaveBeenCalledWith(tws);

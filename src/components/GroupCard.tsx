@@ -27,7 +27,7 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
                         </Stack>
                         <Stack direction={'row'} spacing={1} >
                             <Typography fontWeight={600}>Duration (hr): </Typography>
-                            <Typography>{group.duration}</Typography>
+                            <Typography>{group.duration ? group.duration.toFixed(2) : "N/A"}</Typography>
                         </Stack>
                     </CardContent>
                     <CardContent>

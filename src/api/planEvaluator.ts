@@ -47,7 +47,7 @@ class PlanEvaluator {
     }
 
     calcDuration(group: Group): number {
-        return timeWindowService.overlapDuration(group.time_windows!);
+        return timeWindowService.totalDuration(group.time_windows!);
     }
 }
 
