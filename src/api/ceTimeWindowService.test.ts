@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
 import { TimeWindow } from "./types";
-import { getTimezoneOffset } from "date-fns-tz";
 
 describe("timeWindowService", () => {
-    const offset = getTimezoneOffset(DEFAULT_TIMEZONE, new Date()) / 60 / 60 / 1000;
+    const offset = -7; // using a fixed offset to make test deterministic;
+    // getTimezoneOffset(DEFAULT_TIMEZONE, new Date()) / 60 / 60 / 1000;
 
     it("toString", () => {
         const tw = {
