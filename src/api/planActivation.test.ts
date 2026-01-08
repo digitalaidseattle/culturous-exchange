@@ -1,7 +1,7 @@
 /**
- *  PlanActivation.ts
+ *  PlanActivation.test.ts
  *
- *  @copyright 2025 Digital Aid Seattle
+ *  @copyright 2026 Digital Aid Seattle
  *
  */
 
@@ -10,7 +10,7 @@ import { planService } from "./cePlanService";
 import { planActivation } from "./planActivation";
 import { Plan } from "./types";
 
-describe("timeWindowService", () => {
+describe("PlanActivation", () => {
 
     it("changeActivation", () => {
         const plan = {
