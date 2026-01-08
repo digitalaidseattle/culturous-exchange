@@ -25,6 +25,10 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
                             <Typography fontWeight={600}>Countries: </Typography>
                             <Typography>{group.country_count}</Typography>
                         </Stack>
+                        <Stack direction={'row'} spacing={1} >
+                            <Typography fontWeight={600}>Duration (hr): </Typography>
+                            <Typography>{group.duration ? group.duration.toFixed(2) : "N/A"}</Typography>
+                        </Stack>
                     </CardContent>
                     <CardContent>
                         <Typography fontWeight={600}>Time Windows</Typography>
