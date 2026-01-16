@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { Cohort, Student, TimeWindow, ValidationError } from '../../api/types';
 import { v4 as uuid } from 'uuid';
-import { GENDER_OPTION, TimeSlot, TIME_SLOTS } from '../../constants';
+import { GENDER_OPTION, TimeSlot, TIME_SLOTS, UI_STRINGS, SERVICE_ERRORS } from '../../constants';
 import { studentService } from '../../api/ceStudentService';
 import { studentValidationService } from '../../api/spreadsheetValidationService';
 
@@ -130,7 +130,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
       const validationErrors = updateValidationErrors(next);
       onChange(next, validationErrors);
     } catch (error) {
-      console.error('Error toggling anchor:', error);
+      console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error);
     }
   };
 
@@ -171,7 +171,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
       <CETextInput
         name="name"
         value={updated.name || ''}
-        label="Full Name"
+        label={UI_STRINGS.FULL_NAME}
         required={true}
         type="text"
         handleFieldChange={handleFieldChange}
@@ -181,7 +181,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
       <CETextInput
         name="email"
         value={updated.email || ''}
-        label="Email"
+        label={UI_STRINGS.EMAIL}
         required={true}
         type="email"
         handleFieldChange={handleFieldChange}
@@ -192,7 +192,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
         <CETextInput
           name="city"
           value={updated.city || ''}
-          label="City"
+          label={UI_STRINGS.CITY}
           required={true}
           type="text"
           handleFieldChange={handleFieldChange}
@@ -202,7 +202,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
         <CETextInput
           name="country"
           value={updated.country || ''}
-          label="Country"
+          label={UI_STRINGS.COUNTRY}
           required={true}
           type="text"
           handleFieldChange={handleFieldChange}
@@ -212,7 +212,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
       </Box>
       <Box display="flex" gap={1} flexDirection={"row"}>
         <FormControl fullWidth>
-          <FormLabel required>Anchor</FormLabel>
+          <FormLabel required>{UI_STRINGS.ANCHOR}</FormLabel>
           <StarFilled
             style={{
               fontSize: "150%",
@@ -224,7 +224,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
         <CETextInput
           name="age"
           value={updated.age || ''}
-          label="Age"
+          label={UI_STRINGS.AGE}
           required={true}
           type="number"
           handleFieldChange={handleFieldChange}
@@ -232,7 +232,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
           errorText={getFieldError('age')}
         />
         <FormControl fullWidth>
-          <FormLabel id="gender-group" required>Gender</FormLabel>
+          <FormLabel id="gender-group" required>{UI_STRINGS.GENDER}</FormLabel>
           <RadioGroup
             id="gender-group"
             aria-labelledby="gender-group"
@@ -253,7 +253,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
         </FormControl>
       </Box>
       <FormControl fullWidth error={hasFieldError('timeWindows')}>
-        <FormLabel id="time-window-label" required>Time Slot(s)</FormLabel>
+        <FormLabel id="time-window-label" required>{UI_STRINGS.TIME_SLOTS}</FormLabel>
         <Select
           labelId="time-window-label"
           id="time-window-checkbox"
@@ -277,13 +277,13 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
       </FormControl>
       
       <FormControl fullWidth>
-        <FormLabel htmlFor="cohort-display">Cohorts</FormLabel>
+        <FormLabel htmlFor="cohort-display">{UI_STRINGS.COHORTS}</FormLabel>
         <TextField
           id="cohort-display"
           variant="standard"
           value={cohorts && cohorts.length > 0
             ? cohorts.map((cc: Cohort) => cc.name).join(', ')
-            : "Not assigned to any cohort"
+            : UI_STRINGS.NOT_ASSIGNED_COHORT
           }
           disabled={true}
         />

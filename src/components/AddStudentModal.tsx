@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { Student } from "../api/types";
+import { UI_STRINGS } from '../constants';
 
 interface Props {
   students: Student[];
@@ -55,7 +56,7 @@ const AddStudentModal: React.FC<Props> = ({
           sx: { width: '40rem', maxWidth: '90vw' },
         }}
       >
-        <DialogTitle>Add Student</DialogTitle>
+        <DialogTitle>{UI_STRINGS.ADD_STUDENT}</DialogTitle>
         <DialogContent>
           <Stack sx={{ display: "flex", flexWrap: "wrap" }}>
             <FormControl sx={{ m: 1, minWidth: 120 }}>
@@ -85,12 +86,12 @@ const AddStudentModal: React.FC<Props> = ({
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={onClose}>{UI_STRINGS.CANCEL}</Button>
           <Button
             type="submit"
             color="primary"
             variant="contained"
-            onClick={handleSubmit}>Submit</Button>
+            onClick={handleSubmit}>{UI_STRINGS.SUBMIT}</Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>

@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router';
 import { Button, Card, CardContent, Stack, Typography } from '@mui/material';
 
 import { MainCard } from '@digitalaidseattle/mui';
+import { UI_STRINGS } from '../../constants';
 import { cohortService } from '../../api/ceCohortService';
 import { Cohort } from '../../api/types';
 
@@ -30,21 +31,21 @@ const HomePage: React.FC = () => {
                     borderRadius: 2,
                     boxShadow: 3
                 }}>
-                    <Typography variant='h2'>Current Cohort: {current.name}</Typography>
+                    <Typography variant='h2'>{UI_STRINGS.CURRENT_COHORT} {current.name}</Typography>
                     <Stack direction='row' justifyContent='space-between' >
                         <Stack direction='row' gap={2}>
                             <Card >
                                 <CardContent onClick={() => navigate(`/cohort/${current.id}?tab=1`)}>
-                                    <Typography>Students: {current.enrollments.length}</Typography>
+                                    <Typography>{UI_STRINGS.STUDENTS_LABEL}: {current.enrollments.length}</Typography>
                                 </CardContent>
                             </Card>
                             <Card >
                                 <CardContent onClick={() => navigate(`/cohort/${current.id}?tab=0`)}>
-                                    <Typography>Plans: {current.plans.length}</Typography>
+                                    <Typography>{UI_STRINGS.PLANS_LABEL}: {current.plans.length}</Typography>
                                 </CardContent>
                             </Card>
                         </Stack>
-                        <Button variant='contained' onClick={() => navigate(`/cohort/${current.id}`)}>Open</Button>
+                        <Button variant='contained' onClick={() => navigate(`/cohort/${current.id}`)}>{UI_STRINGS.OPEN}</Button>
                     </Stack>
                 </MainCard>
             }

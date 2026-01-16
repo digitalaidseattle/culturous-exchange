@@ -19,6 +19,7 @@ import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@an
 import { planExporter } from "../../api/planExporter";
 import { planGenerator } from "../../api/planGenerator";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
+import { UI_STRINGS } from '../../constants';
 import { TimeLine } from "./TimeLine";
 
 const PlanPage: React.FC = () => {
@@ -67,7 +68,7 @@ const PlanPage: React.FC = () => {
     planService.update(plan!.id, { name: text })
       .then(updated => {
         if (updated) {
-          notifications.success('Plan updated.');
+          notifications.success(UI_STRINGS.PLAN_UPDATED);
           refreshPlan(updated.id);
         }
       })
@@ -77,7 +78,7 @@ const PlanPage: React.FC = () => {
     planService.update(plan!.id, { note: text })
       .then(updated => {
         if (updated) {
-          notifications.success('Plan updated.');
+          notifications.success(UI_STRINGS.PLAN_UPDATED);
           refreshPlan(updated.id);
         }
       })
@@ -88,7 +89,7 @@ const PlanPage: React.FC = () => {
         if (exported) {
           notifications.success(`${plan!.name} exported successfully`);
         } else {
-          notifications.error('Plan export failed');
+          notifications.error(UI_STRINGS.PLAN_EXPORT_FAILED);
         }
       })
   }
@@ -137,47 +138,47 @@ const PlanPage: React.FC = () => {
           <Breadcrumbs aria-label="breadcrumb">
             <Link underline="hover" color="inherit"
               href="/">
-              Home
+              {UI_STRINGS.HOME}
             </Link>
             <Link
               underline="hover"
               color="inherit"
               href={`/cohort/${plan.cohort_id}`}
             >
-              Cohort: {cohort.name}
+              {UI_STRINGS.COHORT_PREFIX} {cohort.name}
             </Link>
-            <Typography sx={{ color: 'text.primary' }}>Plan: {plan.name}</Typography>
+            <Typography sx={{ color: 'text.primary' }}>{UI_STRINGS.PLAN_PREFIX} {plan.name}</Typography>
           </Breadcrumbs>
           <MainCard sx={{ width: '100%' }}>
             <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
-              <TextEdit label={'Name'} value={plan.name} onChange={handleNameUpdate} />
-              <TextEdit label={'Notes'} value={plan.note} onChange={handleNoteUpdate} />
+              <TextEdit label={UI_STRINGS.NAME} value={plan.name} onChange={handleNameUpdate} />
+              <TextEdit label={UI_STRINGS.NOTES_LABEL} value={plan.note} onChange={handleNoteUpdate} />
             </Stack>
             {/* <PlanDetails /> */}
             <Box sx={{ marginTop: 1 }}  >
               <Toolbar>
                 <Typography variant="h3" component="div" sx={{ flexGrow: 1 }} onClick={() => setViewType(viewType === "board" ? "timeline" : "board") } style={{ cursor: 'pointer' }}>
-                  Groups
+                  {UI_STRINGS.GROUPS_LABEL}
                 </Typography>
 
-                <Tooltip title="Export plan">
+                <Tooltip title={UI_STRINGS.EXPORT_PLAN}>
                   <IconButton color="inherit" onClick={exportPlan}>
                     <ExportOutlined />
                   </IconButton>
                 </Tooltip>
 
-                <Tooltip title="Toggle group details">
+                <Tooltip title={UI_STRINGS.TOGGLE_GROUP_DETAILS}>
                   <IconButton color="inherit" onClick={handleGroupDetails}>
                     <TeamOutlined />
                   </IconButton>
                 </Tooltip>
 
-                <Tooltip title="Toggle student details">
+                <Tooltip title={UI_STRINGS.TOGGLE_STUDENT_DETAILS}>
                   <IconButton color="inherit" onClick={handleStudentDetails}>
                     <UserOutlined />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Show plan settings">
+                <Tooltip title={UI_STRINGS.SHOW_PLAN_SETTINGS}>
                   <IconButton color="inherit" onClick={handleSettings}>
                     <SettingOutlined />
                   </IconButton>

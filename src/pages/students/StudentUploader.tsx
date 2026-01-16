@@ -9,6 +9,7 @@ import { useCallback, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 import { studentUploader } from "../../api/studentUploader";
 import { Student } from "../../api/types";
+import { UI_STRINGS } from "../../constants";
 
 const baseStyle = {
     flex: 1,
@@ -92,7 +93,7 @@ function StudentUploader(props: any) {
         <div className="container">
             <div {...getRootProps({ style: style as React.CSSProperties })}>
                 <input {...getInputProps()} />
-                <p>Drag the student file here, or click to select the file</p>
+                <p>{UI_STRINGS.DRAG_STUDENT_FILE}</p>
             </div>
         </div>
     );

@@ -14,6 +14,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { planService } from "../api/cePlanService";
 import { Identifier, Plan } from "../api/types";
+import { UI_STRINGS } from '../constants';
 
 
 export const PlanCard = (props: { planId: Identifier }) => {
@@ -69,7 +70,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
                     setOpenDeleteDialog(false);
                     setAnchorEl(null);
                     setRefresh(refresh + 1);
-                    notifications.success('Plan deleted.');
+                    notifications.success(UI_STRINGS.PLAN_DELETED);
                 })
         }
     };
@@ -107,14 +108,14 @@ export const PlanCard = (props: { planId: Identifier }) => {
                     horizontal: 'left',
                 }}
             >
-                <MenuItem onClick={handleOpen}>Open</MenuItem>
-                <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
-                <MenuItem onClick={handleDelete}>Delete...</MenuItem>
+                <MenuItem onClick={handleOpen}>{UI_STRINGS.OPEN}</MenuItem>
+                <MenuItem onClick={handleDuplicate}>{UI_STRINGS.DUPLICATE}</MenuItem>
+                <MenuItem onClick={handleDelete}>{UI_STRINGS.DELETE_WITH_ELLIPSIS}</MenuItem>
             </Menu>
             <CardContent>
-                <Typography>Notes : {plan.note}</Typography>
-                <Typography>Groups : {plan.groups.length}</Typography>
-                <Typography>Students : {plan.placements.length}</Typography>
+                <Typography>{UI_STRINGS.NOTES_WITH_COLON} {plan.note}</Typography>
+                <Typography>{UI_STRINGS.GROUPS_WITH_COLON} {plan.groups.length}</Typography>
+                <Typography>{UI_STRINGS.STUDENTS_WITH_COLON} {plan.placements.length}</Typography>
                 <ConfirmationDialog
                     message={`Delete ${plan.name}?`}
                     open={openDeleteDialog}

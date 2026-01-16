@@ -13,6 +13,7 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import { cohortService } from "../../api/ceCohortService";
 import { Cohort } from "../../api/types";
+import { UI_STRINGS } from '../../constants';
 
 
 export const CohortCard = (props: { cohort: Cohort }) => {
@@ -89,12 +90,12 @@ export const CohortCard = (props: { cohort: Cohort }) => {
                     horizontal: 'left',
                 }}
             >
-                <MenuItem onClick={handleOpen}>Open</MenuItem>
-                <MenuItem onClick={handleDelete}>Delete...</MenuItem>
+                <MenuItem onClick={handleOpen}>{UI_STRINGS.OPEN}</MenuItem>
+                <MenuItem onClick={handleDelete}>{UI_STRINGS.DELETE_WITH_ELLIPSIS}</MenuItem>
             </Menu>
             <CardContent>
-                <Typography>Students : {props.cohort.enrollments?.length} </Typography>
-                <Typography>Plans : {props.cohort.plans?.length} </Typography>
+                <Typography>{UI_STRINGS.STUDENTS_WITH_COLON} {props.cohort.enrollments?.length} </Typography>
+                <Typography>{UI_STRINGS.PLANS_WITH_COLON} {props.cohort.plans?.length} </Typography>
                 <ConfirmationDialog
                     message={`Delete ${props.cohort.name}?`}
                     open={openDeleteDialog}

@@ -11,6 +11,7 @@ import { toZonedTime } from "date-fns-tz";
 import { v4 as uuid } from 'uuid';
 import { EntityService } from "./entityService";
 import { Identifier, Student, TimeWindow } from "./types";
+import { SERVICE_ERRORS } from '../constants';
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
   if (arr1.length !== arr2.length) {
@@ -104,8 +105,8 @@ class CETimeWindowService extends EntityService<TimeWindow> {
         return [timeWindowsB, timeWindowsA];
       }
     } else {
-      console.error('Unexpected time window intersection:', timeWindowsA, timeWindowsB, sortedTimeArray);
-      throw new Error('Unexpected time window intersection:');
+      console.error(SERVICE_ERRORS.UNEXPECTED_TIME_WINDOW_INTERSECTION, timeWindowsA, timeWindowsB, sortedTimeArray);
+      throw new Error(SERVICE_ERRORS.UNEXPECTED_TIME_WINDOW_INTERSECTION);
     }
   }
 
@@ -158,7 +159,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     } else if (areStringArraysEqual(sortedTimeArray, ['BS', 'BE', 'AS', 'AE'])) {
       return null;
     } else {
-      console.error('Unexpected time window intersection:', timeWindowsA, timeWindowsB, sortedTimeArray);
+      console.error(SERVICE_ERRORS.UNEXPECTED_TIME_WINDOW_INTERSECTION, timeWindowsA, timeWindowsB, sortedTimeArray);
       return null;
     }
     return null
@@ -342,12 +343,12 @@ class CETimeWindowService extends EntityService<TimeWindow> {
         .eq('group_id', groupId);
 
       if (error) {
-        console.error('Error deleting entity:', error.message);
-        throw new Error('Failed to delete entity');
+        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
+        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
       }
       return true;
     } catch (err) {
-      console.error('Unexpected error during deletion:', err);
+      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
       throw err;
     }
   }
@@ -360,12 +361,12 @@ class CETimeWindowService extends EntityService<TimeWindow> {
         .eq('student_id', studentId);
 
       if (error) {
-        console.error('Error deleting entity:', error.message);
-        throw new Error('Failed to delete entity');
+        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
+        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
       }
       return true;
     } catch (err) {
-      console.error('Unexpected error during deletion:', err);
+      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
       throw err;
     }
   }
