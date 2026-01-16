@@ -93,7 +93,7 @@ class PlanGenerator {
           group.time_windows ?? [],
           placement.student?.timeWindows ?? []
         );
-        const overlap = timeWindowService.overlapDuration(intersect);
+        const overlap = timeWindowService.totalDuration(intersect);
         return { duration: overlap, group: group, intersect: intersect };
       })
       .filter(tuple => tuple.duration > 0)  // Only consider groups with some overlap
