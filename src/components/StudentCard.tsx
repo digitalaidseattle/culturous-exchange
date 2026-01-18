@@ -2,7 +2,6 @@
  *  StudentCard.tsx
  *
  *  @copyright 2025 Digital Aid Seattle
- *
  */
 
 import { MoreOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
@@ -22,7 +21,7 @@ import { planService } from "../api/cePlanService";
 import { timeWindowService } from "../api/ceTimeWindowService";
 import { Placement } from "../api/types";
 import { PlanContext } from "../pages/plan/PlanContext";
-
+import { studentService } from "../api/ceStudentService";
 
 export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -30,17 +29,23 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
 
     const { plan, setPlan } = useContext(PlanContext);
 
-    const anchor = placement.anchor ? 'green' : 'gray';
+    const anchorColor = placement.anchor ? 'green' : 'gray';
     const timeWindows = placement.student!.timeWindows ? placement.student!.timeWindows ?? [] : [];
 
     const toggleAnchor = async (placement: Placement) => {
+        const newAnchor = !placement.anchor;
         placementService
             .updatePlacement(
                 placement.plan_id,
                 placement.student_id,
-                { anchor: !placement.anchor })
+                { anchor: newAnchor }
+            )
+            .then(() => {
+                studentService.update(placement.student_id, { anchor: newAnchor });
+                placement.anchor = newAnchor;
+            })
             .then(() => refreshPlan())
-            .catch((error) => console.error('Error toggling anchor:', error))
+            .catch((error) => console.error('Error toggling anchor:', error));
     };
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -79,11 +84,11 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
             <CardHeader
                 avatar={<>
                     {placement.anchor &&
-                        <StarFilled style={{ margin: 0, fontSize: '150%', color: anchor }}
+                        <StarFilled style={{ margin: 0, fontSize: '150%', color: anchorColor }}
                             onClick={() => toggleAnchor(placement)} />
                     }
                     {!placement.anchor &&
-                        <StarOutlined style={{ margin: 0, fontSize: '150%', color: anchor }}
+                        <StarOutlined style={{ margin: 0, fontSize: '150%', color: anchorColor }}
                             onClick={() => toggleAnchor(placement)} />
                     }
                 </>}

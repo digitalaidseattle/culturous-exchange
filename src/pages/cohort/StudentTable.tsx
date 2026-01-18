@@ -104,13 +104,20 @@ export const StudentTable: React.FC = () => {
 
   const toggleAnchor = async (enrollment: Enrollment) => {
     try {
-      enrollment.anchor = !enrollment.anchor;
-      enrollmentService
-        .updateEnrollment(enrollment.cohort_id, enrollment.student_id, { anchor: enrollment.anchor })
-        .then(() => {
-          // Optimistically update the pageInfo
-          setRefresh(refresh + 1);
-        });
+      const newAnchor = !enrollment.anchor;
+      await Promise.all([
+        enrollmentService.updateEnrollment(
+          enrollment.cohort_id,
+          enrollment.student_id,
+          { anchor: newAnchor }
+        ),
+        studentService.update(enrollment.student_id, { anchor: newAnchor })
+      ]);
+      enrollment.anchor = newAnchor;
+      if (enrollment.student) {
+        enrollment.student.anchor = newAnchor;
+      }
+      setRefresh(refresh + 1);
     } catch (error) {
       console.error('Error toggling anchor:', error);
       notifications.error('Failed to update student anchor status');
