@@ -7,13 +7,15 @@
  */
 
 import { MoreOutlined } from "@ant-design/icons";
-import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
+import { LoadingContext, RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { planService } from "../api/cePlanService";
 import { Identifier, Plan } from "../api/types";
+import StarAvatar from "./StarAvatar";
+import { planActivation } from "../api/planActivation";
 
 
 export const PlanCard = (props: { planId: Identifier }) => {
@@ -22,8 +24,8 @@ export const PlanCard = (props: { planId: Identifier }) => {
     const showMenu = Boolean(anchorEl);
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
-
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
+    const { loading, setLoading } = useContext(LoadingContext);
 
     const navigate = useNavigate();
 
@@ -33,7 +35,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
                 getById(props.planId)
                 .then((resp) => setPlan(resp!))
         }
-    }, [props.planId]);
+    }, [props.planId, refresh]);
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -62,6 +64,13 @@ export const PlanCard = (props: { planId: Identifier }) => {
         setAnchorEl(null);
     };
 
+    const handleActive = () => {
+        if (plan) {
+            handleActivePlanToggle(!plan.active);
+            setAnchorEl(null);
+        }
+    };
+
     const doDelete = () => {
         if (plan) {
             planService.deletePlan(plan)
@@ -74,6 +83,19 @@ export const PlanCard = (props: { planId: Identifier }) => {
         }
     };
 
+    const handleActivePlanToggle = async (value: boolean) => {
+        if (plan) {
+            setLoading(true);
+            planActivation.changeActivation(plan!, value)
+                .then(() => {
+                    setRefresh(refresh + 1);
+                    notifications.success(`Plan ${value ? 'activated' : 'deactivated'}.`);
+                })
+                .catch(err => notifications.error(`Failed to update plan active state. ${err.message}`))
+                .finally(() => setLoading(false))
+        }
+    }
+
     return (plan &&
         <Card
             sx={{
@@ -85,6 +107,10 @@ export const PlanCard = (props: { planId: Identifier }) => {
             }}
             onDoubleClick={handleOpen}>
             <CardHeader
+                avatar={<StarAvatar
+                    active={plan.active}
+                    title={plan.active ? 'Deactivate plan' : 'Activate plan'}
+                    onToggle={handleActivePlanToggle} />}
                 title={plan.name}
                 action={<IconButton
                     onClick={handleClick}
@@ -110,6 +136,9 @@ export const PlanCard = (props: { planId: Identifier }) => {
                 <MenuItem onClick={handleOpen}>Open</MenuItem>
                 <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
                 <MenuItem onClick={handleDelete}>Delete...</MenuItem>
+                <MenuItem disabled={loading} onClick={handleActive}>
+                    {plan.active ? "Set Inactive" : "Set Active"}
+                </MenuItem>
             </Menu>
             <CardContent>
                 <Typography>Notes : {plan.note}</Typography>
