@@ -97,6 +97,7 @@ type Group = Entity & {
     plan_id: Identifier;
     name: string;
     country_count: number;
+    duration?: number; // in hours
     placements?: Placement[];
     time_windows?: TimeWindow[];
 }
