@@ -15,6 +15,7 @@ import { useNavigate } from "react-router";
 import { planService } from "../api/cePlanService";
 import { Identifier, Plan } from "../api/types";
 import StarAvatar from "./StarAvatar";
+import { planActivation } from "../api/planActivation";
 
 
 export const PlanCard = (props: { planId: Identifier }) => {
@@ -23,12 +24,8 @@ export const PlanCard = (props: { planId: Identifier }) => {
     const showMenu = Boolean(anchorEl);
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
-
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
-    const [active, setActive] = useState<boolean>(false);
     const { loading, setLoading } = useContext(LoadingContext);
-
-
 
     const navigate = useNavigate();
 
@@ -68,8 +65,10 @@ export const PlanCard = (props: { planId: Identifier }) => {
     };
 
     const handleActive = () => {
-        handleActivePlanToggle(!active);
-        setAnchorEl(null);
+        if (plan) {
+            handleActivePlanToggle(!plan.active);
+            setAnchorEl(null);
+        }
     };
 
     const doDelete = () => {
@@ -83,58 +82,19 @@ export const PlanCard = (props: { planId: Identifier }) => {
                 })
         }
     };
-        useEffect(() => {
-      let mounted = true;
-      if (!props.planId) return;
-      // use existing getById to fetch the plan (includes active)
-      planService
-        .getById(props.planId)
-        .then((freshPlan) => {
-          if (mounted && freshPlan) {
-            setActive(!!freshPlan.active);
-          }
-        })
-        .catch((err) => console.error("Failed to fetch plan active", err));
-      return () => {
-        mounted = false;
-      };
-        }, [props.planId, refresh]);
 
     const handleActivePlanToggle = async (value: boolean) => {
+        if (plan) {
             setLoading(true);
-            try {
-                // If activating this plan, first deactivate other plans in the same cohort
-                if (value && plan && plan.cohort_id) {
-                    try {
-                        const cohortPlans = await planService.findByCohortId(plan.cohort_id);
-                        const othersToDeactivate = cohortPlans.filter(p => p.id !== plan.id && p.active);
-                        if (othersToDeactivate.length > 0) {
-                            console.log(`Deactivating ${othersToDeactivate.length} other plans in cohort`);
-                            await Promise.all(othersToDeactivate.map(p => planService.update(p.id, { active: false } as Partial<Plan>)));
-                        }
-                    } catch (err) {
-                        console.error('Failed to deactivate other plans in cohort', err);
-                        // proceed to try to activate current plan anyway
-                    }
-                }
-
-                // Send only the changed field using the existing update API for this plan
-                await planService.update(props.planId, { active: value } as Partial<Plan>);
-
-                // Re-fetch to get normalized plan object
-                const updatedPlan = await planService.getById(props.planId);
-                setActive(!!updatedPlan.active);
-                setRefresh(refresh + 1);
-                notifications.success(`Plan ${value ? 'activated' : 'deactivated'}.`);
-            } catch (err) {
-                console.error('Failed to toggle plan active', err);
-                notifications.error('Failed to update plan active state.');
-            } finally {
-                setLoading(false);
-            }
-    };
-
-
+            planActivation.changeActivation(plan!, value)
+                .then(() => {
+                    setRefresh(refresh + 1);
+                    notifications.success(`Plan ${value ? 'activated' : 'deactivated'}.`);
+                })
+                .catch(err => notifications.error(`Failed to update plan active state. ${err.message}`))
+                .finally(() => setLoading(false))
+        }
+    }
 
     return (plan &&
         <Card
@@ -147,10 +107,10 @@ export const PlanCard = (props: { planId: Identifier }) => {
             }}
             onDoubleClick={handleOpen}>
             <CardHeader
-                avatar={
-                    <StarAvatar active={active} loading={loading} onToggle={handleActivePlanToggle} />
-                }
-
+                avatar={<StarAvatar
+                    active={plan.active}
+                    title={plan.active ? 'Deactivate plan' : 'Activate plan'}
+                    onToggle={handleActivePlanToggle} />}
                 title={plan.name}
                 action={<IconButton
                     onClick={handleClick}
@@ -177,7 +137,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
                 <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
                 <MenuItem onClick={handleDelete}>Delete...</MenuItem>
                 <MenuItem disabled={loading} onClick={handleActive}>
-                    {active ? "InActive" : "Active"}
+                    {plan.active ? "Set Inactive" : "Set Active"}
                 </MenuItem>
             </Menu>
             <CardContent>
