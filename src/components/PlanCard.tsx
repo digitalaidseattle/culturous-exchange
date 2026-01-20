@@ -137,6 +137,9 @@ export const PlanCard = (props: { planId: Identifier }) => {
                 <MenuItem onClick={handleOpen}>Open</MenuItem>
                 <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
                 <MenuItem onClick={handleDelete}>Delete...</MenuItem>
+                <MenuItem disabled={loading} onClick={handleActive}>
+                    {plan.active ? "Set Inactive" : "Set Active"}
+                </MenuItem>
             </Menu>
             <CardContent>
                 <Typography>{UI_STRINGS.NOTES_WITH_COLON} {plan.note}</Typography>
