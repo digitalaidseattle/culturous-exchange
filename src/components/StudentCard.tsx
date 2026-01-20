@@ -5,7 +5,7 @@
  *
  */
 
-import { MoreOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
+import { MoreOutlined } from "@ant-design/icons";
 import {
     Card,
     CardContent,
@@ -16,22 +16,21 @@ import {
     Typography
 } from "@mui/material";
 
+import { RefreshContext } from "@digitalaidseattle/core";
 import { useContext, useState } from "react";
 import { placementService } from "../api/cePlacementService";
-import { planService } from "../api/cePlanService";
 import { timeWindowService } from "../api/ceTimeWindowService";
 import { Placement } from "../api/types";
-import { PlanContext } from "../pages/plan/PlanContext";
+import StarAvatar from "./StarAvatar";
 import { UI_STRINGS, SERVICE_ERRORS } from '../constants';
 
 
 export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails }) => {
+
+    const { refresh, setRefresh } = useContext(RefreshContext);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const showMenu = Boolean(anchorEl);
 
-    const { plan, setPlan } = useContext(PlanContext);
-
-    const anchor = placement.anchor ? 'green' : 'gray';
     const timeWindows = placement.student!.timeWindows ? placement.student!.timeWindows ?? [] : [];
 
     const toggleAnchor = async (placement: Placement) => {
@@ -40,7 +39,7 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
                 placement.plan_id,
                 placement.student_id,
                 { anchor: !placement.anchor })
-            .then(() => refreshPlan())
+            .then(() => setRefresh(refresh + 1))
             .catch((error) => console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error))
     };
 
@@ -64,11 +63,6 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
         setAnchorEl(null);
     };
 
-    function refreshPlan() {
-        planService.getById(plan.id)
-            .then((resp) => setPlan(resp))
-    }
-
     return (placement &&
         <Card
             id={`${placement.plan_id}.${placement.student_id}`}
@@ -78,16 +72,12 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
                 position: "relative",
             }}>
             <CardHeader
-                avatar={<>
-                    {placement.anchor &&
-                        <StarFilled style={{ margin: 0, fontSize: '150%', color: anchor }}
-                            onClick={() => toggleAnchor(placement)} />
-                    }
-                    {!placement.anchor &&
-                        <StarOutlined style={{ margin: 0, fontSize: '150%', color: anchor }}
-                            onClick={() => toggleAnchor(placement)} />
-                    }
-                </>}
+                avatar={
+                    <StarAvatar
+                        active={placement.anchor}
+                        title={placement.anchor ? 'Remove anchor flag' : 'Set as anchor'}
+                        onToggle={() => toggleAnchor(placement)} />
+                }
                 title={placement.student!.name}
                 titleTypographyProps={{ fontWeight: 600 }}
                 action={
