@@ -3,6 +3,7 @@
 
 // project import
 import { Typography } from '@mui/material';
+import { UI_STRINGS } from '../../constants';
 import { MainCard } from '@digitalaidseattle/mui';
 
 // ================================|| 404 ||================================ //
@@ -10,10 +11,10 @@ import { MainCard } from '@digitalaidseattle/mui';
 const StudentPage: React.FC = () => {
 
     return (
-        <MainCard title="Student Page">
-            <Typography>Name</Typography>
-            <Typography>Email</Typography>
-            <Typography>Availability</Typography>
+        <MainCard title={UI_STRINGS.STUDENT_PAGE_TITLE}>
+            <Typography>{UI_STRINGS.NAME}</Typography>
+            <Typography>{UI_STRINGS.EMAIL}</Typography>
+            <Typography>{UI_STRINGS.AVAILABILITY}</Typography>
         </MainCard>
     )
 };

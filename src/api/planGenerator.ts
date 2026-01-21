@@ -12,8 +12,7 @@ import { planService } from './cePlanService';
 import { timeWindowService } from './ceTimeWindowService';
 import { planEvaluator } from './planEvaluator';
 import { Group, Placement, Plan, TimeWindow } from "./types";
-
-const MAX_GROUP_SIZE = 10;
+import { MAX_GROUP_SIZE } from '../constants';
 
 class PlanGenerator {
 
@@ -93,7 +92,7 @@ class PlanGenerator {
           group.time_windows ?? [],
           placement.student?.timeWindows ?? []
         );
-        const overlap = timeWindowService.overlapDuration(intersect);
+        const overlap = timeWindowService.totalDuration(intersect);
         return { duration: overlap, group: group, intersect: intersect };
       })
       .filter(tuple => tuple.duration > 0)  // Only consider groups with some overlap

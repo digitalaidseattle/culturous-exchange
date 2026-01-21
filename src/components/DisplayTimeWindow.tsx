@@ -1,4 +1,5 @@
 import { TimeWindow } from "../api/types";
+import { UI_STRINGS } from '../constants';
 import { Typography, Box } from "@mui/material";
 import { toZonedTime, format } from "date-fns-tz";
 import { useContext, useEffect, useState } from "react";
@@ -51,7 +52,7 @@ const DisplayTimeWindow: React.FC<Props> = ({ timeWindows, timezone }) => {
         </Box>
       ) : (
         <Typography variant='body2'>
-          not assigned
+          {UI_STRINGS.NOT_ASSIGNED}
         </Typography>
       )}
     </Box>

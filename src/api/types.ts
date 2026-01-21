@@ -66,6 +66,8 @@ type Enrollment = {
 type Plan = Entity & {
     name: string;
     cohort_id: Identifier;
+    /** Whether this plan is active/enabled */
+    active: boolean;
     note: string;
     group_size?: number; // Optional, can be set to override default group size
     placements: Placement[]
@@ -95,6 +97,7 @@ type Group = Entity & {
     plan_id: Identifier;
     name: string;
     country_count: number;
+    duration?: number; // in hours
     placements?: Placement[];
     time_windows?: TimeWindow[];
 }

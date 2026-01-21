@@ -12,6 +12,7 @@ import { timeWindowService } from "./ceTimeWindowService";
 import { FailedStudent, Student } from "./types";
 import { studentService } from "./ceStudentService";
 import { SpeadsheetValidationService } from "./spreadsheetValidationService";
+import { SERVICE_ERRORS } from '../constants';
 
 
 class StudentUploader {
@@ -52,8 +53,8 @@ class StudentUploader {
                 .map(dict => this.changeToLowercase(dict))
                 .map((dict) => this.createStudent(dict));
         } catch (error) {
-            console.error('Error parsing Excel file:', error);
-            throw new Error('Failed to parse Excel file');
+            console.error(SERVICE_ERRORS.ERROR_PARSING_EXCEL_FILE, error);
+            throw new Error(SERVICE_ERRORS.FAILED_PARSE_EXCEL_FILE);
         }
     }
 
@@ -102,11 +103,11 @@ class StudentUploader {
                 })
         } catch (error) {
             if (error instanceof Error) {
-                console.error('Error processing Excel file:', error.message);
+                console.error(SERVICE_ERRORS.ERROR_PROCESSING_EXCEL_FILE, error.message);
             } else {
-                console.error('Error processing Excel file:', error);
+                console.error(SERVICE_ERRORS.ERROR_PROCESSING_EXCEL_FILE, error);
             }
-            throw new Error('Failed to insert students from Excel file');
+            throw new Error(SERVICE_ERRORS.FAILED_INSERT_STUDENTS_FROM_EXCEL_FILE);
         }
     }
 

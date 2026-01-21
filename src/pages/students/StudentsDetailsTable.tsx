@@ -22,13 +22,14 @@ import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidsea
 import { ConfirmationDialog } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
+import { UI_STRINGS, SERVICE_ERRORS } from '../../constants';
+import { STUDENTS_DETAILS_PAGE_SIZE as PAGE_SIZE } from '../../constants';
 import { timeWindowService } from '../../api/ceTimeWindowService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import StudentModal from '../../components/StudentModal';
 import { TimeSlots } from '../../components/TimeSlots';
 
-const PAGE_SIZE = 25;
 
 const StudentsDetailsTable: React.FC = () => {
   const { setLoading } = useContext(LoadingContext);
@@ -46,7 +47,7 @@ const StudentsDetailsTable: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const [deleteStudent, setDeleteStudent] = useState<Student | null>(null);
-  const [deleteMessage, setDeleteMessage] = useState<string>('Are you sure you want to delete this student?');
+  const [deleteMessage, setDeleteMessage] = useState<string>(UI_STRINGS.ARE_YOU_SURE_DELETE_STUDENT);
   const [deleteConfirmation, showDeleteConfirmation] = useState<boolean>(false);
 
   useEffect(() => {
@@ -87,8 +88,8 @@ const StudentsDetailsTable: React.FC = () => {
           setRefresh(refresh + 1);
         });
     } catch (error) {
-      console.error('Error toggling anchor:', error);
-      notifications.error('Failed to update student anchor status');
+      console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error);
+      notifications.error(UI_STRINGS.FAILED_UPDATE_ANCHOR);
       // Revert optimistic update
       setPageInfo({ ...pageInfo });
     }
@@ -99,11 +100,11 @@ const StudentsDetailsTable: React.FC = () => {
       studentService.getCohortsForStudent(param.row)
         .then((cohorts) => {
           if (cohorts.length > 0) {
-            notifications.error(`Cannot delete student ${param.row.name} as they are enrolled in cohorts.`);
+            notifications.error(`${UI_STRINGS.CANNOT_DELETE_STUDENT_PREFIX} ${param.row.name} ${UI_STRINGS.CANNOT_DELETE_STUDENT_SUFFIX}`);
             return;
           } else {
             setDeleteStudent(param.row);
-            setDeleteMessage(`Are you sure you want to delete student ${param.row.name}?`);
+            setDeleteMessage(`${UI_STRINGS.CONFIRM_DELETE_STUDENT_PREFIX} ${param.row.name}?`);
             showDeleteConfirmation(true);
           }
           evt.stopPropagation()
@@ -115,12 +116,12 @@ const StudentsDetailsTable: React.FC = () => {
     if (deleteStudent) {
       studentService.delete(deleteStudent.id)
         .then(() => {
-          notifications.success(`Student ${deleteStudent.name} deleted successfully`);
+          notifications.success(`${UI_STRINGS.DELETION_SUCCESS_PREFIX} ${deleteStudent.name} ${UI_STRINGS.DELETION_SUCCESS_SUFFIX}`);
           setRefresh(refresh + 1);
         })
         .catch((err) => {
-          console.error(`Deletion failed: ${err.message}`);
-          notifications.error(`Deletion failed: ${err.message}`);
+          console.error(`${UI_STRINGS.DELETION_FAILED_PREFIX} ${err.message}`);
+          notifications.error(`${UI_STRINGS.DELETION_FAILED_PREFIX} ${err.message}`);
         })
         .finally(() => {
           setSelectedStudent(null);
@@ -166,14 +167,14 @@ const StudentsDetailsTable: React.FC = () => {
       },
       {
         field: 'name',
-        headerName: 'Name',
+        headerName: UI_STRINGS.NAME,
         width: 150,
         filterOperators: getGridStringOperators()
           .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
       },
       {
         field: 'email',
-        headerName: 'Email',
+        headerName: UI_STRINGS.EMAIL,
         width: 200,
         filterOperators: getGridStringOperators()
           .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
@@ -181,14 +182,14 @@ const StudentsDetailsTable: React.FC = () => {
       },
       {
         field: 'country',
-        headerName: 'Country',
+        headerName: UI_STRINGS.COUNTRY,
         width: 100,
         filterOperators: getGridStringOperators()
           .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
       },
       {
         field: "anchor",
-        headerName: "Anchor",
+        headerName: UI_STRINGS.ANCHOR,
         width: 75,
         type: "boolean",
         renderCell: (param: GridRenderCellParams) => {
@@ -205,7 +206,7 @@ const StudentsDetailsTable: React.FC = () => {
       },
       {
         field: 'age',
-        headerName: 'Age',
+        headerName: UI_STRINGS.AGE,
         width: 75,
         type: 'number',
         filterOperators: getGridNumericOperators()
@@ -213,21 +214,21 @@ const StudentsDetailsTable: React.FC = () => {
       },
       {
         field: 'gender',
-        headerName: 'Gender',
+        headerName: UI_STRINGS.GENDER,
         width: 100,
         filterOperators: getGridStringOperators()
           .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
       },
       {
         field: 'time_zone',
-        headerName: 'Time Zone',
+        headerName: UI_STRINGS.TIME_ZONE,
         width: 150,
         filterOperators: getGridStringOperators()
           .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
       },
       {
         field: 'preferences',
-        headerName: 'Time Slots',
+        headerName: UI_STRINGS.TIME_SLOTS_LABEL,
         width: 200,
         renderCell: (params) => {
           return <TimeSlots timeWindows={params.row.timeWindows} />
@@ -236,7 +237,7 @@ const StudentsDetailsTable: React.FC = () => {
       },
       {
         field: 'timeWindows',
-        headerName: 'Availabilities',
+        headerName: UI_STRINGS.AVAILABILITIES,
         width: 450,
         renderCell: (params) => {
           const timeWindows = Array.isArray(params.value) ? params.value : [];

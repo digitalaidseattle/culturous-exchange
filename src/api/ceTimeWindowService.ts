@@ -11,6 +11,7 @@ import { toZonedTime } from "date-fns-tz";
 import { v4 as uuid } from 'uuid';
 import { EntityService } from "./entityService";
 import { Identifier, Student, TimeWindow } from "./types";
+import { SERVICE_ERRORS } from '../constants';
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
   if (arr1.length !== arr2.length) {
@@ -104,8 +105,8 @@ class CETimeWindowService extends EntityService<TimeWindow> {
         return [timeWindowsB, timeWindowsA];
       }
     } else {
-      console.error('Unexpected time window intersection:', timeWindowsA, timeWindowsB, sortedTimeArray);
-      throw new Error('Unexpected time window intersection:');
+      console.error(SERVICE_ERRORS.UNEXPECTED_TIME_WINDOW_INTERSECTION, timeWindowsA, timeWindowsB, sortedTimeArray);
+      throw new Error(SERVICE_ERRORS.UNEXPECTED_TIME_WINDOW_INTERSECTION);
     }
   }
 
@@ -158,7 +159,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     } else if (areStringArraysEqual(sortedTimeArray, ['BS', 'BE', 'AS', 'AE'])) {
       return null;
     } else {
-      console.error('Unexpected time window intersection:', timeWindowsA, timeWindowsB, sortedTimeArray);
+      console.error(SERVICE_ERRORS.UNEXPECTED_TIME_WINDOW_INTERSECTION, timeWindowsA, timeWindowsB, sortedTimeArray);
       return null;
     }
     return null
@@ -307,10 +308,16 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     return `${day} ${start} - ${end}`
   }
 
-  overlapDuration(timeWindows: TimeWindow[]): number {
-    // get the total overlapping hours
-    return timeWindows.reduce((acc, tw) => acc +
-      ((tw.end_date_time?.getTime() ?? 0) - (tw.start_date_time?.getTime() ?? 0)) / (1000 * 60 * 60), 0);
+  // Does not account fro overlapping time windows
+  totalDuration(timeWindows: TimeWindow[]): number {
+    return timeWindows.reduce((acc, tw) => acc + this.duration(tw), 0);
+  }
+
+
+  duration(timeWindow: TimeWindow): number {
+    // adding 1 hour to include the end hour
+    const duration = 1 + (timeWindow.end_date_time.getTime() - timeWindow.start_date_time.getTime()) / (1000 * 60 * 60);
+    return parseFloat(duration.toFixed(2));
   }
 
   async save(timeWindow: TimeWindow): Promise<TimeWindow> {
@@ -318,6 +325,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     await this.insert(json);
     return timeWindow;
   }
+
 
   mapJson(json: any): TimeWindow {
     return {
@@ -335,12 +343,12 @@ class CETimeWindowService extends EntityService<TimeWindow> {
         .eq('group_id', groupId);
 
       if (error) {
-        console.error('Error deleting entity:', error.message);
-        throw new Error('Failed to delete entity');
+        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
+        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
       }
       return true;
     } catch (err) {
-      console.error('Unexpected error during deletion:', err);
+      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
       throw err;
     }
   }
@@ -353,12 +361,12 @@ class CETimeWindowService extends EntityService<TimeWindow> {
         .eq('student_id', studentId);
 
       if (error) {
-        console.error('Error deleting entity:', error.message);
-        throw new Error('Failed to delete entity');
+        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
+        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
       }
       return true;
     } catch (err) {
-      console.error('Unexpected error during deletion:', err);
+      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
       throw err;
     }
   }

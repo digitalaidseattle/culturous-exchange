@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { Student, ValidationError } from '../api/types';
 import StudentForm from '../pages/students/StudentForm';
+import { UI_STRINGS } from '../constants';
 
 interface Props {
   mode: 'add' | 'edit';
@@ -29,7 +30,7 @@ const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange 
           sx: { width: '75vw', maxWidth: '90vw' },
         }}
       >
-        <DialogTitle>{`${mode === 'add' ? 'New' : 'Edit'} Details`}</DialogTitle>
+        <DialogTitle>{mode === 'add' ? `${UI_STRINGS.NEW} ${UI_STRINGS.DETAILS}` : `Edit ${UI_STRINGS.DETAILS}`}</DialogTitle>
         <DialogContent>
           <StudentForm
             student={updated}
@@ -37,7 +38,7 @@ const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange 
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={onClose}>{UI_STRINGS.CANCEL}</Button>
           <Button
             type="submit"
             color="primary"
@@ -47,7 +48,7 @@ const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange 
               onChange(updated)
             }}
           >
-            Submit
+            {UI_STRINGS.SUBMIT}
           </Button>
         </DialogActions>
       </Dialog>

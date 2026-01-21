@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
 import { TimeWindow } from "./types";
-import { getTimezoneOffset } from "date-fns-tz";
 
 describe("timeWindowService", () => {
-    const offset = getTimezoneOffset(DEFAULT_TIMEZONE, new Date()) / 60 / 60 / 1000;
+    const offset = -7; // using a fixed offset to make test deterministic;
+    // getTimezoneOffset(DEFAULT_TIMEZONE, new Date()) / 60 / 60 / 1000;
 
     it("toString", () => {
         const tw = {
@@ -67,4 +67,32 @@ describe("timeWindowService", () => {
 
     });
 
+    it("duration - count", () => {
+
+        const timeA = {
+            start_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.toZonedTime(0, "12:00:00", DEFAULT_TIMEZONE)
+        } as TimeWindow;
+
+        const duration = timeWindowService.duration(timeA);
+        expect(duration).toBe(5);
+
+    });
+
+    it("totalDuration", () => {
+
+        const timeA = {
+            start_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.toZonedTime(0, "12:00:00", DEFAULT_TIMEZONE)
+        } as TimeWindow;
+
+        const timeB = {
+            start_date_time: timeWindowService.toZonedTime(0, "010:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.toZonedTime(0, "11:00:00", DEFAULT_TIMEZONE)
+        } as TimeWindow;
+
+        const duration = timeWindowService.totalDuration([timeA, timeB]);
+        expect(duration).toBe(7);
+
+    });
 });

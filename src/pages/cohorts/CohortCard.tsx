@@ -8,11 +8,12 @@
 import { MoreOutlined } from "@ant-design/icons";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
-import { Card, CardContent, IconButton, Menu, MenuItem, Theme, Typography } from "@mui/material";
+import { Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import { cohortService } from "../../api/ceCohortService";
 import { Cohort } from "../../api/types";
+import { UI_STRINGS } from '../../constants';
 
 
 export const CohortCard = (props: { cohort: Cohort }) => {
@@ -66,15 +67,14 @@ export const CohortCard = (props: { cohort: Cohort }) => {
                 position: "relative",
             }}
             onDoubleClick={handleOpen}>
-            <IconButton
-                onClick={handleClick}
-                aria-label="close"
-                sx={{
-                    position: "absolute", top: 8, right: 8,
-                    color: (theme: Theme) => theme.palette.grey[500],
-                }}>
-                <MoreOutlined />
-            </IconButton>
+            <CardHeader
+                title={props.cohort.name}
+                action={
+                    <IconButton
+                        onClick={handleClick}
+                        aria-label="more">
+                        <MoreOutlined />
+                    </IconButton>} />
             <Menu
                 id="demo-positioned-menu"
                 aria-labelledby="demo-positioned-button"
@@ -90,13 +90,12 @@ export const CohortCard = (props: { cohort: Cohort }) => {
                     horizontal: 'left',
                 }}
             >
-                <MenuItem onClick={handleOpen}>Open</MenuItem>
-                <MenuItem onClick={handleDelete}>Delete...</MenuItem>
+                <MenuItem onClick={handleOpen}>{UI_STRINGS.OPEN}</MenuItem>
+                <MenuItem onClick={handleDelete}>{UI_STRINGS.DELETE_WITH_ELLIPSIS}</MenuItem>
             </Menu>
             <CardContent>
-                <Typography fontWeight={600}>{props.cohort.name}</Typography>
-                <Typography>Students : {props.cohort.enrollments?.length} </Typography>
-                <Typography>Plans : {props.cohort.plans?.length} </Typography>
+                <Typography>{UI_STRINGS.STUDENTS_WITH_COLON} {props.cohort.enrollments?.length} </Typography>
+                <Typography>{UI_STRINGS.PLANS_WITH_COLON} {props.cohort.plans?.length} </Typography>
                 <ConfirmationDialog
                     message={`Delete ${props.cohort.name}?`}
                     open={openDeleteDialog}

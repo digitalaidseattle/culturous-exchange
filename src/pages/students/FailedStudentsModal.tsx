@@ -7,6 +7,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import * as React from 'react';
 import { FailedStudent } from '../../api/types';
+import { UI_STRINGS } from '../../constants';
 import BootstrapDialog from '../../utils/styles';
 ;
 
@@ -28,7 +29,7 @@ const FailedStudentsModal: React.FC<Props> = ( { isModalOpen, onClose, failedStu
       >
         <Stack direction='row' justifyContent='space-between'>
           <DialogTitle>
-            Students that require attention:
+            {UI_STRINGS.STUDENTS_ATTENTION}
           </DialogTitle>
           <IconButton
             aria-label="close"
@@ -41,10 +42,10 @@ const FailedStudentsModal: React.FC<Props> = ( { isModalOpen, onClose, failedStu
         {failedStudents.map((student: FailedStudent, idx: number) => (
               <List key={idx}>
                 <ListItem>
-                  <ListItemText primary={`Name: ${student.name}`} />
+                  <ListItemText primary={`${UI_STRINGS.NAME_FIELD} ${student.name}`} />
                 </ListItem>
                 {typeof student.failedError === 'string' && (
-                  <ListItemText secondary={`Error: ${student.failedError}`} style={{ marginLeft: '10%' }}/>
+                  <ListItemText secondary={`${UI_STRINGS.ERROR} ${student.failedError}`} style={{ marginLeft: '10%' }}/>
                 )}
                 {typeof student.failedError === 'object' && student.failedError !== null && (
                   student.failedError.map((error, idx) => (
@@ -63,7 +64,7 @@ const FailedStudentsModal: React.FC<Props> = ( { isModalOpen, onClose, failedStu
             variant='contained'
             color='primary'
             >
-            Close
+            {UI_STRINGS.CLOSE}
           </Button>
         </DialogActions>
       </BootstrapDialog>
