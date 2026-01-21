@@ -14,6 +14,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { planService } from "../api/cePlanService";
 import { Identifier, Plan } from "../api/types";
+import { UI_STRINGS } from '../constants';
 import StarAvatar from "./StarAvatar";
 import { planActivation } from "../api/planActivation";
 
@@ -78,7 +79,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
                     setOpenDeleteDialog(false);
                     setAnchorEl(null);
                     setRefresh(refresh + 1);
-                    notifications.success('Plan deleted.');
+                    notifications.success(UI_STRINGS.PLAN_DELETED);
                 })
         }
     };
@@ -141,9 +142,9 @@ export const PlanCard = (props: { planId: Identifier }) => {
                 </MenuItem>
             </Menu>
             <CardContent>
-                <Typography>Notes : {plan.note}</Typography>
-                <Typography>Groups : {plan.groups.length}</Typography>
-                <Typography>Students : {plan.placements.length}</Typography>
+                <Typography>{UI_STRINGS.NOTES_WITH_COLON} {plan.note}</Typography>
+                <Typography>{UI_STRINGS.GROUPS_WITH_COLON} {plan.groups.length}</Typography>
+                <Typography>{UI_STRINGS.STUDENTS_WITH_COLON} {plan.placements.length}</Typography>
                 <ConfirmationDialog
                     message={`Delete ${plan.name}?`}
                     open={openDeleteDialog}

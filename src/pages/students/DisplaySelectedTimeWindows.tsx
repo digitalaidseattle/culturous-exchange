@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import { Stack, DialogContentText, Typography, IconButton, } from '@mui/material';
+import { UI_STRINGS } from '../../constants';
 import { CloseCircleOutlined } from '@ant-design/icons';
 import { TimeWindowSelectionContext } from ".";
 
@@ -14,8 +15,8 @@ const DisplaySelectedTimeWindows: React.FC = () => {
 
   return (
     <Stack spacing={1} mt={1}>
-      <DialogContentText>Current Time Slot Selections</DialogContentText>
-      {!selection.length && <Typography>none</Typography>}
+      <DialogContentText>{UI_STRINGS.CURRENT_TIME_SLOT_SELECTIONS}</DialogContentText>
+      {!selection.length && <Typography>{UI_STRINGS.NONE}</Typography>}
       {selection.map((timeSlot, idx) => (
         <Stack key={idx} direction="row" justifyContent="space-between">
           <Typography>{timeSlot}</Typography>

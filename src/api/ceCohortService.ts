@@ -11,6 +11,7 @@ import { studentService } from './ceStudentService';
 import { EntityService } from "./entityService";
 import { Cohort, Enrollment, Identifier, Student } from "./types";
 import { supabaseClient } from '@digitalaidseattle/supabase';
+import { SERVICE_ERRORS } from '../constants';
 
 const DEFAULT_SELECT = '*, enrollment(*), plan(*)';
 
@@ -40,7 +41,7 @@ class CECohortService extends EntityService<Cohort> {
             return enrollmentService
                 .batchInsert(enrollments)
         } catch (err) {
-            console.error('Unexpected error during select:', err);
+            console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);
             throw err;
         }
     }
@@ -88,7 +89,7 @@ class CECohortService extends EntityService<Cohort> {
             const json: any = await super.getById(entityId, select ?? DEFAULT_SELECT);
             return this.mapToCohort(json);
         } catch (err) {
-            console.error('Unexpected error during select:', err);
+            console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);
             throw err;
         }
     }
@@ -100,10 +101,10 @@ class CECohortService extends EntityService<Cohort> {
             if (cohort) {
                 return cohort;
             } else {
-                throw new Error('Unexpected error during update:');
+                throw new Error(SERVICE_ERRORS.UNEXPECTED_ERROR_UPDATE);
             }
         } catch (err) {
-            console.error('Unexpected error during select:', err);
+            console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);
             throw err;
         }
 
@@ -119,7 +120,7 @@ class CECohortService extends EntityService<Cohort> {
                 .single()
                 .then(resp => this.mapToCohort(resp.data))
         } catch (err) {
-            console.error('Unexpected error during select:', err);
+            console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);
             throw err;
         }
     }

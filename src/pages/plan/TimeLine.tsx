@@ -42,6 +42,7 @@ import { studentMover } from "../../api/studentMover";
 import { Group, Identifier, Placement, Plan, Student, TimeWindow } from "../../api/types";
 import StudentModal from "../../components/StudentModal";
 import { PlanContext } from "./PlanContext";
+import { WAITLIST_ID, STARTING_HOUR, ENDING_HOUR, OFFICE_HOURS, UI_STRINGS } from '../../constants';
 
 type TimeRow = {
     id: Identifier;
@@ -53,11 +54,6 @@ type TimeRow = {
     saturday: boolean[];
     sunday: boolean[];
 }
-
-const WAITLIST_ID = 'WAITLIST';
-const STARTING_HOUR = 7;
-const ENDING_HOUR = 22;
-const OFFICE_HOURS = Array.from({ length: ENDING_HOUR - STARTING_HOUR + 1 }, (_, i) => STARTING_HOUR + i)
 
 function calcAvailability(time_windows: TimeWindow[]): { friday: any; saturday: any; sunday: any; } {
     const range = ENDING_HOUR - STARTING_HOUR + 1
@@ -245,7 +241,7 @@ export const TimeLine: React.FC = () => {
         return {
             id: WAITLIST_ID,
             groupId: WAITLIST_ID,
-            label: "Waitlist",
+            label: UI_STRINGS.WAITLIST,
             type: 'waitlist',
             friday: response.friday,
             saturday: response.saturday,

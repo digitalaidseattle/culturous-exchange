@@ -12,6 +12,7 @@ import { groupService } from "./ceGroupService";
 import { placementService } from "./cePlacementService";
 import { EntityService } from "./entityService";
 import { Cohort, Group, Identifier, Placement, Plan, Student } from "./types";
+import { UI_STRINGS, SERVICE_ERRORS } from '../constants';
 
 // TODO consider joining to student
 const DEFAULT_SELECT = '*, placement(*, student(*, timewindow(*))), grouptable(*, timewindow(*))';
@@ -21,7 +22,7 @@ class CEPlanService extends EntityService<Plan> {
   async create(cohort: Cohort): Promise<Plan> {
     const proposed: Plan = {
       id: uuidv4(),
-      name: "New Plan",
+      name: UI_STRINGS.NEW_PLAN,
       cohort_id: cohort.id,
       note: "",
       group_size: 10,
@@ -70,7 +71,7 @@ class CEPlanService extends EntityService<Plan> {
       const placements = this.createPlacements(plan, students);
       return placementService.batchInsert(placements);
     } catch (err) {
-      console.error("Unexpected error during select:", err);
+      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);
       throw err;
     }
   }
@@ -104,7 +105,7 @@ class CEPlanService extends EntityService<Plan> {
     return super.insert(json, select ?? DEFAULT_SELECT)
       .then((resp: any) => this.mapJson(resp))
       .catch(err => {
-        console.error('Unexpected error during select:', err);
+        console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);
         throw err;
       });
   }
@@ -113,7 +114,7 @@ class CEPlanService extends EntityService<Plan> {
     return super.getById(entityId, select ?? DEFAULT_SELECT)
       .then((json: any) => this.mapJson(json))
       .catch(err => {
-        console.error('Unexpected error during select:', err);
+        console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);
         throw err;
       });
   }

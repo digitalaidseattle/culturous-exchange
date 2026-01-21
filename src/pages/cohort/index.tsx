@@ -13,6 +13,7 @@ import { cohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { planService } from "../../api/cePlanService";
 import { planGenerator } from "../../api/planGenerator";
+import { UI_STRINGS } from '../../constants';
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
 import { TextEdit } from "../../components/TextEdit";
@@ -104,7 +105,7 @@ const CohortPage: React.FC = () => {
         <Stack gap={1}>
           <MainCard>
             <TextEdit
-              label={"Name"}
+              label={UI_STRINGS.NAME}
               value={cohort.name}
               onChange={(val) => handleNameChange(val)}
             />
@@ -113,7 +114,7 @@ const CohortPage: React.FC = () => {
               variant="contained"
               onClick={handleCreatePlan}
             >
-              New Plan
+              {UI_STRINGS.NEW_PLAN}
             </Button>
           </MainCard>
           <MainCard>
@@ -123,8 +124,8 @@ const CohortPage: React.FC = () => {
                 onChange={changeTab}
                 aria-label="basic tabs example"
               >
-                <Tab label="Plans" />
-                <Tab label="Students" />
+                <Tab label={UI_STRINGS.PLANS_LABEL} />
+                <Tab label={UI_STRINGS.STUDENTS_LABEL} />
               </Tabs>
             </Box>
             <TabPanel value={tabValue} index={0}>

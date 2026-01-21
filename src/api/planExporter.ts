@@ -9,10 +9,11 @@ import { Plan, Student } from "./types";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { timeWindowService } from "./ceTimeWindowService";
+import { PST_OFFSET, UI_STRINGS } from '../constants';
 
 class PlanExporter {
 
-    static PST_OFFSET = 8;
+    static PST_OFFSET = PST_OFFSET;
 
     verticalGroups(plan: Plan): any[] {
         const data: any[] = [];
@@ -58,15 +59,15 @@ class PlanExporter {
 
                 // Build one row per student
                 const row: any = {
-                    "Group": group.name,
-                    "Group Times": group.time_windows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
-                    "Group Times (Student TZ)": group.time_windows?.map(tw => timeWindowService.toString(tw, student.time_zone)).join(', ') || "",
-                    "Name": student.name || "",
-                    "Anchor": student.anchor ? "yes" : "",
-                    "Email": student.email || "",
-                    "Country": student.country,
-                    "Time Zone": student.time_zone,
-                    "Student Times": student.timeWindows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
+                    [UI_STRINGS.GROUP]: group.name,
+                    [UI_STRINGS.GROUP_TIMES]: group.time_windows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
+                    [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: group.time_windows?.map(tw => timeWindowService.toString(tw, student.time_zone)).join(', ') || "",
+                    [UI_STRINGS.NAME]: student.name || "",
+                    [UI_STRINGS.ANCHOR]: student.anchor ? "yes" : "",
+                    [UI_STRINGS.EMAIL]: student.email || "",
+                    [UI_STRINGS.COUNTRY]: student.country,
+                    [UI_STRINGS.TIME_ZONE]: student.time_zone,
+                    [UI_STRINGS.STUDENT_TIMES]: student.timeWindows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
                 };
                 data.push(row);
             }
@@ -78,16 +79,16 @@ class PlanExporter {
         for (const placement of waitlisted) {
             const student: Student = placement.student ?? ({} as Student);
 
-            data.push({
-                "Group": "Waitlist",
-                "Group Times (PST)": "",
-                "Group Times (Student TZ)": "",
-                "Name": student.name || "",
-                "Anchor": student.anchor ? "yes" : "",
-                "Email": student.email || "",
-                "Country": student.country,
-                "Time Zone": student.time_zone,
-                "Student Times":
+                data.push({
+                [UI_STRINGS.GROUP]: UI_STRINGS.WAITLIST,
+                [UI_STRINGS.GROUP_TIMES_PST]: "",
+                [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: "",
+                [UI_STRINGS.NAME]: student.name || "",
+                [UI_STRINGS.ANCHOR]: student.anchor ? "yes" : "",
+                [UI_STRINGS.EMAIL]: student.email || "",
+                [UI_STRINGS.COUNTRY]: student.country,
+                [UI_STRINGS.TIME_ZONE]: student.time_zone,
+                [UI_STRINGS.STUDENT_TIMES]:
                     student.timeWindows?.map(tw =>
                         timeWindowService.toString(tw)
                     ).join(", ") || "",
@@ -105,7 +106,7 @@ class PlanExporter {
         const worksheet = XLSX.utils.json_to_sheet(data);
         const workbook = XLSX.utils.book_new();
 
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Group Placements');
+        XLSX.utils.book_append_sheet(workbook, worksheet, UI_STRINGS.GROUP_PLACEMENTS_SHEET);
 
         const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
         const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });

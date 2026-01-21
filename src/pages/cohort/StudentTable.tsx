@@ -31,12 +31,13 @@ import { cohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { studentService } from "../../api/ceStudentService";
 import { Enrollment, Identifier, Student } from "../../api/types";
+import { UI_STRINGS, SERVICE_ERRORS } from '../../constants';
+import { COHORT_STUDENT_TABLE_PAGE_SIZE as PAGE_SIZE } from '../../constants';
 import AddStudentModal from "../../components/AddStudentModal";
 import DisplayTimeWindow from "../../components/DisplayTimeWindow";
 import { ShowLocalTimeContext } from "../../components/ShowLocalTimeContext";
 import { TimeToggle } from "../../components/TimeToggle";
 
-const PAGE_SIZE = 10;
 
 export const StudentTable: React.FC = () => {
   const apiRef = useGridApiRef();
@@ -77,12 +78,12 @@ export const StudentTable: React.FC = () => {
   const handleAddStudent = (students: Student[]) => {
     cohortService.addStudents(cohort, students)
       .then(() => {
-        notifications.success('Students added.');
+        notifications.success(UI_STRINGS.STUDENTS_ADDED);
         setRefresh(refresh + 1);
         setShowAddStudent(false);
       })
       .catch((err) => {
-        notifications.error('Error adding students.');
+        notifications.error(UI_STRINGS.ERROR_ADDING_STUDENTS);
         console.error(err);
       })
   }
@@ -91,7 +92,7 @@ export const StudentTable: React.FC = () => {
     cohortService
       .removeStudents(cohort, rowSelectionModel as Identifier[])
       .then(() => {
-        notifications.success("Students removed.");
+        notifications.success(UI_STRINGS.STUDENTS_REMOVED);
         setRefresh(refresh + 1);
         setOpenDeleteDialog(false);
       });
@@ -112,8 +113,8 @@ export const StudentTable: React.FC = () => {
           setRefresh(refresh + 1);
         });
     } catch (error) {
-      console.error('Error toggling anchor:', error);
-      notifications.error('Failed to update student anchor status');
+      console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error);
+      notifications.error(UI_STRINGS.FAILED_UPDATE_ANCHOR);
       // Revert optimistic update
       setPageInfo({ ...pageInfo });
     }
@@ -123,7 +124,7 @@ export const StudentTable: React.FC = () => {
     return [
       {
         field: "student.name",
-        headerName: "Name",
+        headerName: UI_STRINGS.NAME,
         width: 150,
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.name}</Typography>;
@@ -132,7 +133,7 @@ export const StudentTable: React.FC = () => {
       },
       {
         field: "student.email",
-        headerName: "Email",
+        headerName: UI_STRINGS.EMAIL,
         width: 240,
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.email}</Typography>;
@@ -142,7 +143,7 @@ export const StudentTable: React.FC = () => {
 
       {
         field: "student.country",
-        headerName: "Country",
+        headerName: UI_STRINGS.COUNTRY,
         width: 140,
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.country}</Typography>;
@@ -151,7 +152,7 @@ export const StudentTable: React.FC = () => {
       },
       {
         field: "anchor",
-        headerName: "Anchor",
+        headerName: UI_STRINGS.ANCHOR,
         width: 75,
         type: "boolean",
         renderCell: (param: GridRenderCellParams) => {
@@ -168,7 +169,7 @@ export const StudentTable: React.FC = () => {
       },
       {
         field: 'student.age',
-        headerName: 'Age',
+        headerName: UI_STRINGS.AGE,
         width: 75,
         type: 'number',
         filterOperators: getGridNumericOperators()
@@ -180,7 +181,7 @@ export const StudentTable: React.FC = () => {
       },
       {
         field: 'student.gender',
-        headerName: 'Gender',
+        headerName: UI_STRINGS.GENDER,
         width: 100,
         filterOperators: getGridStringOperators()
           .filter((operator) => studentService.supportedStringFilters().includes(operator.value)),
@@ -191,7 +192,7 @@ export const StudentTable: React.FC = () => {
       },
       {
         field: 'timeWindows',
-        headerName: 'Availabilities',
+        headerName: UI_STRINGS.AVAILABILITIES,
         width: 250,
         renderCell: (params) => {
           const timeWindows = Array.isArray(params.row.student.timeWindows) ? params.row.student.timeWindows : [];
@@ -208,19 +209,19 @@ export const StudentTable: React.FC = () => {
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Stack margin={1} gap={1} direction="row" spacing={'1rem'}>
             <Button
-              title='Add Student'
+              title={UI_STRINGS.ADD_STUDENT}
               variant="contained"
               color="primary"
               onClick={addStudent}>
-              {'Add Student'}
+              {UI_STRINGS.ADD_STUDENT}
             </Button>
             <Button
-              title='RemoveStudent'
+              title={UI_STRINGS.REMOVE_STUDENT}
               variant="contained"
               color="primary"
               disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
               onClick={removeStudent}>
-              {'Remove student'}
+              {UI_STRINGS.REMOVE_STUDENT}
             </Button>
           </Stack>
           <TimeToggle />
@@ -248,7 +249,7 @@ export const StudentTable: React.FC = () => {
           />
         }
         <ConfirmationDialog
-          message={`Delete selected students?`}
+          message={UI_STRINGS.DELETE_SELECTED_STUDENTS_CONFIRM}
           open={openDeleteDialog}
           handleConfirm={() => doDelete()}
           handleCancel={() => setOpenDeleteDialog(false)} />

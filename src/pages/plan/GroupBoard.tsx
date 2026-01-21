@@ -18,12 +18,11 @@ import { planService } from "../../api/cePlanService";
 import { studentMover } from "../../api/studentMover";
 import { Group, Identifier, Placement } from "../../api/types";
 import { GroupCard } from "../../components/GroupCard";
+import { WAITLIST_ID, UI_STRINGS } from '../../constants';
 import { StudentCard } from "../../components/StudentCard";
 import { PlanContext } from "./PlanContext";
 
-type PlacementWrapper = Placement & DDType
-
-const WAITLIST_ID = 'WAITLIST';
+type PlacementWrapper = Placement & DDType;
 
 export interface GroupBoardProps {
     showStudentDetails: boolean;
@@ -41,7 +40,7 @@ export const GroupBoard: React.FC<GroupBoardProps> = ({ showStudentDetails, show
         if (plan) {
             setInitialized(false);
             const waitlist: DDCategory<string>[] = [
-                { label: 'Waitlisted', value: WAITLIST_ID }
+                { label: UI_STRINGS.WAITLISTED, value: WAITLIST_ID }
             ];
             const temCats = waitlist.concat(plan.groups
                 .map(group => {
@@ -89,7 +88,7 @@ export const GroupBoard: React.FC<GroupBoardProps> = ({ showStudentDetails, show
                 showDetails={showGroupDetails} />
         } else {
             return <GroupCard
-                group={{ id: WAITLIST_ID, name: "Waitlisted" } as Group}
+                group={{ id: WAITLIST_ID, name: UI_STRINGS.WAITLISTED } as Group}
                 showDetails={false} />
         }
     };

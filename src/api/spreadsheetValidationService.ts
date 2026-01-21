@@ -1,14 +1,21 @@
 import { Student, ValidationError } from "./types";
+import {
+  MIN_NAME_LENGTH,
+  MIN_CITY_LENGTH,
+  MIN_STUDENT_AGE,
+  MAX_STUDENT_AGE,
+  MIN_COUNTRY_LENGTH,
+  UI_STRINGS,
+} from '../constants';
 
 export interface Validator<T> {
   validate(data: T): ValidationError[];
 }
 
-const MIN_NAME_LENGTH = 4;
 export class NameValidator implements Validator<Student> {
   validate(student: Student): ValidationError[] {
     if (student.name.trim().length < MIN_NAME_LENGTH) {
-      return [{ isValid: false, field: 'name', message: `Name must be at least ${MIN_NAME_LENGTH} characters` }]
+      return [{ isValid: false, field: 'name', message: `${UI_STRINGS.NAME_AT_LEAST} ${MIN_NAME_LENGTH} ${UI_STRINGS.CHARACTERS}` }]
     }
     return []
   }
@@ -18,41 +25,37 @@ const EMAIL_REGEX = new RegExp('^[a-zA-Z0-9._]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9]+)+$
 export class EmailValidator implements Validator<Student> {
   validate(student: Student): ValidationError[] {
     if (!student.email || !EMAIL_REGEX.test(student.email)) {
-      return [{ isValid: false, field: 'email', message: 'Invalid email format' }]
+      return [{ isValid: false, field: 'email', message: UI_STRINGS.INVALID_EMAIL_FORMAT }]
     }
     return []
   }
 }
 
-const MIN_CITY_LENGTH = 1;
 export class CityValidator implements Validator<Student> {
   validate(student: Student): ValidationError[] {
     if (student.city!.trim().length < MIN_CITY_LENGTH) {
-      return [{ isValid: false, field: 'city', message: 'City is required' }]
+      return [{ isValid: false, field: 'city', message: UI_STRINGS.CITY_REQUIRED }]
     }
     return []
   }
 }
 
-const MIN_STUDENT_AGE = 13;
-const MAX_STUDENT_AGE = 19;
 export class AgeValidator implements Validator<Student> {
   validate(student: Student): ValidationError[] {
     if (!student.age) {
-      return [{ isValid: false, field: 'age', message: 'Student age is required.' }]
+      return [{ isValid: false, field: 'age', message: UI_STRINGS.STUDENT_AGE_REQUIRED }]
     }
     if (student.age && (student.age < MIN_STUDENT_AGE || student.age > MAX_STUDENT_AGE)) {
-      return [{ isValid: false, field: 'age', message: `Age must between ${MIN_STUDENT_AGE} and ${MAX_STUDENT_AGE}.` }]
+      return [{ isValid: false, field: 'age', message: `${UI_STRINGS.AGE_MUST_BETWEEN_PREFIX} ${MIN_STUDENT_AGE} and ${MAX_STUDENT_AGE}.` }]
     }
     return []
   }
 }
 
-const MIN_COUNTRY_LENGTH = 1;
 export class CountryValidator implements Validator<Student> {
   validate(student: Student): ValidationError[] {
     if (student.country.trim().length < MIN_COUNTRY_LENGTH) {
-      return [{ isValid: false, field: 'country', message: 'Country is required' }]
+      return [{ isValid: false, field: 'country', message: UI_STRINGS.COUNTRY_REQUIRED }]
     }
     return []
   }
@@ -66,18 +69,18 @@ export class TimeWindowValidator implements Validator<Student> {
     const timeWindowErrors: ValidationError[] = [];
 
     if (!student.timeWindows || student.timeWindows.length === 0) {
-      timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: `A time window is required.` });
+      timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: UI_STRINGS.TIME_WINDOW_REQUIRED });
     }
 
     for (const tw of student.timeWindows!) {
       if (!tw.day_in_week || !VALID_DAYS.includes(tw.day_in_week.trim())) {
-        timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: `Day of week must be "Friday", "Saturday", or "Sunday"` });
+        timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: UI_STRINGS.DAY_OF_WEEK_MUST_BE });
       }
       if (!tw.start_t || !VALID_TIME_WINDOW_REGEX.test(tw.start_t)) {
-        timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: `Start time invalid` });
+        timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: UI_STRINGS.START_TIME_INVALID });
       }
       if (!tw.end_t || !VALID_TIME_WINDOW_REGEX.test(tw.end_t)) {
-        timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: `End time invalid` });
+        timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: UI_STRINGS.END_TIME_INVALID });
       }
     }
     return timeWindowErrors;

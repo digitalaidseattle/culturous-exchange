@@ -22,6 +22,7 @@ import { placementService } from "../api/cePlacementService";
 import { timeWindowService } from "../api/ceTimeWindowService";
 import { Placement } from "../api/types";
 import StarAvatar from "./StarAvatar";
+import { UI_STRINGS, SERVICE_ERRORS } from '../constants';
 
 
 export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails }) => {
@@ -39,7 +40,7 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
                 placement.student_id,
                 { anchor: !placement.anchor })
             .then(() => setRefresh(refresh + 1))
-            .catch((error) => console.error('Error toggling anchor:', error))
+            .catch((error) => console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error))
     };
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -101,14 +102,14 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
                     horizontal: 'left',
                 }}
             >
-                <MenuItem onClick={handleOpen}>Open</MenuItem>
-                <MenuItem onClick={handleRemove}>Remove...</MenuItem>
+                <MenuItem onClick={handleOpen}>{UI_STRINGS.OPEN}</MenuItem>
+                <MenuItem onClick={handleRemove}>{UI_STRINGS.REMOVE}</MenuItem>
             </Menu>
             <CardContent>
                 {showDetails &&
                     <CardContent>
                         <Typography>{placement.student!.country}</Typography>
-                        <Typography fontWeight={600}>Time Windows</Typography>
+                        <Typography fontWeight={600}>{UI_STRINGS.TIME_WINDOWS}</Typography>
                         {timeWindows.map((tw, idx) => <Typography key={idx}>{timeWindowService.toString(tw)}</Typography>)}
                     </CardContent>
                 }

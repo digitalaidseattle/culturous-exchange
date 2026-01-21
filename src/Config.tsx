@@ -6,6 +6,7 @@ import {
 } from '@ant-design/icons';
 
 import logo from "./assets/images/culturous.jpg";
+import { UI_STRINGS } from './constants';
 import { MenuItem } from "@digitalaidseattle/mui";
 import packageJson  from '../package.json';
 
@@ -15,7 +16,7 @@ const home = {
   children: [
     {
       id: 'home',
-      title: 'Home',
+      title: UI_STRINGS.HOME,
       type: 'item',
       url: '/home',
       icon: <HomeOutlined />
@@ -29,14 +30,14 @@ const entities = {
   children: [
     {
       id: 'cohorts',
-      title: 'Cohorts',
+      title: UI_STRINGS.COHORTS,
       type: 'item',
       url: '/cohorts',
       icon: <CalendarOutlined />
     } as MenuItem,
     {
       id: 'students',
-      title: 'Students',
+      title: UI_STRINGS.STUDENTS_LABEL,
       type: 'item',
       url: '/students',
       icon: <UserOutlined />
@@ -45,7 +46,7 @@ const entities = {
 } as MenuItem;
 
 export const Config = {
-  appName: 'Culturous Exchange',
+  appName: UI_STRINGS.APP_NAME,
   logoUrl: logo,
   drawerWidth: 240,
   menuItems: [home, entities],

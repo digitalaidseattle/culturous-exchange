@@ -9,6 +9,7 @@ import { supabaseClient } from "@digitalaidseattle/supabase";
 import { enrollmentService } from "./ceEnrollmentService";
 import { Cohort, Group, Identifier, Placement, Plan, Student } from "./types";
 import { studentService } from "./ceStudentService";
+import { SERVICE_ERRORS } from '../constants';
 
 
 class CEPlacementService {
@@ -101,12 +102,12 @@ class CEPlacementService {
         .select(select ?? '*')
         .single();
       if (error) {
-        console.error('Error updating entity:', error.message);
-        throw new Error('Failed to update entity');
+        console.error(SERVICE_ERRORS.ERROR_UPDATING_ENTITY, error.message);
+        throw new Error(SERVICE_ERRORS.FAILED_UPDATE_ENTITY);
       }
       return data as unknown as Placement;
     } catch (err) {
-      console.error('Unexpected error during update:', err);
+      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_UPDATE, err);
       throw err;
     }
   }
@@ -119,11 +120,11 @@ class CEPlacementService {
         .eq('plan_id', placement.plan_id)
         .eq('student_id', placement.student_id);
       if (error) {
-        console.error('Error deleting entity:', error.message);
-        throw new Error('Failed to delete entity');
+        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
+        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
       }
     } catch (err) {
-      console.error('Unexpected error during deletion:', err);
+      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
       throw err;
     }
   }
@@ -151,12 +152,12 @@ class CEPlacementService {
         .upsert(json)
         .select(select ?? '*');
       if (error) {
-        console.error('Error inserting entity:', error);
-        throw new Error('Failed to insert entity: ' + error.message);
+        console.error(SERVICE_ERRORS.ERROR_INSERTING_ENTITY, error);
+        throw new Error(SERVICE_ERRORS.FAILED_INSERT_ENTITY_PREFIX + error.message);
       }
       return data as unknown as Placement[];
     } catch (err) {
-      console.error('Unexpected error during insertion:', err);
+      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_INSERTION, err);
       throw err;
     }
   }

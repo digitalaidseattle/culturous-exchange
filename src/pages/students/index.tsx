@@ -16,6 +16,7 @@ import { createContext } from 'react';
 import { studentService } from '../../api/ceStudentService';
 import { timeWindowService } from '../../api/ceTimeWindowService';
 import { FailedStudent, Student } from '../../api/types';
+import { UI_STRINGS } from '../../constants';
 import { ShowLocalTimeContext } from '../../components/ShowLocalTimeContext';
 import StudentModal from '../../components/StudentModal';
 import { TimeToggle } from '../../components/TimeToggle';
@@ -100,18 +101,18 @@ const ToolsSection = () => {
             <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Stack spacing={2} m={2} direction={'row'}>
                     <Button
-                        title='Upload Student'
+                        title={UI_STRINGS.UPLOAD_STUDENT}
                         variant="contained"
                         color="primary"
                         onClick={() => setShowDropzone(!showDropzone)}>
-                        Upload
+                        {UI_STRINGS.UPLOAD}
                     </Button>
                     <Button
-                        title='Add Student'
+                        title={UI_STRINGS.ADD_STUDENT}
                         variant="contained"
                         color="primary"
                         onClick={() => setIsAddStudentModalOpen(true)}>
-                        Add Student
+                        {UI_STRINGS.ADD_STUDENT}
                     </Button>
                 </Stack>
                 <TimeToggle />
@@ -142,7 +143,7 @@ const StudentsPage: React.FC = () => {
         <StudentContext.Provider value={{ student, setStudent }}>
             <TimeWindowSelectionContext.Provider value={{ selection, setSelection }}>
                 <ShowLocalTimeContext.Provider value={{ showLocalTime, setShowLocalTime }}>
-                    <MainCard title="Students Page">
+                    <MainCard title={UI_STRINGS.STUDENTS_PAGE_TITLE}>
                         <ToolsSection />
                         <StudentsDetailsTable />
                     </MainCard>

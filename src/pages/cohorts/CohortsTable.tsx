@@ -24,21 +24,21 @@ import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { useNavigate } from 'react-router';
 import { cohortService } from '../../api/ceCohortService';
+import { UI_STRINGS } from '../../constants';
 import { Cohort, Plan } from '../../api/types';
 import { MainCard } from '@digitalaidseattle/mui';
-
-const PAGE_SIZE = 10;
+import { COHORTS_PAGE_SIZE as PAGE_SIZE } from '../../constants';
 
 const getColumns = (): GridColDef[] => {
     return [
         {
             field: 'name',
-            headerName: 'Name',
+            headerName: UI_STRINGS.NAME,
             width: 150,
         },
         {
             field: 'plans',
-            headerName: 'Plans',
+            headerName: UI_STRINGS.PLANS_LABEL,
             renderCell: (param: any) => {
                 return <Typography>{param.row.plans.map((p: Plan) => p.name).join(', ')}</Typography>
             }
