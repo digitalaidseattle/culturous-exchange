@@ -30,13 +30,12 @@ import { CohortContext } from ".";
 import { cohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { studentService } from "../../api/ceStudentService";
-import { Enrollment, Identifier, Student } from "../../api/types";
-import { UI_STRINGS, SERVICE_ERRORS } from '../../constants';
-import { COHORT_STUDENT_TABLE_PAGE_SIZE as PAGE_SIZE } from '../../constants';
+import { Enrollment, Student } from "../../api/types";
 import AddStudentModal from "../../components/AddStudentModal";
 import DisplayTimeWindow from "../../components/DisplayTimeWindow";
 import { ShowLocalTimeContext } from "../../components/ShowLocalTimeContext";
 import { TimeToggle } from "../../components/TimeToggle";
+import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
 
 
 export const StudentTable: React.FC = () => {
@@ -45,7 +44,7 @@ export const StudentTable: React.FC = () => {
   const notifications = useNotifications();
   const { refresh, setRefresh } = useContext(RefreshContext);
 
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: "created_at", sort: "desc" }]);
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
   const [pageInfo, setPageInfo] = useState<PageInfo<Enrollment>>({ rows: [], totalRowCount: 0, });
@@ -90,7 +89,7 @@ export const StudentTable: React.FC = () => {
 
   const doDelete = () => {
     cohortService
-      .removeStudents(cohort, rowSelectionModel as Identifier[])
+      .removeStudents(cohort, Array.from(rowSelectionModel!.ids))
       .then(() => {
         notifications.success(UI_STRINGS.STUDENTS_REMOVED);
         setRefresh(refresh + 1);
@@ -129,7 +128,7 @@ export const StudentTable: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.name}</Typography>;
         },
-        valueGetter: (params) => `${params.row.student.name}`,
+        valueGetter: (_value, row) => row.student.name,
       },
       {
         field: "student.email",
@@ -138,7 +137,7 @@ export const StudentTable: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.email}</Typography>;
         },
-        valueGetter: (params) => `${params.row.student.email}`,
+        valueGetter: (_value, row) => row.student.email,
       },
 
       {
@@ -148,7 +147,7 @@ export const StudentTable: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.country}</Typography>;
         },
-        valueGetter: (params) => `${params.row.student.country}`
+        valueGetter: (_value, row) => row.student.country
       },
       {
         field: "anchor",
@@ -177,7 +176,7 @@ export const StudentTable: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.age}</Typography>;
         },
-        valueGetter: (params) => `${params.row.student.age}`,
+        valueGetter: (_value, row) => row.student.age,
       },
       {
         field: 'student.gender',
@@ -188,7 +187,7 @@ export const StudentTable: React.FC = () => {
         renderCell: (param: GridRenderCellParams) => {
           return <Typography>{param.row.student.gender}</Typography>;
         },
-        valueGetter: (params) => `${params.row.student.gender}`,
+        valueGetter: (_value, row) => row.student.gender,
       },
       {
         field: 'timeWindows',
@@ -219,7 +218,7 @@ export const StudentTable: React.FC = () => {
               title={UI_STRINGS.REMOVE_STUDENT}
               variant="contained"
               color="primary"
-              disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
+              disabled={!(rowSelectionModel && rowSelectionModel.ids.size > 0)}
               onClick={removeStudent}>
               {UI_STRINGS.REMOVE_STUDENT}
             </Button>

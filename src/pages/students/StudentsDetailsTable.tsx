@@ -23,7 +23,7 @@ import { ConfirmationDialog } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
 import { UI_STRINGS, SERVICE_ERRORS } from '../../constants';
-import { STUDENTS_DETAILS_PAGE_SIZE as PAGE_SIZE } from '../../constants';
+import { DEFAULT_TABLE_PAGE_SIZE } from '../../constants';
 import { timeWindowService } from '../../api/ceTimeWindowService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
@@ -37,7 +37,7 @@ const StudentsDetailsTable: React.FC = () => {
 
   const [initialize, setInitialize] = useState<boolean>(true);
   const [columns, setColumns] = useState<GridColDef[]>([]);
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'name', sort: 'asc' }]);
   const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
   const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
@@ -238,7 +238,7 @@ const StudentsDetailsTable: React.FC = () => {
       {
         field: 'timeWindows',
         headerName: UI_STRINGS.AVAILABILITIES,
-        width: 450,
+        width: 650,
         renderCell: (params) => {
           const timeWindows = Array.isArray(params.value) ? params.value : [];
           return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.time_zone} />
@@ -251,6 +251,7 @@ const StudentsDetailsTable: React.FC = () => {
   return (columns &&
     <>
       <DataGrid
+        sx={{ width: '100%' }}
         rows={pageInfo.rows}
         columns={columns}
         rowCount={pageInfo.totalRowCount}

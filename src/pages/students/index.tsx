@@ -23,6 +23,7 @@ import { TimeToggle } from '../../components/TimeToggle';
 import FailedStudentsModal from './FailedStudentsModal';
 import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
+import { TimeWindowSelectionContext } from '../../components/TimeWindowSelectionContext';
 
 interface StudentContextType {
     student: Student,
@@ -33,17 +34,6 @@ export const StudentContext = createContext<StudentContextType>({
     student: {} as Student,
     setStudent: () => { }
 })
-
-interface TimeWindowContextType {
-    selection: string[],
-    setSelection: React.Dispatch<React.SetStateAction<string[]>>
-}
-
-export const TimeWindowSelectionContext = createContext<TimeWindowContextType>({
-    selection: [] as string[],
-    setSelection: () => []
-})
-
 
 const ToolsSection = () => {
     const notifications = useNotifications();
