@@ -39,6 +39,8 @@ export const UI_STRINGS = {
   UPLOAD: 'Upload',
   UPLOAD_STUDENT: 'Upload Student',
   CLOSE: 'Close',
+  ADD: 'Add',
+  UPLOAD_FACILITATOR: 'Upload Facilitator',
 
   // Generic labels
   SETTINGS: 'Settings',
@@ -79,6 +81,7 @@ export const UI_STRINGS = {
   ARE_YOU_SURE_DELETE_STUDENT: 'Are you sure you want to delete this student?',
   LOCAL_TIME: 'Local Time',
   STUDENT_TIME: 'Student Time',
+  FACILITATOR_TIME: 'Facilitator Time',
 
   // Tooltips
   EXPORT_PLAN: 'Export plan',
@@ -201,4 +204,4 @@ export const COHORTS_PAGE_SIZE = 10;
 export const COHORT_STUDENT_TABLE_PAGE_SIZE = 10;
 
 // Default number of rows per page in the students details table
-export const STUDENTS_DETAILS_PAGE_SIZE = 25;
+export const DEFAULT_TABLE_PAGE_SIZE = 25;

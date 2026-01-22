@@ -2,13 +2,14 @@
 import {
   CalendarOutlined,
   HomeOutlined,
+  SmileOutlined,
   UserOutlined
 } from '@ant-design/icons';
 
 import logo from "./assets/images/culturous.jpg";
 import { UI_STRINGS } from './constants';
 import { MenuItem } from "@digitalaidseattle/mui";
-import packageJson  from '../package.json';
+import packageJson from '../package.json';
 
 const home = {
   id: 'home',
@@ -41,6 +42,13 @@ const entities = {
       type: 'item',
       url: '/students',
       icon: <UserOutlined />
+    } as MenuItem,
+    {
+      id: 'facilitators',
+      title: 'Facilitators',
+      type: 'item',
+      url: '/facilitators',
+      icon: <SmileOutlined />
     } as MenuItem
   ]
 } as MenuItem;

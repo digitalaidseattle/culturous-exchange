@@ -1,4 +1,4 @@
-import { Student, ValidationError } from "./types";
+import { Facilitator, Profile, Student, ValidationError } from "./types";
 import {
   MIN_NAME_LENGTH,
   MIN_CITY_LENGTH,
@@ -12,8 +12,8 @@ export interface Validator<T> {
   validate(data: T): ValidationError[];
 }
 
-export class NameValidator implements Validator<Student> {
-  validate(student: Student): ValidationError[] {
+export class NameValidator implements Validator<Profile> {
+  validate(student: Profile): ValidationError[] {
     if (student.name.trim().length < MIN_NAME_LENGTH) {
       return [{ isValid: false, field: 'name', message: `${UI_STRINGS.NAME_AT_LEAST} ${MIN_NAME_LENGTH} ${UI_STRINGS.CHARACTERS}` }]
     }
@@ -22,8 +22,8 @@ export class NameValidator implements Validator<Student> {
 }
 
 const EMAIL_REGEX = new RegExp('^[a-zA-Z0-9._]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9]+)+$');
-export class EmailValidator implements Validator<Student> {
-  validate(student: Student): ValidationError[] {
+export class EmailValidator implements Validator<Profile> {
+  validate(student: Profile): ValidationError[] {
     if (!student.email || !EMAIL_REGEX.test(student.email)) {
       return [{ isValid: false, field: 'email', message: UI_STRINGS.INVALID_EMAIL_FORMAT }]
     }
@@ -31,8 +31,8 @@ export class EmailValidator implements Validator<Student> {
   }
 }
 
-export class CityValidator implements Validator<Student> {
-  validate(student: Student): ValidationError[] {
+export class CityValidator implements Validator<Profile> {
+  validate(student: Profile): ValidationError[] {
     if (student.city!.trim().length < MIN_CITY_LENGTH) {
       return [{ isValid: false, field: 'city', message: UI_STRINGS.CITY_REQUIRED }]
     }
@@ -52,8 +52,8 @@ export class AgeValidator implements Validator<Student> {
   }
 }
 
-export class CountryValidator implements Validator<Student> {
-  validate(student: Student): ValidationError[] {
+export class CountryValidator implements Validator<Profile> {
+  validate(student: Profile): ValidationError[] {
     if (student.country.trim().length < MIN_COUNTRY_LENGTH) {
       return [{ isValid: false, field: 'country', message: UI_STRINGS.COUNTRY_REQUIRED }]
     }
@@ -63,9 +63,9 @@ export class CountryValidator implements Validator<Student> {
 
 const VALID_DAYS = ['Friday', 'Saturday', 'Sunday'];
 const VALID_TIME_WINDOW_REGEX = new RegExp('^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$');
-export class TimeWindowValidator implements Validator<Student> {
+export class TimeWindowValidator implements Validator<Profile> {
 
-  validate(student: Student): ValidationError[] {
+  validate(student: Profile): ValidationError[] {
     const timeWindowErrors: ValidationError[] = [];
 
     if (!student.timeWindows || student.timeWindows.length === 0) {
@@ -99,6 +99,29 @@ export class SpeadsheetValidationService {
 
   validateStudent(student: Student): ValidationError[] {
     return this.validators.map(validator => validator.validate(student)).flat()
+  }
+}
+
+export class FacilitatorValidationService {
+  static _instance: FacilitatorValidationService;
+
+  static getInstance(): FacilitatorValidationService {
+    if (!this._instance) {
+      this._instance = new FacilitatorValidationService();
+    }
+    return this._instance;
+  }
+
+  validators = [
+    new NameValidator(),
+    new EmailValidator(),
+    new CityValidator(),
+    new CountryValidator(),
+    new TimeWindowValidator()
+  ];
+
+  validate(facilitator: Facilitator): ValidationError[] {
+    return this.validators.map(validator => validator.validate(facilitator)).flat()
   }
 }
 

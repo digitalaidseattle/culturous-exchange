@@ -31,12 +31,11 @@ import { cohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { studentService } from "../../api/ceStudentService";
 import { Enrollment, Identifier, Student } from "../../api/types";
-import { UI_STRINGS, SERVICE_ERRORS } from '../../constants';
-import { COHORT_STUDENT_TABLE_PAGE_SIZE as PAGE_SIZE } from '../../constants';
 import AddStudentModal from "../../components/AddStudentModal";
 import DisplayTimeWindow from "../../components/DisplayTimeWindow";
 import { ShowLocalTimeContext } from "../../components/ShowLocalTimeContext";
 import { TimeToggle } from "../../components/TimeToggle";
+import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
 
 
 export const StudentTable: React.FC = () => {
@@ -45,7 +44,7 @@ export const StudentTable: React.FC = () => {
   const notifications = useNotifications();
   const { refresh, setRefresh } = useContext(RefreshContext);
 
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: "created_at", sort: "desc" }]);
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
   const [pageInfo, setPageInfo] = useState<PageInfo<Enrollment>>({ rows: [], totalRowCount: 0, });

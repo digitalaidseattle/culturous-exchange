@@ -20,17 +20,23 @@ type TimeWindow = Entity & {
     end_date_time: Date;
 }
 
-type Student = Entity & {
+type Profile = Entity & {
     name: string;
-    age: number | null;
     email: string;
     city: string;
     country: string;
+    time_zone?: string;
+    tz_offset: number;
+    timeWindows?: TimeWindow[];
+}
+type Student = Profile & {
+    age: number | null;
     gender: string;
-    time_zone?: string; 
-    tz_offset: number; 
-    timeWindows?: TimeWindow[]; 
     anchor: boolean
+}
+
+// Marker Interface
+type Facilitator = Profile & {
 }
 
 type FailedStudent = Student & {
@@ -106,6 +112,8 @@ export type {
     TimeWindow,
     Enrollment,
     Entity,
+    Profile,
+    Facilitator,
     FailedStudent,
     ValidationError,
     Identifier,

@@ -1,26 +1,22 @@
-import { useEffect, useState } from 'react';
-import { StarFilled } from '@ant-design/icons';
 import {
   Box,
   Checkbox,
   FormControl,
-  FormControlLabel,
-  FormLabel,
   FormHelperText,
+  FormLabel,
   Input,
   ListItemText,
   MenuItem,
-  Radio,
-  RadioGroup,
   Select,
   TextField
 } from '@mui/material';
-import { Cohort, Student, TimeWindow, ValidationError } from '../../api/types';
+import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { GENDER_OPTION, TimeSlot, TIME_SLOTS, UI_STRINGS, SERVICE_ERRORS } from '../../constants';
-import { studentService } from '../../api/ceStudentService';
-import { studentValidationService } from '../../api/spreadsheetValidationService';
-import { CETextInput } from '../../components/CETextInput';
+import { CEFacilitatorService, MockFilitatorService } from '../api/ceFacilitatorService';
+import { FacilitatorValidationService } from '../api/spreadsheetValidationService';
+import { Cohort, Facilitator, TimeWindow, ValidationError } from '../api/types';
+import { TIME_SLOTS, TimeSlot, UI_STRINGS } from '../constants';
+import { CETextInput } from './CETextInput';
 
 
 function findTimeSlot(timeWindow: TimeWindow): TimeSlot | null {
@@ -36,23 +32,27 @@ function isTimeWindowEqual(timeWindow: TimeWindow, ts: TimeSlot): boolean {
     ts.end_t === timeWindow.end_t;
 }
 
+// const service = CEFacilitatorService.getInstance();
+const service = new MockFilitatorService();
+const validationService = FacilitatorValidationService.getInstance();
+
 interface Props {
-  student: Student;
-  onChange: (student: Student, validationErrors: ValidationError[]) => void;
+  facilitator: Facilitator;
+  onChange: (facilitator: Facilitator, validationErrors: ValidationError[]) => void;
 }
 
-const StudentForm: React.FC<Props> = ({ student, onChange }) => {
+const FacilitatorForm: React.FC<Props> = ({ facilitator, onChange }) => {
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
-  const [updated, setUpdated] = useState<Student>(student);
+  const [updated, setUpdated] = useState<Facilitator>(facilitator);
 
   const [errors, setErrors] = useState<ValidationError[]>([]);
 
   useEffect(() => {
-    setUpdated(student)
-  }, [student]);
+    setUpdated(facilitator)
+  }, [facilitator]);
 
   useEffect(() => {
-    studentService.getCohortsForStudent(updated)
+    service.getCohorts(updated)
       .then(ccs => setCohorts(ccs))
   }, [updated]);
 
@@ -65,8 +65,8 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
     onChange(next, validationErrors);
   }
 
-  const updateValidationErrors = (student: Student): ValidationError[] => {
-    const allErrors = studentValidationService.validateStudent(student);
+  const updateValidationErrors = (facilitator: Facilitator): ValidationError[] => {
+    const allErrors = validationService.validate(facilitator);
     setErrors(allErrors);
     return allErrors;
   }
@@ -83,23 +83,11 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
   }
 
 
-  const handleAnchorChange = async (student: Student) => {
-    try {
-      const next = { ...updated, anchor: !student.anchor };
-      setUpdated(next);
-
-      const validationErrors = updateValidationErrors(next);
-      onChange(next, validationErrors);
-    } catch (error) {
-      console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error);
-    }
-  };
-
   const handleTimeSlotChange = (event: any) => {
     const newTimeWindows = event.target.value
       .map((tsLabel: string) => {
         const ts = TIME_SLOTS.find(test => test.label === tsLabel)!;
-        const tw = student.timeWindows!.find(tw => isTimeWindowEqual(tw, ts));
+        const tw = facilitator.timeWindows!.find(tw => isTimeWindowEqual(tw, ts));
         if (tw) {
           return tw;
         } else {
@@ -171,48 +159,6 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
           errorText={getFieldError('country')}
         />
       </Box>
-      <Box display="flex" gap={1} flexDirection={"row"}>
-        <FormControl fullWidth>
-          <FormLabel required>{UI_STRINGS.ANCHOR}</FormLabel>
-          <StarFilled
-            style={{
-              fontSize: "150%",
-              color: updated.anchor ? "green" : "gray",
-            }}
-            onClick={() => handleAnchorChange(updated)}
-          />
-        </FormControl>
-        <CETextInput
-          name="age"
-          value={updated.age || ''}
-          label={UI_STRINGS.AGE}
-          required={true}
-          type="number"
-          handleFieldChange={handleFieldChange}
-          isError={hasFieldError('age')}
-          errorText={getFieldError('age')}
-        />
-        <FormControl fullWidth>
-          <FormLabel id="gender-group" required>{UI_STRINGS.GENDER}</FormLabel>
-          <RadioGroup
-            id="gender-group"
-            aria-labelledby="gender-group"
-            name="gender"
-            value={updated.gender ?? GENDER_OPTION[0]}
-            onChange={handleFieldChange}
-            row={true}
-          >
-            {GENDER_OPTION.map((genderOption: string, idx: number) => (
-              <FormControlLabel
-                key={idx}
-                value={genderOption}
-                control={<Radio />}
-                label={genderOption}
-              />
-            ))}
-          </RadioGroup>
-        </FormControl>
-      </Box>
       <FormControl fullWidth error={hasFieldError('timeWindows')}>
         <FormLabel id="time-window-label" required>{UI_STRINGS.TIME_SLOTS}</FormLabel>
         <Select
@@ -253,4 +199,4 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
   )
 }
 
-export default StudentForm;
+export default FacilitatorForm;
