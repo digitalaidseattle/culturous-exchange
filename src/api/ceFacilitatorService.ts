@@ -29,10 +29,12 @@ export class MockFilitatorService {
   }
 
   async save(facilitator: Facilitator): Promise<Facilitator> {
+    console.log(facilitator);
     throw new Error('Method not implemented.');
   }
 
   async find(queryModel: QueryModel, select?: string): Promise<PageInfo<Facilitator>> {
+    console.log(queryModel, select);
     const testData = [
       {
         id: 'ABC',
@@ -57,10 +59,12 @@ export class MockFilitatorService {
   }
 
   getCohorts(updated: Facilitator): Promise<Cohort[]> {
+    console.log(updated);
     return Promise.resolve([]);
   }
 
   async delete(entityId: Identifier): Promise<void> {
+    console.log(entityId);
     throw new Error('Method not implemented.');
   }
 
@@ -142,11 +146,8 @@ class CEFacilitatorService extends EntityService<Facilitator> {
       })
   }
 
-  validate(facilitator: Facilitator): Promise<Cohort[]> {
-    throw new Error('Method not implemented.');
-  }
-
   getCohorts(updated: Facilitator): Promise<Cohort[]> {
+    console.log(updated);
     throw new Error('Method not implemented.');
   }
 }

@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { CEFacilitatorService, MockFilitatorService } from '../api/ceFacilitatorService';
+import { MockFilitatorService } from '../api/ceFacilitatorService';
 import { FacilitatorValidationService } from '../api/spreadsheetValidationService';
 import { Cohort, Facilitator, TimeWindow, ValidationError } from '../api/types';
 import { TIME_SLOTS, TimeSlot, UI_STRINGS } from '../constants';
