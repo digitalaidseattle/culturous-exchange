@@ -32,7 +32,7 @@ class CEPlacementService {
       .from('placement')
       .select('*')
       .eq('plan_id', planId)
-      .then(resp => {
+      .then((resp: any) => {
         return resp.data as Placement[] || [];
       });
   }
@@ -42,10 +42,10 @@ class CEPlacementService {
       .from('placement')
       .select('*, student(*), grouptable(*)')
       .eq('plan_id', planId)
-      .then(resp => {
+      .then((resp: any) => {
         if (resp.data) {
 
-          return resp.data.map(db => {
+          return resp.data.map((db: any) => {
             const grouptable = db['grouptable'] as Group[];
             const student = db['student'] as Student[];
             return {
@@ -65,8 +65,8 @@ class CEPlacementService {
       .from('placement')
       .select('student(*)')
       .eq('plan_id', plan.id)
-      .then(resp => {
-        return resp.data?.map(data => data.student) as unknown as Student[]
+      .then((resp: any) => {
+        return resp.data?.map((data: any) => data.student) as unknown as Student[]
       });
   }
 

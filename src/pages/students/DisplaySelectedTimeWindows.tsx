@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { Stack, DialogContentText, Typography, IconButton, } from '@mui/material';
 import { UI_STRINGS } from '../../constants';
 import { CloseCircleOutlined } from '@ant-design/icons';
-import { TimeWindowSelectionContext } from ".";
+import { TimeWindowSelectionContext } from "../../components/TimeWindowSelectionContext";
 
 
 const DisplaySelectedTimeWindows: React.FC = () => {

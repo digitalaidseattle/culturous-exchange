@@ -194,11 +194,5 @@ export const ENDING_HOUR = 22;
 // Pre-computed array of office hours used by the plan timeline for rendering slots
 export const OFFICE_HOURS = Array.from({ length: ENDING_HOUR - STARTING_HOUR + 1 }, (_, i) => STARTING_HOUR + i);
 
-// Default number of rows per page in the cohorts table
-export const COHORTS_PAGE_SIZE = 10;
-
-// Default number of rows per page in the student table within a cohort page
-export const COHORT_STUDENT_TABLE_PAGE_SIZE = 10;
-
-// Default number of rows per page in the students details table
-export const STUDENTS_DETAILS_PAGE_SIZE = 25;
+// Default number of rows per page in tables
+export const DEFAULT_TABLE_PAGE_SIZE = 25;

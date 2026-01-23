@@ -118,7 +118,7 @@ class CECohortService extends EntityService<Cohort> {
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .single()
-                .then(resp => this.mapToCohort(resp.data))
+                .then((resp: any) => this.mapToCohort(resp.data))
         } catch (err) {
             console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);
             throw err;
