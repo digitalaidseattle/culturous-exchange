@@ -28,7 +28,7 @@ const useAppConstants = (type: string) => {
             supabaseClient.from('app_constants')
                 .select()
                 .eq('type', type)
-                .then(response => {
+                .then((response: any)  => {
                     if (response.data) {
                         const data = response.data as AppConstant[];
                         cache[type] = data;

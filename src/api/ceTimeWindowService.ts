@@ -275,7 +275,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
       .from(this.tableName)
       .select(select ?? '*')
       .eq('group_id', groupId)
-      .then(resp => resp.data as unknown as TimeWindow[]);
+      .then((resp: any) => resp.data as unknown as TimeWindow[]);
   }
 
   async getTimeZone(city: string, country: string): Promise<{ timezone: string, offset: number }> {
