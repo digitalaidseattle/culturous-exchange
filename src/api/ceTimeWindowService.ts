@@ -371,6 +371,24 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     }
   }
 
+  async deleteByFacilitatorId(facilitatorId: Identifier): Promise<boolean> {
+    try {
+      const { error } = await supabaseClient
+        .from(this.tableName)
+        .delete()
+        .eq('facilitator_id', facilitatorId);
+
+      if (error) {
+        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
+        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
+      }
+      return true;
+    } catch (err) {
+      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
+      throw err;
+    }
+  }
+
 }
 
 const timeWindowService = new CETimeWindowService('timewindow')

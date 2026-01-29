@@ -199,3 +199,12 @@ SELECT pg_catalog.setval('"supabase_functions"."hooks_id_seq"', 1, false);
 --
 
 RESET ALL;
+
+--
+-- Seed data for facilitators table
+--
+
+INSERT INTO facilitators (id, name, email, time_zone, tz_offset, bio, active)
+VALUES
+  ('00000000-0000-4000-8000-000000000001', 'Test Facilitator', 'facilitator@example.org', 'America/Los_Angeles', -480, 'Local test facilitator', true)
+ON CONFLICT (lower(email)) DO NOTHING;
