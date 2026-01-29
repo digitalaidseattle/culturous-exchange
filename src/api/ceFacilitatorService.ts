@@ -1,6 +1,6 @@
 /**
  * ceFacilitatorService.ts
- * Minimal scaffold for facilitator CRUD to support the new schema.
+ * Service for managing facilitator profiles and their time windows.
  */
 import { supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
