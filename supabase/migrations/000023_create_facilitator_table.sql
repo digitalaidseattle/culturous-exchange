@@ -1,6 +1,3 @@
--- supabase/migrations/0000xx_create_facilitators_table.sql
--- Create facilitators table and add FK to time_windows
-
 BEGIN;
 
 -- 1) Create facilitators table
