@@ -12,7 +12,7 @@ const DEFAULT_SELECT = '*, timewindow(*)';
 
 class CEFacilitatorService extends EntityService<Facilitator> {
 
-  emptyFacilitator(): Facilitator {
+  empty(): Facilitator {
     return {
       id: uuid(),
       name: '',
