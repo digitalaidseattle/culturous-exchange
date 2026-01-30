@@ -12,6 +12,7 @@ type Entity = {
 
 type TimeWindow = Entity & {
     student_id: Identifier | null;
+    facilitator_id?: Identifier | null;
     group_id: Identifier | null;
     day_in_week: string;
     start_t: string;
@@ -31,6 +32,17 @@ type Student = Entity & {
     tz_offset: number; 
     timeWindows?: TimeWindow[]; 
     anchor: boolean
+}
+
+type Facilitator = Entity & {
+    name: string;
+    email: string;
+    time_zone?: string;
+    tz_offset?: number;
+    bio?: string;
+    avatar_url?: string;
+    active?: boolean;
+    timeWindows?: TimeWindow[]; 
 }
 
 type FailedStudent = Student & {
@@ -114,5 +126,6 @@ export type {
     Cohort,
     Group,
     Placement,
-    Plan
+    Plan,
+    Facilitator
 }
