@@ -11,7 +11,8 @@ import { CheckOutlined } from '@ant-design/icons';
 import { ShowLocalTimeContext } from './ShowLocalTimeContext';
 import { UI_STRINGS } from '../constants';
 
-export const TimeToggle: React.FC = () => {
+export function TimeToggle({ localTitle = UI_STRINGS.LOCAL_TIME, userTitle = UI_STRINGS.STUDENT_TIME }: { localTitle?: string, userTitle?: string }) {
+
     const { showLocalTime, setShowLocalTime } = useContext(ShowLocalTimeContext);
 
     return (
@@ -20,11 +21,11 @@ export const TimeToggle: React.FC = () => {
             <Button
                 disabled={showLocalTime}
                 startIcon={showLocalTime ? < CheckOutlined /> : <Box sx={{ width: 24, height: 24 }} />}
-                onClick={() => setShowLocalTime(true)}>{UI_STRINGS.LOCAL_TIME}</Button>
+                onClick={() => setShowLocalTime(true)}>{localTitle}</Button>
             <Button
                 disabled={!showLocalTime}
                 startIcon={!showLocalTime ? <CheckOutlined /> : <Box sx={{ width: 24, height: 24 }} />}
-                onClick={() => setShowLocalTime(false)} >{UI_STRINGS.STUDENT_TIME}</Button>
+                onClick={() => setShowLocalTime(false)} >{userTitle}</Button>
         </ButtonGroup>
     )
 }

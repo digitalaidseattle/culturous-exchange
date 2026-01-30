@@ -37,7 +37,7 @@ class CEStudentService extends EntityService<Student> {
         .from('enrollment')
         .select('cohort(*)')
         .eq('student_id', student.id)
-        .then(resp => resp.data!.map((json: any) => json.cohort))
+        .then((resp: any) => resp.data!.map((json: any) => json.cohort))
     } catch (err) {
       console.error('Unexpected error:', err);
       throw err;
@@ -50,7 +50,7 @@ class CEStudentService extends EntityService<Student> {
       const enrollment_ids = await supabaseClient
         .from('enrollment')
         .select('student_id')
-        .then(resp => {
+        .then((resp: any) => {
           return resp.data?.map((row: any) => row.student_id)
         })
       return supabaseClient

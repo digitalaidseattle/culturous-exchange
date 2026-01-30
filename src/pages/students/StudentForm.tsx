@@ -1,12 +1,17 @@
-import { useEffect, useState } from 'react';
+/**
+ *  StudentForm.tsx
+ *
+ *  @copyright 2026 Digital Aid Seattle
+ *
+ */
 import { StarFilled } from '@ant-design/icons';
 import {
   Box,
   Checkbox,
   FormControl,
   FormControlLabel,
-  FormLabel,
   FormHelperText,
+  FormLabel,
   Input,
   ListItemText,
   MenuItem,
@@ -15,12 +20,13 @@ import {
   Select,
   TextField
 } from '@mui/material';
-import { Cohort, Student, TimeWindow, ValidationError } from '../../api/types';
+import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { GENDER_OPTION, TimeSlot, TIME_SLOTS, UI_STRINGS, SERVICE_ERRORS } from '../../constants';
 import { studentService } from '../../api/ceStudentService';
 import { studentValidationService } from '../../api/spreadsheetValidationService';
-
+import { Cohort, Student, TimeWindow, ValidationError } from '../../api/types';
+import { GENDER_OPTION, SERVICE_ERRORS, TIME_SLOTS, TimeSlot, UI_STRINGS } from '../../constants';
+import { CETextInput } from '../../components/CETextInput';
 
 function findTimeSlot(timeWindow: TimeWindow): TimeSlot | null {
   return TIME_SLOTS.find(slot =>
@@ -33,46 +39,6 @@ function isTimeWindowEqual(timeWindow: TimeWindow, ts: TimeSlot): boolean {
   return ts.day_in_week === timeWindow.day_in_week &&
     ts.start_t === timeWindow.start_t &&
     ts.end_t === timeWindow.end_t;
-}
-
-interface CETextInputProps {
-  name: string;
-  value: any;
-  label: string;
-  required: boolean;
-  type: string;
-  handleFieldChange: (event: any) => void;
-  isError?: boolean;
-  errorText?: string;
-}
-
-const CETextInput: React.FC<CETextInputProps> = ({ 
-  name, 
-  value, 
-  label, 
-  required, 
-  type, 
-  handleFieldChange,
-  isError,
-  errorText
-}) => {
-  return (
-    <FormControl key={name} fullWidth>
-      <FormLabel required={required}>{label}</FormLabel>
-      <TextField
-        autoFocus
-        required={required}
-        margin="dense"
-        id={name}
-        name={name}
-        type={type}
-        variant="standard"
-        value={value ?? ''}
-        onChange={handleFieldChange}
-        error={Boolean(isError)}
-        helperText={isError ? (errorText || ' ') : ' '}
-      />
-    </FormControl>);
 }
 
 interface Props {
@@ -99,7 +65,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
     const { name, value } = event.target;
     const next = { ...updated, [name]: value };
     setUpdated(next);
-    
+
     const validationErrors = updateValidationErrors(next);
     onChange(next, validationErrors);
   }
@@ -126,7 +92,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
     try {
       const next = { ...updated, anchor: !student.anchor };
       setUpdated(next);
-      
+
       const validationErrors = updateValidationErrors(next);
       onChange(next, validationErrors);
     } catch (error) {
@@ -157,7 +123,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
 
     const next = { ...updated, timeWindows: newTimeWindows };
     setUpdated(next);
-    
+
     const validationErrors = updateValidationErrors(next);
     onChange(next, validationErrors);
   }
@@ -275,7 +241,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
         </Select>
         <FormHelperText>{getFieldError('timeWindows') || ' '}</FormHelperText>
       </FormControl>
-      
+
       <FormControl fullWidth>
         <FormLabel htmlFor="cohort-display">{UI_STRINGS.COHORTS}</FormLabel>
         <TextField

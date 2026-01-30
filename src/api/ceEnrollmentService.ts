@@ -41,7 +41,7 @@ class CEEnrollmentService {
             .from('enrollment')
             .select('student(*, timewindow(*))')
             .eq('cohort_id', cohort.id)
-            .then(resp => {
+            .then((resp: any) => {
                 return resp.data!.map((json: any) => {
                     const timeWindows = json.student.timewindow.map((tw: any) => timeWindowService.mapJson(tw));
                     json.student.timeWindows = timeWindows;

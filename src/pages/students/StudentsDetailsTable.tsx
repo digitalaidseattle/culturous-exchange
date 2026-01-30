@@ -22,13 +22,12 @@ import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidsea
 import { ConfirmationDialog } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { studentService } from '../../api/ceStudentService';
-import { UI_STRINGS, SERVICE_ERRORS } from '../../constants';
-import { STUDENTS_DETAILS_PAGE_SIZE as PAGE_SIZE } from '../../constants';
 import { timeWindowService } from '../../api/ceTimeWindowService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import StudentModal from '../../components/StudentModal';
 import { TimeSlots } from '../../components/TimeSlots';
+import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
 
 
 const StudentsDetailsTable: React.FC = () => {
@@ -37,7 +36,7 @@ const StudentsDetailsTable: React.FC = () => {
 
   const [initialize, setInitialize] = useState<boolean>(true);
   const [columns, setColumns] = useState<GridColDef[]>([]);
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'name', sort: 'asc' }]);
   const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
   const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
@@ -233,17 +232,19 @@ const StudentsDetailsTable: React.FC = () => {
         renderCell: (params) => {
           return <TimeSlots timeWindows={params.row.timeWindows} />
         },
-        filterable: false
+        filterable: false,
+        sortable: false,
       },
       {
         field: 'timeWindows',
         headerName: UI_STRINGS.AVAILABILITIES,
-        width: 450,
+        flex: 1,
         renderCell: (params) => {
           const timeWindows = Array.isArray(params.value) ? params.value : [];
           return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.time_zone} />
         },
-        filterable: false
+        filterable: false,
+        sortable: false,
       }
     ];
   };

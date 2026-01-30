@@ -12,11 +12,12 @@ interface Props {
 
 const DisplayTimeWindow: React.FC<Props> = ({ timeWindows, timezone }) => {
 
-  const [timeWindowList, setTimeWindowList] = useState<React.ReactNode[]>([]);
+  // const [timeWindowList, setTimeWindowList] = useState<React.ReactNode[]>([]);
+  const [timeWindowList, setTimeWindowList] = useState<string[]>([]);
   const { showLocalTime } = useContext(ShowLocalTimeContext);
 
   useEffect(() => {
-    setTimeWindowList(timeWindows.map((tw, index) => {
+    setTimeWindowList(timeWindows.map((tw) => {
       const startString = showLocalTime
         ? format(tw.start_date_time!, "hh:mm a z")
         : format(
@@ -29,27 +30,16 @@ const DisplayTimeWindow: React.FC<Props> = ({ timeWindows, timezone }) => {
           toZonedTime(tw.end_date_time!, timezone),
           "hh:mm a z",
           { timeZone: timezone })
-      return (
-        <Typography key={index} variant='body2'>
-          {format(tw.start_date_time!, "EEE")}: {startString} - {endString}
-        </Typography>
-      )
+      return (`${format(tw.start_date_time!, "EEE")} : ${startString} - ${endString}`)
     }));
   }, [timeWindows, timezone, showLocalTime]);
 
   return (
-    <Box py={2}>
+    <Box>
       {timeWindows.length ? (
-        <Box
-          sx={{
-            maxHeight: '100%',
-            overflowY: 'auto',
-            py: 1,
-            width: '100%',
-          }}
-        >
-          {timeWindowList}
-        </Box>
+        <Typography variant='body2'>
+          {timeWindowList.join(', ')}
+        </Typography>
       ) : (
         <Typography variant='body2'>
           {UI_STRINGS.NOT_ASSIGNED}

@@ -27,7 +27,7 @@ import { cohortService } from '../../api/ceCohortService';
 import { UI_STRINGS } from '../../constants';
 import { Cohort, Plan } from '../../api/types';
 import { MainCard } from '@digitalaidseattle/mui';
-import { COHORTS_PAGE_SIZE as PAGE_SIZE } from '../../constants';
+import { DEFAULT_TABLE_PAGE_SIZE } from '../../constants';
 
 const getColumns = (): GridColDef[] => {
     return [
@@ -48,7 +48,7 @@ const getColumns = (): GridColDef[] => {
 
 
 export default function CohortsTable() {
-    const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
+    const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
     const [pageInfo, setPageInfo] = useState<PageInfo<Cohort>>({ rows: [], totalRowCount: 0 });
     const apiRef = useGridApiRef();

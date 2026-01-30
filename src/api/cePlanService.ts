@@ -160,7 +160,7 @@ class CEPlanService extends EntityService<Plan> {
       .from(this.tableName)
       .select('*')
       .eq('cohort_id', cohort_id)
-      .then(resp => resp.data as Plan[]);
+      .then((resp: any) => resp.data as Plan[]);
   }
 
   async removeStudents(plan: Plan, studentIds: Identifier[]): Promise<any> {
