@@ -13,6 +13,7 @@ type Entity = {
 type TimeWindow = Entity & {
     student_id: Identifier | null;
     facilitator_id?: Identifier | null;
+    assignment_id?: Identifier | null;
     group_id: Identifier | null;
     day_in_week: string;
     start_t: string;
@@ -114,6 +115,13 @@ type Group = Entity & {
     time_windows?: TimeWindow[];
 }
 
+type Assignment = Entity & {
+    group_id: Identifier;
+    facilitator_id: Identifier | null;
+    created_at?: Date;
+    updated_at?: Date;
+}
+
 export type {
     TimeWindow,
     Enrollment,
@@ -127,5 +135,6 @@ export type {
     Group,
     Placement,
     Plan,
-    Facilitator
+    Facilitator,
+    Assignment
 }

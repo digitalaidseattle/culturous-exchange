@@ -278,6 +278,14 @@ class CETimeWindowService extends EntityService<TimeWindow> {
       .then((resp: any) => resp.data as unknown as TimeWindow[]);
   }
 
+  async findByAssignmentId(assignmentId: Identifier, select?: string): Promise<TimeWindow[]> {
+    return await supabaseClient
+      .from(this.tableName)
+      .select(select ?? '*')
+      .eq('assignment_id', assignmentId)
+      .then((resp: any) => resp.data as unknown as TimeWindow[]);
+  }
+
   async getTimeZone(city: string, country: string): Promise<{ timezone: string, offset: number }> {
     // return {
     //   timezone: 'America/Los_Angeles',
@@ -377,6 +385,24 @@ class CETimeWindowService extends EntityService<TimeWindow> {
         .from(this.tableName)
         .delete()
         .eq('facilitator_id', facilitatorId);
+
+      if (error) {
+        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
+        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
+      }
+      return true;
+    } catch (err) {
+      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
+      throw err;
+    }
+  }
+
+  async deleteByAssignmentId(assignmentId: Identifier): Promise<boolean> {
+    try {
+      const { error } = await supabaseClient
+        .from(this.tableName)
+        .delete()
+        .eq('assignment_id', assignmentId);
 
       if (error) {
         console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
