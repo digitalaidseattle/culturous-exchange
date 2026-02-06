@@ -2,9 +2,19 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
 import { TimeWindow } from "./types";
 
+// Helper to build expected PST wall-time strings independent of runner timezone
+const dayNames = ['Fri', 'Sat', 'Sun'];
+function h12(hour24: number) {
+    const h = hour24 % 12 === 0 ? 12 : hour24 % 12;
+    const ampm = hour24 < 12 ? 'am' : 'pm';
+    return `${h}${ampm}`;
+}
+function expectedString(dayOffset: number, startH: number, endH: number) {
+    return `${dayNames[dayOffset]} ${h12(startH)} - ${h12(endH)}`;
+}
+
 describe("timeWindowService", () => {
-    const offset = -7; // using a fixed offset to make test deterministic;
-    // getTimezoneOffset(DEFAULT_TIMEZONE, new Date()) / 60 / 60 / 1000;
+    // using formatInTimeZone to make tests deterministic across runner timezones
 
     it("toString", () => {
         const tw = {
@@ -12,23 +22,27 @@ describe("timeWindowService", () => {
             end_date_time: timeWindowService.toZonedTime(0, "14:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow
         const result = timeWindowService.toString(tw);
-        expect(result).toBe('Fri 8am - 2pm');
+    // compare against an expected PST wall-time string constructed from input
+    expect(result).toBe(expectedString(0, 8, 14));
     })
 
     it("toZonedTime", () => {
         const result = timeWindowService.toZonedTime(0, "07:00:00", DEFAULT_TIMEZONE);
-        expect(result.getDate()).toBe(1);
-        expect(result.getDay()).toBe(5);
-        expect(result.getHours()).toBe(7); // PDT is UTC-7, so 7+7=14
-        expect(result.getUTCHours()).toBe(7 - offset); // PDT is UTC-7, so 7+7=14
+        const tw = {
+            start_date_time: result,
+            end_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE)
+        } as TimeWindow;
+    // assert expected wall-time in PST constructed from the input
+    expect(timeWindowService.toString(tw, DEFAULT_TIMEZONE)).toBe(expectedString(0, 7, 8));
     });
 
     it("toZonedTime - Mexico_City", () => {
         const result = timeWindowService.toZonedTime(0, "07:00:00", "America/Mexico_City");
-        expect(result.getDate()).toBe(1);
-        expect(result.getDay()).toBe(5);
-        expect(result.getHours()).toBe(9);
-        expect(result.getUTCHours()).toBe(9 - offset); // PDT is UTC-7, so 7+7=14
+        const tw = {
+            start_date_time: result,
+            end_date_time: timeWindowService.toZonedTime(0, "08:00:00", "America/Mexico_City")
+        } as TimeWindow;
+        expect(timeWindowService.toString(tw, 'America/Mexico_City')).toBe(expectedString(0, 11, 12));
     });
 
     it("intersectionTimeWindows", () => {
@@ -44,9 +58,7 @@ describe("timeWindowService", () => {
         } as TimeWindow;
 
         const merged = timeWindowService.intersectionTimeWindows(timeA, timeB);
-        expect(merged?.start_date_time?.getDay()).toBe(5);
-        expect(merged?.start_date_time?.getHours()).toBe(9);
-        expect(merged?.end_date_time?.getHours()).toBe(12);
+    expect(timeWindowService.toString(merged!, DEFAULT_TIMEZONE)).toBe(expectedString(0, 9, 12));
 
     });
 

@@ -10,7 +10,16 @@ import { timeWindowService } from "./ceTimeWindowService";
 import { Group, TimeWindow } from "./types";
 
 describe("groupService", () => {
-    const offset = -7; // using a fixed offset to make test deterministic; 
+
+    const dayNames = ['Fri', 'Sat', 'Sun'];
+    function h12(hour24: number) {
+        const h = hour24 % 12 === 0 ? 12 : hour24 % 12;
+        const ampm = hour24 < 12 ? 'am' : 'pm';
+        return `${h}${ampm}`;
+    }
+    function expectedString(dayOffset: number, startH: number, endH: number) {
+        return `${dayNames[dayOffset]} ${h12(startH)} - ${h12(endH)}`;
+    }
 
     it("createDefaultTimewindows", () => {
 
@@ -20,12 +29,11 @@ describe("groupService", () => {
 
         const result = groupService.createDefaultTimewindows(group)
 
-        expect(result.length).toBe(3);
-        expect(result[0].start_date_time.getDay()).toBe(5);
-        expect(result[0].start_date_time.getHours()).toBe(7);
-        expect(result[0].start_date_time.getUTCHours()).toBe(7 - offset);
-        expect(result[2].end_date_time.getDay()).toBe(0);
-        expect(result[2].end_date_time.getHours()).toBe(22);
+    expect(result.length).toBe(3);
+    // Assert the created default windows using the service formatter (PST)
+    // Implementation currently creates one full window per day (07:00 - 22:00)
+    expect(timeWindowService.toString(result[0], 'America/Los_Angeles')).toBe(expectedString(0, 7, 22));
+    expect(timeWindowService.toString(result[2], 'America/Los_Angeles')).toBe(expectedString(2, 7, 22));
 
     });
 
