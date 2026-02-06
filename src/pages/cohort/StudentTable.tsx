@@ -103,19 +103,24 @@ export const StudentTable: React.FC = () => {
 
 
   const toggleAnchor = async (enrollment: Enrollment) => {
+    // Optimistically update UI so the change persists across pagination
+    const originalRows = pageInfo.rows;
+    const updatedRows = pageInfo.rows.map((r) =>
+      r.student_id === enrollment.student_id ? { ...r, anchor: !r.anchor } : r
+    );
+
     try {
-      enrollment.anchor = !enrollment.anchor;
-      enrollmentService
-        .updateEnrollment(enrollment.cohort_id, enrollment.student_id, { anchor: enrollment.anchor })
-        .then(() => {
-          // Optimistically update the pageInfo
-          setRefresh(refresh + 1);
-        });
+      setPageInfo({ ...pageInfo, rows: updatedRows });
+
+      await enrollmentService.updateEnrollment(enrollment.cohort_id, enrollment.student_id, { anchor: !enrollment.anchor });
+
+      // trigger a refresh to sync any other derived state
+      setRefresh(refresh + 1);
     } catch (error) {
       console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error);
       notifications.error(UI_STRINGS.FAILED_UPDATE_ANCHOR);
-      // Revert optimistic update
-      setPageInfo({ ...pageInfo });
+      // Revert optimistic update on error
+      setPageInfo({ ...pageInfo, rows: originalRows });
     }
   };
 
@@ -244,6 +249,7 @@ export const StudentTable: React.FC = () => {
 
             pageSizeOptions={[5, 10, 25, 100]}
             checkboxSelection
+            rowSelectionModel={rowSelectionModel}
             onRowSelectionModelChange={setRowSelectionModel}
             disableRowSelectionOnClick={true}
           />
