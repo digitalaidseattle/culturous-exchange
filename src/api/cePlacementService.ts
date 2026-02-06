@@ -105,6 +105,16 @@ class CEPlacementService {
         console.error(SERVICE_ERRORS.ERROR_UPDATING_ENTITY, error.message);
         throw new Error(SERVICE_ERRORS.FAILED_UPDATE_ENTITY);
       }
+      // If the placement's anchor flag was changed, propagate the change to the student record
+      // placement's anchor state -> update student's anchor state
+      if (typeof json.anchor !== 'undefined') {
+        try {
+          await studentService.update(studentId, { anchor: json.anchor });
+        } catch (err) {
+          // Log but do not fail placement update if student update fails
+          console.error('Failed to propagate placement.anchor to student.anchor', err);
+        }
+      }
       return data as unknown as Placement;
     } catch (err) {
       console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_UPDATE, err);
