@@ -19,6 +19,7 @@ import {
 import { RefreshContext } from "@digitalaidseattle/core";
 import { useContext, useState } from "react";
 import { placementService } from "../api/cePlacementService";
+import { PlanContext } from "../pages/plan/PlanContext";
 import { timeWindowService } from "../api/ceTimeWindowService";
 import { Placement } from "../api/types";
 import StarAvatar from "./StarAvatar";
@@ -33,14 +34,53 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
 
     const timeWindows = placement.student!.timeWindows ? placement.student!.timeWindows ?? [] : [];
 
+    const { plan, setPlan } = useContext(PlanContext);
+
     const toggleAnchor = async (placement: Placement) => {
-        placementService
-            .updatePlacement(
+        if (!plan) {
+            // no plan in context - fallback to server update
+            try {
+                await placementService.updatePlacement(
+                    placement.plan_id,
+                    placement.student_id,
+                    { anchor: !placement.anchor });
+                setRefresh(refresh + 1);
+            } catch (error) {
+                console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error)
+            }
+            return;
+        }
+
+        // Optimistic update: update plan in-place so UI doesn't re-fetch and reorder placements
+        const originalPlan = plan;
+        const updatedPlan = {
+            ...plan,
+            placements: plan.placements.map(p =>
+                p.plan_id === placement.plan_id && p.student_id === placement.student_id
+                    ? { ...p, anchor: !p.anchor }
+                    : p
+            )
+        };
+
+        try {
+            setPlan(updatedPlan);
+
+            await placementService.updatePlacement(
                 placement.plan_id,
                 placement.student_id,
-                { anchor: !placement.anchor })
-            .then(() => setRefresh(refresh + 1))
-            .catch((error) => console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error))
+                { anchor: !placement.anchor });
+
+            // success: no further action needed (student propagation handled server-side)
+        } catch (error) {
+            // revert optimistic update on error
+            try {
+                setPlan(originalPlan);
+            } catch (e) {
+                // ignore
+            }
+            console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error)
+            setRefresh(refresh + 1);
+        }
     };
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
