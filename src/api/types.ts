@@ -84,6 +84,7 @@ type Plan = Entity & {
     note: string;
     group_size?: number; // Optional, can be set to override default group size
     placements: Placement[]
+    assignments?: Assignment[];  // Optional, for backward compatibility
     groups: Group[];
 }
 
@@ -113,6 +114,7 @@ type Group = Entity & {
     duration?: number; // in hours
     placements?: Placement[];
     time_windows?: TimeWindow[];
+    assignments?: Assignment[];
 }
 
 type Assignment = Entity & {
@@ -120,6 +122,7 @@ type Assignment = Entity & {
     facilitator_id: Identifier | null;
     created_at?: Date;
     updated_at?: Date;
+    facilitator?: Facilitator;
 }
 
 export type {

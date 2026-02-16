@@ -32,7 +32,7 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const showMenu = Boolean(anchorEl);
 
-    const timeWindows = placement.student!.timeWindows ? placement.student!.timeWindows ?? [] : [];
+    const timeWindows = placement.student!.timeWindows ?? [];
 
     const { plan, setPlan } = useContext(PlanContext);
 
@@ -145,15 +145,13 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
                 <MenuItem onClick={handleOpen}>{UI_STRINGS.OPEN}</MenuItem>
                 <MenuItem onClick={handleRemove}>{UI_STRINGS.REMOVE}</MenuItem>
             </Menu>
-            <CardContent>
-                {showDetails &&
-                    <CardContent>
-                        <Typography>{placement.student!.country}</Typography>
-                        <Typography fontWeight={600}>{UI_STRINGS.TIME_WINDOWS}</Typography>
-                        {timeWindows.map((tw, idx) => <Typography key={idx}>{timeWindowService.toString(tw)}</Typography>)}
-                    </CardContent>
-                }
-            </CardContent>
+            {showDetails &&
+                <CardContent>
+                    <Typography>{placement.student!.country}</Typography>
+                    <Typography fontWeight={600}>{UI_STRINGS.TIME_WINDOWS}</Typography>
+                    {timeWindows.map((tw, idx) => <Typography key={idx}>{timeWindowService.toString(tw)}</Typography>)}
+                </CardContent>
+            }
         </Card>
     );
 }

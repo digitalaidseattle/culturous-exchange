@@ -10,6 +10,14 @@ import { Assignment } from './types';
 const DEFAULT_SELECT = '*';
 
 class CEAssignmentService extends EntityService<Assignment> {
+  static instance: CEAssignmentService;
+
+  static getInstance() {
+    if (!CEAssignmentService.instance) {
+      CEAssignmentService.instance = new CEAssignmentService('assignment');
+    }
+    return CEAssignmentService.instance;
+  }
 
   empty(): Assignment {
     return {
@@ -20,9 +28,14 @@ class CEAssignmentService extends EntityService<Assignment> {
   }
 
   mapJson(json: any): Assignment {
-    return {
-      ...json
-    } as Assignment;
+    const assignment = {
+      ...json,
+      facilitator: json.facilitators
+    };
+
+    delete assignment.facilitators;
+
+    return assignment;
   }
 
   async findByGroupId(groupId: string, select?: string): Promise<Assignment | null> {
@@ -41,5 +54,4 @@ class CEAssignmentService extends EntityService<Assignment> {
 
 }
 
-const assignmentService = new CEAssignmentService('assignment');
-export { assignmentService };
+export { CEAssignmentService };

@@ -9,25 +9,41 @@ import { v4 as uuid } from 'uuid';
 import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
 import { EntityService } from "./entityService";
 import { Group, Identifier, TimeWindow } from "./types";
+import { CEAssignmentService } from './ceAssignmentService';
+import { SERVICE_ERRORS } from '../constants';
 
-
+const assignmentService = CEAssignmentService.getInstance();
+const DEFAULT_SELECT = "*, timewindow(*), assignment(*, facilitators(*, timewindow(*)))"
 class CEGroupService extends EntityService<Group> {
 
   mapJson(json: any): Group | null {
     if (json) {
       const group = {
         ...json,
+        assignments: (json.assignment ?? []).map((js: any) => assignmentService.mapJson(js)),
         placements: json.placement,
-        time_windows: json.timewindow.map((js: any) => timeWindowService.mapJson(js))
+        time_windows: (json.timewindow ?? []).map((js: any) => timeWindowService.mapJson(js))
       }
 
+      delete group.assignment;
       delete group.placement;
       delete group.timewindow;
+
+      console.log(json)
       return group as Group;
     }
     else {
       return null
     }
+  }
+
+  async getById(entityId: Identifier, select?: string): Promise<Group> {
+    return super.getById(entityId, select ?? DEFAULT_SELECT)
+      .then((json: any) => this.mapJson(json)!)
+      .catch(err => {
+        console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);
+        throw err;
+      });
   }
 
   async update(entityId: Identifier, updatedFields: Partial<Group>, select?: string): Promise<Group> {
@@ -38,7 +54,7 @@ class CEGroupService extends EntityService<Group> {
     delete json.placements;
     delete json.time_windows;
 
-    return super.update(entityId, json, select)
+    return super.update(entityId, json, select ?? DEFAULT_SELECT)
       .then(updated => this.mapJson(updated)!);
   }
 
@@ -47,7 +63,7 @@ class CEGroupService extends EntityService<Group> {
     const json = { ...group }
     delete json.placements;
     delete json.time_windows;
-    await this.insert(json);
+    await this.insert(json, DEFAULT_SELECT);
 
     await timeWindowService.deleteByGroupId(group.id);
     for (const tw of group.time_windows!) {

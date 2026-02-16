@@ -39,6 +39,8 @@ export const UI_STRINGS = {
   UPLOAD: 'Upload',
   UPLOAD_STUDENT: 'Upload Student',
   CLOSE: 'Close',
+  CHANGE_FACILITATOR: 'Change Facilitator',
+  REMOVE_FACILITATOR: 'Remove Facilitator',
 
   // Generic labels
   SETTINGS: 'Settings',
@@ -100,6 +102,8 @@ export const UI_STRINGS = {
   STUDENTS_REMOVED: 'Students removed.',
   FAILED_UPDATE_ANCHOR: 'Failed to update student anchor status',
   UNABLE_TO_CREATE_COHORT: 'Unable to create new cohort',
+  CANNOT_MOVE_FACILITATOR_TO_WAITLIST: 'Cannot move facilitator to waitlist',
+  CANNOT_MOVE_STUDENT_TO_FACILITATORS: 'Cannot move student to facilitators',
 
   // File uploader & lists
   DRAG_STUDENT_FILE: 'Drag the student file here, or click to select the file',
@@ -120,6 +124,9 @@ export const UI_STRINGS = {
   DAY_OF_WEEK_MUST_BE: 'Day of week must be "Friday", "Saturday", or "Sunday"',
   START_TIME_INVALID: 'Start time invalid',
   END_TIME_INVALID: 'End time invalid',
+
+  // Facilitators labels and related text
+  FACILITATORS: 'Facilitators',
 
   // Waitlist labels and related text
   WAITLIST: 'Waitlist',
@@ -169,6 +176,7 @@ export const SERVICE_ERRORS = {
   FAILED_INSERT_STUDENTS_FROM_EXCEL_FILE: 'Failed to insert students from Excel file'
 } as const;
 
+
 // Maximum number of students per group when generating plans
 export const MAX_GROUP_SIZE = 10;
 
@@ -186,6 +194,8 @@ export const MAX_STUDENT_AGE = 19;
 
 // Identifier used to denote the waitlist group in the plan timeline
 export const WAITLIST_ID = 'WAITLIST';
+// Identifier used to denote the waitlist group in the plan timeline
+export const FACILITATOR_ID = 'FACILITATOR';
 
 // Start and end hour for the plan timeline (inclusive)
 export const STARTING_HOUR = 7;

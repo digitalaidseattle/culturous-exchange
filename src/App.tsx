@@ -34,13 +34,12 @@ const App: React.FC = () => {
   return (
     <AuthServiceProvider authService={new SupabaseAuthService()} >
       <StorageServiceProvider storageService={new SupabaseStorageService()} >
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-
-        <UserContextProvider>
-          <LayoutConfigurationProvider configuration={Config}>
-            <RouterProvider router={router} />
-          </LayoutConfigurationProvider>
-        </UserContextProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <UserContextProvider>
+            <LayoutConfigurationProvider configuration={Config}>
+              <RouterProvider router={router} />
+            </LayoutConfigurationProvider>
+          </UserContextProvider>
         </LocalizationProvider>
       </StorageServiceProvider>
     </AuthServiceProvider>
