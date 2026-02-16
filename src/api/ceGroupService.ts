@@ -29,7 +29,6 @@ class CEGroupService extends EntityService<Group> {
       delete group.placement;
       delete group.timewindow;
 
-      console.log(json)
       return group as Group;
     }
     else {
