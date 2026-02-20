@@ -15,23 +15,27 @@ import { Facilitator, Group } from '../../api/types';
 import AddFacilitatorModal from "../../components/AddFacilitatorModal";
 import { UI_STRINGS } from "../../constants";
 
-export const FacilitatorMenu: React.FC<{ group: Group, anchorElement: HTMLElement | null, onChange: (group: Group) => void }> = ({ group, anchorElement, onChange }) => {
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const showMenu = Boolean(anchorEl);
+
+
+export interface FacilitatorMenuProps {
+    group: Group,
+    anchorElement: HTMLElement | null,
+    onChange: (group: Group | null) => void
+}
+
+export const FacilitatorMenu: React.FC<FacilitatorMenuProps> = ({ group, anchorElement, onChange }) => {
 
     const [allFacilitators, setAllFacilitators] = useState<Facilitator[]>([]);
     const [availableFacilitators, setAvailableFacilitators] = useState<Facilitator[]>([]);
 
     const [showAddFacilitator, setShowAddFacilitator] = useState<boolean>(false);
 
+    const showMenu = Boolean(anchorElement);
+
     useEffect(() => {
         facilitatorService.getAll()
             .then(ff => setAllFacilitators(ff));
     }, []);
-
-    useEffect(() => {
-        setAnchorEl(anchorElement);
-    }, [anchorElement]);
 
     useEffect(() => {
         if (group) {
@@ -42,19 +46,17 @@ export const FacilitatorMenu: React.FC<{ group: Group, anchorElement: HTMLElemen
     }, [group, allFacilitators])
 
     const handleClose = () => {
-        setAnchorEl(null);
+        onChange(null);
     };
 
-    const handleAdd = () => {
+    const handleAddMenuChoice = () => {
         setShowAddFacilitator(true);
-        setAnchorEl(null);
     };
 
-    const handleRemove = () => {
+    const handleRemoveMenuChoice = () => {
         if (group) {
             removeFacilitatorsFromGroup(group)
-                .then((updated) => onChange(updated!))
-                .finally(() => setAnchorEl(null));
+                .then((updated) => onChange(updated!));
         }
     };
 
@@ -69,6 +71,8 @@ export const FacilitatorMenu: React.FC<{ group: Group, anchorElement: HTMLElemen
                     setShowAddFacilitator(false);
                     onChange(updated!);
                 });
+        } else {
+            console.error('No group in context.')
         }
     }
 
@@ -77,7 +81,7 @@ export const FacilitatorMenu: React.FC<{ group: Group, anchorElement: HTMLElemen
             <Menu
                 id="demo-positioned-menu"
                 aria-labelledby="demo-positioned-button"
-                anchorEl={anchorEl}
+                anchorEl={anchorElement}
                 open={showMenu}
                 onClose={handleClose}
                 anchorOrigin={{
@@ -89,8 +93,8 @@ export const FacilitatorMenu: React.FC<{ group: Group, anchorElement: HTMLElemen
                     horizontal: 'left',
                 }}
             >
-                <MenuItem onClick={handleAdd}>{UI_STRINGS.CHANGE_FACILITATOR}</MenuItem>
-                <MenuItem onClick={handleRemove} disabled={(group.assignments ?? []).length === 0}>{UI_STRINGS.REMOVE_FACILITATOR}</MenuItem>
+                <MenuItem onClick={handleAddMenuChoice}>{UI_STRINGS.CHANGE_FACILITATOR}</MenuItem>
+                <MenuItem onClick={handleRemoveMenuChoice} disabled={(group.assignments ?? []).length === 0}>{UI_STRINGS.REMOVE_FACILITATOR}</MenuItem>
             </Menu>
             <AddFacilitatorModal
                 facilitators={availableFacilitators}

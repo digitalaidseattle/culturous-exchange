@@ -38,6 +38,13 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
         setAnchorEl(event.currentTarget);
     };
 
+    function handleMenuChange(updated: Group | null) {
+        if (updated) {
+            setGroup(updated)
+        }
+        setAnchorEl(null);
+    };
+
     return (group &&
         <Card key={group.id} sx={{ alignContent: "top" }}>
             <CardHeader
@@ -52,7 +59,10 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
                 }
             />
             {isGroup &&
-                <FacilitatorMenu anchorElement={anchorEl} group={group} onChange={updated => setGroup(updated)} />
+                <FacilitatorMenu
+                    anchorElement={anchorEl}
+                    group={group}
+                    onChange={handleMenuChange} />
             }
             {
                 showDetails &&
