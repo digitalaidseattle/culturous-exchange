@@ -2,7 +2,7 @@
  * ceFacilitatorService.ts
  * Service for managing facilitator profiles and their time windows.
  */
-import { supabaseClient } from '@digitalaidseattle/supabase';
+import { PageInfo, QueryModel, supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
 import { timeWindowService } from './ceTimeWindowService';
 import { EntityService } from './entityService';
@@ -12,6 +12,15 @@ const DEFAULT_SELECT = '*, timewindow(*)';
 
 class CEFacilitatorService extends EntityService<Facilitator> {
 
+  private static _instance: CEFacilitatorService;
+
+  static getInstance(): CEFacilitatorService {
+    if (!this._instance) {
+      this._instance = new CEFacilitatorService('facilitators')
+    }
+    return this._instance;
+  }
+
   empty(): Facilitator {
     return {
       id: uuid(),
@@ -20,6 +29,8 @@ class CEFacilitatorService extends EntityService<Facilitator> {
       time_zone: '',
       tz_offset: 0,
       bio: '',
+      city: '',
+      country: '',
       avatar_url: undefined,
       active: true,
       timeWindows: []
@@ -59,7 +70,17 @@ class CEFacilitatorService extends EntityService<Facilitator> {
       })
   }
 
+  async find(queryModel: QueryModel, select?: string): Promise<PageInfo<Facilitator>> {
+    return super.find(queryModel, select ?? DEFAULT_SELECT)
+      .then(pi => {
+        const newRows = pi.rows.map(json => this.mapJson(json))
+        return {
+          ...pi,
+          rows: newRows
+        };
+      })
+  }
+
 }
 
-const facilitatorService = new CEFacilitatorService('facilitators');
-export { facilitatorService };
+export { CEFacilitatorService };

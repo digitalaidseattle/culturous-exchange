@@ -4,29 +4,23 @@
  *  @copyright 2026 Digital Aid Seattle
  *
  */
-import { StarFilled } from '@ant-design/icons';
 import {
   Box,
   Checkbox,
   FormControl,
-  FormControlLabel,
   FormHelperText,
   FormLabel,
   Input,
   ListItemText,
   MenuItem,
-  Radio,
-  RadioGroup,
-  Select,
-  TextField
+  Select
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { studentService } from '../../api/ceStudentService';
-import { Cohort, Student, TimeWindow, ValidationError } from '../../api/types';
-import { GENDER_OPTION, SERVICE_ERRORS, TIME_SLOTS, TimeSlot, UI_STRINGS } from '../../constants';
+import { Facilitator, TimeWindow, ValidationError } from '../../api/types';
 import { CETextInput } from '../../components/CETextInput';
-import { StudentValidationService } from '../../api/ValidationService';
+import { TIME_SLOTS, TimeSlot, UI_STRINGS } from '../../constants';
+import { FacilitatorValidationService } from '../../api/ValidationService';
 
 function findTimeSlot(timeWindow: TimeWindow): TimeSlot | null {
   return TIME_SLOTS.find(slot =>
@@ -42,26 +36,18 @@ function isTimeWindowEqual(timeWindow: TimeWindow, ts: TimeSlot): boolean {
 }
 
 interface Props {
-  student: Student;
-  onChange: (student: Student, validationErrors: ValidationError[]) => void;
+  facilitator: Facilitator;
+  onChange: (facilitator: Facilitator, validationErrors: ValidationError[]) => void;
 }
 
-const StudentForm: React.FC<Props> = ({ student, onChange }) => {
-  const validationService = new StudentValidationService();
-
-  const [cohorts, setCohorts] = useState<Cohort[]>([]);
-  const [updated, setUpdated] = useState<Student>(student);
-
+const FacilitatorForm: React.FC<Props> = ({ facilitator, onChange }) => {
+  const validationService = new FacilitatorValidationService();
+  const [updated, setUpdated] = useState<Facilitator>(facilitator);
   const [errors, setErrors] = useState<ValidationError[]>([]);
 
   useEffect(() => {
-    setUpdated(student)
-  }, [student]);
-
-  useEffect(() => {
-    studentService.getCohortsForStudent(updated)
-      .then(ccs => setCohorts(ccs))
-  }, [updated]);
+    setUpdated(facilitator)
+  }, [facilitator]);
 
   const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -72,8 +58,8 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
     onChange(next, validationErrors);
   }
 
-  const updateValidationErrors = (student: Student): ValidationError[] => {
-    const allErrors = validationService.validate(student);
+  const updateValidationErrors = (facilitator: Facilitator): ValidationError[] => {
+    const allErrors = validationService.validate(facilitator);
     setErrors(allErrors);
     return allErrors;
   }
@@ -89,30 +75,17 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
     return Boolean(getFieldError(fieldName));
   }
 
-
-  const handleAnchorChange = async (student: Student) => {
-    try {
-      const next = { ...updated, anchor: !student.anchor };
-      setUpdated(next);
-
-      const validationErrors = updateValidationErrors(next);
-      onChange(next, validationErrors);
-    } catch (error) {
-      console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error);
-    }
-  };
-
   const handleTimeSlotChange = (event: any) => {
     const newTimeWindows = event.target.value
       .map((tsLabel: string) => {
         const ts = TIME_SLOTS.find(test => test.label === tsLabel)!;
-        const tw = student.timeWindows!.find(tw => isTimeWindowEqual(tw, ts));
+        const tw = (facilitator.timeWindows ?? []).find(tw => isTimeWindowEqual(tw, ts));
         if (tw) {
           return tw;
         } else {
           return {
             id: uuid(),
-            student_id: updated.id,
+            facilitator_id: updated.id,
             group_id: null,
             day_in_week: ts.day_in_week,
             start_t: ts.start_t,
@@ -178,48 +151,7 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
           errorText={getFieldError('country')}
         />
       </Box>
-      <Box display="flex" gap={1} flexDirection={"row"}>
-        <FormControl fullWidth>
-          <FormLabel required>{UI_STRINGS.ANCHOR}</FormLabel>
-          <StarFilled
-            style={{
-              fontSize: "150%",
-              color: updated.anchor ? "green" : "gray",
-            }}
-            onClick={() => handleAnchorChange(updated)}
-          />
-        </FormControl>
-        <CETextInput
-          name="age"
-          value={updated.age || ''}
-          label={UI_STRINGS.AGE}
-          required={true}
-          type="number"
-          handleFieldChange={handleFieldChange}
-          isError={hasFieldError('age')}
-          errorText={getFieldError('age')}
-        />
-        <FormControl fullWidth>
-          <FormLabel id="gender-group" required>{UI_STRINGS.GENDER}</FormLabel>
-          <RadioGroup
-            id="gender-group"
-            aria-labelledby="gender-group"
-            name="gender"
-            value={updated.gender ?? GENDER_OPTION[0]}
-            onChange={handleFieldChange}
-            row={true}
-          >
-            {GENDER_OPTION.map((genderOption: string, idx: number) => (
-              <FormControlLabel
-                key={idx}
-                value={genderOption}
-                control={<Radio />}
-                label={genderOption}
-              />
-            ))}
-          </RadioGroup>
-        </FormControl>
-      </Box>
+
       <FormControl fullWidth error={hasFieldError('timeWindows')}>
         <FormLabel id="time-window-label" required>{UI_STRINGS.TIME_SLOTS}</FormLabel>
         <Select
@@ -243,21 +175,8 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
         </Select>
         <FormHelperText>{getFieldError('timeWindows') || ' '}</FormHelperText>
       </FormControl>
-
-      <FormControl fullWidth>
-        <FormLabel htmlFor="cohort-display">{UI_STRINGS.COHORTS}</FormLabel>
-        <TextField
-          id="cohort-display"
-          variant="standard"
-          value={cohorts && cohorts.length > 0
-            ? cohorts.map((cc: Cohort) => cc.name).join(', ')
-            : UI_STRINGS.NOT_ASSIGNED_COHORT
-          }
-          disabled={true}
-        />
-      </FormControl>
     </Box>
   )
 }
 
-export default StudentForm;
+export default FacilitatorForm;

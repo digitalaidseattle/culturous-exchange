@@ -9,13 +9,11 @@ import { Menu, MenuItem } from '@mui/material';
 
 import { useEffect, useState } from 'react';
 import { addFacilitatorsToGroup } from '../../api/addFacilitatorsToGroup';
-import { facilitatorService } from '../../api/ceFacilitatorService';
 import { removeFacilitatorsFromGroup } from '../../api/removeFacilitatorsFromGroup';
 import { Facilitator, Group } from '../../api/types';
 import AddFacilitatorModal from "../../components/AddFacilitatorModal";
 import { UI_STRINGS } from "../../constants";
-
-
+import { CEFacilitatorService } from '../../api/ceFacilitatorService';
 
 export interface FacilitatorMenuProps {
     group: Group,
@@ -25,6 +23,7 @@ export interface FacilitatorMenuProps {
 
 export const FacilitatorMenu: React.FC<FacilitatorMenuProps> = ({ group, anchorElement, onChange }) => {
 
+    const facilitatorService = CEFacilitatorService.getInstance();
     const [allFacilitators, setAllFacilitators] = useState<Facilitator[]>([]);
     const [availableFacilitators, setAvailableFacilitators] = useState<Facilitator[]>([]);
 

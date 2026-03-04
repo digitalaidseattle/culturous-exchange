@@ -9,9 +9,9 @@ import { supabaseClient } from "@digitalaidseattle/supabase";
 import { format, isEqual } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { v4 as uuid } from 'uuid';
-import { EntityService } from "./entityService";
-import { Identifier, Student, TimeWindow } from "./types";
 import { SERVICE_ERRORS } from '../constants';
+import { EntityService } from "./entityService";
+import { CEProfile, Identifier, TimeWindow } from "./types";
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
   if (arr1.length !== arr2.length) {
@@ -237,14 +237,14 @@ class CETimeWindowService extends EntityService<TimeWindow> {
   }
 
 
-  adjustTimeWindows(student: Student) {
-    if (student.timeWindows) {
-      student.timeWindows
+  adjustTimeWindows(profile: CEProfile) {
+    if (profile.timeWindows) {
+      profile.timeWindows
         .forEach(timeWindow => {
           const dayOffset = timeWindow.day_in_week === 'Friday' ? 0
             : timeWindow.day_in_week === 'Saturday' ? 1 : 2;
-          timeWindow.start_date_time = this.toZonedTime(dayOffset, timeWindow.start_t, student.time_zone!);
-          timeWindow.end_date_time = this.toZonedTime(dayOffset, timeWindow.end_t, student.time_zone!);
+          timeWindow.start_date_time = this.toZonedTime(dayOffset, timeWindow.start_t, profile.time_zone!);
+          timeWindow.end_date_time = this.toZonedTime(dayOffset, timeWindow.end_t, profile.time_zone!);
         });
     }
   }

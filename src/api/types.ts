@@ -22,31 +22,36 @@ type TimeWindow = Entity & {
     end_date_time: Date;
 }
 
-type Student = Entity & {
+type CEProfile = Entity & {
     name: string;
-    age: number | null;
     email: string;
     city: string;
     country: string;
+    time_zone?: string;
+    tz_offset: number;
+    timeWindows?: TimeWindow[];
+    bio?: string;
+    avatar_url?: string;
+}
+
+type Student = CEProfile & {
+    age: number | null;
     gender: string;
-    time_zone?: string; 
-    tz_offset: number; 
-    timeWindows?: TimeWindow[]; 
     anchor: boolean
 }
 
-type Facilitator = Entity & {
-    name: string;
-    email: string;
-    time_zone?: string;
-    tz_offset?: number;
-    bio?: string;
-    avatar_url?: string;
-    active?: boolean;
-    timeWindows?: TimeWindow[]; 
+type FailedStudent = Student & {
+    failedError: ValidationError[];
 }
 
-type FailedStudent = Student & {
+type Facilitator = CEProfile & {
+}
+
+type FailedFacilitator = Facilitator & {
+    failedError: ValidationError[];
+}
+
+type FailedProfile = CEProfile & {
     failedError: ValidationError[];
 }
 
@@ -126,9 +131,12 @@ type Assignment = Entity & {
 }
 
 export type {
+    CEProfile,
     TimeWindow,
     Enrollment,
     Entity,
+    FailedFacilitator,
+    FailedProfile,
     FailedStudent,
     ValidationError,
     Identifier,

@@ -39,9 +39,10 @@ export const UI_STRINGS = {
   UPLOAD: 'Upload',
   UPLOAD_STUDENT: 'Upload Student',
   CLOSE: 'Close',
+  ADD_FACILITATOR: 'Add Facilitator',
   CHANGE_FACILITATOR: 'Change Facilitator',
   REMOVE_FACILITATOR: 'Remove Facilitator',
-
+  
   // Generic labels
   SETTINGS: 'Settings',
   GROUP_SIZE: 'Group Size:',
@@ -106,7 +107,7 @@ export const UI_STRINGS = {
   CANNOT_MOVE_STUDENT_TO_FACILITATORS: 'Cannot move student to facilitators',
 
   // File uploader & lists
-  DRAG_STUDENT_FILE: 'Drag the student file here, or click to select the file',
+  DRAG_STUDENT_FILE: 'Drag the upload file here, or click to select the file',
   NAME_FIELD: 'Name:',
   ERROR: 'Error:',
   CURRENT_TIME_SLOT_SELECTIONS: 'Current Time Slot Selections',
