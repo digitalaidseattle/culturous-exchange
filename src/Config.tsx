@@ -2,6 +2,7 @@
 import {
   CalendarOutlined,
   HomeOutlined,
+  SmileOutlined,
   UserOutlined
 } from '@ant-design/icons';
 
@@ -41,6 +42,13 @@ const entities = {
       type: 'item',
       url: '/students',
       icon: <UserOutlined />
+    } as MenuItem,
+    {
+      id: 'facilitators',
+      title: UI_STRINGS.FACILITATORS,
+      type: 'item',
+      url: '/facilitators',
+      icon: <SmileOutlined />
     } as MenuItem
   ]
 } as MenuItem;
