@@ -16,14 +16,14 @@ import { createContext } from 'react';
 import { studentService } from '../../api/ceStudentService';
 import { timeWindowService } from '../../api/ceTimeWindowService';
 import { FailedStudent, Student } from '../../api/types';
-import { UI_STRINGS } from '../../constants';
+import FailedUploadModal from '../../components/FailedUploadModal';
 import { ShowLocalTimeContext } from '../../components/ShowLocalTimeContext';
 import StudentModal from '../../components/StudentModal';
 import { TimeToggle } from '../../components/TimeToggle';
-import FailedStudentsModal from './FailedStudentsModal';
+import { TimeWindowSelectionContext } from '../../components/TimeWindowSelectionContext';
+import { UI_STRINGS } from '../../constants';
 import StudentsDetailsTable from './StudentsDetailsTable';
 import StudentUploader from './StudentUploader';
-import { TimeWindowSelectionContext } from '../../components/TimeWindowSelectionContext';
 
 interface StudentContextType {
     student: Student,
@@ -110,10 +110,10 @@ const ToolsSection = () => {
             {showDropzone &&
                 <StudentUploader onChange={handleUpdate} />
             }
-            <FailedStudentsModal
+            <FailedUploadModal
                 isModalOpen={isFailedModalOpen}
                 onClose={() => setIsFailedModalOpen(false)}
-                failedStudents={failedStudents}
+                failedProfiles={failedStudents}
             />
             <StudentModal
                 mode={'add'}

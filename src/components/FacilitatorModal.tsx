@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { Student, ValidationError } from '../api/types';
-import StudentForm from '../pages/students/StudentForm';
+import React, { useState } from 'react';
+import { Facilitator, ValidationError } from '../api/types';
 import { UI_STRINGS } from '../constants';
+import FacilitatorForm from '../pages/facilitators/FacilitatorForm';
 
 interface Props {
   mode: 'add' | 'edit';
-  student: Student;
+  facilitator: Facilitator;
   open: boolean;
   onClose: () => void;
-  onChange: (updated: Student) => void;
+  onChange: (updated: Facilitator) => void;
 }
 
-const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange }) => {
-  const [updated, setUpdated] = useState<Student>(student);
+const FacilitatorModal: React.FC<Props> = ({ mode, facilitator, open, onClose, onChange }) => {
+  const [updated, setUpdated] = useState<Facilitator>(facilitator);
   const [hasErrors, setHasErrors] = useState(false);
 
-  const handleStudentChange = (updatedStudent: Student, validationErrors: ValidationError[]) => {
-    setUpdated(updatedStudent);
+  const handleChange = (updateFacilitator: Facilitator, validationErrors: ValidationError[]) => {
+    setUpdated(updateFacilitator);
     setHasErrors(validationErrors.length > 0);
   };
 
@@ -31,9 +31,10 @@ const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange 
       >
         <DialogTitle>{mode === 'add' ? `${UI_STRINGS.NEW} ${UI_STRINGS.DETAILS}` : `Edit ${UI_STRINGS.DETAILS}`}</DialogTitle>
         <DialogContent>
-          <StudentForm
-            student={updated}
-            onChange={handleStudentChange}
+          <FacilitatorForm
+            facilitator={updated}
+            onChange={handleChange}
+
           />
         </DialogContent>
         <DialogActions>
@@ -43,7 +44,7 @@ const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange 
             color="primary"
             variant="contained"
             disabled={hasErrors}
-            onClick={() => {
+            onClick={() =>{ 
               onChange(updated)
             }}
           >
@@ -55,5 +56,5 @@ const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange 
   );
 }
 
-export default StudentModal;
+export default FacilitatorModal;
 

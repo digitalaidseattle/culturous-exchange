@@ -1,4 +1,4 @@
-import { Student, ValidationError } from "./types";
+import { CEProfile, Facilitator, Student, ValidationError } from "./types";
 import {
   MIN_NAME_LENGTH,
   MIN_CITY_LENGTH,
@@ -8,13 +8,17 @@ import {
   UI_STRINGS,
 } from '../constants';
 
+export interface ValidationService<T extends CEProfile> {
+  validate(profile: T): ValidationError[];
+}
+
 export interface Validator<T> {
   validate(data: T): ValidationError[];
 }
 
-export class NameValidator implements Validator<Student> {
-  validate(student: Student): ValidationError[] {
-    if (student.name.trim().length < MIN_NAME_LENGTH) {
+export class NameValidator implements Validator<CEProfile> {
+  validate(profile: CEProfile): ValidationError[] {
+    if (profile.name.trim().length < MIN_NAME_LENGTH) {
       return [{ isValid: false, field: 'name', message: `${UI_STRINGS.NAME_AT_LEAST} ${MIN_NAME_LENGTH} ${UI_STRINGS.CHARACTERS}` }]
     }
     return []
@@ -22,18 +26,18 @@ export class NameValidator implements Validator<Student> {
 }
 
 const EMAIL_REGEX = new RegExp('^[a-zA-Z0-9._]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9]+)+$');
-export class EmailValidator implements Validator<Student> {
-  validate(student: Student): ValidationError[] {
-    if (!student.email || !EMAIL_REGEX.test(student.email)) {
+export class EmailValidator implements Validator<CEProfile> {
+  validate(profile: CEProfile): ValidationError[] {
+    if (!profile.email || !EMAIL_REGEX.test(profile.email)) {
       return [{ isValid: false, field: 'email', message: UI_STRINGS.INVALID_EMAIL_FORMAT }]
     }
     return []
   }
 }
 
-export class CityValidator implements Validator<Student> {
-  validate(student: Student): ValidationError[] {
-    if (student.city!.trim().length < MIN_CITY_LENGTH) {
+export class CityValidator implements Validator<CEProfile> {
+  validate(profile: CEProfile): ValidationError[] {
+    if (profile.city!.trim().length < MIN_CITY_LENGTH) {
       return [{ isValid: false, field: 'city', message: UI_STRINGS.CITY_REQUIRED }]
     }
     return []
@@ -52,9 +56,9 @@ export class AgeValidator implements Validator<Student> {
   }
 }
 
-export class CountryValidator implements Validator<Student> {
-  validate(student: Student): ValidationError[] {
-    if (student.country.trim().length < MIN_COUNTRY_LENGTH) {
+export class CountryValidator implements Validator<CEProfile> {
+  validate(profile: CEProfile): ValidationError[] {
+    if (profile.country.trim().length < MIN_COUNTRY_LENGTH) {
       return [{ isValid: false, field: 'country', message: UI_STRINGS.COUNTRY_REQUIRED }]
     }
     return []
@@ -63,16 +67,16 @@ export class CountryValidator implements Validator<Student> {
 
 const VALID_DAYS = ['Friday', 'Saturday', 'Sunday'];
 const VALID_TIME_WINDOW_REGEX = new RegExp('^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$');
-export class TimeWindowValidator implements Validator<Student> {
+export class TimeWindowValidator implements Validator<CEProfile> {
 
-  validate(student: Student): ValidationError[] {
+  validate(profile: CEProfile): ValidationError[] {
     const timeWindowErrors: ValidationError[] = [];
 
-    if (!student.timeWindows || student.timeWindows.length === 0) {
+    if (!profile.timeWindows || profile.timeWindows.length === 0) {
       timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: UI_STRINGS.TIME_WINDOW_REQUIRED });
     }
 
-    for (const tw of student.timeWindows!) {
+    for (const tw of profile.timeWindows!) {
       if (!tw.day_in_week || !VALID_DAYS.includes(tw.day_in_week.trim())) {
         timeWindowErrors.push({ isValid: false, field: 'timeWindows', message: UI_STRINGS.DAY_OF_WEEK_MUST_BE });
       }
@@ -87,7 +91,8 @@ export class TimeWindowValidator implements Validator<Student> {
   }
 }
 
-export class SpeadsheetValidationService {
+class StudentValidationService implements ValidationService<Student> {
+
   validators = [
     new NameValidator(),
     new AgeValidator(),
@@ -97,10 +102,25 @@ export class SpeadsheetValidationService {
     new TimeWindowValidator()
   ];
 
-  validateStudent(student: Student): ValidationError[] {
+  validate(student: Student): ValidationError[] {
     return this.validators.map(validator => validator.validate(student)).flat()
   }
 }
 
-const studentValidationService = new SpeadsheetValidationService();
-export { studentValidationService }
+class FacilitatorValidationService implements ValidationService<Facilitator> {
+
+  validators = [
+    new NameValidator(),
+    new EmailValidator(),
+    new CityValidator(),
+    new CountryValidator(),
+    new TimeWindowValidator()
+  ];
+
+  validate(facilitator: Facilitator): ValidationError[] {
+    return this.validators.map(validator => validator.validate(facilitator)).flat()
+  }
+}
+
+
+export { StudentValidationService, FacilitatorValidationService }
