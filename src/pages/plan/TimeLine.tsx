@@ -37,19 +37,21 @@ import { addHours, compareAsc, getHours, isFriday, isSaturday, isSunday } from "
 
 import { MoreOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
+import { groupService } from "../../api/ceGroupService";
 import { planService } from "../../api/cePlanService";
 import { studentMover } from "../../api/studentMover";
 import { Group, Identifier, Placement, Plan, Student, TimeWindow } from "../../api/types";
 import StudentModal from "../../components/StudentModal";
+import { ENDING_HOUR, OFFICE_HOURS, STARTING_HOUR, UI_STRINGS, WAITLIST_ID } from '../../constants';
+import { FacilitatorMenu } from "./FacilitatorMenu";
 import { PlanContext } from "./PlanContext";
-import { WAITLIST_ID, STARTING_HOUR, ENDING_HOUR, OFFICE_HOURS, UI_STRINGS } from '../../constants';
 
 type TimeRow = {
     id: Identifier;
     groupId: Identifier;
     studentId: Identifier;
     label: string;
-    type: 'group' | 'anchor' | 'student' | 'waitlist';
+    type: 'group' | 'anchor' | 'student' | 'waitlist' | 'facilitator';
     friday: boolean[];
     saturday: boolean[];
     sunday: boolean[];
@@ -89,8 +91,10 @@ interface SortableRowProps {
 }
 const SortableRow: React.FC<SortableRowProps> = ({ id, row }) => {
 
-    const { attributes, listeners, setNodeRef, transform, transition } =
-        useSortable({ id });
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const [group, setGroup] = useState<Group>();
+    const { plan, setPlan } = useContext(PlanContext);
 
     const style = {
         height: '20px',
@@ -103,29 +107,59 @@ const SortableRow: React.FC<SortableRowProps> = ({ id, row }) => {
         borderBottom: (row.type === 'group' || row.type === 'waitlist') ? '2px solid black' : '1px solid black',
     };
 
-    function labelCell(row: TimeRow) {
-        if (row.type === 'group' || row.type === 'waitlist') {
-            return (
-                <TableCell style={style}>
-                    <Typography fontWeight={600}>{row.label}</Typography>
-                </TableCell>
-            )
+    useEffect(() => {
+        if (row.type === 'group') {
+            groupService.getById(row.groupId)
+                .then(g => setGroup(g))
         }
-        else {
-            const icon = row.type === 'anchor'
-                ? <StarFilled style={{ fontSize: '150%', color: 'green' }} />
-                : <StarOutlined style={{ fontSize: '150%', color: 'gray' }} />;
-            return (
-                <TableCell style={style}>
-                    <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
-                        <IconButton {...attributes} {...listeners} size="small">
-                            <MoreOutlined />
-                        </IconButton>
-                        {icon}
-                        <Typography>{row.label}</Typography>
-                    </Stack>
-                </TableCell>
-            )
+    }, [row]);
+
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    function labelCell(row: TimeRow) {
+        switch (row.type) {
+            case 'group':
+                return (
+                    <TableCell style={style}>
+                        <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }} >
+                            <IconButton size="small" onClick={handleClick}>
+                                <MoreOutlined />
+                            </IconButton>
+                            <Typography fontWeight={600}>{row.label}</Typography>
+                        </Stack>
+                    </TableCell>
+                )
+            case 'waitlist':
+                return (
+                    <TableCell style={style}>
+                        <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }} >
+                            <Typography fontWeight={600}>{row.label}</Typography>
+                        </Stack>
+                    </TableCell>
+                )
+            case 'facilitator':
+                return (
+                    <TableCell style={style}>
+                        <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }} >
+                            <Typography fontWeight={600}>Facilitator: {row.label}</Typography>
+                        </Stack>
+                    </TableCell>
+                )
+            default:
+                const icon = row.type === 'anchor'
+                    ? <StarFilled style={{ fontSize: '150%', color: 'green' }} />
+                    : <StarOutlined style={{ fontSize: '150%', color: 'gray' }} />;
+                return (
+                    <TableCell style={style}>
+                        <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
+                            {icon}
+                            <Typography>{row.label}</Typography>
+                        </Stack>
+                    </TableCell>
+                )
+
         }
     }
 
@@ -163,12 +197,36 @@ const SortableRow: React.FC<SortableRowProps> = ({ id, row }) => {
         )
     }
 
-    return (
-        <TableRow ref={setNodeRef} style={style} hover>
-            {labelCell(row)}
-            {dayCells(row)}
-        </TableRow>
-    );
+    function refresh() {
+        planService.getById(plan.id)
+            .then(updated => setPlan(updated));
+    }
+
+    switch (row.type) {
+        case 'group':
+            return (
+                <TableRow ref={setNodeRef} style={style} hover>
+                    {labelCell(row)}
+                    {dayCells(row)}
+                    <FacilitatorMenu anchorElement={anchorEl} group={group!} onChange={() => refresh()} />
+                </TableRow>
+            )
+        case 'waitlist':
+            return (
+                <TableRow ref={setNodeRef} style={style} hover>
+                    {labelCell(row)}
+                    {dayCells(row)}
+                </TableRow>
+            )
+        default:
+            return (
+                <TableRow ref={setNodeRef} {...attributes} {...listeners} style={style} hover>
+                    {labelCell(row)}
+                    {dayCells(row)}
+                </TableRow>
+            )
+    }
+
 }
 
 export const TimeLine: React.FC = () => {
@@ -177,6 +235,7 @@ export const TimeLine: React.FC = () => {
     const [rows, setRows] = useState<TimeRow[]>([]);
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [selectedRow, setSelectedRow] = useState<TimeRow>();
+
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
@@ -193,7 +252,6 @@ export const TimeLine: React.FC = () => {
 
     useEffect(() => {
         // If plan is not defined, we don't want to initialize
-        console.log('plan', plan)
         if (plan) {
             refresh();
         }
@@ -236,6 +294,26 @@ export const TimeLine: React.FC = () => {
         } as TimeRow
     }
 
+    function createFacilitatorRows(group: Group): TimeRow[] {
+        const rows = (group.assignments ?? [])
+            .map(assignment => {
+                const facilitator = assignment.facilitator;
+                const { friday, saturday, sunday } = calcAvailability(facilitator!.timeWindows ?? [])
+                const row = {
+                    id: facilitator!.id,
+                    groupId: group.id,
+                    studentId: null,
+                    label: facilitator!.name,
+                    type: 'facilitator',
+                    friday: friday,
+                    saturday: saturday,
+                    sunday: sunday,
+                } as TimeRow;
+                return row;
+            })
+        return rows;
+    }
+
     function createWaitlistRow(): TimeRow {
         const response = calcAvailability([])
         return {
@@ -255,8 +333,11 @@ export const TimeLine: React.FC = () => {
             .sort((g0, g1) => g0.name.localeCompare(g1.name))
             .forEach(group => {
                 tempRows.push(createGroupRow(group));
+                createFacilitatorRows(group)
+                    .forEach(fRow => tempRows.push(fRow));
+                tempRows.push();
                 createStudentRows(plan.placements.filter(p => p.group_id === group.id))
-                    .forEach(sRow => { tempRows.push(sRow) });
+                    .forEach(sRow => tempRows.push(sRow));
             });
         tempRows.push(createWaitlistRow());
         createStudentRows(plan.placements.filter(p => !p.group_id))

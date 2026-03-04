@@ -8,7 +8,7 @@
 import React from 'react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 import {
   AuthServiceProvider,
@@ -34,13 +34,12 @@ const App: React.FC = () => {
   return (
     <AuthServiceProvider authService={new SupabaseAuthService()} >
       <StorageServiceProvider storageService={new SupabaseStorageService()} >
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-
-        <UserContextProvider>
-          <LayoutConfigurationProvider configuration={Config}>
-            <RouterProvider router={router} />
-          </LayoutConfigurationProvider>
-        </UserContextProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <UserContextProvider>
+            <LayoutConfigurationProvider configuration={Config}>
+              <RouterProvider router={router} />
+            </LayoutConfigurationProvider>
+          </UserContextProvider>
         </LocalizationProvider>
       </StorageServiceProvider>
     </AuthServiceProvider>

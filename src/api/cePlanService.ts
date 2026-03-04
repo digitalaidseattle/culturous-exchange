@@ -14,8 +14,7 @@ import { EntityService } from "./entityService";
 import { Cohort, Group, Identifier, Placement, Plan, Student } from "./types";
 import { UI_STRINGS, SERVICE_ERRORS } from '../constants';
 
-// TODO consider joining to student
-const DEFAULT_SELECT = '*, placement(*, student(*, timewindow(*))), grouptable(*, timewindow(*))';
+const DEFAULT_SELECT = '*, placement(*, student(*, timewindow(*))), grouptable(*, timewindow(*), assignment(*, facilitators(*, timewindow(*))))';
 
 class CEPlanService extends EntityService<Plan> {
 
@@ -85,6 +84,7 @@ class CEPlanService extends EntityService<Plan> {
 
     delete plan.placement;
     delete plan.grouptable;
+
 
     // initialize placements in each group
     plan.groups.forEach((group: Group) => group.placements = []);
