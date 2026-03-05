@@ -91,7 +91,7 @@ class CEStudentService extends EntityService<Student> {
   mapJson(json: any): Student {
     const student = {
       ...json,
-      timeWindows: json.timewindow.map((js: any) => timeWindowService.mapJson(js))
+      timeWindows: (json.timewindow ?? []).map((js: any) => timeWindowService.mapJson(js))
     }
     delete student.timewindow
     return student

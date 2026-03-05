@@ -7,7 +7,7 @@
 
 import { useCallback, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
-import { UI_STRINGS } from "../../constants";
+import { UI_STRINGS } from "../constants";
 
 const baseStyle = {
     flex: 1,
@@ -37,7 +37,7 @@ const rejectStyle = {
     borderColor: '#ff1744'
 };
 
-function Uploader({ onChange }: { onChange: (files: File[]) => Promise<void> }) {
+function FileUploader({ onChange }: { onChange: (files: File[]) => Promise<void> }) {
 
     const onDrop = useCallback((files: File[]) => {
         onChange(files)
@@ -73,4 +73,4 @@ function Uploader({ onChange }: { onChange: (files: File[]) => Promise<void> }) 
 }
 
 
-export default Uploader;
+export default FileUploader;

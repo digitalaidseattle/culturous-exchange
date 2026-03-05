@@ -78,7 +78,7 @@ export const UI_STRINGS = {
   DETAILS: 'Details',
   STUDENTS_PAGE_TITLE: 'Students Page',
   STUDENT_PAGE_TITLE: 'Student Page',
-  STUDENTS_ATTENTION: 'Students that require attention:',
+  STUDENTS_ATTENTION: 'Profiles that require attention:',
   DELETE_SELECTED_STUDENTS_CONFIRM: 'Delete selected students?',
   ARE_YOU_SURE_DELETE_STUDENT: 'Are you sure you want to delete this student?',
   LOCAL_TIME: 'Local Time',

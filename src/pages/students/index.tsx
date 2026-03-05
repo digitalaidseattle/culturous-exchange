@@ -9,49 +9,73 @@ import { useContext, useState } from 'react';
 import { Button, Stack } from '@mui/material';
 
 // project import
-import { MainCard } from '@digitalaidseattle/mui';
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
-import { createContext } from 'react';
+
 import { studentService } from '../../api/ceStudentService';
 import { timeWindowService } from '../../api/ceTimeWindowService';
-import { FailedStudent, Student } from '../../api/types';
+import { ProfileUploader } from '../../api/ProfileUploader';
+import { FailedProfile, Student } from '../../api/types';
+import { StudentValidationService } from '../../api/ValidationService';
 import FailedUploadModal from '../../components/FailedUploadModal';
-import { ShowLocalTimeContext } from '../../components/ShowLocalTimeContext';
+import FileUploader from '../../components/FileUploader';
+import ProfilesPage from '../../components/ProfilesPage';
 import StudentModal from '../../components/StudentModal';
 import { TimeToggle } from '../../components/TimeToggle';
-import { TimeWindowSelectionContext } from '../../components/TimeWindowSelectionContext';
 import { UI_STRINGS } from '../../constants';
 import StudentsDetailsTable from './StudentsDetailsTable';
-import StudentUploader from './StudentUploader';
-
-interface StudentContextType {
-    student: Student,
-    setStudent: React.Dispatch<React.SetStateAction<Student>>
-}
-
-export const StudentContext = createContext<StudentContextType>({
-    student: {} as Student,
-    setStudent: () => { }
-})
 
 const ToolsSection = () => {
+
+    const uploadService = new ProfileUploader(new StudentValidationService());
+
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
-    const [failedStudents, setFailedStudents] = useState<FailedStudent[]>([]);
+    const [failedProfiles, setFailedProfiles] = useState<FailedProfile[]>([]);
     const [isFailedModalOpen, setIsFailedModalOpen] = useState<boolean>(false);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
 
-    const handleUpdate = (resp: any) => {
-        setRefresh(refresh + 1);
+    async function handleUpload(files: File[]): Promise<void> {
+        Promise
+            .all(files.map(file => uploadService.insert_from_excel(file)))
+            .then(resps => {
+                let allFailed: FailedProfile[] = [];
+                resps.forEach(resp => {
+                    allFailed = allFailed.concat(resp.failedProfiles);
+                })
+                const allSuccess = resps.map(resp => resp.successCount)
+                    .reduce((p, v) => p + v, 0);
+
+                displayUploadResults({
+                    failedProfiles: allFailed,
+                    successCount: allSuccess,
+                    failedCount: allFailed.length,
+                    attemptedCount: allFailed.length + allSuccess
+                });
+            })
+            .catch((err) => {
+                console.error('Unexpected Error: ', err)
+                displayUploadResults({
+                    failedProfiles: [],
+                    successCount: 0,
+                    failedCount: files.length,
+                    attemptedCount: files.length
+                })
+            })
+            .finally(() => {
+                setRefresh(refresh + 1);
+            });
+    }
+
+    function displayUploadResults(resp: { failedProfiles: FailedProfile[], failedCount: number, attemptedCount: number, successCount: number }) {
         setShowDropzone(false);
         if (resp.failedCount === resp.attemptedCount) {
             notifications.error(`Error uploading spreadsheet. Failed to add ${resp.successCount} of ${resp.attemptedCount}`)
-            setFailedStudents(resp.failedStudents)
+            setFailedProfiles(resp.failedProfiles)
             setIsFailedModalOpen(true);
         } else if (resp.failedCount > 0) {
-            setFailedStudents(resp.failedStudents)
+            setFailedProfiles(resp.failedProfiles)
             setIsFailedModalOpen(true);
             notifications.warn(
                 `${resp.attemptedCount} Attempted, ${resp.successCount} added, ${resp.failedCount} failed.`
@@ -72,7 +96,6 @@ const ToolsSection = () => {
                 updated.time_zone = resp.timezone
                 updated.tz_offset = resp.offset
                 timeWindowService.adjustTimeWindows(updated);
-
                 studentService.save(updated)
                     .then(saved => {
 
@@ -108,12 +131,12 @@ const ToolsSection = () => {
                 <TimeToggle />
             </Stack>
             {showDropzone &&
-                <StudentUploader onChange={handleUpdate} />
+                <FileUploader onChange={handleUpload} />
             }
             <FailedUploadModal
                 isModalOpen={isFailedModalOpen}
                 onClose={() => setIsFailedModalOpen(false)}
-                failedProfiles={failedStudents}
+                failedProfiles={failedProfiles}
             />
             <StudentModal
                 mode={'add'}
@@ -125,21 +148,11 @@ const ToolsSection = () => {
     )
 }
 const StudentsPage: React.FC = () => {
-    const [student, setStudent] = useState<Student>({} as Student);
-    const [selection, setSelection] = useState<string[]>([]);
-    const [showLocalTime, setShowLocalTime] = useState<boolean>(false);
-
     return (
-        <StudentContext.Provider value={{ student, setStudent }}>
-            <TimeWindowSelectionContext.Provider value={{ selection, setSelection }}>
-                <ShowLocalTimeContext.Provider value={{ showLocalTime, setShowLocalTime }}>
-                    <MainCard title={UI_STRINGS.STUDENTS_PAGE_TITLE}>
-                        <ToolsSection />
-                        <StudentsDetailsTable />
-                    </MainCard>
-                </ShowLocalTimeContext.Provider>
-            </TimeWindowSelectionContext.Provider>
-        </StudentContext.Provider>
+        <ProfilesPage
+            tools={<ToolsSection />}
+            table={<StudentsDetailsTable />}
+        />
     )
 };
 

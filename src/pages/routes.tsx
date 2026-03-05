@@ -8,7 +8,6 @@ import {
 
 import CohortPage from "./cohort";
 import CohortsPage from "./cohorts";
-import StudentPage from './student';
 import StudentsPage from './students';
 import PlanPage from "./plan";
 import HomePage from "./home";
@@ -45,16 +44,12 @@ const routes = [
 
       },
       {
-        path: "student/:id",
-        element: <StudentPage />,
-      },
-      {
         path: "facilitators",
         element: <FacilitatorsPage />,
       },
       {
         path: "privacy",
-        element: <MarkdownPage filepath='privacy.md'/>,
+        element: <MarkdownPage filepath='privacy.md' />,
       }
     ]
   },

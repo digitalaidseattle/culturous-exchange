@@ -46,7 +46,7 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, onChange }) => {
   const [errors, setErrors] = useState<ValidationError[]>([]);
 
   const zones = Intl.supportedValuesOf("timeZone");
-  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  // const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   useEffect(() => {
     setUpdated(facilitator)
@@ -148,7 +148,7 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, onChange }) => {
           labelId="time-zones-label"
           id="time-zones-select"
           name='time_zone'
-          value={updated.time_zone || userTimezone}
+          value={updated.time_zone}
           onChange={handleTimezoneChange}
           input={<Input />}
         >

@@ -9,7 +9,6 @@ import { useContext, useState } from 'react';
 import { Button, Stack } from '@mui/material';
 
 // project import
-import { MainCard } from '@digitalaidseattle/mui';
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { createContext } from 'react';
@@ -20,12 +19,11 @@ import { Facilitator, FailedProfile } from '../../api/types';
 import { FacilitatorValidationService } from '../../api/ValidationService';
 import FacilitatorModal from '../../components/FacilitatorModal';
 import FailedUploadModal from '../../components/FailedUploadModal';
-import { ShowLocalTimeContext } from '../../components/ShowLocalTimeContext';
+import FileUploader from '../../components/FileUploader';
+import ProfilesPage from '../../components/ProfilesPage';
 import { TimeToggle } from '../../components/TimeToggle';
-import { TimeWindowSelectionContext } from '../../components/TimeWindowSelectionContext';
 import { UI_STRINGS } from '../../constants';
 import DetailsTable from './DetailsTable';
-import Uploader from './Uploader';
 
 interface FacilitatorContextType {
     facilitator: Facilitator,
@@ -144,7 +142,7 @@ const ToolsSection = () => {
                 <TimeToggle />
             </Stack>
             {showDropzone &&
-                <Uploader onChange={handleUpload} />
+                <FileUploader onChange={handleUpload} />
             }
             <FailedUploadModal
                 isModalOpen={isFailedModalOpen}
@@ -160,22 +158,13 @@ const ToolsSection = () => {
         </Stack>
     )
 }
-const FacilitatorsPage: React.FC = () => {
-    const [student, setFacilitator] = useState<Facilitator>({} as Facilitator);
-    const [selection, setSelection] = useState<string[]>([]);
-    const [showLocalTime, setShowLocalTime] = useState<boolean>(false);
 
+const FacilitatorsPage: React.FC = () => {
     return (
-        <FacilitatorContext.Provider value={{ facilitator: student, setFacilitator }}>
-            <TimeWindowSelectionContext.Provider value={{ selection, setSelection }}>
-                <ShowLocalTimeContext.Provider value={{ showLocalTime, setShowLocalTime }}>
-                    <MainCard title={UI_STRINGS.FACILITATORS}>
-                        <ToolsSection />
-                        <DetailsTable />
-                    </MainCard>
-                </ShowLocalTimeContext.Provider>
-            </TimeWindowSelectionContext.Provider>
-        </FacilitatorContext.Provider>
+        <ProfilesPage
+            tools={<ToolsSection />}
+            table={<DetailsTable />}
+        />
     )
 };
 

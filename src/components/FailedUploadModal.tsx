@@ -4,14 +4,17 @@
  *  @copyright 2025 Digital Aid Seattle
  *
  */
+import React from 'react';
+
 import { CloseCircleOutlined } from '@ant-design/icons';
-import { List, ListItem, ListItemText, Stack } from '@mui/material';
-import Button from '@mui/material/Button';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
-import * as React from 'react';
+import {
+  Button,
+  DialogActions, DialogContent, DialogTitle,
+  IconButton,
+  List, ListItem, ListItemText,
+  Stack
+} from '@mui/material';
+
 import { FailedProfile } from '../api/types';
 import { UI_STRINGS } from '../constants';
 import BootstrapDialog from '../utils/styles';

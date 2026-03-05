@@ -34,7 +34,6 @@ const FacilitatorModal: React.FC<Props> = ({ mode, facilitator, open, onClose, o
           <FacilitatorForm
             facilitator={updated}
             onChange={handleChange}
-
           />
         </DialogContent>
         <DialogActions>
