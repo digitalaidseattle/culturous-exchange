@@ -45,6 +45,9 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, onChange }) => {
   const [updated, setUpdated] = useState<Facilitator>(facilitator);
   const [errors, setErrors] = useState<ValidationError[]>([]);
 
+  const zones = Intl.supportedValuesOf("timeZone");
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
   useEffect(() => {
     setUpdated(facilitator)
   }, [facilitator]);
@@ -52,6 +55,14 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, onChange }) => {
   const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     const next = { ...updated, [name]: value };
+    setUpdated(next);
+
+    const validationErrors = updateValidationErrors(next);
+    onChange(next, validationErrors);
+  }
+
+  const handleTimezoneChange = (event: any) => {
+    const next = { ...updated, time_zone: event.target.value };
     setUpdated(next);
 
     const validationErrors = updateValidationErrors(next);
@@ -119,6 +130,7 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, onChange }) => {
         isError={hasFieldError('name')}
         errorText={getFieldError('name')}
       />
+
       <CETextInput
         name="email"
         value={updated.email || ''}
@@ -129,28 +141,23 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, onChange }) => {
         isError={hasFieldError('email')}
         errorText={getFieldError('email')}
       />
-      <Box display="flex" gap={1} flexDirection={"row"}>
-        <CETextInput
-          name="city"
-          value={updated.city || ''}
-          label={UI_STRINGS.CITY}
-          required={true}
-          type="text"
-          handleFieldChange={handleFieldChange}
-          isError={hasFieldError('city')}
-          errorText={getFieldError('city')}
-        />
-        <CETextInput
-          name="country"
-          value={updated.country || ''}
-          label={UI_STRINGS.COUNTRY}
-          required={true}
-          type="text"
-          handleFieldChange={handleFieldChange}
-          isError={hasFieldError('country')}
-          errorText={getFieldError('country')}
-        />
-      </Box>
+
+      <FormControl fullWidth error={hasFieldError('time_zone')}>
+        <FormLabel id="time-zones-label" required>{UI_STRINGS.TIME_ZONES}</FormLabel>
+        <Select
+          labelId="time-zones-label"
+          id="time-zones-select"
+          name='time_zone'
+          value={updated.time_zone || userTimezone}
+          onChange={handleTimezoneChange}
+          input={<Input />}
+        >
+          {zones.map((tz) => (
+            <MenuItem key={tz} value={tz}>{tz}</MenuItem>
+          ))}
+        </Select>
+        <FormHelperText>{getFieldError('time_zone') || ' '}</FormHelperText>
+      </FormControl>
 
       <FormControl fullWidth error={hasFieldError('timeWindows')}>
         <FormLabel id="time-window-label" required>{UI_STRINGS.TIME_SLOTS}</FormLabel>

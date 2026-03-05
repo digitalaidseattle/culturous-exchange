@@ -65,6 +65,15 @@ export class CountryValidator implements Validator<CEProfile> {
   }
 }
 
+export class TimezoneValidator implements Validator<CEProfile> {
+  validate(profile: CEProfile): ValidationError[] {
+    if (!profile.time_zone || profile.time_zone.trim().length < MIN_NAME_LENGTH) {
+      return [{ isValid: false, field: 'time_zone', message: UI_STRINGS.TIMEZONE_REQUIRED }]
+    }
+    return []
+  }
+}
+
 const VALID_DAYS = ['Friday', 'Saturday', 'Sunday'];
 const VALID_TIME_WINDOW_REGEX = new RegExp('^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$');
 export class TimeWindowValidator implements Validator<CEProfile> {
@@ -114,6 +123,7 @@ class FacilitatorValidationService implements ValidationService<Facilitator> {
     new EmailValidator(),
     new CityValidator(),
     new CountryValidator(),
+    new TimezoneValidator(),
     new TimeWindowValidator()
   ];
 

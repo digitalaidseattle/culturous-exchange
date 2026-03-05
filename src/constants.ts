@@ -68,6 +68,7 @@ export const UI_STRINGS = {
   AGE: 'Age',
   GENDER: 'Gender',
   TIME_SLOTS: 'Time Slot(s)',
+  TIME_ZONES: 'Time Zones',
   COHORTS: 'Cohorts',
   ANCHOR: 'Anchor',
   AVAILABILITIES: 'Availabilities',
@@ -125,6 +126,7 @@ export const UI_STRINGS = {
   DAY_OF_WEEK_MUST_BE: 'Day of week must be "Friday", "Saturday", or "Sunday"',
   START_TIME_INVALID: 'Start time invalid',
   END_TIME_INVALID: 'End time invalid',
+  TIMEZONE_REQUIRED: 'A time zone is required.',
 
   // Facilitators labels and related text
   FACILITATORS: 'Facilitators',

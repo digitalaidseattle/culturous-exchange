@@ -155,13 +155,6 @@ const DetailsTable: React.FC = () => {
           .filter((operator) => facilitatorService.supportedStringFilters().includes(operator.value))
       },
       {
-        field: 'country',
-        headerName: UI_STRINGS.COUNTRY,
-        width: 100,
-        filterOperators: getGridStringOperators()
-          .filter((operator) => facilitatorService.supportedStringFilters().includes(operator.value))
-      },
-      {
         field: 'time_zone',
         headerName: UI_STRINGS.TIME_ZONE,
         width: 150,
