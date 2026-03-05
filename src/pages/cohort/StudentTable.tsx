@@ -124,89 +124,87 @@ export const StudentTable: React.FC = () => {
     }
   };
 
-  const getColumns = (): GridColDef[] => {
-    return [
-      {
-        field: "student.name",
-        headerName: UI_STRINGS.NAME,
-        width: 150,
-        renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.student.name}</Typography>;
-        },
-        valueGetter: (_value, row) => row.student.name,
+  const columns: GridColDef[] = [
+    {
+      field: "student.name",
+      headerName: UI_STRINGS.NAME,
+      width: 150,
+      renderCell: (param: GridRenderCellParams) => {
+        return <Typography>{param.row.student.name}</Typography>;
       },
-      {
-        field: "student.email",
-        headerName: UI_STRINGS.EMAIL,
-        width: 240,
-        renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.student.email}</Typography>;
-        },
-        valueGetter: (_value, row) => row.student.email,
+      valueGetter: (_value, row) => row.student.name,
+    },
+    {
+      field: "student.email",
+      headerName: UI_STRINGS.EMAIL,
+      width: 240,
+      renderCell: (param: GridRenderCellParams) => {
+        return <Typography>{param.row.student.email}</Typography>;
+      },
+      valueGetter: (_value, row) => row.student.email,
 
-      },
+    },
 
-      {
-        field: "student.country",
-        headerName: UI_STRINGS.COUNTRY,
-        width: 140,
-        renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.student.country}</Typography>;
-        },
-        valueGetter: (_value, row) => row.student.country,
+    {
+      field: "student.country",
+      headerName: UI_STRINGS.COUNTRY,
+      width: 140,
+      renderCell: (param: GridRenderCellParams) => {
+        return <Typography>{param.row.student.country}</Typography>;
       },
-      {
-        field: "anchor",
-        headerName: UI_STRINGS.ANCHOR,
-        width: 75,
-        type: "boolean",
-        renderCell: (param: GridRenderCellParams) => {
-          return (
-            <StarFilled
-              style={{
-                fontSize: "150%",
-                color: param.row.anchor ? "green" : "gray",
-              }}
-              onClick={() => toggleAnchor(param.row)}
-            />
-          );
-        }
-      },
-      {
-        field: 'student.age',
-        headerName: UI_STRINGS.AGE,
-        width: 75,
-        type: 'number',
-        filterOperators: getGridNumericOperators()
-          .filter((operator) => studentService.supportedNumberFilters().includes(operator.value)),
-        renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.student.age}</Typography>;
-        },
-        valueGetter: (_value, row) => row.student.age,
-      },
-      {
-        field: 'student.gender',
-        headerName: UI_STRINGS.GENDER,
-        width: 100,
-        filterOperators: getGridStringOperators()
-          .filter((operator) => studentService.supportedStringFilters().includes(operator.value)),
-        renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.student.gender}</Typography>;
-        },
-        valueGetter: (_value, row) => row.student.gender,
-      },
-      {
-        field: 'timeWindows',
-        headerName: UI_STRINGS.AVAILABILITIES,
-        width: 250,
-        renderCell: (params) => {
-          const timeWindows = Array.isArray(params.row.student.timeWindows) ? params.row.student.timeWindows : [];
-          return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.student.time_zone} />
-        },
-        filterable: false
+      valueGetter: (_value, row) => row.student.country,
+    },
+    {
+      field: "anchor",
+      headerName: UI_STRINGS.ANCHOR,
+      width: 75,
+      type: "boolean",
+      renderCell: (param: GridRenderCellParams) => {
+        return (
+          <StarFilled
+            style={{
+              fontSize: "150%",
+              color: param.row.anchor ? "green" : "gray",
+            }}
+            onClick={() => toggleAnchor(param.row)}
+          />
+        );
       }
-    ];
-  };
+    },
+    {
+      field: 'student.age',
+      headerName: UI_STRINGS.AGE,
+      width: 75,
+      type: 'number',
+      filterOperators: getGridNumericOperators()
+        .filter((operator) => studentService.supportedNumberFilters().includes(operator.value)),
+      renderCell: (param: GridRenderCellParams) => {
+        return <Typography>{param.row.student.age}</Typography>;
+      },
+      valueGetter: (_value, row) => row.student.age,
+    },
+    {
+      field: 'student.gender',
+      headerName: UI_STRINGS.GENDER,
+      width: 100,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => studentService.supportedStringFilters().includes(operator.value)),
+      renderCell: (param: GridRenderCellParams) => {
+        return <Typography>{param.row.student.gender}</Typography>;
+      },
+      valueGetter: (_value, row) => row.student.gender,
+    },
+    {
+      field: 'timeWindows',
+      headerName: UI_STRINGS.AVAILABILITIES,
+      width: 250,
+      renderCell: (params) => {
+        const timeWindows = Array.isArray(params.row.student.timeWindows) ? params.row.student.timeWindows : [];
+        return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.student.time_zone} />
+      },
+      filterable: false
+    }
+  ];
 
   return (
     <Box>
@@ -236,7 +234,7 @@ export const StudentTable: React.FC = () => {
             apiRef={apiRef}
             rows={pageInfo.rows}
             getRowId={(row) => row.student_id}
-            columns={getColumns()}
+            columns={columns}
 
             paginationMode='client'
             paginationModel={paginationModel}

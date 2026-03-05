@@ -34,8 +34,6 @@ const DetailsTable: React.FC = () => {
   const { setLoading } = useContext(LoadingContext);
   const { refresh, setRefresh } = useContext(RefreshContext);
 
-  const [initialize, setInitialize] = useState<boolean>(true);
-  const [columns, setColumns] = useState<GridColDef[]>([]);
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'name', sort: 'asc' }]);
   const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
@@ -48,13 +46,6 @@ const DetailsTable: React.FC = () => {
   const [deleteProfile, setDeleteProfile] = useState<CEProfile | null>(null);
   const [deleteMessage, setDeleteMessage] = useState<string>(UI_STRINGS.ARE_YOU_SURE_DELETE_STUDENT);
   const [deleteConfirmation, showDeleteConfirmation] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (initialize) {
-      setColumns(getColumns());
-      setInitialize(false);
-    }
-  }, [initialize]);
 
   useEffect(() => {
     if (paginationModel && sortModel && filterModel) {
@@ -124,66 +115,64 @@ const DetailsTable: React.FC = () => {
     }
   }
 
-  const getColumns = (): GridColDef[] => {
-    return [
-      {
-        field: 'id',
-        headerName: '',
-        width: 75,
-        renderCell: (param: GridRenderCellParams) => {
-          return (
-            <Button
-              color='error'
-              onClick={handleSelectDeleteProfile(param)} >
-              <DeleteOutlined />
-            </Button>
-          );
-        }
-      },
-      {
-        field: 'name',
-        headerName: UI_STRINGS.NAME,
-        width: 150,
-        filterOperators: getGridStringOperators()
-          .filter((operator) => facilitatorService.supportedStringFilters().includes(operator.value))
-      },
-      {
-        field: 'email',
-        headerName: UI_STRINGS.EMAIL,
-        width: 200,
-        filterOperators: getGridStringOperators()
-          .filter((operator) => facilitatorService.supportedStringFilters().includes(operator.value))
-      },
-      {
-        field: 'time_zone',
-        headerName: UI_STRINGS.TIME_ZONE,
-        width: 150,
-        filterOperators: getGridStringOperators()
-          .filter((operator) => facilitatorService.supportedStringFilters().includes(operator.value))
-      },
-      {
-        field: 'preferences',
-        headerName: UI_STRINGS.TIME_SLOTS_LABEL,
-        width: 200,
-        renderCell: (params) => <TimeSlots timeWindows={params.row.timeWindows ?? []} />,
-        filterable: false,
-        sortable: false,
-      },
-      {
-        field: 'timeWindows',
-        headerName: UI_STRINGS.AVAILABILITIES,
-        flex: 1,
-        renderCell: (params) => {
-          const timeWindows = Array.isArray(params.value) ? params.value : [];
-          return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.time_zone} />
-        },
-        filterable: false,
-        sortable: false,
+  const columns: GridColDef[] = [
+    {
+      field: 'id',
+      headerName: '',
+      width: 75,
+      renderCell: (param: GridRenderCellParams) => {
+        return (
+          <Button
+            color='error'
+            onClick={handleSelectDeleteProfile(param)} >
+            <DeleteOutlined />
+          </Button>
+        );
       }
-    ];
-  };
+    },
+    {
+      field: 'name',
+      headerName: UI_STRINGS.NAME,
+      width: 150,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => facilitatorService.supportedStringFilters().includes(operator.value))
+    },
+    {
+      field: 'email',
+      headerName: UI_STRINGS.EMAIL,
+      width: 200,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => facilitatorService.supportedStringFilters().includes(operator.value))
+    },
+    {
+      field: 'time_zone',
+      headerName: UI_STRINGS.TIME_ZONE,
+      width: 150,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => facilitatorService.supportedStringFilters().includes(operator.value))
+    },
+    {
+      field: 'preferences',
+      headerName: UI_STRINGS.TIME_SLOTS_LABEL,
+      width: 200,
+      renderCell: (params) => <TimeSlots timeWindows={params.row.timeWindows ?? []} />,
+      filterable: false,
+      sortable: false,
+    },
+    {
+      field: 'timeWindows',
+      headerName: UI_STRINGS.AVAILABILITIES,
+      flex: 1,
+      renderCell: (params) => {
+        const timeWindows = Array.isArray(params.value) ? params.value : [];
+        return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.time_zone} />
+      },
+      filterable: false,
+      sortable: false,
+    }
+  ];
 
-  return (columns &&
+  return (
     <>
       <DataGrid
         rows={pageInfo.rows}
