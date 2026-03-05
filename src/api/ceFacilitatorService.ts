@@ -42,7 +42,7 @@ class CEFacilitatorService extends EntityService<Facilitator> {
       ...json,
       timeWindows: json.timewindow ? json.timewindow.map((js: any) => timeWindowService.mapJson(js)) : []
     }
-    delete (facilitator as any).timewindow;
+    delete facilitator.timewindow;
     return facilitator as Facilitator;
   }
 

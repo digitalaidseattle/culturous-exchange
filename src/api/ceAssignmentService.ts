@@ -6,6 +6,7 @@ import { supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
 import { EntityService } from './entityService';
 import { Assignment } from './types';
+import { CEFacilitatorService } from './ceFacilitatorService';
 
 const DEFAULT_SELECT = '*';
 
@@ -28,9 +29,11 @@ class CEAssignmentService extends EntityService<Assignment> {
   }
 
   mapJson(json: any): Assignment {
+    const facilitatorService = CEFacilitatorService.getInstance();
+
     const assignment = {
       ...json,
-      facilitator: json.facilitators
+      facilitator: facilitatorService.mapJson(json.facilitators)
     };
 
     delete assignment.facilitators;
