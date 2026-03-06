@@ -42,7 +42,7 @@ export const UI_STRINGS = {
   ADD_FACILITATOR: 'Add Facilitator',
   CHANGE_FACILITATOR: 'Change Facilitator',
   REMOVE_FACILITATOR: 'Remove Facilitator',
-  
+
   // Generic labels
   SETTINGS: 'Settings',
   GROUP_SIZE: 'Group Size:',
@@ -76,7 +76,8 @@ export const UI_STRINGS = {
   TIME_SLOTS_LABEL: 'Time Slots',
   NOT_ASSIGNED_COHORT: 'Not assigned to any cohort',
   DETAILS: 'Details',
-  STUDENTS_PAGE_TITLE: 'Students Page',
+  FACILITATORS_PAGE_TITLE: 'Facilitators',
+  STUDENTS_PAGE_TITLE: 'Students',
   STUDENT_PAGE_TITLE: 'Student Page',
   STUDENTS_ATTENTION: 'Profiles that require attention:',
   DELETE_SELECTED_STUDENTS_CONFIRM: 'Delete selected students?',

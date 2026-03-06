@@ -37,7 +37,7 @@ export class EmailValidator implements Validator<CEProfile> {
 
 export class CityValidator implements Validator<CEProfile> {
   validate(profile: CEProfile): ValidationError[] {
-    if (profile.city!.trim().length < MIN_CITY_LENGTH) {
+    if ((profile.city ?? "").trim().length < MIN_CITY_LENGTH) {
       return [{ isValid: false, field: 'city', message: UI_STRINGS.CITY_REQUIRED }]
     }
     return []
@@ -58,7 +58,7 @@ export class AgeValidator implements Validator<Student> {
 
 export class CountryValidator implements Validator<CEProfile> {
   validate(profile: CEProfile): ValidationError[] {
-    if (profile.country.trim().length < MIN_COUNTRY_LENGTH) {
+    if ((profile.country ?? "").trim().length < MIN_COUNTRY_LENGTH) {
       return [{ isValid: false, field: 'country', message: UI_STRINGS.COUNTRY_REQUIRED }]
     }
     return []
@@ -67,7 +67,7 @@ export class CountryValidator implements Validator<CEProfile> {
 
 export class TimezoneValidator implements Validator<CEProfile> {
   validate(profile: CEProfile): ValidationError[] {
-    if (!profile.time_zone || profile.time_zone.trim().length < MIN_NAME_LENGTH) {
+    if ((profile.time_zone ?? "").trim().length < MIN_NAME_LENGTH) {
       return [{ isValid: false, field: 'time_zone', message: UI_STRINGS.TIMEZONE_REQUIRED }]
     }
     return []
@@ -121,8 +121,6 @@ class FacilitatorValidationService implements ValidationService<Facilitator> {
   validators = [
     new NameValidator(),
     new EmailValidator(),
-    new CityValidator(),
-    new CountryValidator(),
     new TimezoneValidator(),
     new TimeWindowValidator()
   ];

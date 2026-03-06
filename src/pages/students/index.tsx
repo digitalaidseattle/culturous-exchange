@@ -150,6 +150,7 @@ const ToolsSection = () => {
 const StudentsPage: React.FC = () => {
     return (
         <ProfilesPage
+            title={UI_STRINGS.STUDENTS_PAGE_TITLE}
             tools={<ToolsSection />}
             table={<StudentsDetailsTable />}
         />

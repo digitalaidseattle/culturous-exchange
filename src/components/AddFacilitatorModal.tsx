@@ -43,7 +43,7 @@ const AddFacilitatorModal: React.FC<Props> = ({
     setSelecteFacilitators([]);
   }
 
-  function findStudent(id: string) {
+  function findFacilitator(id: string) {
     return facilitators.find((f) => id === f.id);
   }
 
@@ -67,7 +67,7 @@ const AddFacilitatorModal: React.FC<Props> = ({
                 onChange={handleChange}
                 input={<OutlinedInput label="Tag" />}
                 renderValue={(selected) =>
-                  selected.map((s_id) => findStudent(s_id)!.name).join(", ")
+                  selected.map((s_id) => findFacilitator(s_id)!.name).join(", ")
                 }
               >
                 {facilitators.map((f) => (

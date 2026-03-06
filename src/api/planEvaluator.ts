@@ -29,7 +29,10 @@ class PlanEvaluator {
 
     calcGroupTimeWindows(group: Group): TimeWindow[] {
         let timeWindows = groupService.createDefaultTimewindows(group);
-        group.placements!.forEach(placement => {
+        (group.assignments ?? []).forEach(assignment => {
+            timeWindows = timeWindowService.intersectionTimeWindowsMultiple(timeWindows, assignment.facilitator!.timeWindows!);
+        });
+        (group.placements ?? []).forEach(placement => {
             timeWindows = timeWindowService.intersectionTimeWindowsMultiple(timeWindows, placement.student!.timeWindows!);
         });
         timeWindows.forEach(tw => tw.group_id = group.id);

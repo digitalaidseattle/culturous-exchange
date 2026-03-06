@@ -7,13 +7,15 @@
 
 import { Menu, MenuItem } from '@mui/material';
 
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { addFacilitatorsToGroup } from '../../api/addFacilitatorsToGroup';
 import { removeFacilitatorsFromGroup } from '../../api/removeFacilitatorsFromGroup';
 import { Facilitator, Group } from '../../api/types';
 import AddFacilitatorModal from "../../components/AddFacilitatorModal";
 import { UI_STRINGS } from "../../constants";
 import { CEFacilitatorService } from '../../api/ceFacilitatorService';
+import { PlanContext } from './PlanContext';
+import { planEvaluator } from '../../api/planEvaluator';
 
 export interface FacilitatorMenuProps {
     group: Group,
@@ -22,6 +24,7 @@ export interface FacilitatorMenuProps {
 }
 
 export const FacilitatorMenu: React.FC<FacilitatorMenuProps> = ({ group, anchorElement, onChange }) => {
+    const { plan, setPlan } = useContext(PlanContext);
 
     const facilitatorService = CEFacilitatorService.getInstance();
     const [allFacilitators, setAllFacilitators] = useState<Facilitator[]>([]);
@@ -52,24 +55,26 @@ export const FacilitatorMenu: React.FC<FacilitatorMenuProps> = ({ group, anchorE
         setShowAddFacilitator(true);
     };
 
-    const handleRemoveMenuChoice = () => {
-        if (group) {
-            removeFacilitatorsFromGroup(group)
-                .then((updated) => onChange(updated!));
-        }
-    };
-
     const handleCloseModal = () => {
         setShowAddFacilitator(false);
     }
 
-    const handleAddFacilitator = (newFacilitators: Facilitator[]) => {
+    async function handleRemoveMenuChoice() {
         if (group) {
-            addFacilitatorsToGroup(group, newFacilitators)
-                .then((updated) => {
-                    setShowAddFacilitator(false);
-                    onChange(updated!);
-                });
+            const updated = await removeFacilitatorsFromGroup(group);
+            const evaluated = await planEvaluator.evaluate(plan);
+            setPlan(evaluated);
+            onChange(updated!)
+        }
+    };
+
+    async function handleAddFacilitator(newFacilitators: Facilitator[]) {
+        if (group) {
+            const updated = await addFacilitatorsToGroup(group, newFacilitators);
+            const evaluated = await planEvaluator.evaluate(plan);
+            setPlan(evaluated);
+            setShowAddFacilitator(false);
+            onChange(updated!);
         } else {
             console.error('No group in context.')
         }

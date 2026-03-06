@@ -66,8 +66,7 @@ const DetailsTable: React.FC = () => {
         .catch((err) => console.error(err))
         .finally(() => setLoading(false));
     }
-  }, [paginationModel, sortModel, filterModel]);
-
+  }, [paginationModel, sortModel, filterModel, refresh]);
 
   function handleSelectDeleteProfile(param: GridRenderCellParams) {
     return (evt: any) => {

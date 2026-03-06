@@ -162,6 +162,7 @@ const ToolsSection = () => {
 const FacilitatorsPage: React.FC = () => {
     return (
         <ProfilesPage
+            title={UI_STRINGS.FACILITATORS_PAGE_TITLE}
             tools={<ToolsSection />}
             table={<DetailsTable />}
         />

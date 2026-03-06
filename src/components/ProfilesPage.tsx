@@ -25,10 +25,11 @@ export const ProfileContext = createContext<ProfileContextType>({
 })
 
 interface Props {
+    title: string;
     tools: ReactNode,
     table: ReactNode,
 }
-const ProfilesPage: React.FC<Props> = ({ tools, table }) => {
+const ProfilesPage: React.FC<Props> = ({ title, tools, table }) => {
     const [profile, setProfile] = useState<CEProfile>({} as CEProfile);
     const [selection, setSelection] = useState<string[]>([]);
     const [showLocalTime, setShowLocalTime] = useState<boolean>(false);
@@ -37,7 +38,7 @@ const ProfilesPage: React.FC<Props> = ({ tools, table }) => {
         <ProfileContext.Provider value={{ profile, setProfile }}>
             <TimeWindowSelectionContext.Provider value={{ selection, setSelection }}>
                 <ShowLocalTimeContext.Provider value={{ showLocalTime, setShowLocalTime }}>
-                    <MainCard title={UI_STRINGS.STUDENTS_PAGE_TITLE}>
+                    <MainCard title={title}>
                         {tools}
                         {table}
                     </MainCard>
