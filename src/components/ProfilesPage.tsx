@@ -4,15 +4,13 @@
  *  @copyright 2025 Digital Aid Seattle
  *
  */
-import { ReactNode, useState } from 'react';
-import { createContext } from 'react';
+import { createContext, ReactNode, useState } from 'react';
 
 import { MainCard } from '@digitalaidseattle/mui';
 
-import { UI_STRINGS } from '../constants';
+import { CEProfile } from '../api/types';
 import { ShowLocalTimeContext } from './ShowLocalTimeContext';
 import { TimeWindowSelectionContext } from './TimeWindowSelectionContext';
-import { CEProfile } from '../api/types';
 
 interface ProfileContextType {
     profile: CEProfile,
