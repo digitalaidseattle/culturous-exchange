@@ -19,23 +19,12 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { Facilitator, TimeWindow, ValidationError } from '../../api/types';
+
+import { Facilitator, TimeSlot, TimeWindow, ValidationError } from '../../api/types';
 import { CETextInput } from '../../components/CETextInput';
-import { TIME_SLOTS, TimeSlot, UI_STRINGS } from '../../constants';
+import { UI_STRINGS } from '../../constants';
 import { FacilitatorValidationService } from '../../api/ValidationService';
-
-function findTimeSlot(timeWindow: TimeWindow): TimeSlot | null {
-  return TIME_SLOTS.find(slot =>
-    slot.day_in_week === timeWindow.day_in_week &&
-    slot.start_t === timeWindow.start_t &&
-    slot.end_t === timeWindow.end_t) || null;
-}
-
-function isTimeWindowEqual(timeWindow: TimeWindow, ts: TimeSlot): boolean {
-  return ts.day_in_week === timeWindow.day_in_week &&
-    ts.start_t === timeWindow.start_t &&
-    ts.end_t === timeWindow.end_t;
-}
+import { CETimeSlotService, TIME_SLOTS } from '../../api/ceTimeSlotService';
 
 interface Props {
   facilitator: Facilitator;
@@ -45,6 +34,7 @@ interface Props {
 
 const FacilitatorForm: React.FC<Props> = ({ facilitator, fieldErrors, onChange }) => {
   const validationService = new FacilitatorValidationService();
+  const timeSlotService = CETimeSlotService.getInstance();
 
   const [updated, setUpdated] = useState<Facilitator>(facilitator);
   const [errors, setErrors] = useState<ValidationError[]>([]);
@@ -81,7 +71,7 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, fieldErrors, onChange }
     const newTimeWindows = event.target.value
       .map((tsLabel: string) => {
         const ts = TIME_SLOTS.find(test => test.label === tsLabel)!;
-        const tw = (facilitator.timeWindows ?? []).find(tw => isTimeWindowEqual(tw, ts));
+        const tw = (facilitator.timeWindows ?? []).find(tw => timeSlotService.isTimeWindowEqual(tw, ts));
         if (tw) {
           return tw;
         } else {
@@ -116,7 +106,7 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, fieldErrors, onChange }
   }
 
   function isChecked(ts: TimeSlot): boolean {
-    return (updated.timeWindows ?? []).some(tw => isTimeWindowEqual(tw, ts));
+    return (updated.timeWindows ?? []).some(tw => timeSlotService.isTimeWindowEqual(tw, ts));
   }
 
   // Helper function to get error message for a specific field
@@ -176,7 +166,7 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, fieldErrors, onChange }
           id="time-window-checkbox"
           name='timeWindows'
           multiple
-          value={updated.timeWindows ? updated.timeWindows.map(tw => findTimeSlot(tw)?.label) : []}
+          value={updated.timeWindows ? updated.timeWindows.map(tw => timeSlotService.findTimeSlot(tw)?.label) : []}
           onChange={handleTimeSlotChange}
           input={<Input />}
           renderValue={(selected) =>

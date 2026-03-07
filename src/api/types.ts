@@ -130,9 +130,17 @@ type Assignment = Entity & {
     facilitator?: Facilitator;
 }
 
+ type TimeSlot = Partial<TimeWindow> & {
+  label: string;
+  day_in_week: string;
+  start_t: string;
+  end_t: string;
+}
+
 export type {
     CEProfile,
     TimeWindow,
+    TimeSlot,
     Enrollment,
     Entity,
     FailedFacilitator,

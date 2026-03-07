@@ -22,24 +22,15 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
+
 import { studentService } from '../../api/ceStudentService';
-import { Cohort, Student, TimeWindow, ValidationError } from '../../api/types';
+import { Cohort, Student, TimeSlot, TimeWindow, ValidationError } from '../../api/types';
 import { StudentValidationService } from '../../api/ValidationService';
 import { CETextInput } from '../../components/CETextInput';
-import { GENDER_OPTION, TIME_SLOTS, TimeSlot, UI_STRINGS } from '../../constants';
+import { GENDER_OPTION, UI_STRINGS } from '../../constants';
+import { CETimeSlotService, TIME_SLOTS } from '../../api/ceTimeSlotService';
 
-function findTimeSlot(timeWindow: TimeWindow): TimeSlot | null {
-  return TIME_SLOTS.find(slot =>
-    slot.day_in_week === timeWindow.day_in_week &&
-    slot.start_t === timeWindow.start_t &&
-    slot.end_t === timeWindow.end_t) || null;
-}
 
-function isTimeWindowEqual(timeWindow: TimeWindow, ts: TimeSlot): boolean {
-  return ts.day_in_week === timeWindow.day_in_week &&
-    ts.start_t === timeWindow.start_t &&
-    ts.end_t === timeWindow.end_t;
-}
 
 interface Props {
   student: Student;
@@ -49,6 +40,7 @@ interface Props {
 
 const StudentForm: React.FC<Props> = ({ student, fieldErrors, onChange }) => {
   const validationService = new StudentValidationService();
+  const timeSlotService = CETimeSlotService.getInstance();
 
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [updated, setUpdated] = useState<Student>(student);
@@ -91,7 +83,7 @@ const StudentForm: React.FC<Props> = ({ student, fieldErrors, onChange }) => {
     const newTimeWindows = event.target.value
       .map((tsLabel: string) => {
         const ts = TIME_SLOTS.find(test => test.label === tsLabel)!;
-        const tw = student.timeWindows!.find(tw => isTimeWindowEqual(tw, ts));
+        const tw = student.timeWindows!.find(tw => timeSlotService.isTimeWindowEqual(tw, ts));
         if (tw) {
           return tw;
         } else {
@@ -126,7 +118,7 @@ const StudentForm: React.FC<Props> = ({ student, fieldErrors, onChange }) => {
   }
 
   function isChecked(ts: TimeSlot): boolean {
-    return (updated.timeWindows ?? []).some(tw => isTimeWindowEqual(tw, ts));
+    return (updated.timeWindows ?? []).some(tw => timeSlotService.isTimeWindowEqual(tw, ts));
   }
 
   // Helper function to get error message for a specific field
@@ -234,7 +226,7 @@ const StudentForm: React.FC<Props> = ({ student, fieldErrors, onChange }) => {
           id="time-window-checkbox"
           name='timeWindows'
           multiple
-          value={updated.timeWindows ? updated.timeWindows.map(tw => findTimeSlot(tw)?.label) : []}
+          value={updated.timeWindows ? updated.timeWindows.map(tw => timeSlotService.findTimeSlot(tw)?.label) : []}
           onChange={handleTimeSlotChange}
           input={<Input />}
           renderValue={(selected) =>
