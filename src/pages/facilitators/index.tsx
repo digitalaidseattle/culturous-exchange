@@ -17,23 +17,13 @@ import { timeWindowService } from '../../api/ceTimeWindowService';
 import { ProfileUploader } from '../../api/ProfileUploader';
 import { Facilitator, FailedProfile } from '../../api/types';
 import { FacilitatorValidationService } from '../../api/ValidationService';
-import FacilitatorModal from '../../components/FacilitatorModal';
+import FacilitatorModal from './FacilitatorModal';
 import FailedUploadModal from '../../components/FailedUploadModal';
 import FileUploader from '../../components/FileUploader';
 import ProfilesPage from '../../components/ProfilesPage';
 import { TimeToggle } from '../../components/TimeToggle';
 import { UI_STRINGS } from '../../constants';
 import DetailsTable from './DetailsTable';
-
-interface FacilitatorContextType {
-    facilitator: Facilitator,
-    setFacilitator: React.Dispatch<React.SetStateAction<Facilitator>>
-}
-
-export const FacilitatorContext = createContext<FacilitatorContextType>({
-    facilitator: {} as Facilitator,
-    setFacilitator: () => { }
-})
 
 const ToolsSection = () => {
     const facilitatorService = CEFacilitatorService.getInstance();
@@ -43,6 +33,8 @@ const ToolsSection = () => {
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
     const [failedProfiles, setFailedProfiles] = useState<FailedProfile[]>([]);
+
+    const [facilitator, setFacilitator] = useState<Facilitator>(facilitatorService.empty());
     const [isFailedModalOpen, setIsFailedModalOpen] = useState<boolean>(false);
     const [isAddFacilitatorModalOpen, setIsAddFacilitatorModalOpen] = useState<boolean>(false)
 
@@ -135,7 +127,10 @@ const ToolsSection = () => {
                         title={UI_STRINGS.ADD_FACILITATOR}
                         variant="contained"
                         color="primary"
-                        onClick={() => setIsAddFacilitatorModalOpen(true)}>
+                        onClick={() => {
+                            setFacilitator(facilitatorService.empty())
+                            setIsAddFacilitatorModalOpen(true)
+                        }}>
                         {UI_STRINGS.ADD_FACILITATOR}
                     </Button>
                 </Stack>
@@ -151,7 +146,7 @@ const ToolsSection = () => {
             />
             <FacilitatorModal
                 mode={'add'}
-                facilitator={facilitatorService.empty()}
+                facilitator={facilitator}
                 open={isAddFacilitatorModalOpen}
                 onClose={() => handleCloseAddFacilitatorModal()}
                 onChange={handleAddFacilitator} />

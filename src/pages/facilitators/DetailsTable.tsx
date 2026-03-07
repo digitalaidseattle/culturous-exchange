@@ -23,7 +23,7 @@ import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { CEFacilitatorService } from '../../api/ceFacilitatorService';
 import { CEProfile, Facilitator } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
-import FacilitatorModal from '../../components/FacilitatorModal';
+import FacilitatorModal from './FacilitatorModal';
 import { TimeSlots } from '../../components/TimeSlots';
 import { DEFAULT_TABLE_PAGE_SIZE, UI_STRINGS } from '../../constants';
 import { timeWindowService } from '../../api/ceTimeWindowService';

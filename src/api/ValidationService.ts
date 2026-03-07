@@ -9,7 +9,7 @@ import {
 } from '../constants';
 
 export interface ValidationService<T extends CEProfile> {
-  validate(profile: T): ValidationError[];
+  validate(profile: T, field?: string): ValidationError[];
 }
 
 export interface Validator<T> {
@@ -67,6 +67,7 @@ export class CountryValidator implements Validator<CEProfile> {
 
 export class TimezoneValidator implements Validator<CEProfile> {
   validate(profile: CEProfile): ValidationError[] {
+    console.log(profile);
     if ((profile.time_zone ?? "").trim().length < MIN_NAME_LENGTH) {
       return [{ isValid: false, field: 'time_zone', message: UI_STRINGS.TIMEZONE_REQUIRED }]
     }
@@ -100,34 +101,52 @@ export class TimeWindowValidator implements Validator<CEProfile> {
   }
 }
 
-class StudentValidationService implements ValidationService<Student> {
+abstract class ProfileValidationService<T extends CEProfile> implements ValidationService<T> {
+  validators: Record<string, Validator<any>>;
 
-  validators = [
-    new NameValidator(),
-    new AgeValidator(),
-    new EmailValidator(),
-    new CityValidator(),
-    new CountryValidator(),
-    new TimeWindowValidator()
-  ];
+  constructor(validators: Record<string, Validator<any>>) {
+    this.validators = validators;
+  }
 
-  validate(student: Student): ValidationError[] {
-    return this.validators.map(validator => validator.validate(student)).flat()
+  validate(profile: T, field?: string): ValidationError[] {
+    if (field && field in this.validators) {
+      const validator = this.validators[field];
+      return validator.validate(profile);
+    } else {
+      return Object.values(this.validators).flatMap((validator) =>
+        (validator as Validator<T>).validate(profile)
+      );
+    }
   }
 }
 
-class FacilitatorValidationService implements ValidationService<Facilitator> {
-
-  validators = [
-    new NameValidator(),
-    new EmailValidator(),
-    new TimezoneValidator(),
-    new TimeWindowValidator()
-  ];
-
-  validate(facilitator: Facilitator): ValidationError[] {
-    return this.validators.map(validator => validator.validate(facilitator)).flat()
+class StudentValidationService extends ProfileValidationService<Student> {
+  constructor() {
+    super(
+      {
+        'name': new NameValidator(),
+        'age': new AgeValidator(),
+        'email': new EmailValidator(),
+        'city': new CityValidator(),
+        'country': new CountryValidator(),
+        'timeWindows': new TimeWindowValidator()
+      }
+    )
   }
+}
+
+class FacilitatorValidationService extends ProfileValidationService<Facilitator> {
+  constructor() {
+    super(
+      {
+        'name': new NameValidator(),
+        'email': new EmailValidator(),
+        'time_zone': new TimezoneValidator(),
+        'timeWindows': new TimeWindowValidator()
+      }
+    )
+  }
+
 }
 
 

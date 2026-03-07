@@ -9,13 +9,13 @@ import { Menu, MenuItem } from '@mui/material';
 
 import { useContext, useEffect, useState } from 'react';
 import { addFacilitatorsToGroup } from '../../api/addFacilitatorsToGroup';
+import { CEFacilitatorService } from '../../api/ceFacilitatorService';
+import { planEvaluator } from '../../api/planEvaluator';
 import { removeFacilitatorsFromGroup } from '../../api/removeFacilitatorsFromGroup';
 import { Facilitator, Group } from '../../api/types';
-import AddFacilitatorModal from "../../components/AddFacilitatorModal";
+import AddProfileModal from '../../components/AddProfileModal';
 import { UI_STRINGS } from "../../constants";
-import { CEFacilitatorService } from '../../api/ceFacilitatorService';
 import { PlanContext } from './PlanContext';
-import { planEvaluator } from '../../api/planEvaluator';
 
 export interface FacilitatorMenuProps {
     group: Group,
@@ -100,8 +100,9 @@ export const FacilitatorMenu: React.FC<FacilitatorMenuProps> = ({ group, anchorE
                 <MenuItem onClick={handleAddMenuChoice}>{UI_STRINGS.CHANGE_FACILITATOR}</MenuItem>
                 <MenuItem onClick={handleRemoveMenuChoice} disabled={(group.assignments ?? []).length === 0}>{UI_STRINGS.REMOVE_FACILITATOR}</MenuItem>
             </Menu>
-            <AddFacilitatorModal
-                facilitators={availableFacilitators}
+            <AddProfileModal
+                title={UI_STRINGS.ADD_FACILITATOR}
+                profiles={availableFacilitators}
                 isOpen={showAddFacilitator}
                 onClose={handleCloseModal}
                 onSubmit={handleAddFacilitator} />

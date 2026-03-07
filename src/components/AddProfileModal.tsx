@@ -14,37 +14,39 @@ import {
   Stack,
 } from "@mui/material";
 import React, { useState } from "react";
-import { Facilitator } from "../api/types";
+import { CEProfile } from "../api/types";
 import { UI_STRINGS } from '../constants';
 
 interface Props {
-  facilitators: Facilitator[];
+  title: string;
+  profiles: CEProfile[];
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (facilitators: Facilitator[]) => void;
+  onSubmit: (profiles: CEProfile[]) => void;
 }
 
-const AddFacilitatorModal: React.FC<Props> = ({
+const AddProfileModal: React.FC<Props> = ({
+  title,
   isOpen,
   onClose,
   onSubmit,
-  facilitators,
+  profiles,
 }) => {
-  const [selecteFacilitators, setSelecteFacilitators] = useState<string[]>([]);
+  const [selectedProfiles, setSelecteProfiles] = useState<string[]>([]);
 
-  function handleChange(event: SelectChangeEvent<typeof selecteFacilitators>) {
+  function handleChange(event: SelectChangeEvent<typeof selectedProfiles>) {
     const ids = event.target.value as unknown as string[];
-    setSelecteFacilitators(ids);
+    setSelecteProfiles(ids);
   }
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault(); // prevent form from refreshing the page
-    onSubmit(facilitators.filter(f => selecteFacilitators.includes(f.id as string)));
-    setSelecteFacilitators([]);
+    onSubmit(profiles.filter(prof => selectedProfiles.includes(prof.id as string)));
+    setSelecteProfiles([]);
   }
 
   function findFacilitator(id: string) {
-    return facilitators.find((f) => id === f.id);
+    return profiles.find((prof) => id === prof.id);
   }
 
   return (
@@ -56,29 +58,29 @@ const AddFacilitatorModal: React.FC<Props> = ({
           sx: { width: '40rem', maxWidth: '90vw' },
         }}
       >
-        <DialogTitle>{UI_STRINGS.CHANGE_FACILITATOR}</DialogTitle>
+        <DialogTitle>{title}</DialogTitle>
         <DialogContent>
           <Stack sx={{ display: "flex", flexWrap: "wrap" }}>
             <FormControl sx={{ m: 1, minWidth: 120 }}>
               <Select
                 sx={{ m: 1, width: "100%" }}
                 multiple
-                value={selecteFacilitators}
+                value={selectedProfiles}
                 onChange={handleChange}
                 input={<OutlinedInput label="Tag" />}
                 renderValue={(selected) =>
                   selected.map((s_id) => findFacilitator(s_id)!.name).join(", ")
                 }
               >
-                {facilitators.map((f) => (
-                  <MenuItem key={f.id as string | undefined} value={f.id as string | undefined}>
+                {profiles.map((prof) => (
+                  <MenuItem key={prof.id as string | undefined} value={prof.id as string | undefined}>
                     <Checkbox
                       checked={
-                        selecteFacilitators.find((s_id) => s_id === f.id) !==
+                        selectedProfiles.find((s_id) => s_id === prof.id) !==
                         undefined
                       }
                     />
-                    <ListItemText primary={f.name} />
+                    <ListItemText primary={prof.name} />
                   </MenuItem>
                 ))}
               </Select>
@@ -98,4 +100,4 @@ const AddFacilitatorModal: React.FC<Props> = ({
   );
 };
 
-export default AddFacilitatorModal;
+export default AddProfileModal;

@@ -20,7 +20,7 @@ import { StudentValidationService } from '../../api/ValidationService';
 import FailedUploadModal from '../../components/FailedUploadModal';
 import FileUploader from '../../components/FileUploader';
 import ProfilesPage from '../../components/ProfilesPage';
-import StudentModal from '../../components/StudentModal';
+import StudentModal from './StudentModal';
 import { TimeToggle } from '../../components/TimeToggle';
 import { UI_STRINGS } from '../../constants';
 import StudentsDetailsTable from './StudentsDetailsTable';
@@ -35,6 +35,7 @@ const ToolsSection = () => {
     const [failedProfiles, setFailedProfiles] = useState<FailedProfile[]>([]);
     const [isFailedModalOpen, setIsFailedModalOpen] = useState<boolean>(false);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState<boolean>(false)
+    const [student, setStudent] = useState<Student>(studentService.empty());
 
     async function handleUpload(files: File[]): Promise<void> {
         Promise
@@ -124,7 +125,11 @@ const ToolsSection = () => {
                         title={UI_STRINGS.ADD_STUDENT}
                         variant="contained"
                         color="primary"
-                        onClick={() => setIsAddStudentModalOpen(true)}>
+                        onClick={() => {
+                            setStudent(studentService.empty());
+                            setIsAddStudentModalOpen(true);
+                        }}
+                    >
                         {UI_STRINGS.ADD_STUDENT}
                     </Button>
                 </Stack>
@@ -140,7 +145,7 @@ const ToolsSection = () => {
             />
             <StudentModal
                 mode={'add'}
-                student={studentService.emptyStudent()}
+                student={student}
                 open={isAddStudentModalOpen}
                 onClose={() => handleCloseAddStudentModal()}
                 onChange={handleAddStudent} />

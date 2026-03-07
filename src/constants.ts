@@ -33,6 +33,7 @@ export const UI_STRINGS = {
   DUPLICATE: 'Duplicate',
   DELETE_WITH_ELLIPSIS: 'Delete...',
   NEW: 'New',
+  EDIT: 'Edit',
   NEW_PLAN: 'New Plan',
   ADD_STUDENT: 'Add Student',
   REMOVE_STUDENT: 'Remove student',

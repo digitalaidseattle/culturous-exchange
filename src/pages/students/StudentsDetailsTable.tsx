@@ -25,7 +25,7 @@ import { studentService } from '../../api/ceStudentService';
 import { timeWindowService } from '../../api/ceTimeWindowService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
-import StudentModal from '../../components/StudentModal';
+import StudentModal from './StudentModal';
 import { TimeSlots } from '../../components/TimeSlots';
 import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
 

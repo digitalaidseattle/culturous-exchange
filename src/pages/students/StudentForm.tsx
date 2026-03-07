@@ -24,9 +24,9 @@ import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { studentService } from '../../api/ceStudentService';
 import { Cohort, Student, TimeWindow, ValidationError } from '../../api/types';
-import { GENDER_OPTION, SERVICE_ERRORS, TIME_SLOTS, TimeSlot, UI_STRINGS } from '../../constants';
-import { CETextInput } from '../../components/CETextInput';
 import { StudentValidationService } from '../../api/ValidationService';
+import { CETextInput } from '../../components/CETextInput';
+import { GENDER_OPTION, TIME_SLOTS, TimeSlot, UI_STRINGS } from '../../constants';
 
 function findTimeSlot(timeWindow: TimeWindow): TimeSlot | null {
   return TIME_SLOTS.find(slot =>
@@ -43,10 +43,11 @@ function isTimeWindowEqual(timeWindow: TimeWindow, ts: TimeSlot): boolean {
 
 interface Props {
   student: Student;
+  fieldErrors: ValidationError[],
   onChange: (student: Student, validationErrors: ValidationError[]) => void;
 }
 
-const StudentForm: React.FC<Props> = ({ student, onChange }) => {
+const StudentForm: React.FC<Props> = ({ student, fieldErrors, onChange }) => {
   const validationService = new StudentValidationService();
 
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
@@ -59,6 +60,11 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
   }, [student]);
 
   useEffect(() => {
+    setErrors(fieldErrors);
+  }, [fieldErrors]);
+
+  // Need to lookup which cohorts the student is assigned to
+  useEffect(() => {
     studentService.getCohortsForStudent(updated)
       .then(ccs => setCohorts(ccs))
   }, [updated]);
@@ -68,38 +74,17 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
     const next = { ...updated, [name]: value };
     setUpdated(next);
 
-    const validationErrors = updateValidationErrors(next);
+    console.log(name)
+    const validationErrors = updateValidationErrors(next, name);
     onChange(next, validationErrors);
   }
 
-  const updateValidationErrors = (student: Student): ValidationError[] => {
-    const allErrors = validationService.validate(student);
-    setErrors(allErrors);
-    return allErrors;
-  }
-
-  // Helper function to get error message for a specific field
-  const getFieldError = (fieldName: string): string => {
-    const fieldError = errors.find(err => err.field === fieldName);
-    return fieldError?.message || '';
-  }
-
-  // Helper function to check if a field has an error
-  const hasFieldError = (fieldName: string): boolean => {
-    return Boolean(getFieldError(fieldName));
-  }
-
-
   const handleAnchorChange = async (student: Student) => {
-    try {
-      const next = { ...updated, anchor: !student.anchor };
-      setUpdated(next);
+    const next = { ...updated, anchor: !student.anchor };
+    setUpdated(next);
 
-      const validationErrors = updateValidationErrors(next);
-      onChange(next, validationErrors);
-    } catch (error) {
-      console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error);
-    }
+    // no changes to fieldErrors
+    onChange(next, fieldErrors);
   };
 
   const handleTimeSlotChange = (event: any) => {
@@ -126,13 +111,35 @@ const StudentForm: React.FC<Props> = ({ student, onChange }) => {
     const next = { ...updated, timeWindows: newTimeWindows };
     setUpdated(next);
 
-    const validationErrors = updateValidationErrors(next);
+    const validationErrors = updateValidationErrors(next, 'timeWindows');
     onChange(next, validationErrors);
+  }
+
+  const updateValidationErrors = (student: Student, field?: string): ValidationError[] => {
+    const error = validationService.validate(student, field);
+    if (error.length === 0) {
+      return errors.filter(e => e.field !== field)
+    } else {
+      const removeOld = errors.filter(e => e.field !== field)
+      return [...removeOld, ...error]
+    }
   }
 
   function isChecked(ts: TimeSlot): boolean {
     return (updated.timeWindows ?? []).some(tw => isTimeWindowEqual(tw, ts));
   }
+
+  // Helper function to get error message for a specific field
+  const getFieldError = (fieldName: string): string => {
+    const fieldError = errors.find(err => err.field === fieldName);
+    return fieldError?.message || '';
+  }
+
+  // Helper function to check if a field has an error
+  const hasFieldError = (fieldName: string): boolean => {
+    return Boolean(getFieldError(fieldName));
+  }
+
 
   return (
     <Box gap={1.5} display="flex" flexDirection="column">

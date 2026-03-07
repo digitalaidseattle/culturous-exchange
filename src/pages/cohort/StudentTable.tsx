@@ -30,8 +30,8 @@ import { CohortContext } from ".";
 import { cohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { studentService } from "../../api/ceStudentService";
-import { Enrollment, Student } from "../../api/types";
-import AddStudentModal from "../../components/AddStudentModal";
+import { CEProfile, Enrollment, Student } from "../../api/types";
+import AddProfileModal from "../../components/AddProfileModal";
 import DisplayTimeWindow from "../../components/DisplayTimeWindow";
 import { ShowLocalTimeContext } from "../../components/ShowLocalTimeContext";
 import { TimeToggle } from "../../components/TimeToggle";
@@ -74,8 +74,8 @@ export const StudentTable: React.FC = () => {
     setShowAddStudent(false);
   }
 
-  const handleAddStudent = (students: Student[]) => {
-    cohortService.addStudents(cohort, students)
+  const handleAddStudent = (students: CEProfile[]) => {
+    cohortService.addStudents(cohort, students as Student[])
       .then(() => {
         notifications.success(UI_STRINGS.STUDENTS_ADDED);
         setRefresh(refresh + 1);
@@ -257,8 +257,9 @@ export const StudentTable: React.FC = () => {
           open={openDeleteDialog}
           handleConfirm={() => doDelete()}
           handleCancel={() => setOpenDeleteDialog(false)} />
-        <AddStudentModal
-          students={unEnrolled}
+        <AddProfileModal
+          title={UI_STRINGS.ADD_STUDENT}
+          profiles={unEnrolled}
           isOpen={showAddStudent}
           onClose={handleCloseStudentModal}
           onSubmit={handleAddStudent} />

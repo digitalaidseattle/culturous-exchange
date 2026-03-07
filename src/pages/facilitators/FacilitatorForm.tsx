@@ -5,6 +5,7 @@
  *
  */
 import {
+  Autocomplete,
   Box,
   Checkbox,
   FormControl,
@@ -13,7 +14,8 @@ import {
   Input,
   ListItemText,
   MenuItem,
-  Select
+  Select,
+  TextField
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
@@ -37,11 +39,13 @@ function isTimeWindowEqual(timeWindow: TimeWindow, ts: TimeSlot): boolean {
 
 interface Props {
   facilitator: Facilitator;
+  fieldErrors: ValidationError[],
   onChange: (facilitator: Facilitator, validationErrors: ValidationError[]) => void;
 }
 
-const FacilitatorForm: React.FC<Props> = ({ facilitator, onChange }) => {
+const FacilitatorForm: React.FC<Props> = ({ facilitator, fieldErrors, onChange }) => {
   const validationService = new FacilitatorValidationService();
+
   const [updated, setUpdated] = useState<Facilitator>(facilitator);
   const [errors, setErrors] = useState<ValidationError[]>([]);
 
@@ -49,41 +53,28 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, onChange }) => {
   // const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   useEffect(() => {
-    setUpdated(facilitator)
+    setUpdated(facilitator);
   }, [facilitator]);
+
+  useEffect(() => {
+    setErrors(fieldErrors);
+  }, [fieldErrors]);
 
   const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     const next = { ...updated, [name]: value };
     setUpdated(next);
 
-    const validationErrors = updateValidationErrors(next);
+    const validationErrors = updateValidationErrors(next, name);
     onChange(next, validationErrors);
   }
 
-  const handleTimezoneChange = (event: any) => {
-    const next = { ...updated, time_zone: event.target.value };
+  const handleTimezoneChange = (_event: any, newValue: string | null) => {
+    const next = { ...updated, time_zone: newValue ?? "" };
     setUpdated(next);
 
-    const validationErrors = updateValidationErrors(next);
+    const validationErrors = updateValidationErrors(next, 'time_zone');
     onChange(next, validationErrors);
-  }
-
-  const updateValidationErrors = (facilitator: Facilitator): ValidationError[] => {
-    const allErrors = validationService.validate(facilitator);
-    setErrors(allErrors);
-    return allErrors;
-  }
-
-  // Helper function to get error message for a specific field
-  const getFieldError = (fieldName: string): string => {
-    const fieldError = errors.find(err => err.field === fieldName);
-    return fieldError?.message || '';
-  }
-
-  // Helper function to check if a field has an error
-  const hasFieldError = (fieldName: string): boolean => {
-    return Boolean(getFieldError(fieldName));
   }
 
   const handleTimeSlotChange = (event: any) => {
@@ -110,12 +101,33 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, onChange }) => {
     const next = { ...updated, timeWindows: newTimeWindows };
     setUpdated(next);
 
-    const validationErrors = updateValidationErrors(next);
+    const validationErrors = updateValidationErrors(next, 'timeWindows');
     onChange(next, validationErrors);
+  }
+
+  const updateValidationErrors = (facilitator: Facilitator, field?: string): ValidationError[] => {
+    const error = validationService.validate(facilitator, field);
+    if (error.length === 0) {
+      return errors.filter(e => e.field !== field)
+    } else {
+      const removeOld = errors.filter(e => e.field !== field)
+      return [...removeOld, ...error]
+    }
   }
 
   function isChecked(ts: TimeSlot): boolean {
     return (updated.timeWindows ?? []).some(tw => isTimeWindowEqual(tw, ts));
+  }
+
+  // Helper function to get error message for a specific field
+  const getFieldError = (fieldName: string): string => {
+    const fieldError = errors.find(err => err.field === fieldName);
+    return fieldError?.message || '';
+  }
+
+  // Helper function to check if a field has an error
+  const hasFieldError = (fieldName: string): boolean => {
+    return Boolean(getFieldError(fieldName));
   }
 
   return (
@@ -144,18 +156,16 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, onChange }) => {
 
       <FormControl fullWidth error={hasFieldError('time_zone')}>
         <FormLabel id="time-zones-label" required>{UI_STRINGS.TIME_ZONES}</FormLabel>
-        <Select
-          labelId="time-zones-label"
-          id="time-zones-select"
-          name='time_zone'
-          value={updated.time_zone}
+        <Autocomplete
+          id="time-zones-autocomplete"
+          disablePortal
+          options={zones}
+          fullWidth
+          value={updated.time_zone || ''}
+          renderInput={(params) => <TextField {...params} variant="standard" />}
           onChange={handleTimezoneChange}
-          input={<Input />}
-        >
-          {zones.map((tz) => (
-            <MenuItem key={tz} value={tz}>{tz}</MenuItem>
-          ))}
-        </Select>
+          sx={{ marginTop: 1 }}
+        />
         <FormHelperText>{getFieldError('time_zone') || ' '}</FormHelperText>
       </FormControl>
 

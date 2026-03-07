@@ -41,7 +41,7 @@ import { groupService } from "../../api/ceGroupService";
 import { planService } from "../../api/cePlanService";
 import { studentMover } from "../../api/studentMover";
 import { Group, Identifier, Placement, Plan, Student, TimeWindow } from "../../api/types";
-import StudentModal from "../../components/StudentModal";
+import StudentModal from "../students/StudentModal";
 import { ENDING_HOUR, OFFICE_HOURS, STARTING_HOUR, UI_STRINGS, WAITLIST_ID } from '../../constants';
 import { FacilitatorMenu } from "./FacilitatorMenu";
 import { PlanContext } from "./PlanContext";

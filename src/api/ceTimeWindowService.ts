@@ -236,7 +236,6 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     return toZonedTime(dateTime, timezone);
   }
 
-
   adjustTimeWindows(profile: CEProfile) {
     if (profile.timeWindows) {
       profile.timeWindows
@@ -333,7 +332,6 @@ class CETimeWindowService extends EntityService<TimeWindow> {
     await this.insert(json);
     return timeWindow;
   }
-
 
   mapJson(json: any): TimeWindow {
     return {

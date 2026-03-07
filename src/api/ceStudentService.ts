@@ -15,7 +15,7 @@ const DEFAULT_SELECT = '*, timewindow(*)';
 
 class CEStudentService extends EntityService<Student> {
 
-  emptyStudent(): Student {
+  empty(): Student {
     return {
       id: uuid(),
       name: '',
