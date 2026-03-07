@@ -14,7 +14,7 @@ interface Props {
 }
 
 const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange }) => {
-  const validationService = new StudentValidationService();
+  const validationService = StudentValidationService.getInstance();
 
   const [updated, setUpdated] = useState<Student>(student);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);

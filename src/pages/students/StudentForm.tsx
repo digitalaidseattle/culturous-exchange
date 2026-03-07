@@ -39,7 +39,7 @@ interface Props {
 }
 
 const StudentForm: React.FC<Props> = ({ student, fieldErrors, onChange }) => {
-  const validationService = new StudentValidationService();
+  const validationService = StudentValidationService.getInstance();
   const timeSlotService = CETimeSlotService.getInstance();
 
   const [cohorts, setCohorts] = useState<Cohort[]>([]);

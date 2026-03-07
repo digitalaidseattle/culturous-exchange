@@ -11,23 +11,22 @@ import { Button, Stack } from '@mui/material';
 // project import
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
-import { createContext } from 'react';
 import { CEFacilitatorService } from '../../api/ceFacilitatorService';
 import { timeWindowService } from '../../api/ceTimeWindowService';
 import { ProfileUploader } from '../../api/ProfileUploader';
 import { Facilitator, FailedProfile } from '../../api/types';
 import { FacilitatorValidationService } from '../../api/ValidationService';
-import FacilitatorModal from './FacilitatorModal';
 import FailedUploadModal from '../../components/FailedUploadModal';
 import FileUploader from '../../components/FileUploader';
 import ProfilesPage from '../../components/ProfilesPage';
 import { TimeToggle } from '../../components/TimeToggle';
 import { UI_STRINGS } from '../../constants';
 import DetailsTable from './DetailsTable';
+import FacilitatorModal from './FacilitatorModal';
 
 const ToolsSection = () => {
     const facilitatorService = CEFacilitatorService.getInstance();
-    const uploadService = new ProfileUploader(new FacilitatorValidationService());
+    const uploadService = new ProfileUploader(FacilitatorValidationService.getInstance());
 
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);

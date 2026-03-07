@@ -14,7 +14,7 @@ interface Props {
 }
 
 const FacilitatorModal: React.FC<Props> = ({ mode, facilitator, open, onClose, onChange }) => {
-  const validationService = new FacilitatorValidationService();
+  const validationService = FacilitatorValidationService.getInstance();
 
   const [updated, setUpdated] = useState<Facilitator>(facilitator);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);

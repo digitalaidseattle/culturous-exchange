@@ -121,6 +121,15 @@ abstract class ProfileValidationService<T extends CEProfile> implements Validati
 }
 
 class StudentValidationService extends ProfileValidationService<Student> {
+  private static _instance: StudentValidationService;
+
+  static getInstance(): StudentValidationService {
+    if (!this._instance) {
+      this._instance = new StudentValidationService();
+    }
+    return this._instance;
+  }
+
   constructor() {
     super(
       {
@@ -136,7 +145,16 @@ class StudentValidationService extends ProfileValidationService<Student> {
 }
 
 class FacilitatorValidationService extends ProfileValidationService<Facilitator> {
-  constructor() {
+  private static _instance: FacilitatorValidationService;
+
+  static getInstance(): FacilitatorValidationService {
+    if (!this._instance) {
+      this._instance = new FacilitatorValidationService();
+    }
+    return this._instance;
+  }
+
+  private constructor() {
     super(
       {
         'name': new NameValidator(),

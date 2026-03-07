@@ -27,7 +27,9 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 
 const ToolsSection = () => {
 
-    const uploadService = new ProfileUploader(new StudentValidationService());
+    const uploadService = new ProfileUploader(
+        StudentValidationService.getInstance()
+    );
 
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);

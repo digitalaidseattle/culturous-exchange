@@ -33,7 +33,7 @@ interface Props {
 }
 
 const FacilitatorForm: React.FC<Props> = ({ facilitator, fieldErrors, onChange }) => {
-  const validationService = new FacilitatorValidationService();
+  const validationService = FacilitatorValidationService.getInstance();
   const timeSlotService = CETimeSlotService.getInstance();
 
   const [updated, setUpdated] = useState<Facilitator>(facilitator);
