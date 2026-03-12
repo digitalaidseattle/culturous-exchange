@@ -16,7 +16,7 @@ import { Identifier, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { CECohortService } from "../../api/ceCohortService";
 import { CEPlanService } from "../../api/cePlanService";
-import { planExporter } from "../../api/planExporter";
+import { planExporter } from "../../api/transactions/plan/planExporter";
 import { planGenerator } from "../../api/planGenerator";
 import { Cohort, Plan } from "../../api/types";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";

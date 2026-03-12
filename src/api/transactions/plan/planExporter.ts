@@ -5,49 +5,20 @@
  *
  */
 
-import { Plan, Student } from "./types";
+import { Facilitator, Plan, Student } from "../../types";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { CETimeWindowService } from "./ceTimeWindowService";
-import { PST_OFFSET, UI_STRINGS } from '../constants';
+import { CETimeWindowService } from "../../ceTimeWindowService";
+import { PST_OFFSET, UI_STRINGS } from '../../../constants';
 
 class PlanExporter {
 
     static PST_OFFSET = PST_OFFSET;
 
     timeWindowService: CETimeWindowService;
+
     constructor() {
         this.timeWindowService = CETimeWindowService.getInstance();
-    }
-
-    verticalGroups(plan: Plan): any[] {
-        const data: any[] = [];
-
-        data.push(plan.groups.map(group => group.name));
-        data.push(plan.groups.map(group => group.country_count));
-        data.push(plan.groups.map(group => group.time_windows?.map(tw => this.timeWindowService.toString(tw)).join('\n') || ""));
-
-        let done = false;
-        let rowCount = 0;
-        while (!done) {
-            let row = [];
-            let hasOne = false
-            for (let i = 0; i < plan.groups.length; i++) {
-                if (plan.groups[i].placements!.length > rowCount) {
-                    row.push(plan.groups[i].placements![rowCount]?.student?.name || "");
-                    hasOne = true;
-                } else {
-                    row.push("");
-                }
-            }
-            if (hasOne) {
-                data.push(row);
-                rowCount++;
-            } else {
-                done = true;
-            }
-        }
-        return data;
     }
 
     // Treat placements with group_id == null (or no group) as waitlisted
@@ -56,23 +27,40 @@ class PlanExporter {
         return placement?.group_id == null;
     }
 
-    studentRows(plan: Plan): any[] {
+    profileRows(plan: Plan): any[] {
         const data: any[] = [];
         for (const group of plan.groups) {
+            const groupTimes = (group.time_windows ?? []).map(tw => this.timeWindowService.toString(tw)).join(', ');
+            for (const assignment of group.assignments || []) {
+                let facilitator: Facilitator = assignment.facilitator! || {};
+                const row: any = {
+                    [UI_STRINGS.GROUP]: group.name,
+                    [UI_STRINGS.GROUP_TIMES]: groupTimes,
+                    [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: (group.time_windows ?? []).map(tw => this.timeWindowService.toString(tw, facilitator.time_zone)).join(', '),
+                    [UI_STRINGS.NAME]: facilitator.name || "",
+                    [UI_STRINGS.TYPE]: "Facilitator",
+                    [UI_STRINGS.EMAIL]: facilitator.email || "",
+                    [UI_STRINGS.COUNTRY]: facilitator.country,
+                    [UI_STRINGS.TIME_ZONE]: facilitator.time_zone,
+                    [UI_STRINGS.STUDENT_TIMES]: (facilitator.timeWindows ?? []).map(tw => this.timeWindowService.toString(tw)).join(', '),
+                };
+                data.push(row);
+            }
+
             for (const placement of group.placements || []) {
                 let student: Student = placement.student! || {};
 
                 // Build one row per student
                 const row: any = {
                     [UI_STRINGS.GROUP]: group.name,
-                    [UI_STRINGS.GROUP_TIMES]: group.time_windows?.map(tw => this.timeWindowService.toString(tw)).join(', ') || "",
-                    [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: group.time_windows?.map(tw => this.timeWindowService.toString(tw, student.time_zone)).join(', ') || "",
+                    [UI_STRINGS.GROUP_TIMES]: groupTimes,
+                    [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: (group.time_windows ?? []).map(tw => this.timeWindowService.toString(tw, student.time_zone)).join(', '),
                     [UI_STRINGS.NAME]: student.name || "",
-                    [UI_STRINGS.ANCHOR]: student.anchor ? "yes" : "",
+                    [UI_STRINGS.TYPE]: student.anchor ? "Anchor" : "",
                     [UI_STRINGS.EMAIL]: student.email || "",
                     [UI_STRINGS.COUNTRY]: student.country,
                     [UI_STRINGS.TIME_ZONE]: student.time_zone,
-                    [UI_STRINGS.STUDENT_TIMES]: student.timeWindows?.map(tw => this.timeWindowService.toString(tw)).join(', ') || "",
+                    [UI_STRINGS.STUDENT_TIMES]: (student.timeWindows ?? []).map(tw => this.timeWindowService.toString(tw)).join(', '),
                 };
                 data.push(row);
             }
@@ -89,14 +77,11 @@ class PlanExporter {
                 [UI_STRINGS.GROUP_TIMES_PST]: "",
                 [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: "",
                 [UI_STRINGS.NAME]: student.name || "",
-                [UI_STRINGS.ANCHOR]: student.anchor ? "yes" : "",
+                [UI_STRINGS.TYPE]: student.anchor ? "Anchor" : "",
                 [UI_STRINGS.EMAIL]: student.email || "",
                 [UI_STRINGS.COUNTRY]: student.country,
                 [UI_STRINGS.TIME_ZONE]: student.time_zone,
-                [UI_STRINGS.STUDENT_TIMES]:
-                    (student.timeWindows ?? [])
-                        .map(tw => this.timeWindowService.toString(tw))
-                        .join(", "),
+                [UI_STRINGS.STUDENT_TIMES]: (student.timeWindows ?? []).map(tw => this.timeWindowService.toString(tw)).join(", ")
             });
         }
 
@@ -104,9 +89,8 @@ class PlanExporter {
 
     }
 
-
     async exportPlan(plan: Plan): Promise<boolean> {
-        const data = this.studentRows(plan);
+        const data = this.profileRows(plan);
 
         const worksheet = XLSX.utils.json_to_sheet(data);
         const workbook = XLSX.utils.book_new();
