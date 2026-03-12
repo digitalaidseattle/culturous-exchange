@@ -12,11 +12,11 @@ import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { planService } from "../api/cePlanService";
+import { CEPlanService } from "../api/cePlanService";
+import { planActivation } from "../api/planActivation";
 import { Plan } from "../api/types";
 import { UI_STRINGS } from '../constants';
 import StarAvatar from "./StarAvatar";
-import { planActivation } from "../api/planActivation";
 
 
 export const PlanCard = (props: { planId: Identifier }) => {
@@ -32,9 +32,12 @@ export const PlanCard = (props: { planId: Identifier }) => {
 
     useEffect(() => {
         if (props.planId) {
-            planService.
-                getById(props.planId)
-                .then((resp) => setPlan(resp!))
+            CEPlanService.getInstance()
+                .getById(props.planId)
+                .then((resp) => {
+                    console.log(resp)
+                    setPlan(resp!)
+                })
         }
     }, [props.planId, refresh]);
 
@@ -55,7 +58,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
 
     const handleDuplicate = () => {
         if (plan) {
-            planService.duplicate(plan)
+            CEPlanService.getInstance().duplicate(plan)
             setAnchorEl(null);
         }
     };
@@ -74,7 +77,8 @@ export const PlanCard = (props: { planId: Identifier }) => {
 
     const doDelete = () => {
         if (plan) {
-            planService.deletePlan(plan)
+            CEPlanService.getInstance()
+                .deletePlan(plan)
                 .then(() => {
                     setOpenDeleteDialog(false);
                     setAnchorEl(null);
@@ -143,8 +147,8 @@ export const PlanCard = (props: { planId: Identifier }) => {
             </Menu>
             <CardContent>
                 <Typography>{UI_STRINGS.NOTES_WITH_COLON} {plan.note}</Typography>
-                <Typography>{UI_STRINGS.GROUPS_WITH_COLON} {plan.groups.length}</Typography>
-                <Typography>{UI_STRINGS.STUDENTS_WITH_COLON} {plan.placements.length}</Typography>
+                <Typography>{UI_STRINGS.GROUPS_WITH_COLON} {(plan.groups ?? []).length}</Typography>
+                <Typography>{UI_STRINGS.STUDENTS_WITH_COLON} {(plan.placements ?? []).length}</Typography>
                 <ConfirmationDialog
                     message={`Delete ${plan.name}?`}
                     open={openDeleteDialog}

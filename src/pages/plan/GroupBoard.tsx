@@ -14,7 +14,7 @@ import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 
 import { DDCategory, DDType, DragAndDrop } from "@digitalaidseattle/draganddrop";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
-import { planService } from "../../api/cePlanService";
+import { CEPlanService } from "../../api/cePlanService";
 import { studentMover } from "../../api/studentMover";
 import { Group, Placement } from "../../api/types";
 import { GroupCard } from "../../components/GroupCard";
@@ -30,6 +30,8 @@ export interface GroupBoardProps {
     showGroupDetails: boolean;
 }
 export const GroupBoard: React.FC<GroupBoardProps> = ({ showStudentDetails, showGroupDetails }) => {
+    const planService = CEPlanService.getInstance();
+
     const { plan, setPlan } = useContext(PlanContext);
 
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
@@ -69,6 +71,8 @@ export const GroupBoard: React.FC<GroupBoardProps> = ({ showStudentDetails, show
     }, [plan, initialized])
 
     function handleChange(container: Map<string, unknown>, placement: Placement) {
+
+
         studentMover.run(plan, placement.student_id, container.get('containerId') as Identifier)
             .then(moved => {
                 planService

@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 import { MAX_GROUP_SIZE } from '../constants';
 import { CEGroupService } from './ceGroupService';
 import { placementService } from './cePlacementService';
-import { planService } from './cePlanService';
+import { CEPlanService } from './cePlanService';
 import { CETimeWindowService } from './ceTimeWindowService';
 import { planEvaluator } from './planEvaluator';
 import { Group, Placement, Plan, TimeWindow } from "./types";
@@ -24,6 +24,8 @@ class PlanGenerator {
   }
 
   async emptyPlan(plan: Plan): Promise<Plan> {
+    const planService = CEPlanService.getInstance();
+
     for (const placement of plan.placements) {
       await placementService.updatePlacement(plan.id!, placement.student_id, { group_id: null });
       placement.group_id = undefined;
@@ -35,7 +37,12 @@ class PlanGenerator {
     }
 
     // requery the plan
-    return await planService.getById(plan.id!);
+    const emptied = await planService.getById(plan.id!);
+    if (!emptied) {
+      throw new Error(`Cannot find plan: ${plan.id}!`);
+    } else {
+      return emptied;
+    }
   }
 
   async seedPlan(plan: Plan): Promise<Plan> {

@@ -50,7 +50,6 @@ class CEPlanService extends SupabaseEntityService<Plan> {
     return CEPlanService.instance;
   }
 
-
   async create(cohort: Cohort): Promise<Plan> {
     const proposed: Plan = {
       id: uuidv4(),
@@ -220,5 +219,4 @@ class CEPlanService extends SupabaseEntityService<Plan> {
 
 }
 
-const planService = new CEPlanService('plan')
-export { planService };
+export { CEPlanService };

@@ -6,11 +6,12 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { planService } from "./cePlanService";
+import { CEPlanService } from "./cePlanService";
 import { planActivation } from "./planActivation";
 import { Plan } from "./types";
 
 describe("PlanActivation", () => {
+    const planService = CEPlanService.getInstance();
 
     it("changeActivation", () => {
         const plan = {

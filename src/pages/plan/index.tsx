@@ -15,7 +15,7 @@ import { Box, Breadcrumbs, CircularProgress, IconButton, Link, Stack, Toolbar, T
 import { Identifier, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { CECohortService } from "../../api/ceCohortService";
-import { planService } from "../../api/cePlanService";
+import { CEPlanService } from "../../api/cePlanService";
 import { planExporter } from "../../api/planExporter";
 import { planGenerator } from "../../api/planGenerator";
 import { Cohort, Plan } from "../../api/types";
@@ -29,6 +29,7 @@ import { TimeLine } from "./TimeLine";
 
 const PlanPage: React.FC = () => {
   const cohortService = CECohortService.getInstance();
+  const planService = CEPlanService.getInstance();
 
   const { id: planId } = useParams<string>();
   const [plan, setPlan] = useState<Plan>();
@@ -63,7 +64,7 @@ const PlanPage: React.FC = () => {
     setPlan(undefined);
     setLoading(true);
     planService.getById(planId)
-      .then(resp => setPlan(resp))
+      .then(resp => setPlan(resp!))
       .catch((err) => {
         notifications.error(`Error reading ${planId} : ${err}`)
         console.error(`Error reading ${planId} : ${err}`)

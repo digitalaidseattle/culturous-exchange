@@ -7,11 +7,12 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { CEGroupService } from "./ceGroupService";
 import { placementService } from "./cePlacementService";
-import { planService } from "./cePlanService";
+import { CEPlanService } from "./cePlanService";
 import { Group, Placement, Plan } from "./types";
 
 describe("planService", () => {
     const groupService = CEGroupService.getInstance();
+    const planService = CEPlanService.getInstance();
 
     vi.mock("./cePlacementService", () => {
         return {

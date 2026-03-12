@@ -17,7 +17,7 @@ import { MainCard } from "@digitalaidseattle/mui";
 import { useSearchParams } from "react-router-dom";
 import { CECohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
-import { planService } from "../../api/cePlanService";
+import { CEPlanService } from "../../api/cePlanService";
 import { planGenerator } from "../../api/planGenerator";
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
@@ -92,10 +92,11 @@ const CohortPage: React.FC = () => {
   }
 
   async function handleCreatePlan() {
+    const planService = CEPlanService.getInstance();
     if (cohort) {
       const created = await planService.create(cohort);
       const hydrated = await planService.getById(created.id!);
-      const seededPlan = await planGenerator.seedPlan(hydrated)
+      const seededPlan = await planGenerator.seedPlan(hydrated!)
       await planService.save(seededPlan);
 
       navigate(`/plan/${seededPlan.id}`);

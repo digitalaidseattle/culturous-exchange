@@ -5,12 +5,14 @@
  *
  */
 
-import { planService } from "./cePlanService";
+import { CEPlanService } from "./cePlanService";
 import { Plan } from "./types";
 
 class PlanActivation {
 
     async changeActivation(plan: Plan, value: boolean): Promise<Plan> {
+        const planService = CEPlanService.getInstance();
+
         const cohortPlans = await planService
             .findByCohortId(plan.cohort_id)
         const othersToDeactivate = cohortPlans

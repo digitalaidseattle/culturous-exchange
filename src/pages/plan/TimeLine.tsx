@@ -38,7 +38,7 @@ import { addHours, compareAsc, getHours, isFriday, isSaturday, isSunday } from "
 import { MoreOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 import { CEGroupService } from "../../api/ceGroupService";
-import { planService } from "../../api/cePlanService";
+import { CEPlanService } from "../../api/cePlanService";
 import { studentMover } from "../../api/studentMover";
 import { Group, Placement, Plan, Student, TimeWindow } from "../../api/types";
 import { ENDING_HOUR, OFFICE_HOURS, STARTING_HOUR, UI_STRINGS, WAITLIST_ID } from '../../constants';
@@ -200,8 +200,9 @@ const SortableRow: React.FC<SortableRowProps> = ({ id, row }) => {
     }
 
     function refresh() {
-        planService.getById(plan.id!)
-            .then(updated => setPlan(updated));
+        CEPlanService.getInstance()
+            .getById(plan.id!)
+            .then(updated => setPlan(updated!));
     }
 
     switch (row.type) {
@@ -232,6 +233,8 @@ const SortableRow: React.FC<SortableRowProps> = ({ id, row }) => {
 }
 
 export const TimeLine: React.FC = () => {
+    const planService = CEPlanService.getInstance()
+
     const { plan, setPlan } = useContext(PlanContext);
     const [initialized, setInitialized] = useState<boolean>(false);
     const [rows, setRows] = useState<TimeRow[]>([]);

@@ -26,10 +26,7 @@ import StudentModal from './StudentModal';
 import StudentsDetailsTable from './StudentsDetailsTable';
 
 const ToolsSection = () => {
-
     const studentService = CEStudentService.getInstance();
-    const timeWindowService = CETimeWindowService.getInstance();
-
     const uploadService = new ProfileUploader(
         StudentValidationService.getInstance()
     );
@@ -96,20 +93,22 @@ const ToolsSection = () => {
     }
 
     const handleAddStudent = async (updated: Student) => {
+        const timeWindowService = CETimeWindowService.getInstance();
+        const studentService = CEStudentService.getInstance();
+
         return timeWindowService
             .getTimeZone(updated.city!, updated.country)
             .then(resp => {
                 updated.time_zone = resp.timezone
                 updated.tz_offset = resp.offset
                 timeWindowService.adjustTimeWindows(updated);
-                studentService.save(updated)
+                studentService
+                    .save(updated)
                     .then(saved => {
-
                         notifications.success(`Success. Added student: ${saved.name}`);
-                        handleCloseAddStudentModal();
                     })
-
-                notifications.success(`Success. Added student: ${updated.name}`);
+            })
+            .finally(() => {
                 handleCloseAddStudentModal();
                 setRefresh(refresh + 1)
             })

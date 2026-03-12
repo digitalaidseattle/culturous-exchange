@@ -7,7 +7,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { CEGroupService } from "./ceGroupService";
 import { placementService } from "./cePlacementService";
-import { planService } from "./cePlanService";
+import { CEPlanService } from "./cePlanService";
 import { planGenerator } from "./planGenerator";
 import { Group, Placement, Plan, TimeWindow } from "./types";
 
@@ -39,6 +39,7 @@ vi.mock("./cePlanService", () => {
 
 describe("planGenerator", () => {
     const groupService = CEGroupService.getInstance();
+    const planService = CEPlanService.getInstance();
 
     it("emptyPlan", () => {
 

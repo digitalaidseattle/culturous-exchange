@@ -86,8 +86,6 @@ class CEEnrollmentService {
             throw err;
         }
     }
-
-
 }
 
 const enrollmentService = new CEEnrollmentService('enrollment')
