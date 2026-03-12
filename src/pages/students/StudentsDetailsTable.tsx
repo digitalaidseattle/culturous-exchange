@@ -21,16 +21,19 @@ import { DeleteOutlined, StarFilled } from '@ant-design/icons';
 import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { ConfirmationDialog } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
-import { studentService } from '../../api/ceStudentService';
-import { timeWindowService } from '../../api/ceTimeWindowService';
+import { CEStudentService } from '../../api/ceStudentService';
+import { CETimeWindowService } from '../../api/ceTimeWindowService';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
-import StudentModal from './StudentModal';
 import { TimeSlots } from '../../components/TimeSlots';
 import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
+import StudentModal from './StudentModal';
 
 
 const StudentsDetailsTable: React.FC = () => {
+  const studentService = CEStudentService.getInstance();
+  const timeWindowService = CETimeWindowService.getInstance();
+
   const { setLoading } = useContext(LoadingContext);
   const { refresh, setRefresh } = useContext(RefreshContext);
 

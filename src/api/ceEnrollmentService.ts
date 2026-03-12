@@ -6,7 +6,7 @@
  */
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
-import { timeWindowService } from "./ceTimeWindowService";
+import { CETimeWindowService } from "./ceTimeWindowService";
 import { Cohort, Enrollment, Student } from "./types";
 import { SERVICE_ERRORS } from '../constants';
 import { Identifier } from "@digitalaidseattle/core";
@@ -38,6 +38,7 @@ class CEEnrollmentService {
 
     // TODO returning timewindow as object instead of array
     async getStudents(cohort: Cohort): Promise<Student[]> {
+        const timeWindowService = CETimeWindowService.getInstance();
         return await supabaseClient
             .from('enrollment')
             .select('student(*, timewindow(*))')

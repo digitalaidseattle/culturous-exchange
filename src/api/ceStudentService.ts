@@ -5,16 +5,41 @@
  *
  */
 import { Identifier } from '@digitalaidseattle/core';
-import { PageInfo, QueryModel, supabaseClient } from '@digitalaidseattle/supabase';
+import { supabaseClient, SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
 import { GENDER_OPTION } from '../constants';
-import { timeWindowService } from './ceTimeWindowService';
-import { EntityService } from "./entityService";
+import { CETimeWindowService } from './ceTimeWindowService';
 import { Cohort, Student } from "./types";
 
 const DEFAULT_SELECT = '*, timewindow(*)';
 
-class CEStudentService extends EntityService<Student> {
+function MAPPER(json: any): Student {
+  const timeWindowService = CETimeWindowService.getInstance();
+
+  const student = {
+    ...json,
+    timeWindows: (json.timewindow ?? []).map((js: any) => timeWindowService.mapJson(js))
+  }
+  delete student.timewindow
+  return student
+}
+
+class CEStudentService extends SupabaseEntityService<Student> {
+  private static instance: CEStudentService;
+
+  static getInstance() {
+    if (!CEStudentService.instance) {
+      CEStudentService.instance = new CEStudentService();
+    }
+    return CEStudentService.instance;
+  }
+
+  private timeWindowService: CETimeWindowService;
+
+  constructor() {
+    super('student', DEFAULT_SELECT, MAPPER);
+    this.timeWindowService = CETimeWindowService.getInstance();
+  }
 
   empty(): Student {
     return {
@@ -72,15 +97,6 @@ class CEStudentService extends EntityService<Student> {
     }
   }
 
-  async find(queryModel: QueryModel, select?: string): Promise<PageInfo<Student>> {
-    return super
-      .find(queryModel, select ?? DEFAULT_SELECT)
-      .then((pageInfo) => {
-        const updatedRows = pageInfo.rows.map((student: any) => this.mapJson(student))
-        return { rows: updatedRows, totalRowCount: pageInfo.totalRowCount }
-      })
-  }
-
   async update(entityId: Identifier, updatedFields: Partial<Student>, select?: string): Promise<Student> {
     const json = { ...updatedFields } as any;
     delete json.timeWindows;
@@ -90,12 +106,7 @@ class CEStudentService extends EntityService<Student> {
   }
 
   mapJson(json: any): Student {
-    const student = {
-      ...json,
-      timeWindows: (json.timewindow ?? []).map((js: any) => timeWindowService.mapJson(js))
-    }
-    delete student.timewindow
-    return student
+    return this.mapper(json)
   }
 
   async save(student: Student): Promise<Student> {
@@ -105,24 +116,14 @@ class CEStudentService extends EntityService<Student> {
 
     await this.insert(json);
 
-    await timeWindowService.deleteByStudentId(student.id!);
+    await this.timeWindowService.deleteByStudentId(student.id!);
     for (const tw of student.timeWindows!) {
-      await timeWindowService.save(tw)
+      await this.timeWindowService.save(tw)
     }
     // TODO get fresh instance?
     return student
   }
 
-  async getAll(select?: string): Promise<Student[]> {
-    return supabaseClient
-      .from(this.tableName)
-      .select(select ?? DEFAULT_SELECT)
-      .then((resp: any) => {
-        const json = resp.data ?? [];
-        return json.map((jStudent: any) => this.mapJson(jStudent));
-      })
-  }
 }
 
-const studentService = new CEStudentService('student');
-export { studentService };
+export { CEStudentService };

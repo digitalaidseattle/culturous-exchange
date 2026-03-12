@@ -12,20 +12,23 @@ import { Button, Stack } from '@mui/material';
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 
-import { studentService } from '../../api/ceStudentService';
-import { timeWindowService } from '../../api/ceTimeWindowService';
+import { CEStudentService } from '../../api/ceStudentService';
+import { CETimeWindowService } from '../../api/ceTimeWindowService';
 import { ProfileUploader } from '../../api/ProfileUploader';
 import { FailedProfile, Student } from '../../api/types';
 import { StudentValidationService } from '../../api/ValidationService';
 import FailedUploadModal from '../../components/FailedUploadModal';
 import FileUploader from '../../components/FileUploader';
 import ProfilesPage from '../../components/ProfilesPage';
-import StudentModal from './StudentModal';
 import { TimeToggle } from '../../components/TimeToggle';
 import { UI_STRINGS } from '../../constants';
+import StudentModal from './StudentModal';
 import StudentsDetailsTable from './StudentsDetailsTable';
 
 const ToolsSection = () => {
+
+    const studentService = CEStudentService.getInstance();
+    const timeWindowService = CETimeWindowService.getInstance();
 
     const uploadService = new ProfileUploader(
         StudentValidationService.getInstance()

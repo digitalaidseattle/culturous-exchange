@@ -10,15 +10,17 @@ import { MAX_GROUP_SIZE } from '../constants';
 import { CEGroupService } from './ceGroupService';
 import { placementService } from './cePlacementService';
 import { planService } from './cePlanService';
-import { timeWindowService } from './ceTimeWindowService';
+import { CETimeWindowService } from './ceTimeWindowService';
 import { planEvaluator } from './planEvaluator';
 import { Group, Placement, Plan, TimeWindow } from "./types";
 
 class PlanGenerator {
   groupService: CEGroupService;
+  timeWindowService: CETimeWindowService;
 
   constructor() {
     this.groupService = CEGroupService.getInstance();
+    this.timeWindowService = CETimeWindowService.getInstance();
   }
 
   async emptyPlan(plan: Plan): Promise<Plan> {
@@ -93,11 +95,11 @@ class PlanGenerator {
     const tuples = plan.groups
       .filter(g => (g.placements?.length ?? 0) < (plan.group_size ?? MAX_GROUP_SIZE)) // Only consider groups that are not full
       .map(group => {
-        const intersect = timeWindowService.intersectionTimeWindowsMultiple(
+        const intersect = this.timeWindowService.intersectionTimeWindowsMultiple(
           group.time_windows ?? [],
           placement.student?.timeWindows ?? []
         );
-        const overlap = timeWindowService.totalDuration(intersect);
+        const overlap = this.timeWindowService.totalDuration(intersect);
         return { duration: overlap, group: group, intersect: intersect };
       })
       .filter(tuple => tuple.duration > 0)  // Only consider groups with some overlap

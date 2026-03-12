@@ -10,7 +10,7 @@ import { v4 as uuid } from 'uuid';
 import { read, utils } from "xlsx";
 import { SERVICE_ERRORS } from '../constants';
 import { CEFacilitatorService } from './ceFacilitatorService';
-import { timeWindowService } from "./ceTimeWindowService";
+import { CETimeWindowService } from "./ceTimeWindowService";
 import { CEProfile, FailedProfile } from "./types";
 import { ValidationService } from './ValidationService';
 
@@ -22,7 +22,7 @@ class ProfileUploader<T extends CEProfile> {
     constructor(validationService: ValidationService<T>) {
         this.validationService = validationService;
         this.profileService = CEFacilitatorService.getInstance();
-        this.timeWindowService = timeWindowService;
+        this.timeWindowService = CETimeWindowService.getInstance();
     }
 
     changeToLowercase(object: any): any {

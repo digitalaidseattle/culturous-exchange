@@ -12,7 +12,7 @@ import { Button, Stack } from '@mui/material';
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { CEFacilitatorService } from '../../api/ceFacilitatorService';
-import { timeWindowService } from '../../api/ceTimeWindowService';
+import { CETimeWindowService } from '../../api/ceTimeWindowService';
 import { ProfileUploader } from '../../api/ProfileUploader';
 import { Facilitator, FailedProfile } from '../../api/types';
 import { FacilitatorValidationService } from '../../api/ValidationService';
@@ -26,6 +26,7 @@ import FacilitatorModal from './FacilitatorModal';
 
 const ToolsSection = () => {
     const facilitatorService = CEFacilitatorService.getInstance();
+    const timeWindowService = CETimeWindowService.getInstance();
     const uploadService = new ProfileUploader(FacilitatorValidationService.getInstance());
 
     const notifications = useNotifications();

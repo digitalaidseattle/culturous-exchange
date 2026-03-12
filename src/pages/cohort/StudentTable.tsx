@@ -30,7 +30,7 @@ import { PageInfo } from "@digitalaidseattle/supabase";
 import { StarFilled } from "@ant-design/icons";
 import { CohortContext } from ".";
 import { enrollmentService } from "../../api/ceEnrollmentService";
-import { studentService } from "../../api/ceStudentService";
+import { CEStudentService } from "../../api/ceStudentService";
 import { addStudentsToCohort } from "../../api/transactions/cohort/addStudentsToCohort";
 import { removeStudentsFromCohort } from "../../api/transactions/cohort/removeStudentsFromCohort";
 import { CEProfile, Enrollment, Student } from "../../api/types";
@@ -42,6 +42,7 @@ import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../const
 
 
 export const StudentTable: React.FC = () => {
+  const studentService = CEStudentService.getInstance();
 
   const apiRef = useGridApiRef();
   const { cohort } = useContext(CohortContext);

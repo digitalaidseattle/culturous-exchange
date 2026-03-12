@@ -20,13 +20,14 @@ import { RefreshContext } from "@digitalaidseattle/core";
 import { useContext, useState } from "react";
 import { placementService } from "../api/cePlacementService";
 import { PlanContext } from "../pages/plan/PlanContext";
-import { timeWindowService } from "../api/ceTimeWindowService";
+import { CETimeWindowService } from "../api/ceTimeWindowService";
 import { Placement } from "../api/types";
 import StarAvatar from "./StarAvatar";
 import { UI_STRINGS, SERVICE_ERRORS } from '../constants';
 
 
 export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails }) => {
+    const timeWindowService = CETimeWindowService.getInstance();
 
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);

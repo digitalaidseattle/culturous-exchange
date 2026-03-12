@@ -9,13 +9,15 @@ import { Identifier } from '@digitalaidseattle/core';
 import { SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
 import { CEAssignmentService } from './ceAssignmentService';
-import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
+import { DEFAULT_TIMEZONE, CETimeWindowService } from "./ceTimeWindowService";
 import { Group, TimeWindow } from "./types";
 
 const assignmentService = CEAssignmentService.getInstance();
 const DEFAULT_SELECT = "*, timewindow(*), assignment(*, facilitators(*, timewindow(*)))";
 
 function MAPPER(json: any): Group {
+  const timeWindowService = CETimeWindowService.getInstance();
+
   const group = {
     ...json,
     assignments: (json.assignment ?? []).map((js: any) => assignmentService.mapJson(js)),
@@ -40,6 +42,8 @@ class CEGroupService extends SupabaseEntityService<Group> {
     return CEGroupService.instance;
   }
 
+
+
   mapJson(json: any): Group | null {
     return this.mapper(json);
   }
@@ -56,6 +60,8 @@ class CEGroupService extends SupabaseEntityService<Group> {
   }
 
   async save(group: Group): Promise<Group> {
+    const timeWindowService = CETimeWindowService.getInstance();
+
     // inserting group before tw is required.  Group must exist before timewindow added.
     const json = { ...group }
     delete json.placements;
@@ -71,6 +77,8 @@ class CEGroupService extends SupabaseEntityService<Group> {
   }
 
   async deleteGroup(group: Group) {
+    const timeWindowService = CETimeWindowService.getInstance();
+
     for (const tw of group.time_windows!) {
       await timeWindowService.delete(tw.id!)
     }
@@ -78,6 +86,8 @@ class CEGroupService extends SupabaseEntityService<Group> {
   }
 
   createDefaultTimewindows(group: Group): TimeWindow[] {
+    const timeWindowService = CETimeWindowService.getInstance();
+
     const friday = {
       id: uuid(),
       student_id: null,

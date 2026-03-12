@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
+import { DEFAULT_TIMEZONE, CETimeWindowService } from "./ceTimeWindowService";
 import { TimeWindow } from "./types";
 
 describe("timeWindowService", () => {
+    const timeWindowService = CETimeWindowService.getInstance();
     const offset = -7; // using a fixed offset to make test deterministic;
     // getTimezoneOffset(DEFAULT_TIMEZONE, new Date()) / 60 / 60 / 1000;
 

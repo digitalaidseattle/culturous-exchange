@@ -23,7 +23,7 @@ import {
 import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
-import { studentService } from '../../api/ceStudentService';
+import { CEStudentService } from '../../api/ceStudentService';
 import { Cohort, Student, TimeSlot, TimeWindow, ValidationError } from '../../api/types';
 import { StudentValidationService } from '../../api/ValidationService';
 import { CETextInput } from '../../components/CETextInput';
@@ -39,6 +39,7 @@ interface Props {
 }
 
 const StudentForm: React.FC<Props> = ({ student, fieldErrors, onChange }) => {
+  const studentService = CEStudentService.getInstance();
   const validationService = StudentValidationService.getInstance();
   const timeSlotService = CETimeSlotService.getInstance();
 

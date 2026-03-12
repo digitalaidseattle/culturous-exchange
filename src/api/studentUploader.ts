@@ -8,15 +8,22 @@
  */
 import { v4 as uuid } from 'uuid';
 import { read, utils } from "xlsx";
-import { timeWindowService } from "./ceTimeWindowService";
-import { FailedStudent, Student } from "./types";
-import { studentService } from "./ceStudentService";
 import { SERVICE_ERRORS } from '../constants';
+import { CEStudentService } from "./ceStudentService";
+import { CETimeWindowService } from "./ceTimeWindowService";
+import { FailedStudent, Student } from "./types";
 import { StudentValidationService } from './ValidationService';
 
-
 class StudentUploader {
-    private validationService = new StudentValidationService();
+    private validationService: StudentValidationService;
+    private studentService: CEStudentService;
+    private timeWindowService: CETimeWindowService;
+
+    constructor() {
+        this.validationService = new StudentValidationService();
+        this.studentService = CEStudentService.getInstance();
+        this.timeWindowService = CETimeWindowService.getInstance();
+    }
 
     changeToLowercase(object: any): any {
         const lowered: { [key: string]: any } = {};
@@ -36,7 +43,7 @@ class StudentUploader {
             city: dict['home city (and state if applicable)'],
             country: dict['home country:'].trim(),
             gender: dict['gender'].trim(),
-            timeWindows: timeWindowService.mapTimeWindows(times.split(',')),
+            timeWindows: this.timeWindowService.mapTimeWindows(times.split(',')),
             anchor: dict['anchor/priority'] ? dict['anchor/priority'].toLowerCase().trim() === 'x' : false,
         } as Student
     }
@@ -65,14 +72,14 @@ class StudentUploader {
             //FIX ME: failedError: errors is not recievable as an array on the front end notification system. The front-end is currently set up to display a single error string for each failed student.
             return { success: false, student: { ...student, failedError: errors } };
         }
-        return timeWindowService
+        return this.timeWindowService
             .getTimeZone(student.city!, student.country)
             .then(resp => {
                 student.id = uuid();
                 student.time_zone = resp.timezone
                 student.tz_offset = resp.offset
-                timeWindowService.adjustTimeWindows(student);
-                return studentService.save(student)
+                this.timeWindowService.adjustTimeWindows(student);
+                return this.studentService.save(student)
                     .then(inserted => {
                         return { success: true, student: inserted };
                     })

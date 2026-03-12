@@ -4,12 +4,12 @@
  */
 import { supabaseClient, SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
-import { timeWindowService } from './ceTimeWindowService';
+import { CETimeWindowService } from './ceTimeWindowService';
 import { Facilitator } from './types';
 
 const DEFAULT_SELECT = '*, timewindow(*)';
 function MAPPER(json: any): Facilitator {
-  console.log('MAPPER', json)
+  const timeWindowService = CETimeWindowService.getInstance();
   const facilitator = {
     ...json,
     timeWindows: json.timewindow ?? [] ? json.timewindow.map((js: any) => timeWindowService.mapJson(js)) : []
@@ -50,6 +50,8 @@ class CEFacilitatorService extends SupabaseEntityService<Facilitator> {
   }
 
   async save(facilitator: Facilitator): Promise<Facilitator> {
+    const timeWindowService = CETimeWindowService.getInstance();
+
     const json = { ...facilitator } as any;
     delete json.timeWindows;
 

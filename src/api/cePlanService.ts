@@ -6,19 +6,50 @@
  */
 
 import { Identifier } from "@digitalaidseattle/core";
-import { supabaseClient } from "@digitalaidseattle/supabase";
+import { supabaseClient, SupabaseEntityService } from "@digitalaidseattle/supabase";
 import { v4 as uuidv4 } from 'uuid';
 import { SERVICE_ERRORS, UI_STRINGS } from '../constants';
 import { enrollmentService } from "./ceEnrollmentService";
 import { CEGroupService } from "./ceGroupService";
 import { placementService } from "./cePlacementService";
-import { EntityService } from "./entityService";
 import { Cohort, Group, Placement, Plan, Student } from "./types";
 
 const DEFAULT_SELECT = '*, placement(*, student(*, timewindow(*))), grouptable(*, timewindow(*), assignment(*, facilitators(*, timewindow(*))))';
 
-class CEPlanService extends EntityService<Plan> {
-  groupService = CEGroupService.getInstance();
+function MAPPER(json: any): Plan {
+  const groupService = CEGroupService.getInstance();
+
+  const plan = {
+    ...json,
+    placements: json.placement.map((pJson: any) => placementService.mapJson(pJson)),
+    groups: json.grouptable.map((gJson: any) => groupService.mapJson(gJson))
+  }
+
+  delete plan.placement;
+  delete plan.grouptable;
+
+
+  // initialize placements in each group
+  plan.groups.forEach((group: Group) => group.placements = []);
+  plan.placements.forEach((p: Placement) => {
+    const group = plan.groups.find((g: Group) => g.id === p.group_id);
+    if (group) {
+      group.placements.push(p);
+    }
+  });
+  return plan as Plan;
+}
+
+class CEPlanService extends SupabaseEntityService<Plan> {
+  private static instance: CEPlanService;
+
+  static getInstance() {
+    if (!CEPlanService.instance) {
+      CEPlanService.instance = new CEPlanService('plan', DEFAULT_SELECT, MAPPER);
+    }
+    return CEPlanService.instance;
+  }
+
 
   async create(cohort: Cohort): Promise<Plan> {
     const proposed: Plan = {
@@ -78,25 +109,7 @@ class CEPlanService extends EntityService<Plan> {
   }
 
   mapJson(json: any): Plan {
-    const plan = {
-      ...json,
-      placements: json.placement.map((pJson: any) => placementService.mapJson(pJson)),
-      groups: json.grouptable.map((gJson: any) => this.groupService.mapJson(gJson))
-    }
-
-    delete plan.placement;
-    delete plan.grouptable;
-
-
-    // initialize placements in each group
-    plan.groups.forEach((group: Group) => group.placements = []);
-    plan.placements.forEach((p: Placement) => {
-      const group = plan.groups.find((g: Group) => g.id === p.group_id);
-      if (group) {
-        group.placements.push(p);
-      }
-    });
-    return plan as Plan;
+    return this.mapper(json);
   }
 
   async insert(entity: Plan, select?: string): Promise<Plan> {
@@ -112,16 +125,9 @@ class CEPlanService extends EntityService<Plan> {
       });
   }
 
-  async getById(entityId: Identifier, select?: string): Promise<Plan> {
-    return super.getById(entityId, select ?? DEFAULT_SELECT)
-      .then((json: any) => this.mapJson(json))
-      .catch(err => {
-        console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);
-        throw err;
-      });
-  }
-
   async duplicate(plan: Plan): Promise<Plan> {
+    const groupService = CEGroupService.getInstance();
+
     const proposed: Plan = {
       id: uuidv4(),
       cohort_id: plan.cohort_id,
@@ -147,7 +153,7 @@ class CEPlanService extends EntityService<Plan> {
         return Promise
           .all([
             placementService.batchInsert(duplicatePlacements),
-            this.groupService.batchInsert(duplicateGroups)
+            groupService.batchInsert(duplicateGroups)
           ])
           .then(resps => {
             duplicatePlan.placements = resps[0];
@@ -187,9 +193,11 @@ class CEPlanService extends EntityService<Plan> {
   }
 
   async save(plan: Plan): Promise<Plan> {
+    const groupService = CEGroupService.getInstance();
+
     await this.insert(plan)
     for (const group of plan.groups) {
-      await this.groupService.save(group)
+      await groupService.save(group)
     }
     for (const placement of plan.placements) {
       await placementService.save(placement)
@@ -199,11 +207,13 @@ class CEPlanService extends EntityService<Plan> {
 
 
   async deletePlan(plan: Plan): Promise<void> {
+    const groupService = CEGroupService.getInstance();
+
     for (const placement of plan.placements) {
       await placementService.deletePlacement(placement);
     }
     for (const group of plan.groups) {
-      await this.groupService.deleteGroup(group)
+      await groupService.deleteGroup(group)
     }
     return await this.delete(plan.id!)
   }

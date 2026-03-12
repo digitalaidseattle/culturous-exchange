@@ -3,6 +3,9 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
+import { placementService } from './cePlacementService';
+import { CEStudentService } from './ceStudentService';
+
 // Mock supabase client chain used in updatePlacement
 vi.mock('@digitalaidseattle/supabase', () => {
   const single = vi.fn(() => Promise.resolve({ data: { plan_id: 'plan1', student_id: 'student1', anchor: true }, error: null }));
@@ -23,15 +26,15 @@ vi.mock('./ceStudentService', () => {
   };
 });
 
-import { placementService } from './cePlacementService';
-import { studentService } from './ceStudentService';
-
 class PlacementFixture {
+
   async runUpdate() {
     return placementService.updatePlacement('plan1', 'student1', { anchor: true });
   }
 
   assertStudentUpdated() {
+    const studentService = CEStudentService.getInstance();
+
     expect((studentService.update as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThanOrEqual(1);
     expect((studentService.update as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe('student1');
     expect((studentService.update as ReturnType<typeof vi.fn>).mock.calls[0][1]).toEqual({ anchor: true });

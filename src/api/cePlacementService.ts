@@ -5,25 +5,26 @@
  *
  */
 
+import { Identifier } from "@digitalaidseattle/core";
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { SERVICE_ERRORS } from '../constants';
 import { enrollmentService } from "./ceEnrollmentService";
-import { studentService } from "./ceStudentService";
+import { CEStudentService } from "./ceStudentService";
 import { Cohort, Group, Placement, Plan, Student } from "./types";
-import { Identifier } from "@digitalaidseattle/core";
-
 
 class CEPlacementService {
   tableName = '';
+  studentService: CEStudentService;
 
   constructor(tableName: string) {
     this.tableName = tableName;
+    this.studentService = CEStudentService.getInstance();
   }
 
   mapJson(json: any): Placement {
     return {
       ...json,
-      student: studentService.mapJson(json.student)
+      student: this.studentService.mapJson(json.student)
     }
   }
 
@@ -110,7 +111,7 @@ class CEPlacementService {
       // placement's anchor state -> update student's anchor state
       if (typeof json.anchor !== 'undefined') {
         try {
-          await studentService.update(studentId, { anchor: json.anchor });
+          await this.studentService.update(studentId, { anchor: json.anchor });
         } catch (err) {
           // Log but do not fail placement update if student update fails
           console.error('Failed to propagate placement.anchor to student.anchor', err);

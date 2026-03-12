@@ -26,11 +26,12 @@ import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import FacilitatorModal from './FacilitatorModal';
 import { TimeSlots } from '../../components/TimeSlots';
 import { DEFAULT_TABLE_PAGE_SIZE, UI_STRINGS } from '../../constants';
-import { timeWindowService } from '../../api/ceTimeWindowService';
-
+import { CETimeWindowService } from '../../api/ceTimeWindowService';
 
 const DetailsTable: React.FC = () => {
   const facilitatorService = CEFacilitatorService.getInstance();
+  const timeWindowService = CETimeWindowService.getInstance();
+
   const { setLoading } = useContext(LoadingContext);
   const { refresh, setRefresh } = useContext(RefreshContext);
 

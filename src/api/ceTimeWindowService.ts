@@ -5,14 +5,13 @@
  *
  */
 
-import { supabaseClient } from "@digitalaidseattle/supabase";
+import { Identifier } from "@digitalaidseattle/core";
+import { supabaseClient, SupabaseEntityService } from "@digitalaidseattle/supabase";
 import { format, isEqual } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { v4 as uuid } from 'uuid';
 import { SERVICE_ERRORS } from '../constants';
-import { EntityService } from "./entityService";
 import { CEProfile, TimeWindow } from "./types";
-import { Identifier } from "@digitalaidseattle/core";
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
   if (arr1.length !== arr2.length) {
@@ -33,7 +32,22 @@ function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
 
 export const DEFAULT_TIMEZONE = "America/Los_Angeles";
 
-class CETimeWindowService extends EntityService<TimeWindow> {
+function MAPPER(json: any): TimeWindow {
+  return {
+    ...json,
+    start_date_time: json.start_date_time ? new Date(json.start_date_time + 'Z') : undefined,
+    end_date_time: json.end_date_time ? new Date(json.end_date_time + 'Z') : undefined
+  }
+}
+class CETimeWindowService extends SupabaseEntityService<TimeWindow> {
+  private static instance: CETimeWindowService;
+
+  static getInstance() {
+    if (!CETimeWindowService.instance) {
+      CETimeWindowService.instance = new CETimeWindowService('timewindow', '*', MAPPER);
+    }
+    return CETimeWindowService.instance;
+  }
 
   unionTimeWindows(timeWindowsA: TimeWindow, timeWindowsB: TimeWindow): TimeWindow[] {
     const timeArray = [
@@ -335,11 +349,7 @@ class CETimeWindowService extends EntityService<TimeWindow> {
   }
 
   mapJson(json: any): TimeWindow {
-    return {
-      ...json,
-      start_date_time: json.start_date_time ? new Date(json.start_date_time + 'Z') : undefined,
-      end_date_time: json.end_date_time ? new Date(json.end_date_time + 'Z') : undefined
-    }
+    return this.mapper(json);
   }
 
   async deleteByGroupId(groupId: Identifier): Promise<boolean> {
@@ -416,5 +426,4 @@ class CETimeWindowService extends EntityService<TimeWindow> {
 
 }
 
-const timeWindowService = new CETimeWindowService('timewindow')
-export { timeWindowService };
+export { CETimeWindowService };

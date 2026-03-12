@@ -6,11 +6,12 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { CEGroupService } from "./ceGroupService";
-import { timeWindowService } from "./ceTimeWindowService";
+import { CETimeWindowService } from "./ceTimeWindowService";
 import { Group, TimeWindow } from "./types";
 
 describe("groupService-save", () => {
     const groupService = CEGroupService.getInstance();
+      const timeWindowService = CETimeWindowService.getInstance();
 
     it("save", () => {
 

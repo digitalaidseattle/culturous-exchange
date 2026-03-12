@@ -6,14 +6,16 @@
  */
 
 import { CEGroupService } from "./ceGroupService";
-import { timeWindowService } from "./ceTimeWindowService";
+import { CETimeWindowService } from "./ceTimeWindowService";
 import { Group, Plan, TimeWindow } from "./types";
 
 class PlanEvaluator {
     groupService: CEGroupService;
+    timeWindowService: CETimeWindowService;
 
     constructor() {
         this.groupService = CEGroupService.getInstance();
+        this.timeWindowService = CETimeWindowService.getInstance();
     }
 
     async evaluate(plan: Plan): Promise<Plan> {
@@ -35,10 +37,10 @@ class PlanEvaluator {
     calcGroupTimeWindows(group: Group): TimeWindow[] {
         let timeWindows = this.groupService.createDefaultTimewindows(group);
         (group.assignments ?? []).forEach(assignment => {
-            timeWindows = timeWindowService.intersectionTimeWindowsMultiple(timeWindows, assignment.facilitator!.timeWindows!);
+            timeWindows = this.timeWindowService.intersectionTimeWindowsMultiple(timeWindows, assignment.facilitator!.timeWindows!);
         });
         (group.placements ?? []).forEach(placement => {
-            timeWindows = timeWindowService.intersectionTimeWindowsMultiple(timeWindows, placement.student!.timeWindows!);
+            timeWindows = this.timeWindowService.intersectionTimeWindowsMultiple(timeWindows, placement.student!.timeWindows!);
         });
         timeWindows.forEach(tw => tw.group_id = group.id!);
         return timeWindows;
@@ -55,7 +57,7 @@ class PlanEvaluator {
     }
 
     calcDuration(group: Group): number {
-        return timeWindowService.totalDuration(group.time_windows!);
+        return this.timeWindowService.totalDuration(group.time_windows!);
     }
 }
 

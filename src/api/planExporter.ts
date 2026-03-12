@@ -8,19 +8,24 @@
 import { Plan, Student } from "./types";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { timeWindowService } from "./ceTimeWindowService";
+import { CETimeWindowService } from "./ceTimeWindowService";
 import { PST_OFFSET, UI_STRINGS } from '../constants';
 
 class PlanExporter {
 
     static PST_OFFSET = PST_OFFSET;
 
+    timeWindowService: CETimeWindowService;
+    constructor() {
+        this.timeWindowService = CETimeWindowService.getInstance();
+    }
+
     verticalGroups(plan: Plan): any[] {
         const data: any[] = [];
 
         data.push(plan.groups.map(group => group.name));
         data.push(plan.groups.map(group => group.country_count));
-        data.push(plan.groups.map(group => group.time_windows?.map(tw => timeWindowService.toString(tw)).join('\n') || ""));
+        data.push(plan.groups.map(group => group.time_windows?.map(tw => this.timeWindowService.toString(tw)).join('\n') || ""));
 
         let done = false;
         let rowCount = 0;
@@ -60,14 +65,14 @@ class PlanExporter {
                 // Build one row per student
                 const row: any = {
                     [UI_STRINGS.GROUP]: group.name,
-                    [UI_STRINGS.GROUP_TIMES]: group.time_windows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
-                    [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: group.time_windows?.map(tw => timeWindowService.toString(tw, student.time_zone)).join(', ') || "",
+                    [UI_STRINGS.GROUP_TIMES]: group.time_windows?.map(tw => this.timeWindowService.toString(tw)).join(', ') || "",
+                    [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: group.time_windows?.map(tw => this.timeWindowService.toString(tw, student.time_zone)).join(', ') || "",
                     [UI_STRINGS.NAME]: student.name || "",
                     [UI_STRINGS.ANCHOR]: student.anchor ? "yes" : "",
                     [UI_STRINGS.EMAIL]: student.email || "",
                     [UI_STRINGS.COUNTRY]: student.country,
                     [UI_STRINGS.TIME_ZONE]: student.time_zone,
-                    [UI_STRINGS.STUDENT_TIMES]: student.timeWindows?.map(tw => timeWindowService.toString(tw)).join(', ') || "",
+                    [UI_STRINGS.STUDENT_TIMES]: student.timeWindows?.map(tw => this.timeWindowService.toString(tw)).join(', ') || "",
                 };
                 data.push(row);
             }
@@ -79,7 +84,7 @@ class PlanExporter {
         for (const placement of waitlisted) {
             const student: Student = placement.student ?? ({} as Student);
 
-                data.push({
+            data.push({
                 [UI_STRINGS.GROUP]: UI_STRINGS.WAITLIST,
                 [UI_STRINGS.GROUP_TIMES_PST]: "",
                 [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: "",
@@ -89,9 +94,9 @@ class PlanExporter {
                 [UI_STRINGS.COUNTRY]: student.country,
                 [UI_STRINGS.TIME_ZONE]: student.time_zone,
                 [UI_STRINGS.STUDENT_TIMES]:
-                    student.timeWindows?.map(tw =>
-                        timeWindowService.toString(tw)
-                    ).join(", ") || "",
+                    (student.timeWindows ?? [])
+                        .map(tw => this.timeWindowService.toString(tw))
+                        .join(", "),
             });
         }
 

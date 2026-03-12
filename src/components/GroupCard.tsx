@@ -9,12 +9,14 @@ import { MoreOutlined } from "@ant-design/icons";
 import { Card, CardContent, CardHeader, IconButton, Stack, Typography } from '@mui/material';
 
 import { useEffect, useState } from 'react';
-import { timeWindowService } from '../api/ceTimeWindowService';
+import { CETimeWindowService } from '../api/ceTimeWindowService';
 import { Group, TimeWindow } from '../api/types';
 import { UI_STRINGS, WAITLIST_ID } from '../constants';
 import { FacilitatorMenu } from "../pages/plan/FacilitatorMenu";
 
 export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ group: initial, showDetails }) => {
+    const timeWindowService = CETimeWindowService.getInstance();
+
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
     const [group, setGroup] = useState<Group>();
