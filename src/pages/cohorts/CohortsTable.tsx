@@ -21,13 +21,12 @@ import {
 
 // project import
 import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
+import { MainCard } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { useNavigate } from 'react-router';
-import { cohortService } from '../../api/ceCohortService';
-import { UI_STRINGS } from '../../constants';
+import { CECohortService } from '../../api/ceCohortService';
 import { Cohort, Plan } from '../../api/types';
-import { MainCard } from '@digitalaidseattle/mui';
-import { DEFAULT_TABLE_PAGE_SIZE } from '../../constants';
+import { DEFAULT_TABLE_PAGE_SIZE, UI_STRINGS } from '../../constants';
 
 const getColumns = (): GridColDef[] => {
     return [
@@ -48,6 +47,8 @@ const getColumns = (): GridColDef[] => {
 
 
 export default function CohortsTable() {
+    const cohortService = CECohortService.getInstance();
+
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
     const [pageInfo, setPageInfo] = useState<PageInfo<Cohort>>({ rows: [], totalRowCount: 0 });

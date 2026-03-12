@@ -1,3 +1,10 @@
+/**
+ * home/index.tsx
+ *
+ *  @copyright 2026 Digital Aid Seattle
+ *
+ */
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -7,12 +14,14 @@ import { useNavigate } from 'react-router';
 import { Button, Card, CardContent, Stack, Typography } from '@mui/material';
 
 import { MainCard } from '@digitalaidseattle/mui';
-import { UI_STRINGS } from '../../constants';
-import { cohortService } from '../../api/ceCohortService';
+import { CECohortService } from '../../api/ceCohortService';
 import { Cohort } from '../../api/types';
+import { UI_STRINGS } from '../../constants';
 
 
 const HomePage: React.FC = () => {
+    const cohortService = CECohortService.getInstance();
+
     const navigate = useNavigate();
 
     const [current, setCurrent] = useState<Cohort>();

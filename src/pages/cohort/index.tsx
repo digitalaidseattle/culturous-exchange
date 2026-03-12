@@ -1,22 +1,28 @@
+/**
+ * CohortPage.tsx
+ *
+ * Example of integrating tickets with data-grid
+ * 
+ * @copyright 2026 Digital Aid Seattle
+ */
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 // material-ui
-
-// project import
 import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
 
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { useSearchParams } from "react-router-dom";
-import { cohortService } from "../../api/ceCohortService";
+import { CECohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { planService } from "../../api/cePlanService";
 import { planGenerator } from "../../api/planGenerator";
-import { UI_STRINGS } from '../../constants';
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
 import { TextEdit } from "../../components/TextEdit";
+import { UI_STRINGS } from '../../constants';
 import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
 
@@ -31,6 +37,8 @@ export const CohortContext = createContext<CohortContextType>({
 });
 
 const CohortPage: React.FC = () => {
+  const cohortService = CECohortService.getInstance();
+
   const [searchParams] = useSearchParams();
   const { id: cohortId } = useParams<string>();
   const notifications = useNotifications();

@@ -11,12 +11,14 @@ import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router";
-import { cohortService } from "../../api/ceCohortService";
 import { Cohort } from "../../api/types";
 import { UI_STRINGS } from '../../constants';
+import { CECohortService } from "../../api/ceCohortService";
 
 
 export const CohortCard = (props: { cohort: Cohort }) => {
+    const cohortService = CECohortService.getInstance();
+
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);

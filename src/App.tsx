@@ -12,6 +12,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 import {
   AuthServiceProvider,
+  setCoreServices,
   StorageServiceProvider,
   UserContextProvider
 } from "@digitalaidseattle/core";
@@ -31,9 +32,18 @@ import "./App.css";
 const router = createBrowserRouter(routes);
 
 const App: React.FC = () => {
+
+  const authService = new SupabaseAuthService();
+  const storageService = new SupabaseStorageService();
+
+  setCoreServices({
+    authService: authService,
+    storageService: storageService
+  })
+  
   return (
-    <AuthServiceProvider authService={new SupabaseAuthService()} >
-      <StorageServiceProvider storageService={new SupabaseStorageService()} >
+    <AuthServiceProvider authService={authService} >
+      <StorageServiceProvider storageService={storageService} >
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <UserContextProvider>
             <LayoutConfigurationProvider configuration={Config}>

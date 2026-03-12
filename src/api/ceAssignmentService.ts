@@ -11,7 +11,8 @@ import { CEFacilitatorService } from './ceFacilitatorService';
 const DEFAULT_SELECT = '*';
 
 class CEAssignmentService extends EntityService<Assignment> {
-  static instance: CEAssignmentService;
+
+  private static instance: CEAssignmentService;
 
   static getInstance() {
     if (!CEAssignmentService.instance) {

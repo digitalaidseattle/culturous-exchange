@@ -16,6 +16,14 @@ import { SERVICE_ERRORS } from '../constants';
 const DEFAULT_SELECT = '*, enrollment(*), plan(*)';
 
 class CECohortService extends EntityService<Cohort> {
+    private static instance: CECohortService;
+
+    static getInstance() {
+        if (!CECohortService.instance) {
+            CECohortService.instance = new CECohortService('cohort');
+        }
+        return CECohortService.instance;
+    }
 
     async removeStudents(cohort: Cohort, studentIds: Identifier[]): Promise<boolean> {
         return Promise.all(
@@ -127,5 +135,4 @@ class CECohortService extends EntityService<Cohort> {
 
 }
 
-const cohortService = new CECohortService('cohort')
-export { cohortService };
+export { CECohortService };

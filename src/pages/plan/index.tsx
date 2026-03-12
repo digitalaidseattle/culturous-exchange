@@ -1,28 +1,35 @@
+/**
+ * plan/index.tsx
+ *
+ *  @copyright 2026 Digital Aid Seattle
+ *
+ */
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 // material-ui
-
-// project import
+import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
 import { Box, Breadcrumbs, CircularProgress, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
 
+// project import
 import { useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
-import { cohortService } from "../../api/ceCohortService";
+import { CECohortService } from "../../api/ceCohortService";
 import { planService } from "../../api/cePlanService";
+import { planExporter } from "../../api/planExporter";
+import { planGenerator } from "../../api/planGenerator";
 import { Cohort, Identifier, Plan } from "../../api/types";
+import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { TextEdit } from "../../components/TextEdit";
+import { UI_STRINGS } from '../../constants';
 import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
 import { PlanContext } from "./PlanContext";
-import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
-import { planExporter } from "../../api/planExporter";
-import { planGenerator } from "../../api/planGenerator";
-import PlanSettingsDialog from "../../components/PlanSettingsDialog";
-import { UI_STRINGS } from '../../constants';
 import { TimeLine } from "./TimeLine";
 
 const PlanPage: React.FC = () => {
+  const cohortService = CECohortService.getInstance();
+
   const { id: planId } = useParams<string>();
   const [plan, setPlan] = useState<Plan>();
   const [cohort, setCohort] = useState<Cohort>();
@@ -157,7 +164,7 @@ const PlanPage: React.FC = () => {
             {/* <PlanDetails /> */}
             <Box sx={{ marginTop: 1 }}  >
               <Toolbar>
-                <Typography variant="h3" component="div" sx={{ flexGrow: 1 }} onClick={() => setViewType(viewType === "board" ? "timeline" : "board") } style={{ cursor: 'pointer' }}>
+                <Typography variant="h3" component="div" sx={{ flexGrow: 1 }} onClick={() => setViewType(viewType === "board" ? "timeline" : "board")} style={{ cursor: 'pointer' }}>
                   {UI_STRINGS.GROUPS_LABEL}
                 </Typography>
 

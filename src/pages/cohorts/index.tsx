@@ -1,3 +1,9 @@
+/**
+ * cohorts/index.tsx
+ *
+ *  @copyright 2026 Digital Aid Seattle
+ *
+ */
 
 // material-ui
 
@@ -8,15 +14,15 @@ import { Button, Stack } from '@mui/material';
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { useContext } from 'react';
-import { cohortService } from '../../api/ceCohortService';
+import { CECohortService } from '../../api/ceCohortService';
 import { UI_STRINGS } from '../../constants';
 import { CohortsStack } from './CohortsStack';
 
 // ================================|| 404 ||================================ //
 
-
-
 const CohortsPage: React.FC = () => {
+    const cohortService = CECohortService.getInstance();
+
     const { refresh, setRefresh } = useContext(RefreshContext);
 
     const notifications = useNotifications();

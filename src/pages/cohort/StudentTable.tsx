@@ -1,7 +1,9 @@
 /**
- * SetupPanel.tsx
+ * StudentTable.tsx
  *
  * Example of integrating tickets with data-grid
+ * 
+ * @copyright 2026 Digital Aid Seattle
  */
 import { useContext, useEffect, useState } from "react";
 
@@ -27,7 +29,7 @@ import { PageInfo } from "@digitalaidseattle/supabase";
 
 import { StarFilled } from "@ant-design/icons";
 import { CohortContext } from ".";
-import { cohortService } from "../../api/ceCohortService";
+import { CECohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { studentService } from "../../api/ceStudentService";
 import { CEProfile, Enrollment, Student } from "../../api/types";
@@ -39,6 +41,7 @@ import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../const
 
 
 export const StudentTable: React.FC = () => {
+  const cohortService = CECohortService.getInstance();
   const apiRef = useGridApiRef();
   const { cohort } = useContext(CohortContext);
   const notifications = useNotifications();
