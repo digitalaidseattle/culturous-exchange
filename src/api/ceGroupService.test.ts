@@ -5,13 +5,14 @@
  *
  */
 import { describe, expect, it, vi } from "vitest";
-import { groupService } from "./ceGroupService";
+import { CEGroupService } from "./ceGroupService";
 import { timeWindowService } from "./ceTimeWindowService";
 import { Group, TimeWindow } from "./types";
 
 describe("groupService", () => {
     const offset = -7; // using a fixed offset to make test deterministic; 
-
+    const groupService = CEGroupService.getInstance();
+    
     it("createDefaultTimewindows", () => {
 
         const group = {

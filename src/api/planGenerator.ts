@@ -6,29 +6,34 @@
  */
 
 import { v4 as uuid } from 'uuid';
-import { groupService } from './ceGroupService';
+import { MAX_GROUP_SIZE } from '../constants';
+import { CEGroupService } from './ceGroupService';
 import { placementService } from './cePlacementService';
 import { planService } from './cePlanService';
 import { timeWindowService } from './ceTimeWindowService';
 import { planEvaluator } from './planEvaluator';
 import { Group, Placement, Plan, TimeWindow } from "./types";
-import { MAX_GROUP_SIZE } from '../constants';
 
 class PlanGenerator {
+  groupService: CEGroupService;
+
+  constructor() {
+    this.groupService = CEGroupService.getInstance();
+  }
 
   async emptyPlan(plan: Plan): Promise<Plan> {
     for (const placement of plan.placements) {
-      await placementService.updatePlacement(plan.id, placement.student_id, { group_id: null });
+      await placementService.updatePlacement(plan.id!, placement.student_id, { group_id: null });
       placement.group_id = undefined;
     }
 
     for (const group of plan.groups) {
       // TODO check if there is a batch delete
-      await groupService.deleteGroup(group);
+      await this.groupService.deleteGroup(group);
     }
 
     // requery the plan
-    return await planService.getById(plan.id);
+    return await planService.getById(plan.id!);
   }
 
   async seedPlan(plan: Plan): Promise<Plan> {
@@ -57,7 +62,7 @@ class PlanGenerator {
         time_windows: [],
         placements: []
       } as Group;
-      group.time_windows = groupService.createDefaultTimewindows(group);
+      group.time_windows = this.groupService.createDefaultTimewindows(group);
       groups.push(group);
     }
     return groups;
@@ -97,12 +102,12 @@ class PlanGenerator {
       })
       .filter(tuple => tuple.duration > 0)  // Only consider groups with some overlap
       .sort((a, b) => {
-         // Biggest overlap - descending order by overlap duration 
+        // Biggest overlap - descending order by overlap duration 
         const spread = b.duration - a.duration;
         if (spread !== 0) {
           return spread;
         }
-         // Fill empty groups first - Ascending order by number of placements 
+        // Fill empty groups first - Ascending order by number of placements 
         return (a.group.placements?.length ?? 0) - (b.group.placements?.length ?? 0);
       })
     return tuples.length > 0 ? tuples[0] : null; // Return the best group or null no match

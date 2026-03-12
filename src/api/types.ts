@@ -4,11 +4,8 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-type Identifier = string | number | undefined | null;
 
-type Entity = {
-    id: Identifier;
-}
+import { Entity, Identifier } from "@digitalaidseattle/core";
 
 type TimeWindow = Entity & {
     student_id: Identifier | null;
@@ -96,7 +93,7 @@ type Plan = Entity & {
 type Placement = {
     plan_id: Identifier;
     student_id: Identifier;
-    group_id?: Identifier; // will be null when unassigned
+    group_id?: Identifier | null; // will be null when unassigned
     student?: Student;
     /**
      * Whether this student is an anchor student for the plan.
@@ -123,18 +120,18 @@ type Group = Entity & {
 }
 
 type Assignment = Entity & {
-    group_id: Identifier;
+    group_id: Identifier | null;
     facilitator_id: Identifier | null;
     created_at?: Date;
     updated_at?: Date;
     facilitator?: Facilitator;
 }
 
- type TimeSlot = Partial<TimeWindow> & {
-  label: string;
-  day_in_week: string;
-  start_t: string;
-  end_t: string;
+type TimeSlot = Partial<TimeWindow> & {
+    label: string;
+    day_in_week: string;
+    start_t: string;
+    end_t: string;
 }
 
 export type {
@@ -142,12 +139,10 @@ export type {
     TimeWindow,
     TimeSlot,
     Enrollment,
-    Entity,
     FailedFacilitator,
     FailedProfile,
     FailedStudent,
     ValidationError,
-    Identifier,
     Student,
     StudentField,
     Cohort,

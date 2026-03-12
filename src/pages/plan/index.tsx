@@ -12,13 +12,13 @@ import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@an
 import { Box, Breadcrumbs, CircularProgress, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
 
 // project import
-import { useNotifications } from "@digitalaidseattle/core";
+import { Identifier, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { CECohortService } from "../../api/ceCohortService";
 import { planService } from "../../api/cePlanService";
 import { planExporter } from "../../api/planExporter";
 import { planGenerator } from "../../api/planGenerator";
-import { Cohort, Identifier, Plan } from "../../api/types";
+import { Cohort, Plan } from "../../api/types";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { TextEdit } from "../../components/TextEdit";
 import { UI_STRINGS } from '../../constants';
@@ -42,7 +42,7 @@ const PlanPage: React.FC = () => {
   const notifications = useNotifications();;
 
   useEffect(() => {
-    refreshPlan(planId);
+    refreshPlan(planId!);
   }, [planId]);
 
   useEffect(() => {
@@ -72,24 +72,25 @@ const PlanPage: React.FC = () => {
   }
 
   function handleNameUpdate(text: string) {
-    planService.update(plan!.id, { name: text })
+    planService.update(plan!.id!, { name: text })
       .then(updated => {
         if (updated) {
           notifications.success(UI_STRINGS.PLAN_UPDATED);
-          refreshPlan(updated.id);
+          refreshPlan(updated.id!);
         }
       })
   }
 
   function handleNoteUpdate(text: string) {
-    planService.update(plan!.id, { note: text })
+    planService.update(plan!.id!, { note: text })
       .then(updated => {
         if (updated) {
           notifications.success(UI_STRINGS.PLAN_UPDATED);
-          refreshPlan(updated.id);
+          refreshPlan(updated.id!);
         }
       })
   }
+
   function exportPlan(): void {
     planExporter.exportPlan(plan!)
       .then((exported) => {
@@ -114,7 +115,7 @@ const PlanPage: React.FC = () => {
   }
 
   function handleSettingsChange(plan: Plan): void {
-    planService.update(plan.id, { group_size: plan.group_size! })
+    planService.update(plan!.id!, { group_size: plan.group_size! })
       .then(updatedPlan => {
         planGenerator.seedPlan(updatedPlan)
           .then((seededPlan) => {

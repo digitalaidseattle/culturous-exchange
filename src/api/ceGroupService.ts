@@ -5,44 +5,43 @@
  *
  */
 
+import { Identifier } from '@digitalaidseattle/core';
+import { SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
-import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
-import { EntityService } from "./entityService";
-import { Group, Identifier, TimeWindow } from "./types";
 import { CEAssignmentService } from './ceAssignmentService';
-import { SERVICE_ERRORS } from '../constants';
+import { DEFAULT_TIMEZONE, timeWindowService } from "./ceTimeWindowService";
+import { Group, TimeWindow } from "./types";
 
 const assignmentService = CEAssignmentService.getInstance();
-const DEFAULT_SELECT = "*, timewindow(*), assignment(*, facilitators(*, timewindow(*)))"
-class CEGroupService extends EntityService<Group> {
+const DEFAULT_SELECT = "*, timewindow(*), assignment(*, facilitators(*, timewindow(*)))";
 
-  mapJson(json: any): Group | null {
-    if (json) {
-      const group = {
-        ...json,
-        assignments: (json.assignment ?? []).map((js: any) => assignmentService.mapJson(js)),
-        placements: json.placement,
-        time_windows: (json.timewindow ?? []).map((js: any) => timeWindowService.mapJson(js))
-      }
-
-      delete group.assignment;
-      delete group.placement;
-      delete group.timewindow;
-
-      return group as Group;
-    }
-    else {
-      return null
-    }
+function MAPPER(json: any): Group {
+  const group = {
+    ...json,
+    assignments: (json.assignment ?? []).map((js: any) => assignmentService.mapJson(js)),
+    placements: json.placement,
+    time_windows: (json.timewindow ?? []).map((js: any) => timeWindowService.mapJson(js))
   }
 
-  async getById(entityId: Identifier, select?: string): Promise<Group> {
-    return super.getById(entityId, select ?? DEFAULT_SELECT)
-      .then((json: any) => this.mapJson(json)!)
-      .catch(err => {
-        console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);
-        throw err;
-      });
+  delete group.assignment;
+  delete group.placement;
+  delete group.timewindow;
+
+  return group;
+}
+
+class CEGroupService extends SupabaseEntityService<Group> {
+  private static instance: CEGroupService;
+
+  static getInstance() {
+    if (!CEGroupService.instance) {
+      CEGroupService.instance = new CEGroupService('grouptable', DEFAULT_SELECT, MAPPER);
+    }
+    return CEGroupService.instance;
+  }
+
+  mapJson(json: any): Group | null {
+    return this.mapper(json);
   }
 
   async update(entityId: Identifier, updatedFields: Partial<Group>, select?: string): Promise<Group> {
@@ -53,8 +52,7 @@ class CEGroupService extends EntityService<Group> {
     delete json.placements;
     delete json.time_windows;
 
-    return super.update(entityId, json, select ?? DEFAULT_SELECT)
-      .then(updated => this.mapJson(updated)!);
+    return super.update(entityId, json, select);
   }
 
   async save(group: Group): Promise<Group> {
@@ -64,7 +62,7 @@ class CEGroupService extends EntityService<Group> {
     delete json.time_windows;
     await this.insert(json, DEFAULT_SELECT);
 
-    await timeWindowService.deleteByGroupId(group.id);
+    await timeWindowService.deleteByGroupId(group.id!);
     for (const tw of group.time_windows!) {
       await timeWindowService.save(tw)
     }
@@ -74,9 +72,9 @@ class CEGroupService extends EntityService<Group> {
 
   async deleteGroup(group: Group) {
     for (const tw of group.time_windows!) {
-      await timeWindowService.delete(tw.id)
+      await timeWindowService.delete(tw.id!)
     }
-    return await this.delete(group.id)
+    return await this.delete(group.id!)
   }
 
   createDefaultTimewindows(group: Group): TimeWindow[] {
@@ -118,5 +116,4 @@ class CEGroupService extends EntityService<Group> {
 
 }
 
-const groupService = new CEGroupService('grouptable')
-export { groupService };
+export { CEGroupService };

@@ -11,7 +11,8 @@ import { toZonedTime } from "date-fns-tz";
 import { v4 as uuid } from 'uuid';
 import { SERVICE_ERRORS } from '../constants';
 import { EntityService } from "./entityService";
-import { CEProfile, Identifier, TimeWindow } from "./types";
+import { CEProfile, TimeWindow } from "./types";
+import { Identifier } from "@digitalaidseattle/core";
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
   if (arr1.length !== arr2.length) {

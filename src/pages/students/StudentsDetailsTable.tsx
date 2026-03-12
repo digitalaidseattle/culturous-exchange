@@ -72,7 +72,7 @@ const StudentsDetailsTable: React.FC = () => {
     try {
       student.anchor = !student.anchor;
       studentService
-        .update(student.id, { anchor: student.anchor })
+        .update(student.id!, { anchor: student.anchor })
         .then((resp) => {
           console.log('Anchor status updated:', resp);
           setRefresh(refresh + 1);
@@ -104,7 +104,7 @@ const StudentsDetailsTable: React.FC = () => {
 
   function doDeleteStudent() {
     if (deleteStudent) {
-      studentService.delete(deleteStudent.id)
+      studentService.delete(deleteStudent.id!)
         .then(() => {
           notifications.success(`${UI_STRINGS.DELETION_SUCCESS_PREFIX} ${deleteStudent.name} ${UI_STRINGS.DELETION_SUCCESS_SUFFIX}`);
           setRefresh(refresh + 1);

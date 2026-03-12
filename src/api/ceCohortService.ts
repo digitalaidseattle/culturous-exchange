@@ -8,7 +8,8 @@
 import { supabaseClient, SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { SERVICE_ERRORS } from '../constants';
 import { enrollmentService } from './ceEnrollmentService';
-import { Cohort, Enrollment, Identifier } from "./types";
+import { Cohort, Enrollment } from "./types";
+import { Identifier } from '@digitalaidseattle/core';
 
 const DEFAULT_SELECT = '*, enrollment(*), plan(*)';
 
@@ -39,7 +40,6 @@ class CECohortService extends SupabaseEntityService<Cohort> {
                 .deleteEnrollment({ cohort_id: cohort.id, student_id: id } as Enrollment)))
             .then(() => true)
     }
-
 
     async getLatest(): Promise<Cohort | null> {
         try {

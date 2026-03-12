@@ -36,7 +36,7 @@ class CEAssignmentService extends SupabaseEntityService<Assignment> {
   empty(): Assignment {
     return {
       id: uuid(),
-      group_id: undefined,
+      group_id: null,
       facilitator_id: null
     } as Assignment;
   }

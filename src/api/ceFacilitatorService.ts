@@ -56,7 +56,7 @@ class CEFacilitatorService extends SupabaseEntityService<Facilitator> {
     const upserted = await this.upsert(json);
 
     // Save time windows attached to facilitator
-    await timeWindowService.deleteByFacilitatorId(upserted.id);
+    await timeWindowService.deleteByFacilitatorId(upserted.id!);
     for (const tw of upserted.timeWindows ?? []) {
       await timeWindowService.save(tw as any);
     }

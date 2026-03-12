@@ -7,13 +7,13 @@
  */
 
 import { MoreOutlined } from "@ant-design/icons";
-import { LoadingContext, RefreshContext, useNotifications } from "@digitalaidseattle/core";
+import { Identifier, LoadingContext, RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { planService } from "../api/cePlanService";
-import { Identifier, Plan } from "../api/types";
+import { Plan } from "../api/types";
 import { UI_STRINGS } from '../constants';
 import StarAvatar from "./StarAvatar";
 import { planActivation } from "../api/planActivation";

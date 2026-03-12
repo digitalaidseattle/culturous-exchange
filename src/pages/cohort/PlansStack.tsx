@@ -25,7 +25,7 @@ export const PlansStack: React.FC = () => {
             {
                 cohort.plans
                     .sort((a, b) => a.name.localeCompare(b.name))
-                    .map(plan => <PlanCard key={plan.id} planId={plan.id} />)
+                    .map(plan => <PlanCard key={plan.id} planId={plan.id!} />)
             }
         </Stack>
     );

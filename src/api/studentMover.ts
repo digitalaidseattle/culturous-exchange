@@ -7,14 +7,15 @@
  *
  */
 
+import { Identifier } from "@digitalaidseattle/core";
 import { planEvaluator } from "./planEvaluator";
-import { Identifier, Plan } from "./types";
+import { Plan } from "./types";
 
 
 class StudentMover {
     run(plan: Plan, studentId: Identifier, newGroupId: Identifier): Promise<Plan> {
         const planPlacement = plan.placements.find(p => p.student_id === studentId);
-            
+
         if (planPlacement) {
             const oldGroup = plan.groups.find(g => g.id === planPlacement.group_id);
             const newGroup = plan.groups.find(g => g.id === newGroupId);

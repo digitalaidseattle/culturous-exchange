@@ -9,11 +9,13 @@
 import { v4 as uuid } from 'uuid';
 import { CEAssignmentService } from "./ceAssignmentService";
 import { Facilitator, Group } from "./types";
-import { groupService } from './ceGroupService';
+import { CEGroupService } from './ceGroupService';
 
-const service = CEAssignmentService.getInstance();
 
 export function addFacilitatorsToGroup(group: Group, facilitators: Facilitator[]): Promise<Group | null> {
+    const service = CEAssignmentService.getInstance();
+    const groupService = CEGroupService.getInstance();
+
     const now = new Date();
 
     const deletePromises = (group.assignments ?? [])
@@ -22,14 +24,14 @@ export function addFacilitatorsToGroup(group: Group, facilitators: Facilitator[]
     const addPromises = facilitators.map(async facilitator => {
         const assignment = {
             id: uuid(),
-            group_id: group.id,
-            facilitator_id: facilitator.id,
+            group_id: group.id!,
+            facilitator_id: facilitator.id!,
             created_at: now,
             updated_at: now
         }
         return service.insert(assignment);
     })
     return Promise.all([...deletePromises, ...addPromises])
-        .then(() => groupService.getById(group.id))
+        .then(() => groupService.getById(group.id!))
 
 }

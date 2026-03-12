@@ -6,10 +6,11 @@
  */
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
-import { enrollmentService } from "./ceEnrollmentService";
-import { Cohort, Group, Identifier, Placement, Plan, Student } from "./types";
-import { studentService } from "./ceStudentService";
 import { SERVICE_ERRORS } from '../constants';
+import { enrollmentService } from "./ceEnrollmentService";
+import { studentService } from "./ceStudentService";
+import { Cohort, Group, Placement, Plan, Student } from "./types";
+import { Identifier } from "@digitalaidseattle/core";
 
 
 class CEPlacementService {

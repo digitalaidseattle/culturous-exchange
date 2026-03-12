@@ -5,12 +5,13 @@
  *
  */
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
-import { groupService } from "./ceGroupService";
+import { CEGroupService } from "./ceGroupService";
 import { placementService } from "./cePlacementService";
 import { planService } from "./cePlanService";
 import { Group, Placement, Plan } from "./types";
 
 describe("planService", () => {
+    const groupService = CEGroupService.getInstance();
 
     vi.mock("./cePlacementService", () => {
         return {
@@ -40,7 +41,7 @@ describe("planService", () => {
             grouptable: [
                 { id: "group1", plan_id: "plan1", name: "Group 1", country_count: 2, time_windows: [] }
             ]
-        } 
+        }
 
         const placement1 = { group_id: "group1" } as Placement;
         const placement2 = { group_id: null } as Placement;

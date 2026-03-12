@@ -94,7 +94,7 @@ const CohortPage: React.FC = () => {
   async function handleCreatePlan() {
     if (cohort) {
       const created = await planService.create(cohort);
-      const hydrated = await planService.getById(created.id);
+      const hydrated = await planService.getById(created.id!);
       const seededPlan = await planGenerator.seedPlan(hydrated)
       await planService.save(seededPlan);
 

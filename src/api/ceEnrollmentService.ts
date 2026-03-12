@@ -7,8 +7,9 @@
 
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { timeWindowService } from "./ceTimeWindowService";
-import { Cohort, Enrollment, Identifier, Student } from "./types";
+import { Cohort, Enrollment, Student } from "./types";
 import { SERVICE_ERRORS } from '../constants';
+import { Identifier } from "@digitalaidseattle/core";
 
 class CEEnrollmentService {
     tableName = '';

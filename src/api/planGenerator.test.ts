@@ -5,11 +5,11 @@
  *
  */
 import { describe, expect, it, vi } from "vitest";
+import { CEGroupService } from "./ceGroupService";
 import { placementService } from "./cePlacementService";
+import { planService } from "./cePlanService";
 import { planGenerator } from "./planGenerator";
 import { Group, Placement, Plan, TimeWindow } from "./types";
-import { groupService } from "./ceGroupService";
-import { planService } from "./cePlanService";
 
 vi.mock("./cePlacementService", () => {
     return {
@@ -38,6 +38,7 @@ vi.mock("./cePlanService", () => {
 });
 
 describe("planGenerator", () => {
+    const groupService = CEGroupService.getInstance();
 
     it("emptyPlan", () => {
 

@@ -37,19 +37,20 @@ import { addHours, compareAsc, getHours, isFriday, isSaturday, isSunday } from "
 
 import { MoreOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
-import { groupService } from "../../api/ceGroupService";
+import { CEGroupService } from "../../api/ceGroupService";
 import { planService } from "../../api/cePlanService";
 import { studentMover } from "../../api/studentMover";
-import { Group, Identifier, Placement, Plan, Student, TimeWindow } from "../../api/types";
-import StudentModal from "../students/StudentModal";
+import { Group, Placement, Plan, Student, TimeWindow } from "../../api/types";
 import { ENDING_HOUR, OFFICE_HOURS, STARTING_HOUR, UI_STRINGS, WAITLIST_ID } from '../../constants';
+import StudentModal from "../students/StudentModal";
 import { FacilitatorMenu } from "./FacilitatorMenu";
 import { PlanContext } from "./PlanContext";
+import { Identifier } from "@digitalaidseattle/core";
 
 type TimeRow = {
     id: Identifier;
     groupId: Identifier;
-    studentId: Identifier;
+    studentId: Identifier | null;
     label: string;
     type: 'group' | 'anchor' | 'student' | 'waitlist' | 'facilitator';
     friday: boolean[];
@@ -90,6 +91,7 @@ interface SortableRowProps {
     row: TimeRow;
 }
 const SortableRow: React.FC<SortableRowProps> = ({ id, row }) => {
+    const groupService = CEGroupService.getInstance();
 
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -110,7 +112,7 @@ const SortableRow: React.FC<SortableRowProps> = ({ id, row }) => {
     useEffect(() => {
         if (row.type === 'group') {
             groupService.getById(row.groupId)
-                .then(g => setGroup(g))
+                .then(group => setGroup(group!))
         }
     }, [row]);
 
@@ -198,7 +200,7 @@ const SortableRow: React.FC<SortableRowProps> = ({ id, row }) => {
     }
 
     function refresh() {
-        planService.getById(plan.id)
+        planService.getById(plan.id!)
             .then(updated => setPlan(updated));
     }
 
@@ -357,7 +359,7 @@ export const TimeLine: React.FC = () => {
             const overRow = rows[overIndex];
             if (activeRow !== undefined && overRow !== undefined) {
                 setRows(arrayMove(rows, activeIndex, overIndex));
-                studentMover.run(plan, activeRow.studentId, overRow.groupId)
+                studentMover.run(plan, activeRow.studentId!, overRow.groupId)
                     .then(moved => {
                         planService.save(moved)
                             .then(saved => {

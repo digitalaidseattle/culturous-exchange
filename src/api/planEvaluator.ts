@@ -5,11 +5,16 @@
  *
  */
 
-import { groupService } from "./ceGroupService";
+import { CEGroupService } from "./ceGroupService";
 import { timeWindowService } from "./ceTimeWindowService";
 import { Group, Plan, TimeWindow } from "./types";
 
 class PlanEvaluator {
+    groupService: CEGroupService;
+
+    constructor() {
+        this.groupService = CEGroupService.getInstance();
+    }
 
     async evaluate(plan: Plan): Promise<Plan> {
         // Evaluautes Plan
@@ -28,14 +33,14 @@ class PlanEvaluator {
     }
 
     calcGroupTimeWindows(group: Group): TimeWindow[] {
-        let timeWindows = groupService.createDefaultTimewindows(group);
+        let timeWindows = this.groupService.createDefaultTimewindows(group);
         (group.assignments ?? []).forEach(assignment => {
             timeWindows = timeWindowService.intersectionTimeWindowsMultiple(timeWindows, assignment.facilitator!.timeWindows!);
         });
         (group.placements ?? []).forEach(placement => {
             timeWindows = timeWindowService.intersectionTimeWindowsMultiple(timeWindows, placement.student!.timeWindows!);
         });
-        timeWindows.forEach(tw => tw.group_id = group.id);
+        timeWindows.forEach(tw => tw.group_id = group.id!);
         return timeWindows;
     }
 

@@ -5,18 +5,20 @@
  *
  */
 
+import { Identifier } from "@digitalaidseattle/core";
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { v4 as uuidv4 } from 'uuid';
+import { SERVICE_ERRORS, UI_STRINGS } from '../constants';
 import { enrollmentService } from "./ceEnrollmentService";
-import { groupService } from "./ceGroupService";
+import { CEGroupService } from "./ceGroupService";
 import { placementService } from "./cePlacementService";
 import { EntityService } from "./entityService";
-import { Cohort, Group, Identifier, Placement, Plan, Student } from "./types";
-import { UI_STRINGS, SERVICE_ERRORS } from '../constants';
+import { Cohort, Group, Placement, Plan, Student } from "./types";
 
 const DEFAULT_SELECT = '*, placement(*, student(*, timewindow(*))), grouptable(*, timewindow(*), assignment(*, facilitators(*, timewindow(*))))';
 
 class CEPlanService extends EntityService<Plan> {
+  groupService = CEGroupService.getInstance();
 
   async create(cohort: Cohort): Promise<Plan> {
     const proposed: Plan = {
@@ -79,7 +81,7 @@ class CEPlanService extends EntityService<Plan> {
     const plan = {
       ...json,
       placements: json.placement.map((pJson: any) => placementService.mapJson(pJson)),
-      groups: json.grouptable.map((gJson: any) => groupService.mapJson(gJson))
+      groups: json.grouptable.map((gJson: any) => this.groupService.mapJson(gJson))
     }
 
     delete plan.placement;
@@ -133,19 +135,19 @@ class CEPlanService extends EntityService<Plan> {
             return {
               ...placement,
               plan_id: duplicatePlan.id
-            }
+            } as Placement;
           });
         const duplicateGroups = plan.groups
           .map(group => {
             return {
               ...group,
               plan_id: duplicatePlan.id
-            }
+            } as Group;
           });
         return Promise
           .all([
             placementService.batchInsert(duplicatePlacements),
-            groupService.batchInsert(duplicateGroups)
+            this.groupService.batchInsert(duplicateGroups)
           ])
           .then(resps => {
             duplicatePlan.placements = resps[0];
@@ -187,7 +189,7 @@ class CEPlanService extends EntityService<Plan> {
   async save(plan: Plan): Promise<Plan> {
     await this.insert(plan)
     for (const group of plan.groups) {
-      await groupService.save(group)
+      await this.groupService.save(group)
     }
     for (const placement of plan.placements) {
       await placementService.save(placement)
@@ -201,9 +203,9 @@ class CEPlanService extends EntityService<Plan> {
       await placementService.deletePlacement(placement);
     }
     for (const group of plan.groups) {
-      await groupService.deleteGroup(group)
+      await this.groupService.deleteGroup(group)
     }
-    return await this.delete(plan.id)
+    return await this.delete(plan.id!)
   }
 
 }

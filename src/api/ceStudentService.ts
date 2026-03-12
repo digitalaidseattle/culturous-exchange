@@ -4,12 +4,13 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
+import { Identifier } from '@digitalaidseattle/core';
 import { PageInfo, QueryModel, supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
 import { GENDER_OPTION } from '../constants';
 import { timeWindowService } from './ceTimeWindowService';
 import { EntityService } from "./entityService";
-import { Cohort, Identifier, Student } from "./types";
+import { Cohort, Student } from "./types";
 
 const DEFAULT_SELECT = '*, timewindow(*)';
 
@@ -104,7 +105,7 @@ class CEStudentService extends EntityService<Student> {
 
     await this.insert(json);
 
-    await timeWindowService.deleteByStudentId(student.id);
+    await timeWindowService.deleteByStudentId(student.id!);
     for (const tw of student.timeWindows!) {
       await timeWindowService.save(tw)
     }
