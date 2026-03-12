@@ -34,10 +34,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
         if (props.planId) {
             CEPlanService.getInstance()
                 .getById(props.planId)
-                .then((resp) => {
-                    console.log(resp)
-                    setPlan(resp!)
-                })
+                .then((resp) => setPlan(resp!))
         }
     }, [props.planId, refresh]);
 
