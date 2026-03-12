@@ -79,7 +79,7 @@ const DetailsTable: React.FC = () => {
 
   function doDeleteStudent() {
     if (deleteProfile) {
-      facilitatorService.delete(deleteProfile.id)
+      facilitatorService.delete(deleteProfile.id!)
         .then(() => {
           notifications.success(`${UI_STRINGS.DELETION_SUCCESS_PREFIX} ${deleteProfile.name} ${UI_STRINGS.DELETION_SUCCESS_SUFFIX}`);
           setRefresh(refresh + 1);

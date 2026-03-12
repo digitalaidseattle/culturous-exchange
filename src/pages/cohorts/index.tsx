@@ -14,21 +14,20 @@ import { Button, Stack } from '@mui/material';
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { useContext } from 'react';
-import { CECohortService } from '../../api/ceCohortService';
+import { createCohort } from '../../api/transactions/cohort/createCohort';
 import { UI_STRINGS } from '../../constants';
 import { CohortsStack } from './CohortsStack';
 
 // ================================|| 404 ||================================ //
 
 const CohortsPage: React.FC = () => {
-    const cohortService = CECohortService.getInstance();
 
     const { refresh, setRefresh } = useContext(RefreshContext);
 
     const notifications = useNotifications();
 
     const newCohort = async () => {
-        const cohort = await cohortService.create();
+        const cohort = await createCohort();
         if (cohort) {
             notifications.success(`Cohort ${cohort.name} created.`);
             setRefresh(refresh + 1);

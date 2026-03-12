@@ -17,7 +17,7 @@ export function addFacilitatorsToGroup(group: Group, facilitators: Facilitator[]
     const now = new Date();
 
     const deletePromises = (group.assignments ?? [])
-        .map(assignment => service.delete(assignment.id));
+        .map(assignment => service.delete(assignment.id!));
 
     const addPromises = facilitators.map(async facilitator => {
         const assignment = {

@@ -29,9 +29,10 @@ import { PageInfo } from "@digitalaidseattle/supabase";
 
 import { StarFilled } from "@ant-design/icons";
 import { CohortContext } from ".";
-import { CECohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { studentService } from "../../api/ceStudentService";
+import { addStudentsToCohort } from "../../api/transactions/cohort/addStudentsToCohort";
+import { removeStudentsFromCohort } from "../../api/transactions/cohort/removeStudentsFromCohort";
 import { CEProfile, Enrollment, Student } from "../../api/types";
 import AddProfileModal from "../../components/AddProfileModal";
 import DisplayTimeWindow from "../../components/DisplayTimeWindow";
@@ -41,7 +42,7 @@ import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../const
 
 
 export const StudentTable: React.FC = () => {
-  const cohortService = CECohortService.getInstance();
+
   const apiRef = useGridApiRef();
   const { cohort } = useContext(CohortContext);
   const notifications = useNotifications();
@@ -78,7 +79,7 @@ export const StudentTable: React.FC = () => {
   }
 
   const handleAddStudent = (students: CEProfile[]) => {
-    cohortService.addStudents(cohort, students as Student[])
+    addStudentsToCohort(cohort, students as Student[])
       .then(() => {
         notifications.success(UI_STRINGS.STUDENTS_ADDED);
         setRefresh(refresh + 1);
@@ -91,8 +92,7 @@ export const StudentTable: React.FC = () => {
   }
 
   const doDelete = () => {
-    cohortService
-      .removeStudents(cohort, Array.from(rowSelectionModel!.ids))
+    removeStudentsFromCohort(cohort, Array.from(rowSelectionModel!.ids))
       .then(() => {
         notifications.success(UI_STRINGS.STUDENTS_REMOVED);
         setRefresh(refresh + 1);

@@ -2,21 +2,33 @@
  * ceAssignmentService.ts
  * Scaffold service for managing assignments (facilitator <-> group mapping)
  */
-import { supabaseClient } from '@digitalaidseattle/supabase';
+import { supabaseClient, SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
-import { EntityService } from './entityService';
-import { Assignment } from './types';
 import { CEFacilitatorService } from './ceFacilitatorService';
+import { Assignment } from './types';
 
 const DEFAULT_SELECT = '*';
 
-class CEAssignmentService extends EntityService<Assignment> {
+function MAPPER(json: any): Assignment {
+  const facilitatorService = CEFacilitatorService.getInstance();
+
+  const assignment = {
+    ...json,
+    facilitator: facilitatorService.mapJson(json.facilitators)
+  };
+
+  delete assignment.facilitators;
+
+  return assignment;
+}
+
+class CEAssignmentService extends SupabaseEntityService<Assignment> {
 
   private static instance: CEAssignmentService;
 
   static getInstance() {
     if (!CEAssignmentService.instance) {
-      CEAssignmentService.instance = new CEAssignmentService('assignment');
+      CEAssignmentService.instance = new CEAssignmentService('assignment', DEFAULT_SELECT, MAPPER);
     }
     return CEAssignmentService.instance;
   }
@@ -30,16 +42,7 @@ class CEAssignmentService extends EntityService<Assignment> {
   }
 
   mapJson(json: any): Assignment {
-    const facilitatorService = CEFacilitatorService.getInstance();
-
-    const assignment = {
-      ...json,
-      facilitator: facilitatorService.mapJson(json.facilitators)
-    };
-
-    delete assignment.facilitators;
-
-    return assignment;
+    return MAPPER(json);
   }
 
   async findByGroupId(groupId: string, select?: string): Promise<Assignment | null> {
@@ -49,7 +52,7 @@ class CEAssignmentService extends EntityService<Assignment> {
         .select(select ?? DEFAULT_SELECT)
         .eq('group_id', groupId)
         .single()
-        .then((resp: any) => resp.data ?? null);
+        .then((resp: any) => resp.data ? this.mapJson(resp.data) : null);
     } catch (err) {
       console.error('Unexpected error fetching assignment by group id', err);
       throw err;

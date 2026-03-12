@@ -2,21 +2,29 @@
  * ceFacilitatorService.ts
  * Service for managing facilitator profiles and their time windows.
  */
-import { PageInfo, QueryModel, supabaseClient } from '@digitalaidseattle/supabase';
+import { supabaseClient, SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
 import { timeWindowService } from './ceTimeWindowService';
-import { EntityService } from './entityService';
 import { Facilitator } from './types';
 
 const DEFAULT_SELECT = '*, timewindow(*)';
+function MAPPER(json: any): Facilitator {
+  console.log('MAPPER', json)
+  const facilitator = {
+    ...json,
+    timeWindows: json.timewindow ?? [] ? json.timewindow.map((js: any) => timeWindowService.mapJson(js)) : []
+  }
+  delete facilitator.timewindow;
+  return facilitator as Facilitator;
+}
 
-class CEFacilitatorService extends EntityService<Facilitator> {
+class CEFacilitatorService extends SupabaseEntityService<Facilitator> {
 
   private static _instance: CEFacilitatorService;
 
   static getInstance(): CEFacilitatorService {
     if (!this._instance) {
-      this._instance = new CEFacilitatorService('facilitators')
+      this._instance = new CEFacilitatorService('facilitators', DEFAULT_SELECT, MAPPER)
     }
     return this._instance;
   }
@@ -38,49 +46,41 @@ class CEFacilitatorService extends EntityService<Facilitator> {
   }
 
   mapJson(json: any): Facilitator {
-    const facilitator = {
-      ...json,
-      timeWindows: json.timewindow ? json.timewindow.map((js: any) => timeWindowService.mapJson(js)) : []
-    }
-    delete facilitator.timewindow;
-    return facilitator as Facilitator;
+    return MAPPER(json);
   }
 
   async save(facilitator: Facilitator): Promise<Facilitator> {
     const json = { ...facilitator } as any;
     delete json.timeWindows;
 
-    await this.insert(json);
+    const upserted = await this.upsert(json);
 
     // Save time windows attached to facilitator
-    await timeWindowService.deleteByFacilitatorId(facilitator.id);
-    for (const tw of facilitator.timeWindows ?? []) {
+    await timeWindowService.deleteByFacilitatorId(upserted.id);
+    for (const tw of upserted.timeWindows ?? []) {
       await timeWindowService.save(tw as any);
     }
-    return facilitator;
+    return upserted;
   }
 
-  async getAll(select?: string): Promise<Facilitator[]> {
-    return supabaseClient
-      .from(this.tableName)
-      .select(select ?? DEFAULT_SELECT)
-      .then((resp: any) => {
-        const json = resp.data ?? [];
-        return json.map((jFac: any) => this.mapJson(jFac));
-      })
-  }
 
-  async find(queryModel: QueryModel, select?: string): Promise<PageInfo<Facilitator>> {
-    return super.find(queryModel, select ?? DEFAULT_SELECT)
-      .then(pi => {
-        const newRows = pi.rows.map(json => this.mapJson(json))
-        return {
-          ...pi,
-          rows: newRows
-        };
-      })
+  async upsert(entity: Facilitator): Promise<Facilitator> {
+    try {
+      const { data, error } = await supabaseClient
+        .from(this.tableName)
+        .upsert([entity])
+        .select(this.select ?? this.select)
+        .single()
+      if (error) {
+        console.error('Failed to upsert entity', error);
+        throw new Error('Failed to upsert entity');
+      }
+      return this.mapJson(data);
+    } catch (err) {
+      console.error('Error inserting entity:', err);
+      throw err;
+    }
   }
-
 }
 
 export { CEFacilitatorService };
