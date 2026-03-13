@@ -12,7 +12,7 @@ import { Button, Stack } from '@mui/material';
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 
-import { CEStudentService } from '../../api/ceStudentService';
+import { CEStudentService } from '../../api/ceProfileService';
 import { CETimeWindowService } from '../../api/ceTimeWindowService';
 import { ProfileUploader } from '../../api/ProfileUploader';
 import { FailedProfile, Student } from '../../api/types';
@@ -28,8 +28,8 @@ import StudentsDetailsTable from './StudentsDetailsTable';
 const ToolsSection = () => {
     const studentService = CEStudentService.getInstance();
     const uploadService = new ProfileUploader(
-        StudentValidationService.getInstance()
-    );
+        StudentValidationService.getInstance(),
+        CEStudentService.getInstance());
 
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);

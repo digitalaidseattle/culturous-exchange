@@ -11,9 +11,9 @@ import { Button, Stack } from '@mui/material';
 // project import
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
-import { CEFacilitatorService } from '../../api/ceFacilitatorService';
-import { CETimeWindowService } from '../../api/ceTimeWindowService';
+import { CEFacilitatorService } from '../../api/ceProfileService';
 import { ProfileUploader } from '../../api/ProfileUploader';
+import { saveFacilitator } from '../../api/transactions/facilitator/saveFacilitator';
 import { Facilitator, FailedProfile } from '../../api/types';
 import { FacilitatorValidationService } from '../../api/ValidationService';
 import FailedUploadModal from '../../components/FailedUploadModal';
@@ -26,8 +26,7 @@ import FacilitatorModal from './FacilitatorModal';
 
 const ToolsSection = () => {
     const facilitatorService = CEFacilitatorService.getInstance();
-    const timeWindowService = CETimeWindowService.getInstance();
-    const uploadService = new ProfileUploader(FacilitatorValidationService.getInstance());
+    const uploadService = new ProfileUploader(FacilitatorValidationService.getInstance(), facilitatorService);
 
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
@@ -92,21 +91,10 @@ const ToolsSection = () => {
     }
 
     const handleAddFacilitator = async (updated: Facilitator) => {
-        return timeWindowService
-            .getTimeZone(updated.city!, updated.country)
-            .then(resp => {
-                updated.time_zone = resp.timezone
-                updated.tz_offset = resp.offset
-                timeWindowService.adjustTimeWindows(updated);
-
-                facilitatorService.save(updated)
-                    .then(saved => {
-
-                        notifications.success(`Success. Added student: ${saved.name}`);
-                        handleCloseAddFacilitatorModal();
-                    })
-
-                notifications.success(`Success. Added student: ${updated.name}`);
+        return saveFacilitator(updated)
+            .then(added => notifications.success(`Success. Added facilitator: ${added.name}`))
+            .catch(error => notifications.error(`Error. Could not add facilitator: ${error.message}`))
+            .finally(() => {
                 handleCloseAddFacilitatorModal();
                 setRefresh(refresh + 1)
             })

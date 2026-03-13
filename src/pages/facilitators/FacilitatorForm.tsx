@@ -15,6 +15,7 @@ import {
   ListItemText,
   MenuItem,
   Select,
+  Switch,
   TextField
 } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -49,6 +50,13 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, fieldErrors, onChange }
   useEffect(() => {
     setErrors(fieldErrors);
   }, [fieldErrors]);
+
+  const handleActiveChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = event.target;
+    const next = { ...updated, [name]: checked };
+    setUpdated(next);
+    onChange(next, []);  // no validation needed for a switch
+  }
 
   const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -143,6 +151,17 @@ const FacilitatorForm: React.FC<Props> = ({ facilitator, fieldErrors, onChange }
         isError={hasFieldError('email')}
         errorText={getFieldError('email')}
       />
+
+      <FormControl fullWidth >
+        <FormLabel id="active-label" required>{UI_STRINGS.ACTIVE}</FormLabel>
+        <Switch
+          name="active"
+          checked={updated.active}
+          onChange={handleActiveChange}
+          slotProps={{ input: { 'aria-label': 'controlled' } }}
+        />
+
+      </FormControl>
 
       <FormControl fullWidth error={hasFieldError('time_zone')}>
         <FormLabel id="time-zones-label" required>{UI_STRINGS.TIME_ZONES}</FormLabel>

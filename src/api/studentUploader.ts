@@ -6,10 +6,9 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-import { v4 as uuid } from 'uuid';
 import { read, utils } from "xlsx";
 import { SERVICE_ERRORS } from '../constants';
-import { CEStudentService } from "./ceStudentService";
+import { CEStudentService } from './ceProfileService';
 import { CETimeWindowService } from "./ceTimeWindowService";
 import { FailedStudent, Student } from "./types";
 import { StudentValidationService } from './ValidationService';
@@ -37,6 +36,7 @@ class StudentUploader {
     createStudent(dict: any): Student {
         const times = dict['please mark all times that would be possible for the online group session on the weekend (based in your time zone)'];
         return {
+            ...this.studentService.empty(),
             name: dict['first/given name in english'].trim() + ' ' + dict['last/sur/family name in english'].trim(),
             age: Number.parseInt(dict['your age (how old are you currently)']),
             email: dict['email address'],
@@ -72,25 +72,14 @@ class StudentUploader {
             //FIX ME: failedError: errors is not recievable as an array on the front end notification system. The front-end is currently set up to display a single error string for each failed student.
             return { success: false, student: { ...student, failedError: errors } };
         }
-        return this.timeWindowService
-            .getTimeZone(student.city!, student.country)
-            .then(resp => {
-                student.id = uuid();
-                student.time_zone = resp.timezone
-                student.tz_offset = resp.offset
-                this.timeWindowService.adjustTimeWindows(student);
-                return this.studentService.save(student)
-                    .then(inserted => {
-                        return { success: true, student: inserted };
-                    })
-                    .catch((err) => {
-                        console.error(`Student ${student.name} could not be inserted`);
-                        return { success: false, student: { ...student, failedError: err.message } };
-                    });
+        return this.studentService.save(student)
+            .then(inserted => {
+                return { success: true, student: inserted };
             })
             .catch((err) => {
+                console.error(`Student ${student.name} could not be inserted`);
                 return { success: false, student: { ...student, failedError: err.message } };
-            })
+            });
     }
 
     async insert_from_excel(excel_file: File): Promise<{ successCount: number; failedStudents: FailedStudent[] }> {

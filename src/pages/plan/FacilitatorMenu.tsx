@@ -8,14 +8,14 @@
 import { Menu, MenuItem } from '@mui/material';
 
 import { useContext, useEffect, useState } from 'react';
-import { CEFacilitatorService } from '../../api/ceFacilitatorService';
+import { CEFacilitatorDao } from '../../api/ceFacilitatorDao';
 import { planEvaluator } from '../../api/planEvaluator';
-import { Facilitator, Group } from '../../api/types';
+import { addFacilitatorsToGroup } from '../../api/transactions/facilitator/addFacilitatorsToGroup';
+import { removeFacilitatorsFromGroup } from '../../api/transactions/facilitator/removeFacilitatorsFromGroup';
+import { CEProfile, Facilitator, Group } from '../../api/types';
 import AddProfileModal from '../../components/AddProfileModal';
 import { UI_STRINGS } from "../../constants";
 import { PlanContext } from './PlanContext';
-import { addFacilitatorsToGroup } from '../../api/transactions/facilitator/addFacilitatorsToGroup';
-import { removeFacilitatorsFromGroup } from '../../api/transactions/facilitator/removeFacilitatorsFromGroup';
 
 export interface FacilitatorMenuProps {
     group: Group,
@@ -26,7 +26,7 @@ export interface FacilitatorMenuProps {
 export const FacilitatorMenu: React.FC<FacilitatorMenuProps> = ({ group, anchorElement, onChange }) => {
     const { plan, setPlan } = useContext(PlanContext);
 
-    const facilitatorService = CEFacilitatorService.getInstance();
+    const facilitatorDao = CEFacilitatorDao.getInstance();
     const [allFacilitators, setAllFacilitators] = useState<Facilitator[]>([]);
     const [availableFacilitators, setAvailableFacilitators] = useState<Facilitator[]>([]);
 
@@ -35,7 +35,7 @@ export const FacilitatorMenu: React.FC<FacilitatorMenuProps> = ({ group, anchorE
     const showMenu = Boolean(anchorElement);
 
     useEffect(() => {
-        facilitatorService.getAll()
+        facilitatorDao.findActive(true)
             .then(ff => setAllFacilitators(ff));
     }, []);
 
@@ -68,9 +68,9 @@ export const FacilitatorMenu: React.FC<FacilitatorMenuProps> = ({ group, anchorE
         }
     };
 
-    async function handleAddFacilitator(newFacilitators: Facilitator[]) {
+    async function handleAddFacilitator(newFacilitators: CEProfile[]) {
         if (group) {
-            const updated = await addFacilitatorsToGroup(group, newFacilitators);
+            const updated = await addFacilitatorsToGroup(group, newFacilitators as Facilitator[]);
             const evaluated = await planEvaluator.evaluate(plan);
             setPlan(evaluated);
             setShowAddFacilitator(false);

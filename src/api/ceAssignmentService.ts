@@ -4,17 +4,17 @@
  */
 import { supabaseClient, SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
-import { CEFacilitatorService } from './ceFacilitatorService';
+import { CEFacilitatorDao } from './ceFacilitatorDao';
 import { Assignment } from './types';
 
 const DEFAULT_SELECT = '*, facilitators(*, timewindow(*))';
 
 function MAPPER(json: any): Assignment {
-  const facilitatorService = CEFacilitatorService.getInstance();
+  const facilitatorDao = CEFacilitatorDao.getInstance();
   const facilitator = json.facilitators ?? undefined;
   const assignment = {
     ...json,
-    facilitator: facilitatorService.mapJson(facilitator)
+    facilitator: facilitatorDao.mapJson(facilitator)
   };
 
   delete assignment.facilitators;

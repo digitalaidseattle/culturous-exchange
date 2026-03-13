@@ -19,13 +19,13 @@ function MAPPER(json: any): Facilitator {
   return facilitator as Facilitator;
 }
 
-class CEFacilitatorService extends SupabaseEntityService<Facilitator> {
+class CEFacilitatorDao extends SupabaseEntityService<Facilitator> {
 
-  private static _instance: CEFacilitatorService;
+  private static _instance: CEFacilitatorDao;
 
-  static getInstance(): CEFacilitatorService {
+  static getInstance(): CEFacilitatorDao {
     if (!this._instance) {
-      this._instance = new CEFacilitatorService('facilitators', DEFAULT_SELECT, MAPPER)
+      this._instance = new CEFacilitatorDao('facilitators', DEFAULT_SELECT, MAPPER)
     }
     return this._instance;
   }
@@ -50,29 +50,12 @@ class CEFacilitatorService extends SupabaseEntityService<Facilitator> {
     return MAPPER(json);
   }
 
-  async save(facilitator: Facilitator): Promise<Facilitator> {
-    const timeWindowService = CETimeWindowService.getInstance();
-
-    const json = { ...facilitator } as any;
-    delete json.timeWindows;
-
-    const upserted = await this.upsert(json);
-
-    // Save time windows attached to facilitator
-    await timeWindowService.deleteByFacilitatorId(upserted.id!);
-    for (const tw of upserted.timeWindows ?? []) {
-      await timeWindowService.save(tw as any);
-    }
-    return upserted;
-  }
-
-
   async upsert(entity: Facilitator): Promise<Facilitator> {
     try {
       const { data, error } = await supabaseClient
         .from(this.tableName)
         .upsert([entity])
-        .select(this.select ?? this.select)
+        .select(this.select)
         .single()
       if (error) {
         console.error('Failed to upsert entity', error);
@@ -84,6 +67,15 @@ class CEFacilitatorService extends SupabaseEntityService<Facilitator> {
       throw err;
     }
   }
+
+  async findActive(isActive: boolean): Promise<Facilitator[]> {
+    return await supabaseClient
+      .from(this.tableName)
+      .select(this.select)
+      .eq('active', isActive)
+      .then((resp: any) => resp.data.map((json: any) => this.mapper(json)));
+  }
+
 }
 
-export { CEFacilitatorService };
+export { CEFacilitatorDao };

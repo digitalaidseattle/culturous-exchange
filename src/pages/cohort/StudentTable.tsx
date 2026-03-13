@@ -30,7 +30,7 @@ import { PageInfo } from "@digitalaidseattle/supabase";
 import { StarFilled } from "@ant-design/icons";
 import { CohortContext } from ".";
 import { enrollmentService } from "../../api/ceEnrollmentService";
-import { CEStudentService } from "../../api/ceStudentService";
+import { CEStudentDao } from "../../api/ceStudentDao";
 import { addStudentsToCohort } from "../../api/transactions/cohort/addStudentsToCohort";
 import { removeStudentsFromCohort } from "../../api/transactions/cohort/removeStudentsFromCohort";
 import { CEProfile, Enrollment, Student } from "../../api/types";
@@ -42,7 +42,7 @@ import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../const
 
 
 export const StudentTable: React.FC = () => {
-  const studentService = CEStudentService.getInstance();
+  const studentDao = CEStudentDao.getInstance();
 
   const apiRef = useGridApiRef();
   const { cohort } = useContext(CohortContext);
@@ -68,7 +68,7 @@ export const StudentTable: React.FC = () => {
   }, [cohort])
 
   const addStudent = () => {
-    studentService.findUnenrolled()
+    studentDao.findUnenrolled()
       .then(students => {
         setUnenrolled(students);
         setShowAddStudent(true);
@@ -181,7 +181,7 @@ export const StudentTable: React.FC = () => {
       width: 75,
       type: 'number',
       filterOperators: getGridNumericOperators()
-        .filter((operator) => studentService.supportedNumberFilters().includes(operator.value)),
+        .filter((operator) => studentDao.supportedNumberFilters().includes(operator.value)),
       renderCell: (param: GridRenderCellParams) => {
         return <Typography>{param.row.student.age}</Typography>;
       },
@@ -192,7 +192,7 @@ export const StudentTable: React.FC = () => {
       headerName: UI_STRINGS.GENDER,
       width: 100,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentService.supportedStringFilters().includes(operator.value)),
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value)),
       renderCell: (param: GridRenderCellParams) => {
         return <Typography>{param.row.student.gender}</Typography>;
       },

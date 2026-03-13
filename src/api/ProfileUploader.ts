@@ -6,22 +6,21 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-import { v4 as uuid } from 'uuid';
 import { read, utils } from "xlsx";
 import { SERVICE_ERRORS } from '../constants';
-import { CEFacilitatorService } from './ceFacilitatorService';
+import { CEProfileService } from './ceProfileService';
 import { CETimeWindowService } from "./ceTimeWindowService";
 import { CEProfile, FailedProfile } from "./types";
 import { ValidationService } from './ValidationService';
 
 class ProfileUploader<T extends CEProfile> {
     private validationService: ValidationService<T>;
-    private profileService;
+    private profileService: CEProfileService<T>;
     private timeWindowService;
 
-    constructor(validationService: ValidationService<T>) {
+    constructor(validationService: ValidationService<T>, profileService: CEProfileService<T>) {
         this.validationService = validationService;
-        this.profileService = CEFacilitatorService.getInstance();
+        this.profileService = profileService;
         this.timeWindowService = CETimeWindowService.getInstance();
     }
 
@@ -37,6 +36,7 @@ class ProfileUploader<T extends CEProfile> {
     createProfile(dict: any): CEProfile {
         const times = dict['please mark all times that would be possible for the online group session on the weekend (based in your time zone)'];
         return {
+            ...this.profileService.empty(),
             name: dict['first/given name in english'].trim() + ' ' + dict['last/sur/family name in english'].trim(),
             email: dict['email address'],
             city: dict['home city (and state if applicable)'],
@@ -69,25 +69,15 @@ class ProfileUploader<T extends CEProfile> {
             //FIX ME: failedError: errors is not recievable as an array on the front end notification system. The front-end is currently set up to display a single error string for each failed student.
             return { success: false, profile: { ...profile, failedError: errors } };
         }
-        return this.timeWindowService
-            .getTimeZone(profile.city!, profile.country)
-            .then(resp => {
-                profile.id = uuid();
-                profile.time_zone = resp.timezone
-                profile.tz_offset = resp.offset
-                this.timeWindowService.adjustTimeWindows(profile);
-                return this.profileService.save(profile)
-                    .then(inserted => {
-                        return { success: true, profile: inserted };
-                    })
-                    .catch((err) => {
-                        console.error(`Student ${profile.name} could not be inserted`);
-                        return { success: false, profile: { ...profile, failedError: err.message } };
-                    });
+        return this.profileService.save(profile)
+            .then(inserted => {
+                return { success: true, profile: inserted };
             })
             .catch((err) => {
+                console.error(`Student ${profile.name} could not be inserted`);
                 return { success: false, profile: { ...profile, failedError: err.message } };
-            })
+            });
+
     }
 
     async insert_from_excel(excel_file: File): Promise<{ successCount: number; failedProfiles: FailedProfile[] }> {

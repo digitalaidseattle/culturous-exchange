@@ -49,6 +49,7 @@ export const UI_STRINGS = {
   GENDER: 'Gender',
   TIME_SLOTS: 'Time Slot(s)',
   TIME_ZONES: 'Time Zones',
+  ACTIVE: 'Active',
   COHORTS: 'Cohorts',
   ANCHOR: 'Anchor',
   TYPE: 'Type',

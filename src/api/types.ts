@@ -42,6 +42,7 @@ type FailedStudent = Student & {
 }
 
 type Facilitator = CEProfile & {
+    active: boolean;
 }
 
 type FailedFacilitator = Facilitator & {

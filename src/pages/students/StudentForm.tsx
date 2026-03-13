@@ -23,12 +23,12 @@ import {
 import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
-import { CEStudentService } from '../../api/ceStudentService';
+import { CEStudentDao } from '../../api/ceStudentDao';
+import { CETimeSlotService, TIME_SLOTS } from '../../api/ceTimeSlotService';
 import { Cohort, Student, TimeSlot, TimeWindow, ValidationError } from '../../api/types';
 import { StudentValidationService } from '../../api/ValidationService';
 import { CETextInput } from '../../components/CETextInput';
 import { GENDER_OPTION, UI_STRINGS } from '../../constants';
-import { CETimeSlotService, TIME_SLOTS } from '../../api/ceTimeSlotService';
 
 
 
@@ -39,7 +39,7 @@ interface Props {
 }
 
 const StudentForm: React.FC<Props> = ({ student, fieldErrors, onChange }) => {
-  const studentService = CEStudentService.getInstance();
+  const studentDao = CEStudentDao.getInstance();
   const validationService = StudentValidationService.getInstance();
   const timeSlotService = CETimeSlotService.getInstance();
 
@@ -58,7 +58,7 @@ const StudentForm: React.FC<Props> = ({ student, fieldErrors, onChange }) => {
 
   // Need to lookup which cohorts the student is assigned to
   useEffect(() => {
-    studentService.getCohortsForStudent(updated)
+    studentDao.getCohortsForStudent(updated)
       .then(ccs => setCohorts(ccs))
   }, [updated]);
 

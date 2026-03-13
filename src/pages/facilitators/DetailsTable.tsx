@@ -20,17 +20,16 @@ import { DeleteOutlined } from '@ant-design/icons';
 import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { ConfirmationDialog } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
-import { CEFacilitatorService } from '../../api/ceFacilitatorService';
+import { CEFacilitatorDao } from '../../api/ceFacilitatorDao';
+import { saveFacilitator } from '../../api/transactions/facilitator/saveFacilitator';
 import { CEProfile, Facilitator } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
-import FacilitatorModal from './FacilitatorModal';
 import { TimeSlots } from '../../components/TimeSlots';
 import { DEFAULT_TABLE_PAGE_SIZE, UI_STRINGS } from '../../constants';
-import { CETimeWindowService } from '../../api/ceTimeWindowService';
+import FacilitatorModal from './FacilitatorModal';
 
 const DetailsTable: React.FC = () => {
-  const facilitatorService = CEFacilitatorService.getInstance();
-  const timeWindowService = CETimeWindowService.getInstance();
+  const facilitatorDao = CEFacilitatorDao.getInstance();
 
   const { setLoading } = useContext(LoadingContext);
   const { refresh, setRefresh } = useContext(RefreshContext);
@@ -61,7 +60,7 @@ const DetailsTable: React.FC = () => {
         filterOperator: filterModel.items.length > 0 ? filterModel.items[0].operator : undefined,
         filterValue: filterModel.items.length > 0 ? filterModel.items[0].value : undefined,
       } as QueryModel;
-      facilitatorService
+      facilitatorDao
         .find(queryModel)
         .then((pi) => setPageInfo(pi))
         .catch((err) => console.error(err))
@@ -80,7 +79,7 @@ const DetailsTable: React.FC = () => {
 
   function doDeleteStudent() {
     if (deleteProfile) {
-      facilitatorService.delete(deleteProfile.id!)
+      facilitatorDao.delete(deleteProfile.id!)
         .then(() => {
           notifications.success(`${UI_STRINGS.DELETION_SUCCESS_PREFIX} ${deleteProfile.name} ${UI_STRINGS.DELETION_SUCCESS_SUFFIX}`);
           setRefresh(refresh + 1);
@@ -98,10 +97,9 @@ const DetailsTable: React.FC = () => {
 
   function doUpdate(facilitator: Facilitator) {
     if (facilitator) {
-      timeWindowService.adjustTimeWindows(facilitator);
-      facilitatorService.save(facilitator)
-        .then(() => {
-          notifications.success(`Profile ${facilitator.name} updated successfully`);
+      saveFacilitator(facilitator)
+        .then(updated => {
+          notifications.success(`Profile ${updated.name} updated successfully`);
           setRefresh(refresh + 1);
         })
         .catch((err) => {
@@ -135,21 +133,21 @@ const DetailsTable: React.FC = () => {
       headerName: UI_STRINGS.NAME,
       width: 150,
       filterOperators: getGridStringOperators()
-        .filter((operator) => facilitatorService.supportedStringFilters().includes(operator.value))
+        .filter((operator) => facilitatorDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: 'email',
       headerName: UI_STRINGS.EMAIL,
       width: 200,
       filterOperators: getGridStringOperators()
-        .filter((operator) => facilitatorService.supportedStringFilters().includes(operator.value))
+        .filter((operator) => facilitatorDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: 'time_zone',
       headerName: UI_STRINGS.TIME_ZONE,
       width: 150,
       filterOperators: getGridStringOperators()
-        .filter((operator) => facilitatorService.supportedStringFilters().includes(operator.value))
+        .filter((operator) => facilitatorDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: 'preferences',
@@ -200,7 +198,7 @@ const DetailsTable: React.FC = () => {
       {selectedProfile && (
         <FacilitatorModal
           mode={'edit'}
-          facilitator={selectedProfile}
+          facilitator={selectedProfile as Facilitator}
           open={showDetails}
           onClose={() => {
             setSelectedProfile(null);

@@ -4,7 +4,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { placementService } from './cePlacementService';
-import { CEStudentService } from './ceStudentService';
+import { CEStudentDao } from './ceStudentDao';
 
 // Mock supabase client chain used in updatePlacement
 vi.mock('@digitalaidseattle/supabase', () => {
@@ -33,11 +33,11 @@ class PlacementFixture {
   }
 
   assertStudentUpdated() {
-    const studentService = CEStudentService.getInstance();
+    const studentDao = CEStudentDao.getInstance();
 
-    expect((studentService.update as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThanOrEqual(1);
-    expect((studentService.update as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe('student1');
-    expect((studentService.update as ReturnType<typeof vi.fn>).mock.calls[0][1]).toEqual({ anchor: true });
+    expect((studentDao.update as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThanOrEqual(1);
+    expect((studentDao.update as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe('student1');
+    expect((studentDao.update as ReturnType<typeof vi.fn>).mock.calls[0][1]).toEqual({ anchor: true });
   }
 }
 

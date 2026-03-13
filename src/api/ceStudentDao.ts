@@ -6,8 +6,6 @@
  */
 import { Identifier } from '@digitalaidseattle/core';
 import { supabaseClient, SupabaseEntityService } from '@digitalaidseattle/supabase';
-import { v4 as uuid } from 'uuid';
-import { GENDER_OPTION } from '../constants';
 import { CETimeWindowService } from './ceTimeWindowService';
 import { Cohort, Student } from "./types";
 
@@ -24,38 +22,20 @@ function MAPPER(json: any): Student {
   return student
 }
 
-class CEStudentService extends SupabaseEntityService<Student> {
-  private static instance: CEStudentService;
+class CEStudentDao extends SupabaseEntityService<Student> {
+  private static instance: CEStudentDao;
 
   static getInstance() {
-    if (!CEStudentService.instance) {
-      CEStudentService.instance = new CEStudentService();
+    if (!CEStudentDao.instance) {
+      CEStudentDao.instance = new CEStudentDao();
     }
-    return CEStudentService.instance;
+    return CEStudentDao.instance;
   }
-
-  private timeWindowService: CETimeWindowService;
 
   constructor() {
     super('student', DEFAULT_SELECT, MAPPER);
-    this.timeWindowService = CETimeWindowService.getInstance();
   }
 
-  empty(): Student {
-    return {
-      id: uuid(),
-      name: '',
-      email: '',
-      city: '',
-      country: '',
-      age: 15,
-      time_zone: '',
-      tz_offset: 0,
-      anchor: false,
-      gender: GENDER_OPTION[0],
-      timeWindows: []
-    } as Student;
-  }
 
   async getCohortsForStudent(student: Student): Promise<Cohort[]> {
     try {
@@ -109,21 +89,27 @@ class CEStudentService extends SupabaseEntityService<Student> {
     return this.mapper(json)
   }
 
-  async save(student: Student): Promise<Student> {
-    // inserting group before tw is required.  Group must exist before timewindow added.
-    const json = { ...student }
-    delete json.timeWindows;
+  async upsert(student: Student): Promise<Student> {
+    try {
+      const json = { ...student }
+      delete json.timeWindows;
 
-    await this.insert(json);
-
-    await this.timeWindowService.deleteByStudentId(student.id!);
-    for (const tw of student.timeWindows!) {
-      await this.timeWindowService.save(tw)
+      const { data, error } = await supabaseClient
+        .from(this.tableName)
+        .upsert([json])
+        .select(this.select)
+        .single();
+      if (error) {
+        console.error('Failed to upsert entity', error);
+        throw new Error('Failed to upsert entity');
+      }
+      return this.mapper(data);
+    } catch (err) {
+      console.error('Error inserting entity:', err);
+      throw err;
     }
-    // TODO get fresh instance?
-    return student
   }
 
 }
 
-export { CEStudentService };
+export { CEStudentDao };

@@ -21,8 +21,8 @@ import { DeleteOutlined, StarFilled } from '@ant-design/icons';
 import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { ConfirmationDialog } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
-import { CEStudentService } from '../../api/ceStudentService';
-import { CETimeWindowService } from '../../api/ceTimeWindowService';
+import { CEStudentService } from '../../api/ceProfileService';
+import { CEStudentDao } from '../../api/ceStudentDao';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import { TimeSlots } from '../../components/TimeSlots';
@@ -31,8 +31,8 @@ import StudentModal from './StudentModal';
 
 
 const StudentsDetailsTable: React.FC = () => {
+  const studentDao = CEStudentDao.getInstance();
   const studentService = CEStudentService.getInstance();
-  const timeWindowService = CETimeWindowService.getInstance();
 
   const { setLoading } = useContext(LoadingContext);
   const { refresh, setRefresh } = useContext(RefreshContext);
@@ -63,7 +63,7 @@ const StudentsDetailsTable: React.FC = () => {
         filterOperator: filterModel.items.length > 0 ? filterModel.items[0].operator : undefined,
         filterValue: filterModel.items.length > 0 ? filterModel.items[0].value : undefined,
       } as QueryModel;
-      studentService
+      studentDao
         .find(queryModel)
         .then((pi) => setPageInfo(pi))
         .catch((err) => console.error(err))
@@ -74,7 +74,7 @@ const StudentsDetailsTable: React.FC = () => {
   const toggleAnchor = async (student: Student) => {
     try {
       student.anchor = !student.anchor;
-      studentService
+      studentDao
         .update(student.id!, { anchor: student.anchor })
         .then((resp) => {
           console.log('Anchor status updated:', resp);
@@ -90,7 +90,7 @@ const StudentsDetailsTable: React.FC = () => {
 
   function handleDeleteStudent(param: GridRenderCellParams) {
     return (evt: any) => {
-      studentService.getCohortsForStudent(param.row)
+      studentDao.getCohortsForStudent(param.row)
         .then((cohorts) => {
           if (cohorts.length > 0) {
             notifications.error(`${UI_STRINGS.CANNOT_DELETE_STUDENT_PREFIX} ${param.row.name} ${UI_STRINGS.CANNOT_DELETE_STUDENT_SUFFIX}`);
@@ -107,7 +107,7 @@ const StudentsDetailsTable: React.FC = () => {
 
   function doDeleteStudent() {
     if (deleteStudent) {
-      studentService.delete(deleteStudent.id!)
+      studentDao.delete(deleteStudent.id!)
         .then(() => {
           notifications.success(`${UI_STRINGS.DELETION_SUCCESS_PREFIX} ${deleteStudent.name} ${UI_STRINGS.DELETION_SUCCESS_SUFFIX}`);
           setRefresh(refresh + 1);
@@ -124,22 +124,19 @@ const StudentsDetailsTable: React.FC = () => {
   }
 
   function doUpdateStudent(student: Student) {
-    if (student) {
-      timeWindowService.adjustTimeWindows(student);
-      studentService.save(student)
-        .then(() => {
-          notifications.success(`Student ${student.name} updated successfully`);
-          setRefresh(refresh + 1);
-        })
-        .catch((err) => {
-          console.error(`Update failed: ${err.message}`);
-          notifications.error(`Update failed: ${err.message}`);
-        })
-        .finally(() => {
-          setSelectedStudent(null);
-          setShowDetails(false);
-        })
-    }
+    studentService.save(student)
+      .then(() => {
+        notifications.success(`Student ${student.name} updated successfully`);
+        setRefresh(refresh + 1);
+      })
+      .catch((err) => {
+        console.error(`Update failed: ${err.message}`);
+        notifications.error(`Update failed: ${err.message}`);
+      })
+      .finally(() => {
+        setSelectedStudent(null);
+        setShowDetails(false);
+      })
   }
 
   const columns: GridColDef[] = [
@@ -162,14 +159,14 @@ const StudentsDetailsTable: React.FC = () => {
       headerName: UI_STRINGS.NAME,
       width: 150,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: 'email',
       headerName: UI_STRINGS.EMAIL,
       width: 200,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
 
     },
     {
@@ -177,7 +174,7 @@ const StudentsDetailsTable: React.FC = () => {
       headerName: UI_STRINGS.COUNTRY,
       width: 100,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: "anchor",
@@ -202,21 +199,21 @@ const StudentsDetailsTable: React.FC = () => {
       width: 75,
       type: 'number',
       filterOperators: getGridNumericOperators()
-        .filter((operator) => studentService.supportedNumberFilters().includes(operator.value))
+        .filter((operator) => studentDao.supportedNumberFilters().includes(operator.value))
     },
     {
       field: 'gender',
       headerName: UI_STRINGS.GENDER,
       width: 100,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: 'time_zone',
       headerName: UI_STRINGS.TIME_ZONE,
       width: 150,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: 'preferences',
