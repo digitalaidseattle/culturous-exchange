@@ -1,0 +1,31 @@
+/**
+ *  cePlanService.ts
+ *
+ *  @copyright 2024 Digital Aid Seattle
+ *
+ */
+
+import { CEAssignmentService } from "../../ceAssignmentService";
+import { CEGroupService } from "../../ceGroupService";
+import { placementService } from "../../cePlacementService";
+import { CEPlanService } from "../../cePlanService";
+import { Plan } from "../../types";
+
+export async function planDelete(plan: Plan): Promise<void> {
+    const planService = CEPlanService.getInstance();
+    const groupService = CEGroupService.getInstance();
+    const assignmentService = CEAssignmentService.getInstance();
+
+    console.log('planDelete', plan)
+
+    for (const assignment of plan.assignments ?? []) {
+        await assignmentService.delete(assignment.id!);
+    }
+    for (const placement of plan.placements) {
+        await placementService.deletePlacement(placement);
+    }
+    for (const group of plan.groups) {
+        await groupService.deleteGroup(group)
+    }
+    return await planService.delete(plan.id!)
+}

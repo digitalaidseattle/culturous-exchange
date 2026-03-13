@@ -8,14 +8,14 @@
 import { Menu, MenuItem } from '@mui/material';
 
 import { useContext, useEffect, useState } from 'react';
-import { addFacilitatorsToGroup } from '../../api/addFacilitatorsToGroup';
 import { CEFacilitatorService } from '../../api/ceFacilitatorService';
 import { planEvaluator } from '../../api/planEvaluator';
-import { removeFacilitatorsFromGroup } from '../../api/removeFacilitatorsFromGroup';
 import { Facilitator, Group } from '../../api/types';
 import AddProfileModal from '../../components/AddProfileModal';
 import { UI_STRINGS } from "../../constants";
 import { PlanContext } from './PlanContext';
+import { addFacilitatorsToGroup } from '../../api/transactions/facilitator/addFacilitatorsToGroup';
+import { removeFacilitatorsFromGroup } from '../../api/transactions/facilitator/removeFacilitatorsFromGroup';
 
 export interface FacilitatorMenuProps {
     group: Group,

@@ -14,9 +14,17 @@ import { PST_OFFSET, UI_STRINGS } from '../../../constants';
 class PlanExporter {
 
     static PST_OFFSET = PST_OFFSET;
+    private static instance: PlanExporter;
+
+    static getInstance() {
+        if (!PlanExporter.instance) {
+            PlanExporter.instance = new PlanExporter();
+        }
+        return PlanExporter.instance;
+    }
+
 
     timeWindowService: CETimeWindowService;
-
     constructor() {
         this.timeWindowService = CETimeWindowService.getInstance();
     }
@@ -89,7 +97,7 @@ class PlanExporter {
 
     }
 
-    async exportPlan(plan: Plan): Promise<boolean> {
+    async run(plan: Plan): Promise<boolean> {
         const data = this.profileRows(plan);
 
         const worksheet = XLSX.utils.json_to_sheet(data);
@@ -106,6 +114,5 @@ class PlanExporter {
 
 }
 
-const planExporter = new PlanExporter()
-export { planExporter };
+export { PlanExporter };
 

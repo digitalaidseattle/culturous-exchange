@@ -21,13 +21,12 @@ function MAPPER(json: any): Plan {
 
   const plan = {
     ...json,
-    placements: json.placement.map((pJson: any) => placementService.mapJson(pJson)),
-    groups: json.grouptable.map((gJson: any) => groupService.mapJson(gJson))
+    placements: (json.placement ?? []).map((pJson: any) => placementService.mapJson(pJson)),
+    groups: (json.grouptable ?? []).map((gJson: any) => groupService.mapJson(gJson))
   }
 
   delete plan.placement;
   delete plan.grouptable;
-
 
   // initialize placements in each group
   plan.groups.forEach((group: Group) => group.placements = []);
@@ -124,62 +123,12 @@ class CEPlanService extends SupabaseEntityService<Plan> {
       });
   }
 
-  async duplicate(plan: Plan): Promise<Plan> {
-    const groupService = CEGroupService.getInstance();
-
-    const proposed: Plan = {
-      id: uuidv4(),
-      cohort_id: plan.cohort_id,
-      name: plan.name + ' (copy)',
-      note: '',
-    } as unknown as Plan
-    return this.insert(proposed)
-      .then(async duplicatePlan => {
-        const duplicatePlacements = plan.placements
-          .map(placement => {
-            return {
-              ...placement,
-              plan_id: duplicatePlan.id
-            } as Placement;
-          });
-        const duplicateGroups = plan.groups
-          .map(group => {
-            return {
-              ...group,
-              plan_id: duplicatePlan.id
-            } as Group;
-          });
-        return Promise
-          .all([
-            placementService.batchInsert(duplicatePlacements),
-            groupService.batchInsert(duplicateGroups)
-          ])
-          .then(resps => {
-            duplicatePlan.placements = resps[0];
-            duplicatePlan.groups = resps[1];
-            return duplicatePlan;
-          })
-      })
-  }
-
   async findByCohortId(cohort_id: Identifier): Promise<Plan[]> {
     return await supabaseClient
       .from(this.tableName)
       .select('*')
       .eq('cohort_id', cohort_id)
       .then((resp: any) => resp.data as Plan[]);
-  }
-
-  async removeStudents(plan: Plan, studentIds: Identifier[]): Promise<any> {
-    // Loops over each id and returns a new array of placement objects
-    return Promise.all(
-      studentIds.map((id) =>
-        placementService.deletePlacement({
-          plan_id: plan.id,
-          student_id: id,
-        } as Placement)
-      )
-    ).then(() => true);
   }
 
   async update(entityId: Identifier, updatedFields: Partial<Plan>, select?: string): Promise<Plan> {
@@ -202,19 +151,6 @@ class CEPlanService extends SupabaseEntityService<Plan> {
       await placementService.save(placement)
     }
     return plan
-  }
-
-
-  async deletePlan(plan: Plan): Promise<void> {
-    const groupService = CEGroupService.getInstance();
-
-    for (const placement of plan.placements) {
-      await placementService.deletePlacement(placement);
-    }
-    for (const group of plan.groups) {
-      await groupService.deleteGroup(group)
-    }
-    return await this.delete(plan.id!)
   }
 
 }

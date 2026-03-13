@@ -1,15 +1,13 @@
 /**
  * removeFacilitatorsFromGroup.ts
  *
- * @copyright 2025 Digital Aid Seattle
+ * @copyright 2026 Digital Aid Seattle
  *
  */
 
-
-import { CEAssignmentService } from "./ceAssignmentService";
-import { CEGroupService } from './ceGroupService';
-import { Group } from "./types";
-
+import { CEAssignmentService } from "../../ceAssignmentService";
+import { CEGroupService } from "../../ceGroupService";
+import { Group } from "../../types";
 
 export function removeFacilitatorsFromGroup(group: Group): Promise<Group | null> {
     const service = CEAssignmentService.getInstance();
@@ -20,5 +18,4 @@ export function removeFacilitatorsFromGroup(group: Group): Promise<Group | null>
     return Promise
         .all(promises)
         .then(() => groupService.getById(group.id!));
-
 }

@@ -16,8 +16,8 @@ import { Identifier, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { CECohortService } from "../../api/ceCohortService";
 import { CEPlanService } from "../../api/cePlanService";
-import { planExporter } from "../../api/transactions/plan/planExporter";
-import { planGenerator } from "../../api/planGenerator";
+import { PlanExporter } from "../../api/transactions/plan/planExporter";
+import { PlanGenerator } from "../../api/transactions/plan/planGenerator";
 import { Cohort, Plan } from "../../api/types";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { TextEdit } from "../../components/TextEdit";
@@ -49,6 +49,7 @@ const PlanPage: React.FC = () => {
   useEffect(() => {
     setCohort(undefined);
     if (plan && plan.cohort_id) {
+      console.log(plan)
       cohortService.getById(plan.cohort_id)
         .then((cohort) => {
           if (cohort) {
@@ -93,7 +94,7 @@ const PlanPage: React.FC = () => {
   }
 
   function exportPlan(): void {
-    planExporter.exportPlan(plan!)
+    PlanExporter.getInstance().run(plan!)
       .then((exported) => {
         if (exported) {
           notifications.success(`${plan!.name} exported successfully`);
@@ -118,7 +119,7 @@ const PlanPage: React.FC = () => {
   function handleSettingsChange(plan: Plan): void {
     planService.update(plan!.id!, { group_size: plan.group_size! })
       .then(updatedPlan => {
-        planGenerator.seedPlan(updatedPlan)
+        PlanGenerator.getInstance().run(updatedPlan)
           .then((seededPlan) => {
             notifications.success(`Plan ${seededPlan.name} updated successfully`);
             setLoading(false)

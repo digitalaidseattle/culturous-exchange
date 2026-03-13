@@ -6,21 +6,45 @@
  */
 
 import { v4 as uuid } from 'uuid';
-import { MAX_GROUP_SIZE } from '../constants';
-import { CEGroupService } from './ceGroupService';
-import { placementService } from './cePlacementService';
-import { CEPlanService } from './cePlanService';
-import { CETimeWindowService } from './ceTimeWindowService';
-import { planEvaluator } from './planEvaluator';
-import { Group, Placement, Plan, TimeWindow } from "./types";
+import { MAX_GROUP_SIZE } from '../../../constants';
+import { CEGroupService } from '../../ceGroupService';
+import { placementService } from '../../cePlacementService';
+import { CEPlanService } from '../../cePlanService';
+import { CETimeWindowService } from '../../ceTimeWindowService';
+import { planEvaluator } from '../../planEvaluator';
+import { Group, Placement, Plan, TimeWindow } from "../../types";
 
 class PlanGenerator {
+  private static instance: PlanGenerator;
+
+  static getInstance() {
+    if (!PlanGenerator.instance) {
+      PlanGenerator.instance = new PlanGenerator();
+    }
+    return PlanGenerator.instance;
+  }
+
   groupService: CEGroupService;
   timeWindowService: CETimeWindowService;
 
   constructor() {
     this.groupService = CEGroupService.getInstance();
     this.timeWindowService = CETimeWindowService.getInstance();
+  }
+
+  async run(plan: Plan): Promise<Plan> {
+    const cleaned = await this.emptyPlan(plan)
+
+    const nGroups = Math.ceil(cleaned.placements.length / (plan.group_size ?? MAX_GROUP_SIZE));
+    cleaned.groups = await this.createGroups(cleaned, nGroups);
+
+    const anchorPlacements = cleaned.placements.filter(p => p.anchor)
+    const nonAnchorPlacements = cleaned.placements.filter(p => !p.anchor);
+
+    const planWithAnchors = await this.assignStudents(cleaned, anchorPlacements);
+    const planWithAllStudents = await this.assignStudents(planWithAnchors, nonAnchorPlacements);
+    const finalPlan = await planEvaluator.evaluate(planWithAllStudents); // to update country counts
+    return finalPlan;
   }
 
   async emptyPlan(plan: Plan): Promise<Plan> {
@@ -43,21 +67,6 @@ class PlanGenerator {
     } else {
       return emptied;
     }
-  }
-
-  async seedPlan(plan: Plan): Promise<Plan> {
-    const cleaned = await this.emptyPlan(plan)
-
-    const nGroups = Math.ceil(cleaned.placements.length / (plan.group_size ?? MAX_GROUP_SIZE));
-    cleaned.groups = await this.createGroups(cleaned, nGroups);
-
-    const anchorPlacements = cleaned.placements.filter(p => p.anchor)
-    const nonAnchorPlacements = cleaned.placements.filter(p => !p.anchor);
-
-    const planWithAnchors = await this.assignStudents(cleaned, anchorPlacements);
-    const planWithAllStudents = await this.assignStudents(planWithAnchors, nonAnchorPlacements);
-    const finalPlan = await planEvaluator.evaluate(planWithAllStudents); // to update country counts
-    return finalPlan;
   }
 
   async createGroups(plan: Plan, nCount: number): Promise<Group[]> {
@@ -124,6 +133,4 @@ class PlanGenerator {
 
 }
 
-
-const planGenerator = new PlanGenerator()
-export { PlanGenerator, planGenerator };
+export { PlanGenerator };

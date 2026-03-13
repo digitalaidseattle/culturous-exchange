@@ -18,7 +18,7 @@ import { useSearchParams } from "react-router-dom";
 import { CECohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { CEPlanService } from "../../api/cePlanService";
-import { planGenerator } from "../../api/planGenerator";
+import { PlanGenerator } from "../../api/transactions/plan/planGenerator";
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
 import { TextEdit } from "../../components/TextEdit";
@@ -96,7 +96,7 @@ const CohortPage: React.FC = () => {
     if (cohort) {
       const created = await planService.create(cohort);
       const hydrated = await planService.getById(created.id!);
-      const seededPlan = await planGenerator.seedPlan(hydrated!)
+      const seededPlan = await PlanGenerator.getInstance().run(hydrated!)
       await planService.save(seededPlan);
 
       navigate(`/plan/${seededPlan.id}`);

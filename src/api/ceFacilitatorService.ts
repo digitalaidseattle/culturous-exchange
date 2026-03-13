@@ -8,11 +8,12 @@ import { CETimeWindowService } from './ceTimeWindowService';
 import { Facilitator } from './types';
 
 const DEFAULT_SELECT = '*, timewindow(*)';
+
 function MAPPER(json: any): Facilitator {
   const timeWindowService = CETimeWindowService.getInstance();
   const facilitator = {
     ...json,
-    timeWindows: json.timewindow ?? [] ? json.timewindow.map((js: any) => timeWindowService.mapJson(js)) : []
+    timeWindows: (json.timewindow ?? []).map((js: any) => timeWindowService.mapJson(js))
   }
   delete facilitator.timewindow;
   return facilitator as Facilitator;

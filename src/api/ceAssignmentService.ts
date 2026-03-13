@@ -7,14 +7,14 @@ import { v4 as uuid } from 'uuid';
 import { CEFacilitatorService } from './ceFacilitatorService';
 import { Assignment } from './types';
 
-const DEFAULT_SELECT = '*';
+const DEFAULT_SELECT = '*, facilitators(*, timewindow(*))';
 
 function MAPPER(json: any): Assignment {
   const facilitatorService = CEFacilitatorService.getInstance();
-
+  const facilitator = json.facilitators ?? undefined;
   const assignment = {
     ...json,
-    facilitator: facilitatorService.mapJson(json.facilitators)
+    facilitator: facilitatorService.mapJson(facilitator)
   };
 
   delete assignment.facilitators;
@@ -57,6 +57,14 @@ class CEAssignmentService extends SupabaseEntityService<Assignment> {
       console.error('Unexpected error fetching assignment by group id', err);
       throw err;
     }
+  }
+
+  async insert(entity: Assignment): Promise<Assignment> {
+    const json = {
+      ...entity
+    }
+    delete json.facilitator;
+    return await super.insert(entity);
   }
 
 }

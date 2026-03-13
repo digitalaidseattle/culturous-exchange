@@ -14,9 +14,11 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { CEPlanService } from "../api/cePlanService";
 import { planActivation } from "../api/planActivation";
+import { planDelete } from "../api/transactions/plan/planDelete";
 import { Plan } from "../api/types";
 import { UI_STRINGS } from '../constants';
 import StarAvatar from "./StarAvatar";
+import { planDuplicate } from "../api/transactions/plan/planDuplicate";
 
 
 export const PlanCard = (props: { planId: Identifier }) => {
@@ -55,8 +57,9 @@ export const PlanCard = (props: { planId: Identifier }) => {
 
     const handleDuplicate = () => {
         if (plan) {
-            CEPlanService.getInstance().duplicate(plan)
+            planDuplicate(plan)
             setAnchorEl(null);
+            setRefresh(refresh + 1);
         }
     };
 
@@ -74,8 +77,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
 
     const doDelete = () => {
         if (plan) {
-            CEPlanService.getInstance()
-                .deletePlan(plan)
+            planDelete(plan)
                 .then(() => {
                     setOpenDeleteDialog(false);
                     setAnchorEl(null);

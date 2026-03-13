@@ -7,12 +7,11 @@
 
 
 import { v4 as uuid } from 'uuid';
-import { CEAssignmentService } from "./ceAssignmentService";
-import { Facilitator, Group } from "./types";
-import { CEGroupService } from './ceGroupService';
+import { Facilitator, Group } from '../../types';
+import { CEAssignmentService } from '../../ceAssignmentService';
+import { CEGroupService } from '../../ceGroupService';
 
-
-export function addFacilitatorsToGroup(group: Group, facilitators: Facilitator[]): Promise<Group | null> {
+export async function addFacilitatorsToGroup(group: Group, facilitators: Facilitator[]): Promise<Group | null> {
     const service = CEAssignmentService.getInstance();
     const groupService = CEGroupService.getInstance();
 
@@ -31,7 +30,11 @@ export function addFacilitatorsToGroup(group: Group, facilitators: Facilitator[]
         }
         return service.insert(assignment);
     })
+
     return Promise.all([...deletePromises, ...addPromises])
         .then(() => groupService.getById(group.id!))
-
+        .catch(error => {
+            console.error('Could not insert', error)
+            throw error
+        })
 }

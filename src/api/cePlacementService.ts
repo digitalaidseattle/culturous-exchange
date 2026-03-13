@@ -174,6 +174,22 @@ class CEPlacementService {
     }
   }
 
+  async insert(entity: Placement, select?: string): Promise<Placement[]> {
+    try {
+      const { data, error } = await supabaseClient
+        .from(this.tableName)
+        .upsert(entity)
+        .select(select ?? '*');
+      if (error) {
+        console.error(SERVICE_ERRORS.ERROR_INSERTING_ENTITY, error);
+        throw new Error(SERVICE_ERRORS.FAILED_INSERT_ENTITY_PREFIX + error.message);
+      }
+      return data as unknown as Placement[];
+    } catch (err) {
+      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_INSERTION, err);
+      throw err;
+    }
+  }
 }
 
 const placementService = new CEPlacementService('placement')

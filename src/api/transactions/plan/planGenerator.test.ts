@@ -5,11 +5,11 @@
  *
  */
 import { describe, expect, it, vi } from "vitest";
-import { CEGroupService } from "./ceGroupService";
-import { placementService } from "./cePlacementService";
-import { CEPlanService } from "./cePlanService";
-import { planGenerator } from "./planGenerator";
-import { Group, Placement, Plan, TimeWindow } from "./types";
+import { CEGroupService } from "../../ceGroupService";
+import { CEPlanService } from "../../cePlanService";
+import { Group, Placement, Plan, TimeWindow } from "../../types";
+import { placementService } from "../../cePlacementService";
+import { PlanGenerator } from "./planGenerator";
 
 vi.mock("./cePlacementService", () => {
     return {
@@ -40,7 +40,6 @@ vi.mock("./cePlanService", () => {
 describe("planGenerator", () => {
     const groupService = CEGroupService.getInstance();
     const planService = CEPlanService.getInstance();
-
     it("emptyPlan", () => {
 
         const placement = {
@@ -69,7 +68,7 @@ describe("planGenerator", () => {
         (groupService.deleteGroup as ReturnType<typeof vi.fn>).mockResolvedValue(Promise.resolve());
         (planService.getById as ReturnType<typeof vi.fn>).mockResolvedValue(Promise.resolve(emptyPlan));
 
-        planGenerator.emptyPlan(plan)
+        PlanGenerator.getInstance().emptyPlan(plan)
             .then(result => {
                 expect(result).toBe(emptyPlan);
                 expect(placementService.updatePlacement).toHaveBeenCalledWith("test", "123", { group_id: null });
@@ -86,7 +85,7 @@ describe("planGenerator", () => {
         } as Plan;
 
         (groupService.createDefaultTimewindows as ReturnType<typeof vi.fn>).mockReturnValue([{} as TimeWindow]);
-        planGenerator.createGroups(plan, 2)
+        PlanGenerator.getInstance().createGroups(plan, 2)
             .then(result => {
                 expect(result.length).toBe(2);
                 expect(result[0].id).toBeDefined();
