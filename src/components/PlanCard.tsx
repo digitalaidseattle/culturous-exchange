@@ -38,7 +38,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
                 .getById(props.planId)
                 .then((resp) => setPlan(resp!))
         }
-    }, [props.planId, refresh]);
+    }, [props.planId]);
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -57,9 +57,13 @@ export const PlanCard = (props: { planId: Identifier }) => {
 
     const handleDuplicate = () => {
         if (plan) {
+            setLoading(true)
             planDuplicate(plan)
-            setAnchorEl(null);
-            setRefresh(refresh + 1);
+                .then(() => {
+                    setAnchorEl(null);
+                    setRefresh(refresh + 1);
+                })
+                .finally(() => setLoading(false));
         }
     };
 
@@ -76,15 +80,14 @@ export const PlanCard = (props: { planId: Identifier }) => {
     };
 
     const doDelete = () => {
-        if (plan) {
-            planDelete(plan)
-                .then(() => {
-                    setOpenDeleteDialog(false);
-                    setAnchorEl(null);
-                    setRefresh(refresh + 1);
-                    notifications.success(UI_STRINGS.PLAN_DELETED);
-                })
-        }
+        planDelete(plan!)
+            .then(() => notifications.success(UI_STRINGS.PLAN_DELETED))
+            .catch(error => notifications.error(`Error deleting ${error.message}`))
+            .finally(() => {
+                setOpenDeleteDialog(false);
+                setAnchorEl(null);
+                setRefresh(refresh + 1);
+            })
     };
 
     const handleActivePlanToggle = async (value: boolean) => {

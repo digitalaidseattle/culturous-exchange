@@ -16,8 +16,6 @@ export async function planDelete(plan: Plan): Promise<void> {
     const groupService = CEGroupService.getInstance();
     const assignmentService = CEAssignmentService.getInstance();
 
-    console.log('planDelete', plan)
-
     for (const assignment of plan.assignments ?? []) {
         await assignmentService.delete(assignment.id!);
     }
