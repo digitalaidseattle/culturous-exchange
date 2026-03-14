@@ -5,21 +5,21 @@
  *
  */
 
-import { CEPlanService } from "./cePlanService";
-import { Plan } from "./types";
+import { CEPlanDao } from "../../cePlanDao";
+import { Plan } from "../../types";
 
 class PlanActivation {
 
     async changeActivation(plan: Plan, value: boolean): Promise<Plan> {
-        const planService = CEPlanService.getInstance();
+        const planDao = CEPlanDao.getInstance();
 
-        const cohortPlans = await planService
+        const cohortPlans = await planDao
             .findByCohortId(plan.cohort_id)
         const othersToDeactivate = cohortPlans
             .filter(p => p.id !== plan.id && p.active)
-            .map(p => planService.update(p.id!, { active: false }));
+            .map(p => planDao.update(p.id!, { active: false }));
         return Promise.all(othersToDeactivate)
-            .then(() => planService.update(plan.id!, { active: value }))
+            .then(() => planDao.update(plan.id!, { active: value }))
             .catch(err => {
                 console.error('Failed to deactivate other plans in cohort', err);
                 throw err;

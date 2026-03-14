@@ -2,12 +2,12 @@ import { v4 as uuid } from 'uuid';
 import { CEAssignmentService } from "../../ceAssignmentService";
 import { CEGroupService } from "../../ceGroupService";
 import { placementService } from "../../cePlacementService";
-import { CEPlanService } from "../../cePlanService";
+import { CEPlanDao } from '../../cePlanDao';
 import { CETimeWindowService } from "../../ceTimeWindowService";
 import { Plan } from "../../types";
 
 export async function planDuplicate(plan: Plan): Promise<Plan> {
-    const planService = CEPlanService.getInstance();
+    const planDao = CEPlanDao.getInstance();
     const groupService = CEGroupService.getInstance();
     const assignmentService = CEAssignmentService.getInstance();
     const timeWindowService = CETimeWindowService.getInstance();
@@ -22,7 +22,7 @@ export async function planDuplicate(plan: Plan): Promise<Plan> {
     delete proposed.placements;
     delete proposed.assignments;
 
-    const duplicatePlan = await planService.insert(proposed);
+    const duplicatePlan = await planDao.insert(proposed);
 
     for (let group of plan.groups) {
         const proposedGroup = {
@@ -79,7 +79,7 @@ export async function planDuplicate(plan: Plan): Promise<Plan> {
         await placementService.insert(proposedPlacement);
     }
 
-    const fetched = await planService.getById(duplicatePlan.id!);
+    const fetched = await planDao.getById(duplicatePlan.id!);
     if (fetched) {
         return fetched;
     }

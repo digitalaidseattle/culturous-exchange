@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { CEGroupService } from "./ceGroupService";
-import { CETimeWindowService } from "./ceTimeWindowService";
+import { CEGroupService } from "../../ceGroupService";
+import { CETimeWindowService } from "../../ceTimeWindowService";
 import { PlanEvaluator, planEvaluator } from "./planEvaluator";
-import { Group, Placement, Plan, TimeWindow } from "./types";
+import { Group, Placement, Plan, TimeWindow } from "../../types";
 
 describe("planEvaluator", () => {
     const groupService = CEGroupService.getInstance();

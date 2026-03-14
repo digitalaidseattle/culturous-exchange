@@ -6,7 +6,7 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-import { ProfileUploader } from '../../ProfileUploader';
+import { ProfileUploader } from '../plan/ProfileUploader';
 import { Facilitator } from '../../types';
 import { FacilitatorValidationService } from '../../ValidationService';
 import { CEFacilitatorService } from './CEFacilitatorService';

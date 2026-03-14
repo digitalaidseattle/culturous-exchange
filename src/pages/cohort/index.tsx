@@ -25,6 +25,7 @@ import { TextEdit } from "../../components/TextEdit";
 import { UI_STRINGS } from '../../constants';
 import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
+import { CEPlanDao } from "../../api/cePlanDao";
 
 interface CohortContextType {
   cohort: Cohort;
@@ -93,9 +94,10 @@ const CohortPage: React.FC = () => {
 
   async function handleCreatePlan() {
     const planService = CEPlanService.getInstance();
+    const planDao = CEPlanDao.getInstance();
     if (cohort) {
       const created = await planService.create(cohort);
-      const hydrated = await planService.getById(created.id!);
+      const hydrated = await planDao.getById(created.id!);
       const seededPlan = await PlanGenerator.getInstance().run(hydrated!)
       await planService.save(seededPlan);
 

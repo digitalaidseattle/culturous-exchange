@@ -7,17 +7,17 @@
 
 import { v4 as uuid } from 'uuid';
 
-import { EntityService } from "@digitalaidseattle/core";
 import { CETimeWindowService } from "./ceTimeWindowService";
+import { SupabaseDao } from './SupabaseDao';
 import { CEProfile } from "./types";
 
 
 class CEProfileService<T extends CEProfile> {
 
     timeWindowService: CETimeWindowService;
-    profileDao: EntityService<T>;
+    profileDao: SupabaseDao<T>;
 
-    constructor(profileDao: EntityService<T>) {
+    constructor(profileDao: SupabaseDao<T>) {
         this.timeWindowService = CETimeWindowService.getInstance();
         this.profileDao = profileDao;
     }

@@ -4,9 +4,9 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-import { Identifier } from '@digitalaidseattle/core';
-import { supabaseClient, SupabaseEntityService } from '@digitalaidseattle/supabase';
+import { supabaseClient } from '@digitalaidseattle/supabase';
 import { CETimeWindowService } from './ceTimeWindowService';
+import { SupabaseDao } from './SupabaseDao';
 import { Cohort, Student } from "./types";
 
 const DEFAULT_SELECT = '*, timewindow(*)';
@@ -28,7 +28,7 @@ function JSON_2_ENTITY(json: any): Student {
   return student
 }
 
-class CEStudentDao extends SupabaseEntityService<Student> {
+class CEStudentDao extends SupabaseDao<Student> {
   private static instance: CEStudentDao;
 
   static getInstance() {
@@ -42,13 +42,21 @@ class CEStudentDao extends SupabaseEntityService<Student> {
     super('student', DEFAULT_SELECT, JSON_2_ENTITY);
   }
 
+  mapJson(json: any): Student {
+    return JSON_2_ENTITY(json)
+  }
+
+  mapEntity(student: Partial<Student>): any {
+    return ENTITY_2_JSON(student);
+  }
+
   async getCohortsForStudent(student: Student): Promise<Cohort[]> {
     try {
       return await supabaseClient
         .from('enrollment')
         .select('cohort(*)')
         .eq('student_id', student.id)
-        .then((resp: any) => resp.data!.map((json: any) => json.cohort))
+        .then((resp: any) => resp.data.map((json: any) => json.cohort))
     } catch (err) {
       console.error('Unexpected error:', err);
       throw err;
@@ -82,39 +90,9 @@ class CEStudentDao extends SupabaseEntityService<Student> {
     }
   }
 
-  async update(entityId: Identifier, updatedFields: Partial<Student>, select?: string): Promise<Student> {
-    const json = this.mapEntity(updatedFields);
-    return super.update(entityId, json, select)
-      .then(updated => this.mapJson(updated)!);
-  }
 
-  mapJson(json: any): Student {
-    return this.mapper(json)
-  }
 
-  mapEntity(student: Partial<Student>): any {
-    return ENTITY_2_JSON(student);
-  }
 
-  async upsert(student: Student): Promise<Student> {
-    try {
-      const json = this.mapEntity(student);
-
-      const { data, error } = await supabaseClient
-        .from(this.tableName)
-        .upsert([json])
-        .select(this.select)
-        .single();
-      if (error) {
-        console.error('Failed to upsert entity', error);
-        throw new Error('Failed to upsert entity');
-      }
-      return this.mapper(data);
-    } catch (err) {
-      console.error('Error inserting entity:', err);
-      throw err;
-    }
-  }
 
 }
 

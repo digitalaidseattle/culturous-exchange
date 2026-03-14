@@ -9,9 +9,9 @@ import { v4 as uuid } from 'uuid';
 import { MAX_GROUP_SIZE } from '../../../constants';
 import { CEGroupService } from '../../ceGroupService';
 import { placementService } from '../../cePlacementService';
-import { CEPlanService } from '../../cePlanService';
+import { CEPlanDao } from '../../cePlanDao';
 import { CETimeWindowService } from '../../ceTimeWindowService';
-import { planEvaluator } from '../../planEvaluator';
+import { planEvaluator } from './planEvaluator';
 import { Group, Placement, Plan, TimeWindow } from "../../types";
 
 class PlanGenerator {
@@ -48,7 +48,7 @@ class PlanGenerator {
   }
 
   async emptyPlan(plan: Plan): Promise<Plan> {
-    const planService = CEPlanService.getInstance();
+    const planDao = CEPlanDao.getInstance();
 
     for (const placement of plan.placements) {
       await placementService.updatePlacement(plan.id!, placement.student_id, { group_id: null });
@@ -61,7 +61,7 @@ class PlanGenerator {
     }
 
     // requery the plan
-    const emptied = await planService.getById(plan.id!);
+    const emptied = await planDao.getById(plan.id!);
     if (!emptied) {
       throw new Error(`Cannot find plan: ${plan.id}!`);
     } else {

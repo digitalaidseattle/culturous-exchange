@@ -15,7 +15,7 @@ import { Box, Breadcrumbs, CircularProgress, IconButton, Link, Stack, Toolbar, T
 import { Identifier, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { CECohortService } from "../../api/ceCohortService";
-import { CEPlanService } from "../../api/cePlanService";
+import { CEPlanDao } from "../../api/cePlanDao";
 import { PlanExporter } from "../../api/transactions/plan/planExporter";
 import { PlanGenerator } from "../../api/transactions/plan/planGenerator";
 import { Cohort, Plan } from "../../api/types";
@@ -29,7 +29,7 @@ import { TimeLine } from "./TimeLine";
 
 const PlanPage: React.FC = () => {
   const cohortService = CECohortService.getInstance();
-  const planService = CEPlanService.getInstance();
+  const planDao = CEPlanDao.getInstance();
 
   const { id: planId } = useParams<string>();
   const [plan, setPlan] = useState<Plan>();
@@ -64,7 +64,7 @@ const PlanPage: React.FC = () => {
   function refreshPlan(planId: Identifier) {
     setPlan(undefined);
     setLoading(true);
-    planService.getById(planId)
+    planDao.getById(planId)
       .then(resp => setPlan(resp!))
       .catch((err) => {
         notifications.error(`Error reading ${planId} : ${err}`)
@@ -74,7 +74,7 @@ const PlanPage: React.FC = () => {
   }
 
   function handleNameUpdate(text: string) {
-    planService.update(plan!.id!, { name: text })
+    planDao.update(plan!.id!, { name: text })
       .then(updated => {
         if (updated) {
           notifications.success(UI_STRINGS.PLAN_UPDATED);
@@ -84,7 +84,7 @@ const PlanPage: React.FC = () => {
   }
 
   function handleNoteUpdate(text: string) {
-    planService.update(plan!.id!, { note: text })
+    planDao.update(plan!.id!, { note: text })
       .then(updated => {
         if (updated) {
           notifications.success(UI_STRINGS.PLAN_UPDATED);
@@ -117,7 +117,7 @@ const PlanPage: React.FC = () => {
   }
 
   function handleSettingsChange(plan: Plan): void {
-    planService.update(plan!.id!, { group_size: plan.group_size! })
+    planDao.update(plan!.id!, { group_size: plan.group_size! })
       .then(updatedPlan => {
         PlanGenerator.getInstance().run(updatedPlan)
           .then((seededPlan) => {

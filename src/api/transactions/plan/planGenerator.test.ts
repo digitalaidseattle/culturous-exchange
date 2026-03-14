@@ -6,9 +6,9 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { CEGroupService } from "../../ceGroupService";
-import { CEPlanService } from "../../cePlanService";
-import { Group, Placement, Plan, TimeWindow } from "../../types";
 import { placementService } from "../../cePlacementService";
+import { CEPlanDao } from "../../cePlanDao";
+import { Group, Placement, Plan, TimeWindow } from "../../types";
 import { PlanGenerator } from "./planGenerator";
 
 vi.mock("./cePlacementService", () => {
@@ -29,9 +29,9 @@ vi.mock("./ceGroupService", () => {
     };
 });
 
-vi.mock("./cePlanService", () => {
+vi.mock("./planDao", () => {
     return {
-        planService: {
+        planDao: {
             getById: vi.fn(),
         },
     };
@@ -39,7 +39,8 @@ vi.mock("./cePlanService", () => {
 
 describe("planGenerator", () => {
     const groupService = CEGroupService.getInstance();
-    const planService = CEPlanService.getInstance();
+    const planDao = CEPlanDao.getInstance();
+
     it("emptyPlan", () => {
 
         const placement = {
@@ -66,14 +67,14 @@ describe("planGenerator", () => {
 
         (placementService.updatePlacement as ReturnType<typeof vi.fn>).mockResolvedValue(Promise.resolve(placementLessPlan));
         (groupService.deleteGroup as ReturnType<typeof vi.fn>).mockResolvedValue(Promise.resolve());
-        (planService.getById as ReturnType<typeof vi.fn>).mockResolvedValue(Promise.resolve(emptyPlan));
+        (planDao.getById as ReturnType<typeof vi.fn>).mockResolvedValue(Promise.resolve(emptyPlan));
 
         PlanGenerator.getInstance().emptyPlan(plan)
             .then(result => {
                 expect(result).toBe(emptyPlan);
                 expect(placementService.updatePlacement).toHaveBeenCalledWith("test", "123", { group_id: null });
                 expect(groupService.deleteGroup).toHaveBeenCalledWith(group);
-                expect(planService.getById).toHaveBeenCalledWith("test");
+                expect(planDao.getById).toHaveBeenCalledWith("test");
             })
 
     });

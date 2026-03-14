@@ -12,13 +12,13 @@ import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { CEPlanService } from "../api/cePlanService";
-import { planActivation } from "../api/planActivation";
+import { CEPlanDao } from "../api/cePlanDao";
+import { planActivation } from "../api/transactions/plan/planActivation";
 import { planDelete } from "../api/transactions/plan/planDelete";
+import { planDuplicate } from "../api/transactions/plan/planDuplicate";
 import { Plan } from "../api/types";
 import { UI_STRINGS } from '../constants';
 import StarAvatar from "./StarAvatar";
-import { planDuplicate } from "../api/transactions/plan/planDuplicate";
 
 
 export const PlanCard = (props: { planId: Identifier }) => {
@@ -34,7 +34,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
 
     useEffect(() => {
         if (props.planId) {
-            CEPlanService.getInstance()
+            CEPlanDao.getInstance()
                 .getById(props.planId)
                 .then((resp) => setPlan(resp!))
         }

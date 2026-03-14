@@ -15,7 +15,7 @@ import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 import { DDCategory, DDType, DragAndDrop } from "@digitalaidseattle/draganddrop";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 import { CEPlanService } from "../../api/cePlanService";
-import { studentMover } from "../../api/studentMover";
+import { studentMover } from "../../api/transactions/plan/studentMover";
 import { Group, Placement } from "../../api/types";
 import { GroupCard } from "../../components/GroupCard";
 import { WAITLIST_ID, UI_STRINGS } from '../../constants';

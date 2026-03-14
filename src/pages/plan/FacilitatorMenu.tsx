@@ -9,7 +9,7 @@ import { Menu, MenuItem } from '@mui/material';
 
 import { useContext, useEffect, useState } from 'react';
 import { CEFacilitatorDao } from '../../api/ceFacilitatorDao';
-import { planEvaluator } from '../../api/planEvaluator';
+import { planEvaluator } from '../../api/transactions/plan/planEvaluator';
 import { addFacilitatorsToGroup } from '../../api/transactions/facilitator/addFacilitatorsToGroup';
 import { removeFacilitatorsFromGroup } from '../../api/transactions/facilitator/removeFacilitatorsFromGroup';
 import { CEProfile, Facilitator, Group } from '../../api/types';

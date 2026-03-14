@@ -5,9 +5,9 @@
  *
  */
 
-import { CEGroupService } from "./ceGroupService";
-import { CETimeWindowService } from "./ceTimeWindowService";
-import { Group, Plan, TimeWindow } from "./types";
+import { CEGroupService } from "../../ceGroupService";
+import { CETimeWindowService } from "../../ceTimeWindowService";
+import { Group, Plan, TimeWindow } from "../../types";
 
 class PlanEvaluator {
     groupService: CEGroupService;

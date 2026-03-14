@@ -6,12 +6,12 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { CEPlanService } from "./cePlanService";
+import { CEPlanDao } from "../../cePlanDao";
 import { planActivation } from "./planActivation";
-import { Plan } from "./types";
+import { Plan } from "../../types";
 
 describe("PlanActivation", () => {
-    const planService = CEPlanService.getInstance();
+    const planDao = CEPlanDao.getInstance();
 
     it("changeActivation", () => {
         const plan = {
@@ -31,8 +31,8 @@ describe("PlanActivation", () => {
             id: 'plan-b-id',
             active: false,
         } as Plan;
-        const findSpy = vi.spyOn(planService, "findByCohortId").mockResolvedValue([planA, planB]);
-        const updateSpy = vi.spyOn(planService, "update").mockResolvedValue(planChanged);
+        const findSpy = vi.spyOn(planDao, "findByCohortId").mockResolvedValue([planA, planB]);
+        const updateSpy = vi.spyOn(planDao, "update").mockResolvedValue(planChanged);
 
         planActivation.changeActivation(plan, true)
             .then(updated => {

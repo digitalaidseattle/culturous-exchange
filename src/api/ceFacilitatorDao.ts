@@ -2,9 +2,10 @@
  * ceFacilitatorService.ts
  * Service for managing facilitator profiles and their time windows.
  */
-import { supabaseClient, SupabaseEntityService } from '@digitalaidseattle/supabase';
+import { supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
 import { CETimeWindowService } from './ceTimeWindowService';
+import { SupabaseDao } from './SupabaseDao';
 import { Facilitator } from './types';
 
 const DEFAULT_SELECT = '*, timewindow(*)';
@@ -25,7 +26,7 @@ function ENTITY_2_JSON(entity: Facilitator): any {
   return json;
 }
 
-class CEFacilitatorDao extends SupabaseEntityService<Facilitator> {
+class CEFacilitatorDao extends SupabaseDao<Facilitator> {
 
   private static _instance: CEFacilitatorDao;
 
@@ -58,25 +59,6 @@ class CEFacilitatorDao extends SupabaseEntityService<Facilitator> {
 
   mapJson(json: any): Facilitator {
     return JSON_2_ENTITY(json);
-  }
-
-  async upsert(entity: Facilitator): Promise<Facilitator> {
-    try {
-      const json = this.mapEntity(entity);
-      const { data, error } = await supabaseClient
-        .from(this.tableName)
-        .upsert([json])
-        .select(this.select)
-        .single()
-      if (error) {
-        console.error('Failed to upsert entity', error);
-        throw new Error('Failed to upsert entity');
-      }
-      return this.mapJson(data);
-    } catch (err) {
-      console.error('Error inserting entity:', err);
-      throw err;
-    }
   }
 
   async findActive(isActive: boolean): Promise<Facilitator[]> {

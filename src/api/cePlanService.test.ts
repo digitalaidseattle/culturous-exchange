@@ -7,12 +7,12 @@
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { CEGroupService } from "./ceGroupService";
 import { placementService } from "./cePlacementService";
-import { CEPlanService } from "./cePlanService";
+import { CEPlanDao } from "./cePlanDao";
 import { Group, Placement, Plan } from "./types";
 
 describe("planService", () => {
     const groupService = CEGroupService.getInstance();
-    const planService = CEPlanService.getInstance();
+    const planDao = CEPlanDao.getInstance();
 
     vi.mock("./cePlacementService", () => {
         return {
@@ -53,7 +53,7 @@ describe("planService", () => {
             .mockReturnValueOnce(placement2);
         (groupService.mapJson as ReturnType<typeof vi.fn>).mockReturnValue(group);
 
-        const result = planService.mapJson(json);
+        const result = planDao.mapJson(json);
         expectTypeOf(result).toMatchTypeOf<Plan>();
         expect(result.id).toBe("plan1");
         expect(result.name).toBe("Test Plan");
