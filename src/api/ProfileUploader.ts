@@ -13,10 +13,10 @@ import { CETimeWindowService } from "./ceTimeWindowService";
 import { CEProfile, FailedProfile } from "./types";
 import { ValidationService } from './ValidationService';
 
-class ProfileUploader<T extends CEProfile> {
-    private validationService: ValidationService<T>;
-    private profileService: CEProfileService<T>;
-    private timeWindowService;
+abstract class ProfileUploader<T extends CEProfile> {
+    validationService: ValidationService<T>;
+    profileService: CEProfileService<T>;
+    timeWindowService;
 
     constructor(validationService: ValidationService<T>, profileService: CEProfileService<T>) {
         this.validationService = validationService;
@@ -33,17 +33,7 @@ class ProfileUploader<T extends CEProfile> {
         return lowered;
     }
 
-    createProfile(dict: any): CEProfile {
-        const times = dict['please mark all times that would be possible for the online group session on the weekend (based in your time zone)'];
-        return {
-            ...this.profileService.empty(),
-            name: dict['first/given name in english'].trim() + ' ' + dict['last/sur/family name in english'].trim(),
-            email: dict['email address'],
-            city: dict['home city (and state if applicable)'],
-            country: dict['home country:'].trim(),
-            timeWindows: this.timeWindowService.mapTimeWindows(times.split(',')),
-        } as CEProfile
-    }
+    abstract createProfile(dict: any): CEProfile;
 
     async get_profiles_from_excel(excel_file: File): Promise<CEProfile[]> {
         try {
@@ -65,7 +55,7 @@ class ProfileUploader<T extends CEProfile> {
     async insertProfile(profile: T): Promise<{ success: boolean; profile: CEProfile | FailedProfile }> {
         const errors = this.validationService.validate(profile);
         if (errors && Object.keys(errors).length > 0) {
-            console.error(`Spreadsheet validation failed for student ${profile}: `, errors)
+            console.error(`Spreadsheet validation failed for profile ${profile}: `, errors)
             //FIX ME: failedError: errors is not recievable as an array on the front end notification system. The front-end is currently set up to display a single error string for each failed student.
             return { success: false, profile: { ...profile, failedError: errors } };
         }

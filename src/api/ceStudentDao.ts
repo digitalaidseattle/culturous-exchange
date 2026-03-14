@@ -11,7 +11,13 @@ import { Cohort, Student } from "./types";
 
 const DEFAULT_SELECT = '*, timewindow(*)';
 
-function MAPPER(json: any): Student {
+function ENTITY_2_JSON(entity: Partial<Student>): any {
+  const json = { ...entity };
+  delete json.timeWindows;
+  return json;
+}
+
+function JSON_2_ENTITY(json: any): Student {
   const timeWindowService = CETimeWindowService.getInstance();
 
   const student = {
@@ -33,9 +39,8 @@ class CEStudentDao extends SupabaseEntityService<Student> {
   }
 
   constructor() {
-    super('student', DEFAULT_SELECT, MAPPER);
+    super('student', DEFAULT_SELECT, JSON_2_ENTITY);
   }
-
 
   async getCohortsForStudent(student: Student): Promise<Cohort[]> {
     try {
@@ -78,9 +83,7 @@ class CEStudentDao extends SupabaseEntityService<Student> {
   }
 
   async update(entityId: Identifier, updatedFields: Partial<Student>, select?: string): Promise<Student> {
-    const json = { ...updatedFields } as any;
-    delete json.timeWindows;
-
+    const json = this.mapEntity(updatedFields);
     return super.update(entityId, json, select)
       .then(updated => this.mapJson(updated)!);
   }
@@ -89,10 +92,13 @@ class CEStudentDao extends SupabaseEntityService<Student> {
     return this.mapper(json)
   }
 
+  mapEntity(student: Partial<Student>): any {
+    return ENTITY_2_JSON(student);
+  }
+
   async upsert(student: Student): Promise<Student> {
     try {
-      const json = { ...student }
-      delete json.timeWindows;
+      const json = this.mapEntity(student);
 
       const { data, error } = await supabaseClient
         .from(this.tableName)

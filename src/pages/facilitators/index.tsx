@@ -11,11 +11,8 @@ import { Button, Stack } from '@mui/material';
 // project import
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
-import { CEFacilitatorService } from '../../api/ceProfileService';
-import { ProfileUploader } from '../../api/ProfileUploader';
-import { saveFacilitator } from '../../api/transactions/facilitator/saveFacilitator';
+import { FacilitatorUploader } from '../../api/transactions/facilitator/FacilitatorUploader';
 import { Facilitator, FailedProfile } from '../../api/types';
-import { FacilitatorValidationService } from '../../api/ValidationService';
 import FailedUploadModal from '../../components/FailedUploadModal';
 import FileUploader from '../../components/FileUploader';
 import ProfilesPage from '../../components/ProfilesPage';
@@ -23,10 +20,11 @@ import { TimeToggle } from '../../components/TimeToggle';
 import { UI_STRINGS } from '../../constants';
 import DetailsTable from './DetailsTable';
 import FacilitatorModal from './FacilitatorModal';
+import { CEFacilitatorService } from '../../api/transactions/facilitator/CEFacilitatorService';
 
 const ToolsSection = () => {
     const facilitatorService = CEFacilitatorService.getInstance();
-    const uploadService = new ProfileUploader(FacilitatorValidationService.getInstance(), facilitatorService);
+    const uploadService = FacilitatorUploader.getInstance();
 
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
@@ -91,7 +89,7 @@ const ToolsSection = () => {
     }
 
     const handleAddFacilitator = async (updated: Facilitator) => {
-        return saveFacilitator(updated)
+        return facilitatorService.save(updated)
             .then(added => notifications.success(`Success. Added facilitator: ${added.name}`))
             .catch(error => notifications.error(`Error. Could not add facilitator: ${error.message}`))
             .finally(() => {

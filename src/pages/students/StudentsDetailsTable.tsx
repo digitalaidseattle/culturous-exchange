@@ -21,13 +21,13 @@ import { DeleteOutlined, StarFilled } from '@ant-design/icons';
 import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { ConfirmationDialog } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
-import { CEStudentService } from '../../api/ceProfileService';
 import { CEStudentDao } from '../../api/ceStudentDao';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import { TimeSlots } from '../../components/TimeSlots';
 import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
 import StudentModal from './StudentModal';
+import { CEStudentService } from '../../api/transactions/student/CEStudentService';
 
 
 const StudentsDetailsTable: React.FC = () => {

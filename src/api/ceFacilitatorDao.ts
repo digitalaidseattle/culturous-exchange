@@ -9,7 +9,7 @@ import { Facilitator } from './types';
 
 const DEFAULT_SELECT = '*, timewindow(*)';
 
-function MAPPER(json: any): Facilitator {
+function JSON_2_ENTITY(json: any): Facilitator {
   const timeWindowService = CETimeWindowService.getInstance();
   const facilitator = {
     ...json,
@@ -19,13 +19,19 @@ function MAPPER(json: any): Facilitator {
   return facilitator as Facilitator;
 }
 
+function ENTITY_2_JSON(entity: Facilitator): any {
+  const json = { ...entity };
+  delete json.timeWindows;
+  return json;
+}
+
 class CEFacilitatorDao extends SupabaseEntityService<Facilitator> {
 
   private static _instance: CEFacilitatorDao;
 
   static getInstance(): CEFacilitatorDao {
     if (!this._instance) {
-      this._instance = new CEFacilitatorDao('facilitators', DEFAULT_SELECT, MAPPER)
+      this._instance = new CEFacilitatorDao('facilitators', DEFAULT_SELECT, JSON_2_ENTITY)
     }
     return this._instance;
   }
@@ -46,15 +52,20 @@ class CEFacilitatorDao extends SupabaseEntityService<Facilitator> {
     } as Facilitator;
   }
 
+  mapEntity(entity: Facilitator): any {
+    return ENTITY_2_JSON(entity);
+  }
+
   mapJson(json: any): Facilitator {
-    return MAPPER(json);
+    return JSON_2_ENTITY(json);
   }
 
   async upsert(entity: Facilitator): Promise<Facilitator> {
     try {
+      const json = this.mapEntity(entity);
       const { data, error } = await supabaseClient
         .from(this.tableName)
-        .upsert([entity])
+        .upsert([json])
         .select(this.select)
         .single()
       if (error) {
@@ -73,7 +84,7 @@ class CEFacilitatorDao extends SupabaseEntityService<Facilitator> {
       .from(this.tableName)
       .select(this.select)
       .eq('active', isActive)
-      .then((resp: any) => resp.data.map((json: any) => this.mapper(json)));
+      .then((resp: any) => resp.data.map((json: any) => this.mapJson(json)));
   }
 
 }

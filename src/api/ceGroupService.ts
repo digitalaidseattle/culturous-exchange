@@ -42,8 +42,6 @@ class CEGroupService extends SupabaseEntityService<Group> {
     return CEGroupService.instance;
   }
 
-
-
   mapJson(json: any): Group | null {
     return this.mapper(json);
   }

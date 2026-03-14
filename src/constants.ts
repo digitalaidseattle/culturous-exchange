@@ -1,8 +1,4 @@
 
-const GENDER_OPTION = ['Female', 'Male', 'Other']
-
-export { GENDER_OPTION };
-
 export const UI_STRINGS = {
   // Buttons & actions
   OPEN: 'Open',

@@ -4,8 +4,11 @@
  *  @copyright 2025 Digital Aid Seattle
  *
  */
+// REACT 
 import { useContext, useEffect, useState } from 'react';
 
+// Third party 
+import { DeleteOutlined } from '@ant-design/icons';
 import { Button } from '@mui/material';
 import {
   DataGrid,
@@ -16,19 +19,23 @@ import {
   GridSortModel
 } from '@mui/x-data-grid';
 
-import { DeleteOutlined } from '@ant-design/icons';
+
+// DAS
 import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { ConfirmationDialog } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
+
+// Culturous
 import { CEFacilitatorDao } from '../../api/ceFacilitatorDao';
-import { saveFacilitator } from '../../api/transactions/facilitator/saveFacilitator';
 import { CEProfile, Facilitator } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import { TimeSlots } from '../../components/TimeSlots';
 import { DEFAULT_TABLE_PAGE_SIZE, UI_STRINGS } from '../../constants';
 import FacilitatorModal from './FacilitatorModal';
+import { CEFacilitatorService } from '../../api/transactions/facilitator/CEFacilitatorService';
 
 const DetailsTable: React.FC = () => {
+  const facilitatorService = CEFacilitatorService.getInstance();
   const facilitatorDao = CEFacilitatorDao.getInstance();
 
   const { setLoading } = useContext(LoadingContext);
@@ -97,7 +104,7 @@ const DetailsTable: React.FC = () => {
 
   function doUpdate(facilitator: Facilitator) {
     if (facilitator) {
-      saveFacilitator(facilitator)
+      facilitatorService.save(facilitator)
         .then(updated => {
           notifications.success(`Profile ${updated.name} updated successfully`);
           setRefresh(refresh + 1);

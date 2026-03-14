@@ -12,11 +12,8 @@ import { Button, Stack } from '@mui/material';
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 
-import { CEStudentService } from '../../api/ceProfileService';
-import { CETimeWindowService } from '../../api/ceTimeWindowService';
-import { ProfileUploader } from '../../api/ProfileUploader';
+import { StudentUploader } from '../../api/transactions/student/StudentUploader';
 import { FailedProfile, Student } from '../../api/types';
-import { StudentValidationService } from '../../api/ValidationService';
 import FailedUploadModal from '../../components/FailedUploadModal';
 import FileUploader from '../../components/FileUploader';
 import ProfilesPage from '../../components/ProfilesPage';
@@ -24,12 +21,11 @@ import { TimeToggle } from '../../components/TimeToggle';
 import { UI_STRINGS } from '../../constants';
 import StudentModal from './StudentModal';
 import StudentsDetailsTable from './StudentsDetailsTable';
+import { CEStudentService } from '../../api/transactions/student/CEStudentService';
 
 const ToolsSection = () => {
     const studentService = CEStudentService.getInstance();
-    const uploadService = new ProfileUploader(
-        StudentValidationService.getInstance(),
-        CEStudentService.getInstance());
+    const uploadService = StudentUploader.getInstance();
 
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
@@ -93,21 +89,9 @@ const ToolsSection = () => {
     }
 
     const handleAddStudent = async (updated: Student) => {
-        const timeWindowService = CETimeWindowService.getInstance();
-        const studentService = CEStudentService.getInstance();
-
-        return timeWindowService
-            .getTimeZone(updated.city!, updated.country)
-            .then(resp => {
-                updated.time_zone = resp.timezone
-                updated.tz_offset = resp.offset
-                timeWindowService.adjustTimeWindows(updated);
-                studentService
-                    .save(updated)
-                    .then(saved => {
-                        notifications.success(`Success. Added student: ${saved.name}`);
-                    })
-            })
+        return studentService.save(updated)
+            .then(added => notifications.success(`Success. Added facilitator: ${added.name}`))
+            .catch(error => notifications.error(`Error. Could not add facilitator: ${error.message}`))
             .finally(() => {
                 handleCloseAddStudentModal();
                 setRefresh(refresh + 1)
