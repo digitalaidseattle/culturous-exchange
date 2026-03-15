@@ -8,7 +8,7 @@
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 
-import { CETimeWindowService } from '../../api/ceTimeWindowService';
+import { CETimeWindowService } from '../time/ceTimeWindowService';
 import { Facilitator, Plan, Student } from '../../api/types';
 import { UI_STRINGS } from '../../constants';
 

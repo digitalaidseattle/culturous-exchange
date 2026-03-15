@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_TIMEZONE, CETimeWindowService } from "./ceTimeWindowService";
-import { TimeWindow } from "./types";
+import { TimeWindow } from "../../api/types";
+import { CETimeWindowService, DEFAULT_TIMEZONE } from "./ceTimeWindowService";
 
 describe("timeWindowService", () => {
     const timeWindowService = CETimeWindowService.getInstance();
@@ -32,7 +32,7 @@ describe("timeWindowService", () => {
         } as TimeWindow;
 
         const timeB = {
-            start_date_time: timeWindowService.toZonedTime(0, "12:00:00",DEFAULT_TIMEZONE),
+            start_date_time: timeWindowService.toZonedTime(0, "12:00:00", DEFAULT_TIMEZONE),
             end_date_time: timeWindowService.toZonedTime(0, "13:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
@@ -47,7 +47,7 @@ describe("timeWindowService", () => {
 
         const timeA = {
             start_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE),
-            end_date_time: timeWindowService.toZonedTime(0, "14:00:00",DEFAULT_TIMEZONE)
+            end_date_time: timeWindowService.toZonedTime(0, "14:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const timeB = {
@@ -172,7 +172,7 @@ describe("timeWindowService", () => {
 
         const timeC = {
             start_date_time: timeWindowService.toZonedTime(0, "18:00:00", DEFAULT_TIMEZONE),
-            end_date_time: timeWindowService.toZonedTime(0, "20:00:00",DEFAULT_TIMEZONE)
+            end_date_time: timeWindowService.toZonedTime(0, "20:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const merged = timeWindowService.mergeTimeWindows([timeA, timeB, timeC]);

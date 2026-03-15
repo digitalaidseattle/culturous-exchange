@@ -8,7 +8,7 @@
 import { v4 as uuid } from 'uuid';
 import { CEStudentDao } from '../../api/ceStudentDao';
 import { GENDER_OPTION, Student } from '../../api/types';
-import { CETimeWindowService } from '../../api/ceTimeWindowService';
+import { CETimeWindowService } from '../time/ceTimeWindowService';
 import { CEProfileService } from '../ceProfileService';
 
 class CEStudentService extends CEProfileService<Student> {

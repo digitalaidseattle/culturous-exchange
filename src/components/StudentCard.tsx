@@ -21,7 +21,7 @@ import {
 import { RefreshContext } from "@digitalaidseattle/core";
 
 import { PlanContext } from "../pages/plan/PlanContext";
-import { CETimeWindowService } from "../api/ceTimeWindowService";
+import { CETimeWindowService } from "../services/time/ceTimeWindowService";
 import { Placement } from "../api/types";
 import StarAvatar from "./StarAvatar";
 import { UI_STRINGS, SERVICE_ERRORS } from '../constants';

@@ -6,7 +6,7 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { CEGroupService } from "./ceGroupService";
-import { CETimeWindowService } from "../../api/ceTimeWindowService";
+import { CETimeWindowService } from "../time/ceTimeWindowService";
 import { Group, TimeWindow } from "../../api/types";
 import { CETimeWindowDao } from "../../api/ceTimeWindowDao";
 import { CEGroupDao } from "../../api/ceGroupDao";

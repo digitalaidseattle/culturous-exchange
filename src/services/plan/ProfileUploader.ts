@@ -11,7 +11,7 @@ import { read, utils } from "xlsx";
 import { CEProfile, FailedProfile } from "../../api/types";
 import { ValidationService } from "../ValidationService";
 import { CEProfileService } from "../ceProfileService";
-import { CETimeWindowService } from "../../api/ceTimeWindowService";
+import { CETimeWindowService } from "../time/ceTimeWindowService";
 import { SERVICE_ERRORS } from "../../constants";
 
 abstract class ProfileUploader<T extends CEProfile> {

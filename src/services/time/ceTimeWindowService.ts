@@ -8,9 +8,9 @@
 import { format, isEqual } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { v4 as uuid } from 'uuid';
-import { SERVICE_ERRORS } from '../constants';
-import { CETimeWindowDao } from "./ceTimeWindowDao";
-import { CEProfile, TimeWindow } from "./types";
+import { SERVICE_ERRORS } from '../../constants';
+import { CETimeWindowDao } from "../../api/ceTimeWindowDao";
+import { CEProfile, TimeWindow } from "../../api/types";
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
   if (arr1.length !== arr2.length) {

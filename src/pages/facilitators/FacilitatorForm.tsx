@@ -25,7 +25,7 @@ import { Facilitator, TimeSlot, TimeWindow, ValidationError } from '../../api/ty
 import { CETextInput } from '../../components/CETextInput';
 import { UI_STRINGS } from '../../constants';
 import { FacilitatorValidationService } from '../../services/ValidationService';
-import { CETimeSlotService, TIME_SLOTS } from '../../api/ceTimeSlotService';
+import { CETimeSlotService, TIME_SLOTS } from '../../services/time/ceTimeSlotService';
 
 interface Props {
   facilitator: Facilitator;

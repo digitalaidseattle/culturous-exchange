@@ -8,7 +8,7 @@
 import { v4 as uuid } from 'uuid';
 import { CEGroupDao } from '../../api/ceGroupDao';
 import { CETimeWindowDao } from '../../api/ceTimeWindowDao';
-import { CETimeWindowService, DEFAULT_TIMEZONE } from "../../api/ceTimeWindowService";
+import { CETimeWindowService, DEFAULT_TIMEZONE } from "../time/ceTimeWindowService";
 import { Group, TimeWindow } from "../../api/types";
 
 class CEGroupService {

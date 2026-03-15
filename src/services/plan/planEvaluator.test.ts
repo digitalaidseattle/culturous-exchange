@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { PlanEvaluator, planEvaluator } from "./planEvaluator";
 import { CEGroupService } from "../group/ceGroupService";
-import { CETimeWindowService } from "../../api/ceTimeWindowService";
+import { CETimeWindowService } from "../time/ceTimeWindowService";
 import { Group, Placement, Plan, TimeWindow } from "../../api/types";
 
 describe("planEvaluator", () => {

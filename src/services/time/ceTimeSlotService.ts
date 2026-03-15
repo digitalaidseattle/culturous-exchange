@@ -5,7 +5,7 @@
  *
  */
 
-import { TimeSlot, TimeWindow } from "./types";
+import { TimeSlot, TimeWindow } from "../../api/types";
 
 
 export const TIME_SLOTS: TimeSlot[] = [

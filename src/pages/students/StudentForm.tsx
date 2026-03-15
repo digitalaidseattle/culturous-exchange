@@ -24,7 +24,7 @@ import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
 import { CEStudentDao } from '../../api/ceStudentDao';
-import { CETimeSlotService, TIME_SLOTS } from '../../api/ceTimeSlotService';
+import { CETimeSlotService, TIME_SLOTS } from '../../services/time/ceTimeSlotService';
 import { Cohort, GENDER_OPTION, Student, TimeSlot, TimeWindow, ValidationError } from '../../api/types';
 import { StudentValidationService } from '../../services/ValidationService';
 import { CETextInput } from '../../components/CETextInput';

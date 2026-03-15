@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_TIMEZONE, CETimeWindowService } from "./ceTimeWindowService";
-import { TimeWindow } from "./types";
+import { TimeWindow } from "../../api/types";
 
 describe("timeWindowService", () => {
     const timeWindowService = CETimeWindowService.getInstance();

@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 import { CEProfile } from '../api/types';
 import { SupabaseDao } from '../api/SupabaseDao';
 import { CETimeWindowDao } from '../api/ceTimeWindowDao';
-import { CETimeWindowService } from '../api/ceTimeWindowService';
+import { CETimeWindowService } from './time/ceTimeWindowService';
 
 
 

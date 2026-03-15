@@ -11,8 +11,6 @@ import { SERVICE_ERRORS } from '../constants';
 import { SupabaseDao } from "./SupabaseDao";
 import { TimeWindow } from "./types";
 
-export const DEFAULT_TIMEZONE = "America/Los_Angeles";
-
 function JSON_2_ENTITY(json: any): TimeWindow {
   return {
     ...json,

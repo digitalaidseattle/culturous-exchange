@@ -9,7 +9,7 @@ import { MoreOutlined } from "@ant-design/icons";
 import { Card, CardContent, CardHeader, IconButton, Stack, Typography } from '@mui/material';
 
 import { useEffect, useState } from 'react';
-import { CETimeWindowService } from '../api/ceTimeWindowService';
+import { CETimeWindowService } from '../services/time/ceTimeWindowService';
 import { Group, TimeWindow } from '../api/types';
 import { UI_STRINGS, WAITLIST_ID } from '../constants';
 import { FacilitatorMenu } from "../pages/plan/FacilitatorMenu";
