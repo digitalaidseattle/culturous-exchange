@@ -1,16 +1,22 @@
+/**
+ *  planDuplicate.ts
+ *
+ *  @copyright 2025 Digital Aid Seattle
+ *
+ */
 import { v4 as uuid } from 'uuid';
-import { CEAssignmentService } from "../../ceAssignmentService";
-import { CEGroupService } from "../../ceGroupService";
-import { placementService } from "../../cePlacementService";
-import { CEPlanDao } from '../../cePlanDao';
-import { CETimeWindowService } from "../../ceTimeWindowService";
-import { Plan } from "../../types";
+import { CEAssignmentService } from '../../api/ceAssignmentService';
+import { CEGroupService } from '../../api/ceGroupService';
+import { CEPlanDao } from '../../api/cePlanDao';
+import { CETimeWindowDao } from '../../api/ceTimeWindowDao';
+import { Plan } from '../../api/types';
+import { placementService } from '../../api/cePlacementService';
 
 export async function planDuplicate(plan: Plan): Promise<Plan> {
     const planDao = CEPlanDao.getInstance();
     const groupService = CEGroupService.getInstance();
     const assignmentService = CEAssignmentService.getInstance();
-    const timeWindowService = CETimeWindowService.getInstance();
+    const timeWindowDao = CETimeWindowDao.getInstance();
 
     const proposed: any = {
         ...plan,
@@ -42,7 +48,7 @@ export async function planDuplicate(plan: Plan): Promise<Plan> {
                 id: uuid(),
                 group_id: duplicateGroup.id!
             };
-            await timeWindowService.insert(proposedTw);
+            await timeWindowDao.insert(proposedTw);
         }
 
         for (let placement of group.placements ?? []) {

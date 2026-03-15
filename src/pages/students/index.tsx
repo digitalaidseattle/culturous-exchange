@@ -12,7 +12,7 @@ import { Button, Stack } from '@mui/material';
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 
-import { StudentUploader } from '../../api/transactions/student/StudentUploader';
+import { StudentUploader } from '../../services/student/StudentUploader';
 import { FailedProfile, Student } from '../../api/types';
 import FailedUploadModal from '../../components/FailedUploadModal';
 import FileUploader from '../../components/FileUploader';
@@ -21,7 +21,7 @@ import { TimeToggle } from '../../components/TimeToggle';
 import { UI_STRINGS } from '../../constants';
 import StudentModal from './StudentModal';
 import StudentsDetailsTable from './StudentsDetailsTable';
-import { CEStudentService } from '../../api/transactions/student/CEStudentService';
+import { CEStudentService } from '../../services/student/CEStudentService';
 
 const ToolsSection = () => {
     const studentService = CEStudentService.getInstance();

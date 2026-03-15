@@ -9,7 +9,7 @@
 
 import { Identifier } from "@digitalaidseattle/core";
 import { planEvaluator } from "./planEvaluator";
-import { Plan } from "../../types";
+import { Plan } from "../../api/types";
 
 
 class StudentMover {

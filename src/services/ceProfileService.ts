@@ -6,19 +6,18 @@
  */
 
 import { v4 as uuid } from 'uuid';
+import { CEProfile } from '../api/types';
+import { SupabaseDao } from '../api/SupabaseDao';
+import { CETimeWindowDao } from '../api/ceTimeWindowDao';
+import { CETimeWindowService } from '../api/ceTimeWindowService';
 
-import { CETimeWindowService } from "./ceTimeWindowService";
-import { SupabaseDao } from './SupabaseDao';
-import { CEProfile } from "./types";
 
 
 class CEProfileService<T extends CEProfile> {
 
-    timeWindowService: CETimeWindowService;
     profileDao: SupabaseDao<T>;
 
     constructor(profileDao: SupabaseDao<T>) {
-        this.timeWindowService = CETimeWindowService.getInstance();
         this.profileDao = profileDao;
     }
 
@@ -27,7 +26,9 @@ class CEProfileService<T extends CEProfile> {
     };
 
     async save(profile: T): Promise<T> {
-        this.timeWindowService.adjustTimeWindows(profile);
+        const timeWindowDao = CETimeWindowDao.getInstance();
+        const timeWindowService = CETimeWindowService.getInstance();
+        timeWindowService.adjustTimeWindows(profile);
 
         const now = new Date();
         const json = {
@@ -43,7 +44,7 @@ class CEProfileService<T extends CEProfile> {
                 id: uuid()
             }));
 
-        await this.timeWindowService.batchInsert(timeWindows);
+        await timeWindowDao.batchInsert(timeWindows);
 
         return this.profileDao.getById(inserted.id!)
             .then(found => found!)

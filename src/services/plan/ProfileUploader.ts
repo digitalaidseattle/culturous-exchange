@@ -7,11 +7,12 @@
  *
  */
 import { read, utils } from "xlsx";
-import { SERVICE_ERRORS } from '../../../constants';
-import { CEProfileService } from '../../ceProfileService';
-import { CETimeWindowService } from "../../ceTimeWindowService";
-import { CEProfile, FailedProfile } from "../../types";
-import { ValidationService } from '../../ValidationService';
+
+import { CEProfile, FailedProfile } from "../../api/types";
+import { ValidationService } from "../ValidationService";
+import { CEProfileService } from "../ceProfileService";
+import { CETimeWindowService } from "../../api/ceTimeWindowService";
+import { SERVICE_ERRORS } from "../../constants";
 
 abstract class ProfileUploader<T extends CEProfile> {
     validationService: ValidationService<T>;

@@ -6,10 +6,9 @@
  *
  */
 
-import { SERVICE_ERRORS } from "../../../constants";
-import { enrollmentService } from "../../ceEnrollmentService";
-import { Cohort, Enrollment, Student } from "../../types";
-
+import { enrollmentService } from "../../api/ceEnrollmentService";
+import { Cohort, Enrollment, Student } from "../../api/types";
+import { SERVICE_ERRORS } from "../../constants";
 
 function createEnrollments(cohort: Cohort, students: Student[]): Enrollment[] {
     return students.map(student => {

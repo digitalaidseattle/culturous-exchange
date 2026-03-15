@@ -15,13 +15,13 @@ import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 import { DDCategory, DDType, DragAndDrop } from "@digitalaidseattle/draganddrop";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 import { CEPlanService } from "../../api/cePlanService";
-import { studentMover } from "../../api/transactions/plan/studentMover";
 import { Group, Placement } from "../../api/types";
 import { GroupCard } from "../../components/GroupCard";
 import { WAITLIST_ID, UI_STRINGS } from '../../constants';
 import { StudentCard } from "../../components/StudentCard";
 import { PlanContext } from "./PlanContext";
 import { Identifier } from "@digitalaidseattle/core";
+import { studentMover } from "../../services/plan/studentMover";
 
 type PlacementWrapper = Placement & DDType;
 
@@ -71,8 +71,6 @@ export const GroupBoard: React.FC<GroupBoardProps> = ({ showStudentDetails, show
     }, [plan, initialized])
 
     function handleChange(container: Map<string, unknown>, placement: Placement) {
-
-
         studentMover.run(plan, placement.student_id, container.get('containerId') as Identifier)
             .then(moved => {
                 planService

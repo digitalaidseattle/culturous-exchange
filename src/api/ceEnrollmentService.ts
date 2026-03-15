@@ -5,11 +5,11 @@
  *
  */
 
-import { supabaseClient } from "@digitalaidseattle/supabase";
-import { CETimeWindowService } from "./ceTimeWindowService";
-import { Cohort, Enrollment, Student } from "./types";
-import { SERVICE_ERRORS } from '../constants';
 import { Identifier } from "@digitalaidseattle/core";
+import { supabaseClient } from "@digitalaidseattle/supabase";
+import { SERVICE_ERRORS } from '../constants';
+import { CETimeWindowDao } from "./ceTimeWindowDao";
+import { Cohort, Enrollment, Student } from "./types";
 
 class CEEnrollmentService {
     tableName = '';
@@ -38,14 +38,15 @@ class CEEnrollmentService {
 
     // TODO returning timewindow as object instead of array
     async getStudents(cohort: Cohort): Promise<Student[]> {
-        const timeWindowService = CETimeWindowService.getInstance();
+        const timeWindowDao = CETimeWindowDao.getInstance();
+
         return await supabaseClient
             .from('enrollment')
             .select('student(*, timewindow(*))')
             .eq('cohort_id', cohort.id)
             .then((resp: any) => {
                 return resp.data!.map((json: any) => {
-                    const timeWindows = json.student.timewindow.map((tw: any) => timeWindowService.mapJson(tw));
+                    const timeWindows = json.student.timewindow.map((tw: any) => timeWindowDao.mapJson(tw));
                     json.student.timeWindows = timeWindows;
                     delete json.student.timewindow;
                     return json.student as Student;

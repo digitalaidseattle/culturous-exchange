@@ -7,8 +7,8 @@
  *
  */
 import { ProfileUploader } from '../plan/ProfileUploader';
-import { Facilitator } from '../../types';
-import { FacilitatorValidationService } from '../../ValidationService';
+import { Facilitator } from '../../api/types';
+import { FacilitatorValidationService } from '../ValidationService';
 import { CEFacilitatorService } from './CEFacilitatorService';
 
 export class FacilitatorUploader extends ProfileUploader<Facilitator> {

@@ -5,18 +5,12 @@
  *
  */
 
-import { CEGroupService } from "../../ceGroupService";
-import { CETimeWindowService } from "../../ceTimeWindowService";
-import { Group, Plan, TimeWindow } from "../../types";
+import { CEGroupService } from "../../api/ceGroupService";
+import { CETimeWindowService } from "../../api/ceTimeWindowService";
+import { Group, Plan, TimeWindow } from "../../api/types";
+
 
 class PlanEvaluator {
-    groupService: CEGroupService;
-    timeWindowService: CETimeWindowService;
-
-    constructor() {
-        this.groupService = CEGroupService.getInstance();
-        this.timeWindowService = CETimeWindowService.getInstance();
-    }
 
     async evaluate(plan: Plan): Promise<Plan> {
         // Evaluautes Plan
@@ -35,12 +29,15 @@ class PlanEvaluator {
     }
 
     calcGroupTimeWindows(group: Group): TimeWindow[] {
-        let timeWindows = this.groupService.createDefaultTimewindows(group);
+        const groupService = CEGroupService.getInstance();
+        const timeWindowService = CETimeWindowService.getInstance();
+
+        let timeWindows = groupService.createDefaultTimewindows(group);
         (group.assignments ?? []).forEach(assignment => {
-            timeWindows = this.timeWindowService.intersectionTimeWindowsMultiple(timeWindows, assignment.facilitator!.timeWindows!);
+            timeWindows = timeWindowService.intersectionTimeWindowsMultiple(timeWindows, assignment.facilitator!.timeWindows!);
         });
         (group.placements ?? []).forEach(placement => {
-            timeWindows = this.timeWindowService.intersectionTimeWindowsMultiple(timeWindows, placement.student!.timeWindows!);
+            timeWindows = timeWindowService.intersectionTimeWindowsMultiple(timeWindows, placement.student!.timeWindows!);
         });
         timeWindows.forEach(tw => tw.group_id = group.id!);
         return timeWindows;
@@ -57,7 +54,8 @@ class PlanEvaluator {
     }
 
     calcDuration(group: Group): number {
-        return this.timeWindowService.totalDuration(group.time_windows!);
+        const timeWindowService = CETimeWindowService.getInstance();
+        return timeWindowService.totalDuration(group.time_windows!);
     }
 }
 

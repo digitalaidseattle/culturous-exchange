@@ -11,7 +11,7 @@ import { Button, Stack } from '@mui/material';
 // project import
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
-import { FacilitatorUploader } from '../../api/transactions/facilitator/FacilitatorUploader';
+import { FacilitatorUploader } from '../../services/facilitator/FacilitatorUploader';
 import { Facilitator, FailedProfile } from '../../api/types';
 import FailedUploadModal from '../../components/FailedUploadModal';
 import FileUploader from '../../components/FileUploader';
@@ -20,7 +20,7 @@ import { TimeToggle } from '../../components/TimeToggle';
 import { UI_STRINGS } from '../../constants';
 import DetailsTable from './DetailsTable';
 import FacilitatorModal from './FacilitatorModal';
-import { CEFacilitatorService } from '../../api/transactions/facilitator/CEFacilitatorService';
+import { CEFacilitatorService } from '../../services/facilitator/CEFacilitatorService';
 
 const ToolsSection = () => {
     const facilitatorService = CEFacilitatorService.getInstance();

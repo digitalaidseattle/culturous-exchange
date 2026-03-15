@@ -5,7 +5,7 @@
  *
  */
 import { supabaseClient } from '@digitalaidseattle/supabase';
-import { CETimeWindowService } from './ceTimeWindowService';
+import { CETimeWindowDao } from './ceTimeWindowDao';
 import { SupabaseDao } from './SupabaseDao';
 import { Cohort, Student } from "./types";
 
@@ -18,11 +18,11 @@ function ENTITY_2_JSON(entity: Partial<Student>): any {
 }
 
 function JSON_2_ENTITY(json: any): Student {
-  const timeWindowService = CETimeWindowService.getInstance();
+  const timeWindowDao = CETimeWindowDao.getInstance();
 
   const student = {
     ...json,
-    timeWindows: (json.timewindow ?? []).map((js: any) => timeWindowService.mapJson(js))
+    timeWindows: (json.timewindow ?? []).map((js: any) => timeWindowDao.mapJson(js))
   }
   delete student.timewindow
   return student

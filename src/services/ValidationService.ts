@@ -1,4 +1,4 @@
-import { CEProfile, Facilitator, Student, ValidationError } from "./types";
+import { CEProfile, Facilitator, Student, ValidationError } from "../api/types";
 import {
   MIN_NAME_LENGTH,
   MIN_CITY_LENGTH,

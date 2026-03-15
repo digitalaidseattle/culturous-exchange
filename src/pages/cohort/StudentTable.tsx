@@ -31,14 +31,14 @@ import { StarFilled } from "@ant-design/icons";
 import { CohortContext } from ".";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { CEStudentDao } from "../../api/ceStudentDao";
-import { addStudentsToCohort } from "../../api/transactions/cohort/addStudentsToCohort";
-import { removeStudentsFromCohort } from "../../api/transactions/cohort/removeStudentsFromCohort";
 import { CEProfile, Enrollment, Student } from "../../api/types";
 import AddProfileModal from "../../components/AddProfileModal";
 import DisplayTimeWindow from "../../components/DisplayTimeWindow";
 import { ShowLocalTimeContext } from "../../components/ShowLocalTimeContext";
 import { TimeToggle } from "../../components/TimeToggle";
 import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
+import { removeStudentsFromCohort } from "../../services/cohort/removeStudentsFromCohort";
+import { addStudentsToCohort } from "../../services/cohort/addStudentsToCohort";
 
 
 export const StudentTable: React.FC = () => {

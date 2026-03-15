@@ -6,9 +6,10 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { CEPlanDao } from "../../cePlanDao";
+
 import { planActivation } from "./planActivation";
-import { Plan } from "../../types";
+import { CEPlanDao } from "../../api/cePlanDao";
+import { Plan } from "../../api/types";
 
 describe("PlanActivation", () => {
     const planDao = CEPlanDao.getInstance();

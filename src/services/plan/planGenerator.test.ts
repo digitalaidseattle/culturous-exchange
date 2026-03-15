@@ -5,11 +5,12 @@
  *
  */
 import { describe, expect, it, vi } from "vitest";
-import { CEGroupService } from "../../ceGroupService";
-import { placementService } from "../../cePlacementService";
-import { CEPlanDao } from "../../cePlanDao";
-import { Group, Placement, Plan, TimeWindow } from "../../types";
+
 import { PlanGenerator } from "./planGenerator";
+import { CEGroupService } from "../../api/ceGroupService";
+import { CEPlanDao } from "../../api/cePlanDao";
+import { Group, Placement, Plan, TimeWindow } from "../../api/types";
+import { placementService } from "../../api/cePlacementService";
 
 vi.mock("./cePlacementService", () => {
     return {

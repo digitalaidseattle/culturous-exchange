@@ -16,8 +16,6 @@ import { Identifier, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { CECohortService } from "../../api/ceCohortService";
 import { CEPlanDao } from "../../api/cePlanDao";
-import { PlanExporter } from "../../api/transactions/plan/planExporter";
-import { PlanGenerator } from "../../api/transactions/plan/planGenerator";
 import { Cohort, Plan } from "../../api/types";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { TextEdit } from "../../components/TextEdit";
@@ -26,6 +24,8 @@ import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
 import { PlanContext } from "./PlanContext";
 import { TimeLine } from "./TimeLine";
+import { PlanGenerator } from "../../services/plan/planGenerator";
+import { PlanExporter } from "../../services/plan/planExporter";
 
 const PlanPage: React.FC = () => {
   const cohortService = CECohortService.getInstance();

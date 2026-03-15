@@ -13,6 +13,17 @@ import { CEStudentDao } from "./ceStudentDao";
 import { Cohort, Group, Placement, Plan, Student } from "./types";
 
 class CEPlacementService {
+
+  private static instance: CEPlacementService;
+
+  static getInstance() {
+    if (!CEPlacementService.instance) {
+      CEPlacementService.instance = new CEPlacementService('assignment');
+    }
+    return CEPlacementService.instance;
+  }
+
+
   tableName = '';
   studentDao: CEStudentDao;
 

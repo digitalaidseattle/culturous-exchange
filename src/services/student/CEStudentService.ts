@@ -6,9 +6,10 @@
  */
 
 import { v4 as uuid } from 'uuid';
-import { CEProfileService } from '../../ceProfileService';
-import { CEStudentDao } from '../../ceStudentDao';
-import { GENDER_OPTION, Student } from '../../types';
+import { CEStudentDao } from '../../api/ceStudentDao';
+import { GENDER_OPTION, Student } from '../../api/types';
+import { CETimeWindowService } from '../../api/ceTimeWindowService';
+import { CEProfileService } from '../ceProfileService';
 
 class CEStudentService extends CEProfileService<Student> {
 
@@ -42,7 +43,7 @@ class CEStudentService extends CEProfileService<Student> {
     }
 
     async save(profile: Student): Promise<Student> {
-        const { timezone, offset } = await this.timeWindowService
+        const { timezone, offset } = await CETimeWindowService.getInstance()
             .getTimeZone(profile.city!, profile.country)
         const updated = {
             ...profile,

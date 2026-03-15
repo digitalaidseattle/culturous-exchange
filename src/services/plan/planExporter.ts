@@ -5,15 +5,15 @@
  *
  */
 
-import { Facilitator, Plan, Student } from "../../types";
-import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { CETimeWindowService } from "../../ceTimeWindowService";
-import { PST_OFFSET, UI_STRINGS } from '../../../constants';
+import * as XLSX from 'xlsx';
+
+import { CETimeWindowService } from '../../api/ceTimeWindowService';
+import { Facilitator, Plan, Student } from '../../api/types';
+import { UI_STRINGS } from '../../constants';
 
 class PlanExporter {
 
-    static PST_OFFSET = PST_OFFSET;
     private static instance: PlanExporter;
 
     static getInstance() {
@@ -24,11 +24,6 @@ class PlanExporter {
     }
 
 
-    timeWindowService: CETimeWindowService;
-    constructor() {
-        this.timeWindowService = CETimeWindowService.getInstance();
-    }
-
     // Treat placements with group_id == null (or no group) as waitlisted
     isWaitlisted(placement: any): boolean {
         // Covers both shapes: explicit group_id or a missing/null group object
@@ -36,21 +31,23 @@ class PlanExporter {
     }
 
     profileRows(plan: Plan): any[] {
+        const timeWindowService = CETimeWindowService.getInstance();
+
         const data: any[] = [];
         for (const group of plan.groups) {
-            const groupTimes = (group.time_windows ?? []).map(tw => this.timeWindowService.toString(tw)).join(', ');
+            const groupTimes = (group.time_windows ?? []).map(tw => timeWindowService.toString(tw)).join(', ');
             for (const assignment of group.assignments || []) {
                 let facilitator: Facilitator = assignment.facilitator! || {};
                 const row: any = {
                     [UI_STRINGS.GROUP]: group.name,
                     [UI_STRINGS.GROUP_TIMES]: groupTimes,
-                    [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: (group.time_windows ?? []).map(tw => this.timeWindowService.toString(tw, facilitator.time_zone)).join(', '),
+                    [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: (group.time_windows ?? []).map(tw => timeWindowService.toString(tw, facilitator.time_zone)).join(', '),
                     [UI_STRINGS.NAME]: facilitator.name || "",
                     [UI_STRINGS.TYPE]: "Facilitator",
                     [UI_STRINGS.EMAIL]: facilitator.email || "",
                     [UI_STRINGS.COUNTRY]: facilitator.country,
                     [UI_STRINGS.TIME_ZONE]: facilitator.time_zone,
-                    [UI_STRINGS.STUDENT_TIMES]: (facilitator.timeWindows ?? []).map(tw => this.timeWindowService.toString(tw)).join(', '),
+                    [UI_STRINGS.STUDENT_TIMES]: (facilitator.timeWindows ?? []).map(tw => timeWindowService.toString(tw)).join(', '),
                 };
                 data.push(row);
             }
@@ -62,13 +59,13 @@ class PlanExporter {
                 const row: any = {
                     [UI_STRINGS.GROUP]: group.name,
                     [UI_STRINGS.GROUP_TIMES]: groupTimes,
-                    [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: (group.time_windows ?? []).map(tw => this.timeWindowService.toString(tw, student.time_zone)).join(', '),
+                    [UI_STRINGS.GROUP_TIMES_STUDENT_TZ]: (group.time_windows ?? []).map(tw => timeWindowService.toString(tw, student.time_zone)).join(', '),
                     [UI_STRINGS.NAME]: student.name || "",
                     [UI_STRINGS.TYPE]: student.anchor ? "Anchor" : "",
                     [UI_STRINGS.EMAIL]: student.email || "",
                     [UI_STRINGS.COUNTRY]: student.country,
                     [UI_STRINGS.TIME_ZONE]: student.time_zone,
-                    [UI_STRINGS.STUDENT_TIMES]: (student.timeWindows ?? []).map(tw => this.timeWindowService.toString(tw)).join(', '),
+                    [UI_STRINGS.STUDENT_TIMES]: (student.timeWindows ?? []).map(tw => timeWindowService.toString(tw)).join(', '),
                 };
                 data.push(row);
             }
@@ -89,7 +86,7 @@ class PlanExporter {
                 [UI_STRINGS.EMAIL]: student.email || "",
                 [UI_STRINGS.COUNTRY]: student.country,
                 [UI_STRINGS.TIME_ZONE]: student.time_zone,
-                [UI_STRINGS.STUDENT_TIMES]: (student.timeWindows ?? []).map(tw => this.timeWindowService.toString(tw)).join(", ")
+                [UI_STRINGS.STUDENT_TIMES]: (student.timeWindows ?? []).map(tw => timeWindowService.toString(tw)).join(", ")
             });
         }
 

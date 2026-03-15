@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { Student, TimeWindow } from "../api/types";
 import { AgeValidator, CityValidator, CountryValidator, TimeWindowValidator } from "./ValidationService";
-import { Student, TimeWindow } from "./types";
 
 describe("SpeadsheetValidationService", () => {
 

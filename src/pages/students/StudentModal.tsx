@@ -3,7 +3,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/
 import { Student, ValidationError } from '../../api/types';
 import StudentForm from './StudentForm';
 import { UI_STRINGS } from '../../constants';
-import { StudentValidationService } from '../../api/ValidationService';
+import { StudentValidationService } from '../../services/ValidationService';
 
 interface Props {
   mode: 'add' | 'edit';

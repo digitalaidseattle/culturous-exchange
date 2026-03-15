@@ -5,9 +5,9 @@
  *
  */
 
-import { CEAssignmentService } from "../../ceAssignmentService";
-import { CEGroupService } from "../../ceGroupService";
-import { Group } from "../../types";
+import { CEAssignmentService } from "../../api/ceAssignmentService";
+import { CEGroupService } from "../../api/ceGroupService";
+import { Group } from "../../api/types";
 
 export function removeFacilitatorsFromGroup(group: Group): Promise<Group | null> {
     const service = CEAssignmentService.getInstance();

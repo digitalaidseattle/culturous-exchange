@@ -5,12 +5,11 @@
  *
  */
 
-import { Identifier } from "@digitalaidseattle/core";
-import { supabaseClient, SupabaseEntityService } from "@digitalaidseattle/supabase";
 import { format, isEqual } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { v4 as uuid } from 'uuid';
 import { SERVICE_ERRORS } from '../constants';
+import { CETimeWindowDao } from "./ceTimeWindowDao";
 import { CEProfile, TimeWindow } from "./types";
 
 function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
@@ -25,26 +24,14 @@ function areStringArraysEqual(arr1: string[], arr2: string[]): boolean {
   return true;
 }
 
-// function areTimeWindowsOverlapping(timeWindowsA: TimeWindow, timeWindowsB: TimeWindow): boolean {
-//     return (isAfter(timeWindowsA.start_date_time!, timeWindowsB.start_date_time!) && isBefore(timeWindowsA.start_date_time!, timeWindowsB.end_date_time!)) ||
-//         (isAfter(timeWindowsB.start_date_time!, timeWindowsA.start_date_time!) && isBefore(timeWindowsB.start_date_time!, timeWindowsA.end_date_time!));
-// }
-
 export const DEFAULT_TIMEZONE = "America/Los_Angeles";
 
-function MAPPER(json: any): TimeWindow {
-  return {
-    ...json,
-    start_date_time: json.start_date_time ? new Date(json.start_date_time + 'Z') : undefined,
-    end_date_time: json.end_date_time ? new Date(json.end_date_time + 'Z') : undefined
-  }
-}
-class CETimeWindowService extends SupabaseEntityService<TimeWindow> {
+class CETimeWindowService {
   private static instance: CETimeWindowService;
 
   static getInstance() {
     if (!CETimeWindowService.instance) {
-      CETimeWindowService.instance = new CETimeWindowService('timewindow', '*', MAPPER);
+      CETimeWindowService.instance = new CETimeWindowService();
     }
     return CETimeWindowService.instance;
   }
@@ -284,22 +271,6 @@ class CETimeWindowService extends SupabaseEntityService<TimeWindow> {
     return merged;
   }
 
-  async findByGroupId(groupId: Identifier, select?: string): Promise<TimeWindow[]> {
-    return await supabaseClient
-      .from(this.tableName)
-      .select(select ?? '*')
-      .eq('group_id', groupId)
-      .then((resp: any) => resp.data as unknown as TimeWindow[]);
-  }
-
-  async findByAssignmentId(assignmentId: Identifier, select?: string): Promise<TimeWindow[]> {
-    return await supabaseClient
-      .from(this.tableName)
-      .select(select ?? '*')
-      .eq('assignment_id', assignmentId)
-      .then((resp: any) => resp.data as unknown as TimeWindow[]);
-  }
-
   async getTimeZone(city: string, country: string): Promise<{ timezone: string, offset: number }> {
     // return {
     //   timezone: 'America/Los_Angeles',
@@ -343,85 +314,7 @@ class CETimeWindowService extends SupabaseEntityService<TimeWindow> {
   }
 
   async save(timeWindow: TimeWindow): Promise<TimeWindow> {
-    const json = { ...timeWindow }
-    await this.insert(json);
-    return timeWindow;
-  }
-
-  mapJson(json: any): TimeWindow {
-    return this.mapper(json);
-  }
-
-  async deleteByGroupId(groupId: Identifier): Promise<boolean> {
-    try {
-      const { error } = await supabaseClient
-        .from(this.tableName)
-        .delete()
-        .eq('group_id', groupId);
-
-      if (error) {
-        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
-        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
-      }
-      return true;
-    } catch (err) {
-      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
-      throw err;
-    }
-  }
-
-  async deleteByStudentId(studentId: Identifier): Promise<boolean> {
-    try {
-      const { error } = await supabaseClient
-        .from(this.tableName)
-        .delete()
-        .eq('student_id', studentId);
-
-      if (error) {
-        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
-        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
-      }
-      return true;
-    } catch (err) {
-      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
-      throw err;
-    }
-  }
-
-  async deleteByFacilitatorId(facilitatorId: Identifier): Promise<boolean> {
-    try {
-      const { error } = await supabaseClient
-        .from(this.tableName)
-        .delete()
-        .eq('facilitator_id', facilitatorId);
-
-      if (error) {
-        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
-        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
-      }
-      return true;
-    } catch (err) {
-      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
-      throw err;
-    }
-  }
-
-  async deleteByAssignmentId(assignmentId: Identifier): Promise<boolean> {
-    try {
-      const { error } = await supabaseClient
-        .from(this.tableName)
-        .delete()
-        .eq('assignment_id', assignmentId);
-
-      if (error) {
-        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
-        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
-      }
-      return true;
-    } catch (err) {
-      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
-      throw err;
-    }
+    return CETimeWindowDao.getInstance().insert(timeWindow);
   }
 
 }

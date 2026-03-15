@@ -7,9 +7,9 @@
 
 import { v4 as uuid } from 'uuid';
 
-import { CEProfileService } from '../../ceProfileService';
-import { Facilitator } from '../../types';
-import { CEFacilitatorDao } from '../../ceFacilitatorDao';
+import { Facilitator } from '../../api/types';
+import { CEFacilitatorDao } from '../../api/ceFacilitatorDao';
+import { CEProfileService } from '../ceProfileService';
 
 class CEFacilitatorService extends CEProfileService<Facilitator> {
 

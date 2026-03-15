@@ -14,9 +14,9 @@ import { Button, Stack } from '@mui/material';
 
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { useContext } from 'react';
-import { createCohort } from '../../api/transactions/cohort/createCohort';
 import { UI_STRINGS } from '../../constants';
 import { CohortsStack } from './CohortsStack';
+import { createCohort } from '../../services/cohort/createCohort';
 
 // ================================|| 404 ||================================ //
 

@@ -32,7 +32,7 @@ import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import { TimeSlots } from '../../components/TimeSlots';
 import { DEFAULT_TABLE_PAGE_SIZE, UI_STRINGS } from '../../constants';
 import FacilitatorModal from './FacilitatorModal';
-import { CEFacilitatorService } from '../../api/transactions/facilitator/CEFacilitatorService';
+import { CEFacilitatorService } from '../../services/facilitator/CEFacilitatorService';
 
 const DetailsTable: React.FC = () => {
   const facilitatorService = CEFacilitatorService.getInstance();

@@ -39,7 +39,6 @@ import { MoreOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 import { CEGroupService } from "../../api/ceGroupService";
 import { CEPlanService } from "../../api/cePlanService";
-import { studentMover } from "../../api/transactions/plan/studentMover";
 import { Group, Placement, Plan, Student, TimeWindow } from "../../api/types";
 import { ENDING_HOUR, OFFICE_HOURS, STARTING_HOUR, UI_STRINGS, WAITLIST_ID } from '../../constants';
 import StudentModal from "../students/StudentModal";
@@ -47,6 +46,7 @@ import { FacilitatorMenu } from "./FacilitatorMenu";
 import { PlanContext } from "./PlanContext";
 import { Identifier } from "@digitalaidseattle/core";
 import { CEPlanDao } from "../../api/cePlanDao";
+import { studentMover } from "../../services/plan/studentMover";
 
 type TimeRow = {
     id: Identifier;

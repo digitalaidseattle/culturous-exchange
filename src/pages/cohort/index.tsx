@@ -18,7 +18,6 @@ import { useSearchParams } from "react-router-dom";
 import { CECohortService } from "../../api/ceCohortService";
 import { enrollmentService } from "../../api/ceEnrollmentService";
 import { CEPlanService } from "../../api/cePlanService";
-import { PlanGenerator } from "../../api/transactions/plan/planGenerator";
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
 import { TextEdit } from "../../components/TextEdit";
@@ -26,6 +25,7 @@ import { UI_STRINGS } from '../../constants';
 import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
 import { CEPlanDao } from "../../api/cePlanDao";
+import { PlanGenerator } from "../../services/plan/planGenerator";
 
 interface CohortContextType {
   cohort: Cohort;

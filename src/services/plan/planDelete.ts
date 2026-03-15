@@ -5,11 +5,11 @@
  *
  */
 
-import { CEAssignmentService } from "../../ceAssignmentService";
-import { CEGroupService } from "../../ceGroupService";
-import { placementService } from "../../cePlacementService";
-import { CEPlanDao } from "../../cePlanDao";
-import { Plan } from "../../types";
+import { CEAssignmentService } from "../../api/ceAssignmentService";
+import { CEGroupService } from "../../api/ceGroupService";
+import { placementService } from "../../api/cePlacementService";
+import { CEPlanDao } from "../../api/cePlanDao";
+import { Plan } from "../../api/types";
 
 export async function planDelete(plan: Plan): Promise<void> {
     const planDao = CEPlanDao.getInstance();

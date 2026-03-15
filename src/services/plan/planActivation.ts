@@ -5,8 +5,10 @@
  *
  */
 
-import { CEPlanDao } from "../../cePlanDao";
-import { Plan } from "../../types";
+import { CEPlanDao } from "../../api/cePlanDao";
+import { Plan } from "../../api/types";
+
+
 
 class PlanActivation {
 

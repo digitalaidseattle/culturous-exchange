@@ -24,7 +24,7 @@ import { v4 as uuid } from 'uuid';
 import { Facilitator, TimeSlot, TimeWindow, ValidationError } from '../../api/types';
 import { CETextInput } from '../../components/CETextInput';
 import { UI_STRINGS } from '../../constants';
-import { FacilitatorValidationService } from '../../api/ValidationService';
+import { FacilitatorValidationService } from '../../services/ValidationService';
 import { CETimeSlotService, TIME_SLOTS } from '../../api/ceTimeSlotService';
 
 interface Props {

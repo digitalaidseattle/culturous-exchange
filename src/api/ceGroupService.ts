@@ -9,20 +9,21 @@ import { Identifier } from '@digitalaidseattle/core';
 import { SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
 import { CEAssignmentService } from './ceAssignmentService';
-import { DEFAULT_TIMEZONE, CETimeWindowService } from "./ceTimeWindowService";
+import { CETimeWindowDao } from './ceTimeWindowDao';
+import { CETimeWindowService, DEFAULT_TIMEZONE } from "./ceTimeWindowService";
 import { Group, TimeWindow } from "./types";
 
-const assignmentService = CEAssignmentService.getInstance();
 const DEFAULT_SELECT = "*, timewindow(*), assignment(*, facilitators(*, timewindow(*)))";
 
 function MAPPER(json: any): Group {
-  const timeWindowService = CETimeWindowService.getInstance();
+  const timeWindowDao = CETimeWindowDao.getInstance();
+  const assignmentService = CEAssignmentService.getInstance();
 
   const group = {
     ...json,
     assignments: (json.assignment ?? []).map((js: any) => assignmentService.mapJson(js)),
     placements: json.placement,
-    time_windows: (json.timewindow ?? []).map((js: any) => timeWindowService.mapJson(js))
+    time_windows: (json.timewindow ?? []).map((js: any) => timeWindowDao.mapJson(js))
   }
 
   delete group.assignment;
@@ -58,7 +59,7 @@ class CEGroupService extends SupabaseEntityService<Group> {
   }
 
   async save(group: Group): Promise<Group> {
-    const timeWindowService = CETimeWindowService.getInstance();
+    const timeWindowDao = CETimeWindowDao.getInstance();
 
     // inserting group before tw is required.  Group must exist before timewindow added.
     const json = { ...group }
@@ -66,19 +67,19 @@ class CEGroupService extends SupabaseEntityService<Group> {
     delete json.time_windows;
     await this.insert(json, DEFAULT_SELECT);
 
-    await timeWindowService.deleteByGroupId(group.id!);
+    await timeWindowDao.deleteByGroupId(group.id!);
     for (const tw of group.time_windows!) {
-      await timeWindowService.save(tw)
+      await timeWindowDao.insert(tw)
     }
 
     return group
   }
 
   async deleteGroup(group: Group) {
-    const timeWindowService = CETimeWindowService.getInstance();
+    const timeWindowDao = CETimeWindowDao.getInstance();
 
     for (const tw of group.time_windows!) {
-      await timeWindowService.delete(tw.id!)
+      await timeWindowDao.delete(tw.id!)
     }
     return await this.delete(group.id!)
   }

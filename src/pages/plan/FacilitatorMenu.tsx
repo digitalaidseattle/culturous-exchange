@@ -9,13 +9,13 @@ import { Menu, MenuItem } from '@mui/material';
 
 import { useContext, useEffect, useState } from 'react';
 import { CEFacilitatorDao } from '../../api/ceFacilitatorDao';
-import { planEvaluator } from '../../api/transactions/plan/planEvaluator';
-import { addFacilitatorsToGroup } from '../../api/transactions/facilitator/addFacilitatorsToGroup';
-import { removeFacilitatorsFromGroup } from '../../api/transactions/facilitator/removeFacilitatorsFromGroup';
+import { addFacilitatorsToGroup } from '../../services/facilitator/addFacilitatorsToGroup';
+import { removeFacilitatorsFromGroup } from '../../services/facilitator/removeFacilitatorsFromGroup';
 import { CEProfile, Facilitator, Group } from '../../api/types';
 import AddProfileModal from '../../components/AddProfileModal';
 import { UI_STRINGS } from "../../constants";
 import { PlanContext } from './PlanContext';
+import { planEvaluator } from '../../services/plan/planEvaluator';
 
 export interface FacilitatorMenuProps {
     group: Group,

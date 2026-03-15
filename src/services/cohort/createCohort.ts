@@ -8,12 +8,10 @@
 
 import { v4 as uuid } from 'uuid';
 
-import { CECohortService } from "../../ceCohortService";
-import { enrollmentService } from '../../ceEnrollmentService';
-import { CEStudentDao } from "../../ceStudentDao";
-import { Cohort, Enrollment, Student } from '../../types';
-
-
+import { Cohort, Enrollment, Student } from '../../api/types';
+import { CECohortService } from '../../api/ceCohortService';
+import { CEStudentDao } from '../../api/ceStudentDao';
+import { enrollmentService } from '../../api/ceEnrollmentService';
 
 export async function createCohort(): Promise<Cohort> {
     const cohortService = CECohortService.getInstance();

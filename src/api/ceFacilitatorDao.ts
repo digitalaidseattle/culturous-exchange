@@ -4,17 +4,17 @@
  */
 import { supabaseClient } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
-import { CETimeWindowService } from './ceTimeWindowService';
+import { CETimeWindowDao } from './ceTimeWindowDao';
 import { SupabaseDao } from './SupabaseDao';
 import { Facilitator } from './types';
 
 const DEFAULT_SELECT = '*, timewindow(*)';
 
 function JSON_2_ENTITY(json: any): Facilitator {
-  const timeWindowService = CETimeWindowService.getInstance();
+  const timeWindowDao = CETimeWindowDao.getInstance();
   const facilitator = {
     ...json,
-    timeWindows: (json.timewindow ?? []).map((js: any) => timeWindowService.mapJson(js))
+    timeWindows: (json.timewindow ?? []).map((js: any) => timeWindowDao.mapJson(js))
   }
   delete facilitator.timewindow;
   return facilitator as Facilitator;

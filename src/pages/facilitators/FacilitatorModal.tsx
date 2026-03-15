@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Facilitator, ValidationError } from '../../api/types';
 import { UI_STRINGS } from '../../constants';
 import FacilitatorForm from './FacilitatorForm';
-import { FacilitatorValidationService } from '../../api/ValidationService';
+import { FacilitatorValidationService } from '../../services/ValidationService';
 
 interface Props {
   mode: 'add' | 'edit';

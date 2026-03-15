@@ -27,7 +27,7 @@ import DisplayTimeWindow from '../../components/DisplayTimeWindow';
 import { TimeSlots } from '../../components/TimeSlots';
 import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
 import StudentModal from './StudentModal';
-import { CEStudentService } from '../../api/transactions/student/CEStudentService';
+import { CEStudentService } from '../../services/student/CEStudentService';
 
 
 const StudentsDetailsTable: React.FC = () => {

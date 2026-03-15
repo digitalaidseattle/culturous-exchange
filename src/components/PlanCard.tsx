@@ -13,12 +13,12 @@ import { Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Typography }
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { CEPlanDao } from "../api/cePlanDao";
-import { planActivation } from "../api/transactions/plan/planActivation";
-import { planDelete } from "../api/transactions/plan/planDelete";
-import { planDuplicate } from "../api/transactions/plan/planDuplicate";
 import { Plan } from "../api/types";
 import { UI_STRINGS } from '../constants';
 import StarAvatar from "./StarAvatar";
+import { planDelete } from "../services/plan/planDelete";
+import { planActivation } from "../services/plan/planActivation";
+import { planDuplicate } from "../services/plan/planDuplicate";
 
 
 export const PlanCard = (props: { planId: Identifier }) => {

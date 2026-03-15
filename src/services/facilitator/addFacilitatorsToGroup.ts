@@ -7,9 +7,9 @@
 
 
 import { v4 as uuid } from 'uuid';
-import { Facilitator, Group } from '../../types';
-import { CEAssignmentService } from '../../ceAssignmentService';
-import { CEGroupService } from '../../ceGroupService';
+import { Facilitator, Group } from '../../api/types';
+import { CEAssignmentService } from '../../api/ceAssignmentService';
+import { CEGroupService } from '../../api/ceGroupService';
 
 export async function addFacilitatorsToGroup(group: Group, facilitators: Facilitator[]): Promise<Group | null> {
     const service = CEAssignmentService.getInstance();

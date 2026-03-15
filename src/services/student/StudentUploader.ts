@@ -6,9 +6,9 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
+import { Student } from '../../api/types';
 import { ProfileUploader } from '../plan/ProfileUploader';
-import { Student } from '../../types';
-import { StudentValidationService } from '../../ValidationService';
+import { StudentValidationService } from '../ValidationService';
 import { CEStudentService } from './CEStudentService';
 
 

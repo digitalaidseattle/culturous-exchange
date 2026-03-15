@@ -6,13 +6,14 @@
  */
 
 import { v4 as uuid } from 'uuid';
-import { MAX_GROUP_SIZE } from '../../../constants';
-import { CEGroupService } from '../../ceGroupService';
-import { placementService } from '../../cePlacementService';
-import { CEPlanDao } from '../../cePlanDao';
-import { CETimeWindowService } from '../../ceTimeWindowService';
+
 import { planEvaluator } from './planEvaluator';
-import { Group, Placement, Plan, TimeWindow } from "../../types";
+import { CEGroupService } from '../../api/ceGroupService';
+import { CETimeWindowService } from '../../api/ceTimeWindowService';
+import { Group, Placement, Plan, TimeWindow } from '../../api/types';
+import { MAX_GROUP_SIZE } from '../../constants';
+import { CEPlanDao } from '../../api/cePlanDao';
+import { placementService } from '../../api/cePlacementService';
 
 class PlanGenerator {
   private static instance: PlanGenerator;
