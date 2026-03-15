@@ -4,8 +4,8 @@
  */
 import { supabaseClient, SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
-import { CEFacilitatorDao } from './ceFacilitatorDao';
-import { Assignment } from './types';
+import { CEFacilitatorDao } from '../api/ceFacilitatorDao';
+import { Assignment } from '../api/types';
 
 const DEFAULT_SELECT = '*, facilitators(*, timewindow(*))';
 

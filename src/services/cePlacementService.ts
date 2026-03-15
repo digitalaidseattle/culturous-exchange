@@ -8,9 +8,9 @@
 import { Identifier } from "@digitalaidseattle/core";
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { SERVICE_ERRORS } from '../constants';
-import { enrollmentService } from "./ceEnrollmentService";
-import { CEStudentDao } from "./ceStudentDao";
-import { Cohort, Group, Placement, Plan, Student } from "./types";
+import { CEStudentDao } from "../api/ceStudentDao";
+import { Cohort, Group, Placement, Plan, Student } from "../api/types";
+import { CEEnrollmentService } from "./ceEnrollmentService";
 
 class CEPlacementService {
 
@@ -18,7 +18,7 @@ class CEPlacementService {
 
   static getInstance() {
     if (!CEPlacementService.instance) {
-      CEPlacementService.instance = new CEPlacementService('assignment');
+      CEPlacementService.instance = new CEPlacementService('placement');
     }
     return CEPlacementService.instance;
   }
@@ -42,7 +42,7 @@ class CEPlacementService {
   // TODO : NEW, there's something wrong with original findByPlanId need FIX.
   async findByPlan(planId: Identifier): Promise<Placement[]> {
     return await supabaseClient
-      .from('placement')
+      .from(this.tableName)
       .select('*')
       .eq('plan_id', planId)
       .then((resp: any) => {
@@ -52,7 +52,7 @@ class CEPlacementService {
 
   async findByPlanId(planId: Identifier): Promise<Placement[]> {
     return await supabaseClient
-      .from('placement')
+      .from(this.tableName)
       .select('*, student(*), grouptable(*)')
       .eq('plan_id', planId)
       .then((resp: any) => {
@@ -75,7 +75,7 @@ class CEPlacementService {
 
   async getStudents(plan: Plan): Promise<Student[]> {
     return await supabaseClient
-      .from('placement')
+      .from(this.tableName)
       .select('student(*)')
       .eq('plan_id', plan.id)
       .then((resp: any) => {
@@ -85,7 +85,7 @@ class CEPlacementService {
 
   // getUnplacedStudents : for the Add student Modal
   async getUnplacedStudents(cohort: Cohort, plan: Plan): Promise<Student[]> {
-    const enrolledStudents = await enrollmentService.getStudents(cohort);
+    const enrolledStudents = await CEEnrollmentService.getInstance().getStudents(cohort);
     const placedStudents = await this.getStudents(plan);
     const placedStudentIds = new Set(placedStudents.map(student => student.id));
     const unplacedStudents = enrolledStudents.filter(student => !placedStudentIds.has(student.id));
@@ -108,7 +108,8 @@ class CEPlacementService {
     delete json.student;
 
     try {
-      const { data, error } = await supabaseClient.from(this.tableName)
+      const { data, error } = await supabaseClient
+        .from(this.tableName)
         .update(json)
         .eq('plan_id', planId)
         .eq('student_id', studentId)
@@ -203,5 +204,4 @@ class CEPlacementService {
   }
 }
 
-const placementService = new CEPlacementService('placement')
-export { placementService };
+export { CEPlacementService };

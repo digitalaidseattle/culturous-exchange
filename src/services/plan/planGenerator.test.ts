@@ -10,7 +10,7 @@ import { PlanGenerator } from "./planGenerator";
 import { CEGroupService } from "../../api/ceGroupService";
 import { CEPlanDao } from "../../api/cePlanDao";
 import { Group, Placement, Plan, TimeWindow } from "../../api/types";
-import { placementService } from "../../api/cePlacementService";
+import { CEPlacementService } from "../cePlacementService";
 
 vi.mock("./cePlacementService", () => {
     return {
@@ -41,6 +41,7 @@ vi.mock("./planDao", () => {
 describe("planGenerator", () => {
     const groupService = CEGroupService.getInstance();
     const planDao = CEPlanDao.getInstance();
+    const placementService = CEPlacementService.getInstance();
 
     it("emptyPlan", () => {
 

@@ -5,18 +5,19 @@
  *
  */
 import { v4 as uuid } from 'uuid';
-import { CEAssignmentService } from '../../api/ceAssignmentService';
+import { CEAssignmentService } from '../ceAssignmentService';
 import { CEGroupService } from '../../api/ceGroupService';
 import { CEPlanDao } from '../../api/cePlanDao';
 import { CETimeWindowDao } from '../../api/ceTimeWindowDao';
 import { Plan } from '../../api/types';
-import { placementService } from '../../api/cePlacementService';
+import { CEPlacementService } from '../cePlacementService';
 
 export async function planDuplicate(plan: Plan): Promise<Plan> {
     const planDao = CEPlanDao.getInstance();
     const groupService = CEGroupService.getInstance();
     const assignmentService = CEAssignmentService.getInstance();
     const timeWindowDao = CETimeWindowDao.getInstance();
+    const placementService = CEPlacementService.getInstance();
 
     const proposed: any = {
         ...plan,

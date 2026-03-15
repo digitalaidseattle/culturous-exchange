@@ -9,11 +9,11 @@
 import { Identifier } from "@digitalaidseattle/core";
 
 import { Cohort, Enrollment } from "../../api/types";
-import { enrollmentService } from "../../api/ceEnrollmentService";
+import { CEEnrollmentService } from "../ceEnrollmentService";
 
 export async function removeStudentsFromCohort(cohort: Cohort, studentIds: Identifier[]): Promise<boolean> {
     return Promise.all(
-        studentIds.map(id => enrollmentService
+        studentIds.map(id => CEEnrollmentService.getInstance()
             .deleteEnrollment({ cohort_id: cohort.id, student_id: id } as Enrollment)))
         .then(() => true)
 }

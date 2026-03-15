@@ -6,9 +6,9 @@
  *
  */
 
-import { enrollmentService } from "../../api/ceEnrollmentService";
 import { Cohort, Enrollment, Student } from "../../api/types";
 import { SERVICE_ERRORS } from "../../constants";
+import { CEEnrollmentService } from "../ceEnrollmentService";
 
 function createEnrollments(cohort: Cohort, students: Student[]): Enrollment[] {
     return students.map(student => {
@@ -23,7 +23,7 @@ function createEnrollments(cohort: Cohort, students: Student[]): Enrollment[] {
 export async function addStudentsToCohort(cohort: Cohort, students: Student[]): Promise<any> {
     try {
         const enrollments = createEnrollments(cohort, students);
-        return enrollmentService
+        return CEEnrollmentService.getInstance()
             .batchInsert(enrollments)
     } catch (err) {
         console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);

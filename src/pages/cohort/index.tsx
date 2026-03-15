@@ -16,7 +16,7 @@ import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { useSearchParams } from "react-router-dom";
 import { CECohortService } from "../../api/ceCohortService";
-import { enrollmentService } from "../../api/ceEnrollmentService";
+import { CEEnrollmentService } from "../../services/ceEnrollmentService";
 import { CEPlanService } from "../../api/cePlanService";
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
@@ -39,6 +39,7 @@ export const CohortContext = createContext<CohortContextType>({
 
 const CohortPage: React.FC = () => {
   const cohortService = CECohortService.getInstance();
+  const enrollmentService = CEEnrollmentService.getInstance();
 
   const [searchParams] = useSearchParams();
   const { id: cohortId } = useParams<string>();

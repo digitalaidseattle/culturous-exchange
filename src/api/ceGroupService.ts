@@ -8,7 +8,7 @@
 import { Identifier } from '@digitalaidseattle/core';
 import { SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
-import { CEAssignmentService } from './ceAssignmentService';
+import { CEAssignmentService } from '../services/ceAssignmentService';
 import { CETimeWindowDao } from './ceTimeWindowDao';
 import { CETimeWindowService, DEFAULT_TIMEZONE } from "./ceTimeWindowService";
 import { Group, TimeWindow } from "./types";

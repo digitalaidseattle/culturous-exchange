@@ -6,13 +6,14 @@
  */
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { CEGroupService } from "./ceGroupService";
-import { placementService } from "./cePlacementService";
 import { CEPlanDao } from "./cePlanDao";
 import { Group, Placement, Plan } from "./types";
+import { CEPlacementService } from "../services/cePlacementService";
 
 describe("planService", () => {
     const groupService = CEGroupService.getInstance();
     const planDao = CEPlanDao.getInstance();
+    const placementService = CEPlacementService.getInstance();
 
     vi.mock("./cePlacementService", () => {
         return {

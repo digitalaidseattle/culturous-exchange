@@ -8,10 +8,20 @@
 import { Identifier } from "@digitalaidseattle/core";
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { SERVICE_ERRORS } from '../constants';
-import { CETimeWindowDao } from "./ceTimeWindowDao";
-import { Cohort, Enrollment, Student } from "./types";
+import { CETimeWindowDao } from "../api/ceTimeWindowDao";
+import { Cohort, Enrollment, Student } from "../api/types";
 
 class CEEnrollmentService {
+    private static instance: CEEnrollmentService;
+
+    static getInstance() {
+        if (!CEEnrollmentService.instance) {
+            CEEnrollmentService.instance = new CEEnrollmentService('placement');
+        }
+        return CEEnrollmentService.instance;
+    }
+
+
     tableName = '';
 
     constructor(tableName: string) {
@@ -89,6 +99,5 @@ class CEEnrollmentService {
     }
 }
 
-const enrollmentService = new CEEnrollmentService('enrollment')
-export { enrollmentService };
+export { CEEnrollmentService };
 

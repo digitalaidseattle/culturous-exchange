@@ -3,8 +3,8 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 
-import { placementService } from './cePlacementService';
-import { CEStudentDao } from './ceStudentDao';
+import { CEStudentDao } from '../api/ceStudentDao';
+import { CEPlacementService } from './cePlacementService';
 
 // Mock supabase client chain used in updatePlacement
 vi.mock('@digitalaidseattle/supabase', () => {
@@ -29,7 +29,7 @@ vi.mock('./ceStudentService', () => {
 class PlacementFixture {
 
   async runUpdate() {
-    return placementService.updatePlacement('plan1', 'student1', { anchor: true });
+    return CEPlacementService.getInstance().updatePlacement('plan1', 'student1', { anchor: true });
   }
 
   assertStudentUpdated() {

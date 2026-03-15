@@ -13,7 +13,7 @@ import { CETimeWindowService } from '../../api/ceTimeWindowService';
 import { Group, Placement, Plan, TimeWindow } from '../../api/types';
 import { MAX_GROUP_SIZE } from '../../constants';
 import { CEPlanDao } from '../../api/cePlanDao';
-import { placementService } from '../../api/cePlacementService';
+import { CEPlacementService } from '../cePlacementService';
 
 class PlanGenerator {
   private static instance: PlanGenerator;
@@ -52,7 +52,7 @@ class PlanGenerator {
     const planDao = CEPlanDao.getInstance();
 
     for (const placement of plan.placements) {
-      await placementService.updatePlacement(plan.id!, placement.student_id, { group_id: null });
+      await CEPlacementService.getInstance().updatePlacement(plan.id!, placement.student_id, { group_id: null });
       placement.group_id = undefined;
     }
 

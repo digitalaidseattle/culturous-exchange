@@ -5,7 +5,7 @@
  *
  */
 
-import { CEAssignmentService } from "../../api/ceAssignmentService";
+import { CEAssignmentService } from "../ceAssignmentService";
 import { CEGroupService } from "../../api/ceGroupService";
 import { Group } from "../../api/types";
 

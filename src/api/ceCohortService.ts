@@ -7,9 +7,9 @@
 
 import { supabaseClient, SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { SERVICE_ERRORS } from '../constants';
-import { enrollmentService } from './ceEnrollmentService';
 import { Cohort, Enrollment } from "./types";
 import { Identifier } from '@digitalaidseattle/core';
+import { CEEnrollmentService } from '../services/ceEnrollmentService';
 
 const DEFAULT_SELECT = '*, enrollment(*), plan(*)';
 
@@ -36,7 +36,7 @@ class CECohortService extends SupabaseEntityService<Cohort> {
 
     async removeStudents(cohort: Cohort, studentIds: Identifier[]): Promise<boolean> {
         return Promise.all(
-            studentIds.map(id => enrollmentService
+            studentIds.map(id => CEEnrollmentService.getInstance()
                 .deleteEnrollment({ cohort_id: cohort.id, student_id: id } as Enrollment)))
             .then(() => true)
     }

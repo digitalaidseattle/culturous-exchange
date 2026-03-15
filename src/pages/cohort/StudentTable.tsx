@@ -21,15 +21,14 @@ import {
 } from "@mui/x-data-grid";
 
 // third-party
+import { StarFilled } from "@ant-design/icons";
 
 // project import
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { PageInfo } from "@digitalaidseattle/supabase";
 
-import { StarFilled } from "@ant-design/icons";
 import { CohortContext } from ".";
-import { enrollmentService } from "../../api/ceEnrollmentService";
 import { CEStudentDao } from "../../api/ceStudentDao";
 import { CEProfile, Enrollment, Student } from "../../api/types";
 import AddProfileModal from "../../components/AddProfileModal";
@@ -39,10 +38,11 @@ import { TimeToggle } from "../../components/TimeToggle";
 import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
 import { removeStudentsFromCohort } from "../../services/cohort/removeStudentsFromCohort";
 import { addStudentsToCohort } from "../../services/cohort/addStudentsToCohort";
-
+import { CEEnrollmentService } from "../../services/ceEnrollmentService";
 
 export const StudentTable: React.FC = () => {
   const studentDao = CEStudentDao.getInstance();
+  const enrollmentService = CEEnrollmentService.getInstance();
 
   const apiRef = useGridApiRef();
   const { cohort } = useContext(CohortContext);

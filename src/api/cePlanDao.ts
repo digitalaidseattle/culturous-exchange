@@ -8,14 +8,15 @@
 import { Identifier } from "@digitalaidseattle/core";
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { CEGroupService } from "./ceGroupService";
-import { placementService } from "./cePlacementService";
 import { SupabaseDao } from "./SupabaseDao";
 import { Group, Placement, Plan } from "./types";
+import { CEPlacementService } from "../services/cePlacementService";
 
 const DEFAULT_SELECT = '*, placement(*, student(*, timewindow(*))), grouptable(*, timewindow(*), assignment(*, facilitators(*, timewindow(*))))';
 
 function JSON_2_ENTITY(json: any): Plan {
   const groupService = CEGroupService.getInstance();
+  const placementService = CEPlacementService.getInstance();
 
   const plan = {
     ...json,
