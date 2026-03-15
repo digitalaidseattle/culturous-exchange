@@ -87,11 +87,11 @@ type Plan = Entity & {
     note: string;
     group_size?: number; // Optional, can be set to override default group size
     placements: Placement[]
-    assignments?: Assignment[];  // Optional, for backward compatibility
     groups: Group[];
 }
 
-type Placement = {
+// TODO table does not have an ID column
+type Placement = Entity & {
     plan_id: Identifier;
     student_id: Identifier;
     group_id?: Identifier | null; // will be null when unassigned

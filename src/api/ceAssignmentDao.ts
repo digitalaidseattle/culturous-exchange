@@ -34,7 +34,7 @@ export class CEAssignmentDao extends SupabaseDao<Assignment> {
 
   static getInstance() {
     if (!CEAssignmentDao.instance) {
-      CEAssignmentDao.instance = new CEAssignmentDao('assignment', DEFAULT_SELECT, JSON_2_ENTITY);
+      CEAssignmentDao.instance = new CEAssignmentDao(supabaseClient, 'assignment', { select: DEFAULT_SELECT });
     }
     return CEAssignmentDao.instance;
   }

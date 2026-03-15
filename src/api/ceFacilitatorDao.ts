@@ -28,13 +28,13 @@ function ENTITY_2_JSON(entity: Facilitator): any {
 
 class CEFacilitatorDao extends SupabaseDao<Facilitator> {
 
-  private static _instance: CEFacilitatorDao;
+  private static instance: CEFacilitatorDao;
 
   static getInstance(): CEFacilitatorDao {
-    if (!this._instance) {
-      this._instance = new CEFacilitatorDao('facilitators', DEFAULT_SELECT, JSON_2_ENTITY)
+    if (!this.instance) {
+      CEFacilitatorDao.instance = new CEFacilitatorDao(supabaseClient, 'facilitators', { select: DEFAULT_SELECT });
     }
-    return this._instance;
+    return this.instance;
   }
 
   empty(): Facilitator {

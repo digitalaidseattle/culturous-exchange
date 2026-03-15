@@ -7,8 +7,8 @@
 
 import { Identifier } from "@digitalaidseattle/core";
 import { supabaseClient } from "@digitalaidseattle/supabase";
-import { CEPlacementService } from "../services/cePlacementService";
 import { CEGroupDao } from "./ceGroupDao";
+import { CEPlacementDao } from "./cePlacementDao";
 import { SupabaseDao } from "./SupabaseDao";
 import { Group, Placement, Plan } from "./types";
 
@@ -16,14 +16,13 @@ const DEFAULT_SELECT = '*, placement(*, student(*, timewindow(*))), grouptable(*
 
 function JSON_2_ENTITY(json: any): Plan {
   const groupDao = CEGroupDao.getInstance();
-  const placementService = CEPlacementService.getInstance();
+  const placementDao = CEPlacementDao.getInstance();
 
   const plan = {
     ...json,
-    placements: (json.placement ?? []).map((pJson: any) => placementService.mapJson(pJson)),
+    placements: (json.placement ?? []).map((pJson: any) => placementDao.mapJson(pJson)),
     groups: (json.grouptable ?? []).map((gJson: any) => groupDao.mapJson(gJson))
   }
-
   delete plan.placement;
   delete plan.grouptable;
 
@@ -41,7 +40,6 @@ function JSON_2_ENTITY(json: any): Plan {
 function ENTITY_2_JSON(entity: Partial<Plan>): any {
   const json = { ...entity };
   delete json.placements;
-  delete json.assignments;
   delete json.groups;
   return json;
 }
@@ -51,7 +49,7 @@ export class CEPlanDao extends SupabaseDao<Plan> {
 
   static getInstance() {
     if (!CEPlanDao.instance) {
-      CEPlanDao.instance = new CEPlanDao('plan', DEFAULT_SELECT, JSON_2_ENTITY);
+      CEPlanDao.instance = new CEPlanDao(supabaseClient, 'plan', { select: DEFAULT_SELECT });
     }
     return CEPlanDao.instance;
   }

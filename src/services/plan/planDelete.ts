@@ -5,22 +5,18 @@
  *
  */
 
-import { CEAssignmentDao } from "../../api/ceAssignmentDao";
-import { CEGroupService } from "../group/ceGroupService";
+import { CEPlacementDao } from "../../api/cePlacementDao";
 import { CEPlanDao } from "../../api/cePlanDao";
 import { Plan } from "../../api/types";
-import { CEPlacementService } from "../cePlacementService";
+import { CEGroupService } from "../group/ceGroupService";
 
 export async function planDelete(plan: Plan): Promise<void> {
+    const placementDao = CEPlacementDao.getInstance();
     const planDao = CEPlanDao.getInstance();
     const groupService = CEGroupService.getInstance();
-    const assignmentDao = CEAssignmentDao.getInstance();
 
-    for (const assignment of plan.assignments ?? []) {
-        await assignmentDao.delete(assignment.id!);
-    }
     for (const placement of plan.placements) {
-        await CEPlacementService.getInstance().deletePlacement(placement);
+        await placementDao.deletePlacement(placement);
     }
     for (const group of plan.groups) {
         await groupService.deleteGroup(group)

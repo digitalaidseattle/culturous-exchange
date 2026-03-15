@@ -24,7 +24,7 @@ class CETimeWindowDao extends SupabaseDao<TimeWindow> {
 
   static getInstance() {
     if (!CETimeWindowDao.instance) {
-      CETimeWindowDao.instance = new CETimeWindowDao('timewindow', '*', JSON_2_ENTITY);
+      CETimeWindowDao.instance = new CETimeWindowDao(supabaseClient, 'timewindow');
     }
     return CETimeWindowDao.instance;
   }

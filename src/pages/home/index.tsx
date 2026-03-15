@@ -28,7 +28,12 @@ const HomePage: React.FC = () => {
 
     useEffect(() => {
         cohortDao.getLatest()
-            .then(c => { setCurrent(c!) })
+            .then(c => {
+                {
+                    console.log(c)
+                    setCurrent(c!);
+                }
+            })
     }, []);
 
     return (
@@ -45,12 +50,12 @@ const HomePage: React.FC = () => {
                         <Stack direction='row' gap={2}>
                             <Card >
                                 <CardContent onClick={() => navigate(`/cohort/${current.id}?tab=1`)}>
-                                    <Typography>{UI_STRINGS.STUDENTS_LABEL}: {current.enrollments.length}</Typography>
+                                    <Typography>{UI_STRINGS.STUDENTS_LABEL}: {(current.enrollments ?? []).length}</Typography>
                                 </CardContent>
                             </Card>
                             <Card >
                                 <CardContent onClick={() => navigate(`/cohort/${current.id}?tab=0`)}>
-                                    <Typography>{UI_STRINGS.PLANS_LABEL}: {current.plans.length}</Typography>
+                                    <Typography>{UI_STRINGS.PLANS_LABEL}: {(current.plans ?? []).length}</Typography>
                                 </CardContent>
                             </Card>
                         </Stack>

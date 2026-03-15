@@ -8,8 +8,8 @@
 import { v4 as uuid } from 'uuid';
 import { CEStudentDao } from '../../api/ceStudentDao';
 import { GENDER_OPTION, Student } from '../../api/types';
-import { CETimeWindowService } from '../time/ceTimeWindowService';
 import { CEProfileService } from '../ceProfileService';
+import { CETimeZoneService } from '../time/ceTimeZoneService';
 
 class CEStudentService extends CEProfileService<Student> {
 
@@ -22,8 +22,10 @@ class CEStudentService extends CEProfileService<Student> {
         return this.instance;
     }
 
+    timezoneService: CETimeZoneService;
     constructor() {
         super(CEStudentDao.getInstance());
+        this.timezoneService = CETimeZoneService.getInstance();
     }
 
     empty(): Student {
@@ -43,12 +45,11 @@ class CEStudentService extends CEProfileService<Student> {
     }
 
     async save(profile: Student): Promise<Student> {
-        const { timezone, offset } = await CETimeWindowService.getInstance()
-            .getTimeZone(profile.city!, profile.country)
+        const { timezone, offset } = await this.timezoneService.getTimeZone(profile.city!, profile.country)
         const updated = {
             ...profile,
-            timezone: timezone,
-            offset: offset
+            time_zone: timezone,
+            tz_offset: offset
         }
         return super.save(updated);
     }

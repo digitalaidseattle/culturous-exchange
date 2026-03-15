@@ -5,15 +5,15 @@
  *
  */
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
-import { CEPlacementService } from "../cePlacementService";
 import { CEGroupDao } from "../../api/ceGroupDao";
+import { CEPlacementDao } from "../../api/cePlacementDao";
 import { CEPlanDao } from "../../api/cePlanDao";
 import { Group, Placement, Plan } from "../../api/types";
 
 describe("planService", () => {
     const groupDao = CEGroupDao.getInstance();
     const planDao = CEPlanDao.getInstance();
-    const placementService = CEPlacementService.getInstance();
+    const placementDao = CEPlacementDao.getInstance();
 
     vi.mock("./cePlacementService", () => {
         return {
@@ -49,7 +49,7 @@ describe("planService", () => {
         const placement2 = { group_id: null } as Placement;
         const group = { id: "group1" } as Group;
 
-        (placementService.mapJson as ReturnType<typeof vi.fn>)
+        (placementDao.mapJson as ReturnType<typeof vi.fn>)
             .mockReturnValueOnce(placement1)
             .mockReturnValueOnce(placement2);
         (groupDao.mapJson as ReturnType<typeof vi.fn>).mockReturnValue(group);

@@ -19,7 +19,6 @@ function ENTITY_2_JSON(entity: Partial<Student>): any {
 
 function JSON_2_ENTITY(json: any): Student {
   const timeWindowDao = CETimeWindowDao.getInstance();
-
   const student = {
     ...json,
     timeWindows: (json.timewindow ?? []).map((js: any) => timeWindowDao.mapJson(js))
@@ -33,14 +32,11 @@ class CEStudentDao extends SupabaseDao<Student> {
 
   static getInstance() {
     if (!CEStudentDao.instance) {
-      CEStudentDao.instance = new CEStudentDao();
+      CEStudentDao.instance = new CEStudentDao(supabaseClient, 'student', { select: DEFAULT_SELECT });
     }
     return CEStudentDao.instance;
   }
 
-  constructor() {
-    super('student', DEFAULT_SELECT, JSON_2_ENTITY);
-  }
 
   mapJson(json: any): Student {
     return JSON_2_ENTITY(json)

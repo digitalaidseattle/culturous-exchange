@@ -35,10 +35,11 @@ export class CECohortDao extends SupabaseDao<Cohort> {
 
     static getInstance() {
         if (!CECohortDao.instance) {
-            CECohortDao.instance = new CECohortDao('cohort', DEFAULT_SELECT, JSON_2_ENTITY);
+            CECohortDao.instance = new CECohortDao(supabaseClient, 'cohort', { select: DEFAULT_SELECT });
         }
         return CECohortDao.instance;
     }
+
     mapJson(json: any): Cohort {
         return JSON_2_ENTITY(json);
     }

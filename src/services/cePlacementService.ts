@@ -6,10 +6,10 @@
  */
 
 import { Identifier } from "@digitalaidseattle/core";
-import { supabaseClient } from "@digitalaidseattle/supabase";
-import { SERVICE_ERRORS } from '../constants';
+import { CEPlacementDao } from "../api/cePlacementDao";
 import { CEStudentDao } from "../api/ceStudentDao";
-import { Cohort, Group, Placement, Plan, Student } from "../api/types";
+import { Cohort, Placement, Plan, Student } from "../api/types";
+import { SERVICE_ERRORS } from '../constants';
 import { CEEnrollmentService } from "./ceEnrollmentService";
 
 class CEPlacementService {
@@ -18,75 +18,15 @@ class CEPlacementService {
 
   static getInstance() {
     if (!CEPlacementService.instance) {
-      CEPlacementService.instance = new CEPlacementService('placement');
+      CEPlacementService.instance = new CEPlacementService();
     }
     return CEPlacementService.instance;
-  }
-
-
-  tableName = '';
-  studentDao: CEStudentDao;
-
-  constructor(tableName: string) {
-    this.tableName = tableName;
-    this.studentDao = CEStudentDao.getInstance();
-  }
-
-  mapJson(json: any): Placement {
-    return {
-      ...json,
-      student: this.studentDao.mapJson(json.student)
-    }
-  }
-
-  // TODO : NEW, there's something wrong with original findByPlanId need FIX.
-  async findByPlan(planId: Identifier): Promise<Placement[]> {
-    return await supabaseClient
-      .from(this.tableName)
-      .select('*')
-      .eq('plan_id', planId)
-      .then((resp: any) => {
-        return resp.data as Placement[] || [];
-      });
-  }
-
-  async findByPlanId(planId: Identifier): Promise<Placement[]> {
-    return await supabaseClient
-      .from(this.tableName)
-      .select('*, student(*), grouptable(*)')
-      .eq('plan_id', planId)
-      .then((resp: any) => {
-        if (resp.data) {
-
-          return resp.data.map((db: any) => {
-            const grouptable = db['grouptable'] as Group[];
-            const student = db['student'] as Student[];
-            return {
-              ...db,
-              id: `${db.plan_id}:${db.student_id}`,
-              group: grouptable,
-              student: student
-            } as unknown as Placement;
-          });
-        }
-        return []
-      });
-  }
-
-  async getStudents(plan: Plan): Promise<Student[]> {
-    return await supabaseClient
-      .from(this.tableName)
-      .select('student(*)')
-      .eq('plan_id', plan.id)
-      .then((resp: any) => {
-        return resp.data?.map((data: any) => data.student) as unknown as Student[]
-      });
   }
 
   // getUnplacedStudents : for the Add student Modal
   async getUnplacedStudents(cohort: Cohort, plan: Plan): Promise<Student[]> {
     const enrolledStudents = await CEEnrollmentService.getInstance().getStudents(cohort);
-    const placedStudents = await this.getStudents(plan);
+    const placedStudents = await CEPlacementDao.getInstance().getStudents(plan);
     const placedStudentIds = new Set(placedStudents.map(student => student.id));
     const unplacedStudents = enrolledStudents.filter(student => !placedStudentIds.has(student.id));
     return unplacedStudents;
@@ -103,58 +43,32 @@ class CEPlacementService {
     return updated;
   }
 
-  async updatePlacement(planId: Identifier, studentId: Identifier, updatedFields: Partial<Placement>, select?: string): Promise<Placement> {
-    const json = { ...updatedFields }
-    delete json.student;
-
+  async updatePlacement(planId: Identifier, studentId: Identifier, updatedFields: Partial<Placement>): Promise<Placement> {
     try {
-      const { data, error } = await supabaseClient
-        .from(this.tableName)
-        .update(json)
-        .eq('plan_id', planId)
-        .eq('student_id', studentId)
-        .select(select ?? '*')
-        .single();
-      if (error) {
-        console.error(SERVICE_ERRORS.ERROR_UPDATING_ENTITY, error.message);
-        throw new Error(SERVICE_ERRORS.FAILED_UPDATE_ENTITY);
-      }
+      const updatedPlacement = await CEPlacementDao.getInstance()
+        .updatePlacement(`${planId}:${studentId}`, updatedFields)
+
       // If the placement's anchor flag was changed, propagate the change to the student record
       // placement's anchor state -> update student's anchor state
-      if (typeof json.anchor !== 'undefined') {
+      if (typeof updatedPlacement.anchor !== 'undefined') {
         try {
-          await this.studentDao.update(studentId, { anchor: json.anchor });
+          await CEStudentDao.getInstance()
+            .update(studentId, { anchor: updatedPlacement.anchor });
         } catch (err) {
           // Log but do not fail placement update if student update fails
           console.error('Failed to propagate placement.anchor to student.anchor', err);
         }
       }
-      return data as unknown as Placement;
+      return updatedPlacement;
     } catch (err) {
       console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_UPDATE, err);
       throw err;
     }
   }
 
-  async deletePlacement(placement: Placement): Promise<void> {
-    try {
-      const { error } = await supabaseClient
-        .from(this.tableName)
-        .delete()
-        .eq('plan_id', placement.plan_id)
-        .eq('student_id', placement.student_id);
-      if (error) {
-        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
-        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
-      }
-    } catch (err) {
-      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
-      throw err;
-    }
-  }
 
   async getEnrichedPlacements(plan: Plan): Promise<Placement[]> {
-    const students = await this.getStudents(plan);
+    const students = await CEPlacementDao.getInstance().getStudents(plan);
     return plan.placements.map((placement) => ({
       ...placement,
       student: students.find(
@@ -163,45 +77,6 @@ class CEPlacementService {
     } as Placement));
   }
 
-
-  async batchInsert(entities: Placement[], select?: string): Promise<Placement[]> {
-    try {
-      const json = entities.map(entity => {
-        const js = { ...entity }
-        delete js.student
-        return js
-      })
-      const { data, error } = await supabaseClient
-        .from(this.tableName)
-        .upsert(json)
-        .select(select ?? '*');
-      if (error) {
-        console.error(SERVICE_ERRORS.ERROR_INSERTING_ENTITY, error);
-        throw new Error(SERVICE_ERRORS.FAILED_INSERT_ENTITY_PREFIX + error.message);
-      }
-      return data as unknown as Placement[];
-    } catch (err) {
-      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_INSERTION, err);
-      throw err;
-    }
-  }
-
-  async insert(entity: Placement, select?: string): Promise<Placement[]> {
-    try {
-      const { data, error } = await supabaseClient
-        .from(this.tableName)
-        .upsert(entity)
-        .select(select ?? '*');
-      if (error) {
-        console.error(SERVICE_ERRORS.ERROR_INSERTING_ENTITY, error);
-        throw new Error(SERVICE_ERRORS.FAILED_INSERT_ENTITY_PREFIX + error.message);
-      }
-      return data as unknown as Placement[];
-    } catch (err) {
-      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_INSERTION, err);
-      throw err;
-    }
-  }
 }
 
 export { CEPlacementService };

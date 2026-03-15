@@ -7,6 +7,7 @@
 
 
 
+import { supabaseClient } from '@digitalaidseattle/supabase';
 import { CEAssignmentDao } from './ceAssignmentDao';
 import { CETimeWindowDao } from './ceTimeWindowDao';
 import { SupabaseDao } from './SupabaseDao';
@@ -17,7 +18,6 @@ const DEFAULT_SELECT = "*, timewindow(*), assignment(*, facilitators(*, timewind
 function JSON_2_ENTITY(json: any): Group {
   const timeWindowDao = CETimeWindowDao.getInstance();
   const assignmentDao = CEAssignmentDao.getInstance();
-
   const group = {
     ...json,
     assignments: (json.assignment ?? []).map((js: any) => assignmentDao.mapJson(js)),
@@ -44,7 +44,7 @@ export class CEGroupDao extends SupabaseDao<Group> {
 
   static getInstance() {
     if (!CEGroupDao.instance) {
-      CEGroupDao.instance = new CEGroupDao('grouptable', DEFAULT_SELECT, JSON_2_ENTITY);
+      CEGroupDao.instance = new CEGroupDao(supabaseClient, 'grouptable', { select: DEFAULT_SELECT });
     }
     return CEGroupDao.instance;
   }
@@ -53,8 +53,8 @@ export class CEGroupDao extends SupabaseDao<Group> {
     return JSON_2_ENTITY(json);
   }
 
-  mapEntity(json: Partial<Group>): any {
-    return ENTITY_2_JSON(json);
+  mapEntity(entity: Partial<Group>): any {
+    return ENTITY_2_JSON(entity);
   }
 
 }

@@ -12,6 +12,7 @@ import { CEPlanDao } from "../../api/cePlanDao";
 import { Cohort, Placement, Plan, Student } from "../../api/types";
 import { CEPlacementService } from '../cePlacementService';
 import { CEEnrollmentService } from '../ceEnrollmentService';
+import { CEPlacementDao } from '../../api/cePlacementDao';
 
 class CEPlanService {
   private static instance: CEPlanService;
@@ -23,26 +24,34 @@ class CEPlanService {
     return CEPlanService.instance;
   }
 
-  async create(cohort: Cohort): Promise<Plan> {
-    const planDao = CEPlanDao.getInstance();
-    const placementService = CEPlacementService.getInstance();
-    const enrollmentService = CEEnrollmentService.getInstance();
-
-    const proposed: Plan = {
+  empty(): Plan {
+    return {
       id: uuidv4(),
       name: UI_STRINGS.NEW_PLAN,
-      cohort_id: cohort.id,
+      cohort_id: '',
       note: "",
       group_size: 10,
       placements: [],
       groups: [],
       active: false,
     } as Plan;
-    await this.save(proposed)
+
+  }
+  async create(cohort: Cohort): Promise<Plan> {
+    const planDao = CEPlanDao.getInstance();
+    const placementDao = CEPlacementDao.getInstance();
+    const enrollmentService = CEEnrollmentService.getInstance();
+
+    const proposed: Plan = {
+      ...this.empty(),
+      cohort_id: cohort.id,
+    } as Plan;
+
     return planDao.insert(proposed)
       .then((plan) => {
         return enrollmentService.getStudents(cohort)
           .then((students) => {
+            console.log('mapping student', students)
             const placements = students.map((student) => {
               return {
                 plan_id: plan.id,
@@ -50,12 +59,15 @@ class CEPlanService {
                 anchor: student.anchor || false,
                 priority: 0,
                 student: student
-              } as unknown as Placement;
+              } as Placement;
             });
-            return placementService
+            console.log('inserting placements', placements)
+            return placementDao
               .batchInsert(placements)
               .then((createdPlacements) => {
                 plan.placements = createdPlacements;
+                console.log('insertd placements', placements)
+
                 return plan;
               });
           });
@@ -75,11 +87,11 @@ class CEPlanService {
   }
 
   async addStudents(plan: Plan, students: Student[]): Promise<any> {
-    const placementService = CEPlacementService.getInstance();
+    const placementDao = CEPlacementDao.getInstance();
 
     try {
       const placements = this.createPlacements(plan, students);
-      return placementService.batchInsert(placements);
+      return placementDao.batchInsert(placements);
     } catch (err) {
       console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_SELECT, err);
       throw err;
