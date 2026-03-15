@@ -6,13 +6,15 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { CEGroupService } from "./ceGroupService";
-import { CETimeWindowDao } from "./ceTimeWindowDao";
-import { Group, TimeWindow } from "./types";
+import { CETimeWindowDao } from "../../api/ceTimeWindowDao";
+import { Group, TimeWindow } from "../../api/types";
+import { CEGroupDao } from "../../api/ceGroupDao";
 
 describe("groupService", () => {
     const offset = -7; // using a fixed offset to make test deterministic; 
     const groupService = CEGroupService.getInstance();
-      const timeWindowDao = CETimeWindowDao.getInstance();
+    const groupDao = CEGroupDao.getInstance();
+    const timeWindowDao = CETimeWindowDao.getInstance();
 
     it("createDefaultTimewindows", () => {
 
@@ -42,11 +44,11 @@ describe("groupService", () => {
         } as Group;
 
         vi.spyOn(timeWindowDao, "delete").mockResolvedValue();
-        vi.spyOn(groupService, "delete").mockResolvedValue();
+        vi.spyOn(groupDao, "delete").mockResolvedValue();
         groupService.deleteGroup(group)
             .then(_result => {
                 expect(timeWindowDao.delete).toBeCalledWith("twid");
-                expect(groupService.delete).toBeCalledWith("test");
+                expect(groupDao.delete).toBeCalledWith("test");
             })
     });
 

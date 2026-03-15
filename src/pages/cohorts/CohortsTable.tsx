@@ -24,7 +24,7 @@ import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
 import { MainCard } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { useNavigate } from 'react-router';
-import { CECohortService } from '../../api/ceCohortService';
+import { CECohortDao } from '../../api/ceCohortDao';
 import { Cohort, Plan } from '../../api/types';
 import { DEFAULT_TABLE_PAGE_SIZE, UI_STRINGS } from '../../constants';
 
@@ -47,7 +47,7 @@ const getColumns = (): GridColDef[] => {
 
 
 export default function CohortsTable() {
-    const cohortService = CECohortService.getInstance();
+    const cohortDao = CECohortDao.getInstance();
 
     const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
@@ -66,7 +66,7 @@ export default function CohortsTable() {
                 sortField: sortModel.length === 0 ? 'created_at' : sortModel[0].field,
                 sortDirection: sortModel.length === 0 ? 'created_at' : sortModel[0].sort
             } as QueryModel
-            cohortService.find(queryModel)
+            cohortDao.find(queryModel)
                 .then((sess) => setPageInfo(sess))
         }
     }, [paginationModel, sortModel])
@@ -79,7 +79,7 @@ export default function CohortsTable() {
             sortDirection: sortModel.length === 0 ? 'created_at' : sortModel[0].sort
         } as QueryModel
         setLoading(true);
-        cohortService.find(queryModel)
+        cohortDao.find(queryModel)
             .then((pi) => setPageInfo(pi))
             .finally(() => setLoading(false))
 

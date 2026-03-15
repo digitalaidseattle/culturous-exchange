@@ -7,7 +7,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { PlanGenerator } from "./planGenerator";
-import { CEGroupService } from "../../api/ceGroupService";
+import { CEGroupService } from "../group/ceGroupService";
 import { CEPlanDao } from "../../api/cePlanDao";
 import { Group, Placement, Plan, TimeWindow } from "../../api/types";
 import { CEPlacementService } from "../cePlacementService";

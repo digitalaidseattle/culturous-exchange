@@ -5,8 +5,8 @@
  *
  */
 import { v4 as uuid } from 'uuid';
-import { CEAssignmentService } from '../ceAssignmentService';
-import { CEGroupService } from '../../api/ceGroupService';
+import { CEAssignmentDao } from '../../api/ceAssignmentDao';
+import { CEGroupDao } from '../../api/ceGroupDao';
 import { CEPlanDao } from '../../api/cePlanDao';
 import { CETimeWindowDao } from '../../api/ceTimeWindowDao';
 import { Plan } from '../../api/types';
@@ -14,8 +14,8 @@ import { CEPlacementService } from '../cePlacementService';
 
 export async function planDuplicate(plan: Plan): Promise<Plan> {
     const planDao = CEPlanDao.getInstance();
-    const groupService = CEGroupService.getInstance();
-    const assignmentService = CEAssignmentService.getInstance();
+    const groupDao = CEGroupDao.getInstance();
+    const assignmentDao = CEAssignmentDao.getInstance();
     const timeWindowDao = CETimeWindowDao.getInstance();
     const placementService = CEPlacementService.getInstance();
 
@@ -41,7 +41,7 @@ export async function planDuplicate(plan: Plan): Promise<Plan> {
         delete proposedGroup.placements;
         delete proposedGroup.time_windows;
 
-        const duplicateGroup = await groupService.insert(proposedGroup);
+        const duplicateGroup = await groupDao.insert(proposedGroup);
 
         for (let tw of group.time_windows ?? []) {
             const proposedTw = {
@@ -70,7 +70,7 @@ export async function planDuplicate(plan: Plan): Promise<Plan> {
             };
             delete proposedAssignment.facilitator;
 
-            await assignmentService.insert(proposedAssignment);
+            await assignmentDao.insert(proposedAssignment);
         }
     }
 

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { PlanEvaluator, planEvaluator } from "./planEvaluator";
-import { CEGroupService } from "../../api/ceGroupService";
+import { CEGroupService } from "../group/ceGroupService";
 import { CETimeWindowService } from "../../api/ceTimeWindowService";
 import { Group, Placement, Plan, TimeWindow } from "../../api/types";
 

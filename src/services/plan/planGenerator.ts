@@ -8,7 +8,7 @@
 import { v4 as uuid } from 'uuid';
 
 import { planEvaluator } from './planEvaluator';
-import { CEGroupService } from '../../api/ceGroupService';
+import { CEGroupService } from '../group/ceGroupService';
 import { CETimeWindowService } from '../../api/ceTimeWindowService';
 import { Group, Placement, Plan, TimeWindow } from '../../api/types';
 import { MAX_GROUP_SIZE } from '../../constants';

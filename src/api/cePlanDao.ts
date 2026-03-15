@@ -7,21 +7,21 @@
 
 import { Identifier } from "@digitalaidseattle/core";
 import { supabaseClient } from "@digitalaidseattle/supabase";
-import { CEGroupService } from "./ceGroupService";
+import { CEPlacementService } from "../services/cePlacementService";
+import { CEGroupDao } from "./ceGroupDao";
 import { SupabaseDao } from "./SupabaseDao";
 import { Group, Placement, Plan } from "./types";
-import { CEPlacementService } from "../services/cePlacementService";
 
 const DEFAULT_SELECT = '*, placement(*, student(*, timewindow(*))), grouptable(*, timewindow(*), assignment(*, facilitators(*, timewindow(*))))';
 
 function JSON_2_ENTITY(json: any): Plan {
-  const groupService = CEGroupService.getInstance();
+  const groupDao = CEGroupDao.getInstance();
   const placementService = CEPlacementService.getInstance();
 
   const plan = {
     ...json,
     placements: (json.placement ?? []).map((pJson: any) => placementService.mapJson(pJson)),
-    groups: (json.grouptable ?? []).map((gJson: any) => groupService.mapJson(gJson))
+    groups: (json.grouptable ?? []).map((gJson: any) => groupDao.mapJson(gJson))
   }
 
   delete plan.placement;

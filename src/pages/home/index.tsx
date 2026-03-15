@@ -14,20 +14,20 @@ import { useNavigate } from 'react-router';
 import { Button, Card, CardContent, Stack, Typography } from '@mui/material';
 
 import { MainCard } from '@digitalaidseattle/mui';
-import { CECohortService } from '../../api/ceCohortService';
+import { CECohortDao } from '../../api/ceCohortDao';
 import { Cohort } from '../../api/types';
 import { UI_STRINGS } from '../../constants';
 
 
 const HomePage: React.FC = () => {
-    const cohortService = CECohortService.getInstance();
+    const cohortDao = CECohortDao.getInstance();
 
     const navigate = useNavigate();
 
     const [current, setCurrent] = useState<Cohort>();
 
     useEffect(() => {
-        cohortService.getLatest()
+        cohortDao.getLatest()
             .then(c => { setCurrent(c!) })
     }, []);
 

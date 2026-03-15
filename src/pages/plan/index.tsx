@@ -14,21 +14,21 @@ import { Box, Breadcrumbs, CircularProgress, IconButton, Link, Stack, Toolbar, T
 // project import
 import { Identifier, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
-import { CECohortService } from "../../api/ceCohortService";
+import { CECohortDao } from "../../api/ceCohortDao";
 import { CEPlanDao } from "../../api/cePlanDao";
 import { Cohort, Plan } from "../../api/types";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { TextEdit } from "../../components/TextEdit";
 import { UI_STRINGS } from '../../constants';
+import { PlanExporter } from "../../services/plan/planExporter";
+import { PlanGenerator } from "../../services/plan/planGenerator";
 import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
 import { PlanContext } from "./PlanContext";
 import { TimeLine } from "./TimeLine";
-import { PlanGenerator } from "../../services/plan/planGenerator";
-import { PlanExporter } from "../../services/plan/planExporter";
 
 const PlanPage: React.FC = () => {
-  const cohortService = CECohortService.getInstance();
+  const cohortDao = CECohortDao.getInstance();
   const planDao = CEPlanDao.getInstance();
 
   const { id: planId } = useParams<string>();
@@ -49,8 +49,7 @@ const PlanPage: React.FC = () => {
   useEffect(() => {
     setCohort(undefined);
     if (plan && plan.cohort_id) {
-      console.log(plan)
-      cohortService.getById(plan.cohort_id)
+      cohortDao.getById(plan.cohort_id)
         .then((cohort) => {
           if (cohort) {
             setCohort(cohort);

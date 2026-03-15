@@ -8,18 +8,18 @@ import { RefreshContext } from '@digitalaidseattle/core';
 import { MainCard } from '@digitalaidseattle/mui';
 import { Stack } from '@mui/material';
 import { useContext, useEffect, useState } from "react";
-import { CECohortService } from "../../api/ceCohortService";
+import { CECohortDao } from "../../api/ceCohortDao";
 import { Cohort } from '../../api/types';
 import { CohortCard } from './CohortCard';
 
 export const CohortsStack = () => {
-    const cohortService = CECohortService.getInstance();
+    const cohortDao = CECohortDao.getInstance();
 
     const { refresh } = useContext(RefreshContext);
     const [cohorts, setCohorts] = useState<Cohort[]>([]);
 
     useEffect(() => {
-        cohortService
+        cohortDao
             .getAll()
             .then(cohorts => setCohorts(cohorts));
     }, [refresh]);

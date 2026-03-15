@@ -6,12 +6,12 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { SERVICE_ERRORS, UI_STRINGS } from '../constants';
-import { CEGroupService } from "./ceGroupService";
-import { CEPlanDao } from "./cePlanDao";
-import { Cohort, Placement, Plan, Student } from "./types";
-import { CEPlacementService } from '../services/cePlacementService';
-import { CEEnrollmentService } from '../services/ceEnrollmentService';
+import { SERVICE_ERRORS, UI_STRINGS } from '../../constants';
+import { CEGroupService } from "../group/ceGroupService";
+import { CEPlanDao } from "../../api/cePlanDao";
+import { Cohort, Placement, Plan, Student } from "../../api/types";
+import { CEPlacementService } from '../cePlacementService';
+import { CEEnrollmentService } from '../ceEnrollmentService';
 
 class CEPlanService {
   private static instance: CEPlanService;

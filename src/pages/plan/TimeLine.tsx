@@ -36,17 +36,17 @@ import {
 import { addHours, compareAsc, getHours, isFriday, isSaturday, isSunday } from "date-fns";
 
 import { MoreOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
+import { Identifier } from "@digitalaidseattle/core";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
-import { CEGroupService } from "../../api/ceGroupService";
-import { CEPlanService } from "../../api/cePlanService";
+import { CEGroupDao } from "../../api/ceGroupDao";
+import { CEPlanDao } from "../../api/cePlanDao";
+import { CEPlanService } from "../../services/plan/cePlanService";
 import { Group, Placement, Plan, Student, TimeWindow } from "../../api/types";
 import { ENDING_HOUR, OFFICE_HOURS, STARTING_HOUR, UI_STRINGS, WAITLIST_ID } from '../../constants';
+import { studentMover } from "../../services/plan/studentMover";
 import StudentModal from "../students/StudentModal";
 import { FacilitatorMenu } from "./FacilitatorMenu";
 import { PlanContext } from "./PlanContext";
-import { Identifier } from "@digitalaidseattle/core";
-import { CEPlanDao } from "../../api/cePlanDao";
-import { studentMover } from "../../services/plan/studentMover";
 
 type TimeRow = {
     id: Identifier;
@@ -92,7 +92,7 @@ interface SortableRowProps {
     row: TimeRow;
 }
 const SortableRow: React.FC<SortableRowProps> = ({ id, row }) => {
-    const groupService = CEGroupService.getInstance();
+    const groupDao = CEGroupDao.getInstance();
 
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -112,7 +112,7 @@ const SortableRow: React.FC<SortableRowProps> = ({ id, row }) => {
 
     useEffect(() => {
         if (row.type === 'group') {
-            groupService.getById(row.groupId)
+            groupDao.getById(row.groupId)
                 .then(group => setGroup(group!))
         }
     }, [row]);

@@ -5,13 +5,13 @@
  *
  */
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
-import { CEGroupService } from "./ceGroupService";
-import { CEPlanDao } from "./cePlanDao";
-import { Group, Placement, Plan } from "./types";
-import { CEPlacementService } from "../services/cePlacementService";
+import { CEPlacementService } from "../cePlacementService";
+import { CEGroupDao } from "../../api/ceGroupDao";
+import { CEPlanDao } from "../../api/cePlanDao";
+import { Group, Placement, Plan } from "../../api/types";
 
 describe("planService", () => {
-    const groupService = CEGroupService.getInstance();
+    const groupDao = CEGroupDao.getInstance();
     const planDao = CEPlanDao.getInstance();
     const placementService = CEPlacementService.getInstance();
 
@@ -52,7 +52,7 @@ describe("planService", () => {
         (placementService.mapJson as ReturnType<typeof vi.fn>)
             .mockReturnValueOnce(placement1)
             .mockReturnValueOnce(placement2);
-        (groupService.mapJson as ReturnType<typeof vi.fn>).mockReturnValue(group);
+        (groupDao.mapJson as ReturnType<typeof vi.fn>).mockReturnValue(group);
 
         const result = planDao.mapJson(json);
         expectTypeOf(result).toMatchTypeOf<Plan>();

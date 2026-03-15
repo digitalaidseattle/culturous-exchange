@@ -5,69 +5,30 @@
  *
  */
 
-import { Identifier } from '@digitalaidseattle/core';
-import { SupabaseEntityService } from '@digitalaidseattle/supabase';
 import { v4 as uuid } from 'uuid';
-import { CEAssignmentService } from '../services/ceAssignmentService';
-import { CETimeWindowDao } from './ceTimeWindowDao';
-import { CETimeWindowService, DEFAULT_TIMEZONE } from "./ceTimeWindowService";
-import { Group, TimeWindow } from "./types";
+import { CEGroupDao } from '../../api/ceGroupDao';
+import { CETimeWindowDao } from '../../api/ceTimeWindowDao';
+import { CETimeWindowService, DEFAULT_TIMEZONE } from "../../api/ceTimeWindowService";
+import { Group, TimeWindow } from "../../api/types";
 
-const DEFAULT_SELECT = "*, timewindow(*), assignment(*, facilitators(*, timewindow(*)))";
-
-function MAPPER(json: any): Group {
-  const timeWindowDao = CETimeWindowDao.getInstance();
-  const assignmentService = CEAssignmentService.getInstance();
-
-  const group = {
-    ...json,
-    assignments: (json.assignment ?? []).map((js: any) => assignmentService.mapJson(js)),
-    placements: json.placement,
-    time_windows: (json.timewindow ?? []).map((js: any) => timeWindowDao.mapJson(js))
-  }
-
-  delete group.assignment;
-  delete group.placement;
-  delete group.timewindow;
-
-  return group;
-}
-
-class CEGroupService extends SupabaseEntityService<Group> {
+class CEGroupService {
   private static instance: CEGroupService;
 
   static getInstance() {
     if (!CEGroupService.instance) {
-      CEGroupService.instance = new CEGroupService('grouptable', DEFAULT_SELECT, MAPPER);
+      CEGroupService.instance = new CEGroupService();
     }
     return CEGroupService.instance;
-  }
-
-  mapJson(json: any): Group | null {
-    return this.mapper(json);
-  }
-
-  async update(entityId: Identifier, updatedFields: Partial<Group>, select?: string): Promise<Group> {
-    /* The update() method updates a Group entity in the database 'grouptable', 
-      excluding nested fields like placements and time_windows. */
-
-    const json = { ...updatedFields } as any;
-    delete json.placements;
-    delete json.time_windows;
-
-    return super.update(entityId, json, select);
   }
 
   async save(group: Group): Promise<Group> {
     const timeWindowDao = CETimeWindowDao.getInstance();
 
     // inserting group before tw is required.  Group must exist before timewindow added.
-    const json = { ...group }
-    delete json.placements;
-    delete json.time_windows;
-    await this.insert(json, DEFAULT_SELECT);
+    const saved = await CEGroupDao.getInstance().insert(group);
 
-    await timeWindowDao.deleteByGroupId(group.id!);
+    await timeWindowDao.deleteByGroupId(saved.id!);
+
     for (const tw of group.time_windows!) {
       await timeWindowDao.insert(tw)
     }
@@ -77,11 +38,12 @@ class CEGroupService extends SupabaseEntityService<Group> {
 
   async deleteGroup(group: Group) {
     const timeWindowDao = CETimeWindowDao.getInstance();
+    const groupDao = CEGroupDao.getInstance();
 
     for (const tw of group.time_windows!) {
       await timeWindowDao.delete(tw.id!)
     }
-    return await this.delete(group.id!)
+    return await groupDao.delete(group.id!)
   }
 
   createDefaultTimewindows(group: Group): TimeWindow[] {

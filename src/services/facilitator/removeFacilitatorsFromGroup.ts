@@ -5,17 +5,17 @@
  *
  */
 
-import { CEAssignmentService } from "../ceAssignmentService";
-import { CEGroupService } from "../../api/ceGroupService";
+import { CEAssignmentDao } from "../../api/ceAssignmentDao";
+import { CEGroupDao } from "../../api/ceGroupDao";
 import { Group } from "../../api/types";
 
 export function removeFacilitatorsFromGroup(group: Group): Promise<Group | null> {
-    const service = CEAssignmentService.getInstance();
-    const groupService = CEGroupService.getInstance();
+    const assignmentDao = CEAssignmentDao.getInstance();
+    const groupDao = CEGroupDao.getInstance();
 
     const promises = (group.assignments ?? [])
-        .map(assignment => service.delete(assignment.id!));
+        .map(assignment => assignmentDao.delete(assignment.id!));
     return Promise
         .all(promises)
-        .then(() => groupService.getById(group.id!));
+        .then(() => groupDao.getById(group.id!));
 }

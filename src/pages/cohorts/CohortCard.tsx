@@ -13,11 +13,11 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import { Cohort } from "../../api/types";
 import { UI_STRINGS } from '../../constants';
-import { CECohortService } from "../../api/ceCohortService";
+import { CECohortDao } from "../../api/ceCohortDao";
 
 
 export const CohortCard = (props: { cohort: Cohort }) => {
-    const cohortService = CECohortService.getInstance();
+    const cohortDao = CECohortDao.getInstance();
 
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
@@ -48,7 +48,7 @@ export const CohortCard = (props: { cohort: Cohort }) => {
 
     const doDelete = () => {
         if (props.cohort && props.cohort.id) {
-            cohortService.delete(props.cohort.id.toString())
+            cohortDao.delete(props.cohort.id)
                 .then(() => {
                     setRefresh(refresh + 1);
                     setOpenDeleteDialog(false);

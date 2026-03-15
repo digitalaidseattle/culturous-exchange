@@ -15,9 +15,8 @@ import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { useSearchParams } from "react-router-dom";
-import { CECohortService } from "../../api/ceCohortService";
 import { CEEnrollmentService } from "../../services/ceEnrollmentService";
-import { CEPlanService } from "../../api/cePlanService";
+import { CEPlanService } from "../../services/plan/cePlanService";
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
 import { TextEdit } from "../../components/TextEdit";
@@ -26,6 +25,7 @@ import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
 import { CEPlanDao } from "../../api/cePlanDao";
 import { PlanGenerator } from "../../services/plan/planGenerator";
+import { CECohortDao } from "../../api/ceCohortDao";
 
 interface CohortContextType {
   cohort: Cohort;
@@ -38,7 +38,7 @@ export const CohortContext = createContext<CohortContextType>({
 });
 
 const CohortPage: React.FC = () => {
-  const cohortService = CECohortService.getInstance();
+  const cohortDao = CECohortDao.getInstance();
   const enrollmentService = CEEnrollmentService.getInstance();
 
   const [searchParams] = useSearchParams();
@@ -53,7 +53,7 @@ const CohortPage: React.FC = () => {
 
   useEffect(() => {
     if (cohortId) {
-      cohortService.getById(cohortId)
+      cohortDao.getById(cohortId)
         .then((cohort) => {
           if (cohort) {
             enrollmentService.getStudents(cohort)
@@ -84,7 +84,7 @@ const CohortPage: React.FC = () => {
 
   function handleNameChange(newText: string) {
     if (cohort && cohort.id) {
-      cohortService
+      cohortDao
         .update(cohort.id, { name: newText }) // FIXME change ID to UUID
         .then((updated) => {
           setCohort(updated);

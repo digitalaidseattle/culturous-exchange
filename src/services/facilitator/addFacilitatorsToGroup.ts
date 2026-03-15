@@ -5,20 +5,19 @@
  *
  */
 
-
 import { v4 as uuid } from 'uuid';
+import { CEAssignmentDao } from '../../api/ceAssignmentDao';
+import { CEGroupDao } from '../../api/ceGroupDao';
 import { Facilitator, Group } from '../../api/types';
-import { CEAssignmentService } from '../ceAssignmentService';
-import { CEGroupService } from '../../api/ceGroupService';
 
 export async function addFacilitatorsToGroup(group: Group, facilitators: Facilitator[]): Promise<Group | null> {
-    const service = CEAssignmentService.getInstance();
-    const groupService = CEGroupService.getInstance();
+    const dao = CEAssignmentDao.getInstance();
+    const groupDao = CEGroupDao.getInstance();
 
     const now = new Date();
 
     const deletePromises = (group.assignments ?? [])
-        .map(assignment => service.delete(assignment.id!));
+        .map(assignment => dao.delete(assignment.id!));
 
     const addPromises = facilitators.map(async facilitator => {
         const assignment = {
@@ -28,11 +27,11 @@ export async function addFacilitatorsToGroup(group: Group, facilitators: Facilit
             created_at: now,
             updated_at: now
         }
-        return service.insert(assignment);
+        return dao.insert(assignment);
     })
 
     return Promise.all([...deletePromises, ...addPromises])
-        .then(() => groupService.getById(group.id!))
+        .then(() => groupDao.getById(group.id!))
         .catch(error => {
             console.error('Could not insert', error)
             throw error

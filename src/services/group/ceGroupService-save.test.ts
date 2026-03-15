@@ -6,12 +6,14 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { CEGroupService } from "./ceGroupService";
-import { CETimeWindowService } from "./ceTimeWindowService";
-import { Group, TimeWindow } from "./types";
-import { CETimeWindowDao } from "./ceTimeWindowDao";
+import { CETimeWindowService } from "../../api/ceTimeWindowService";
+import { Group, TimeWindow } from "../../api/types";
+import { CETimeWindowDao } from "../../api/ceTimeWindowDao";
+import { CEGroupDao } from "../../api/ceGroupDao";
 
 describe("groupService-save", () => {
     const groupService = CEGroupService.getInstance();
+    const groupDao = CEGroupDao.getInstance();
     const timeWindowService = CETimeWindowService.getInstance();
     const timeWindowDao = CETimeWindowDao.getInstance();
 
@@ -33,7 +35,7 @@ describe("groupService-save", () => {
 
         // Using a spy here to check if methods are called
         // Spies are a simpler alternative to mockFunctions. You can specify a mock function to do more that just return a value.
-        vi.spyOn(groupService, "insert").mockResolvedValue(inserted);
+        vi.spyOn(groupDao, "insert").mockResolvedValue(inserted);
         vi.spyOn(timeWindowDao, "deleteByGroupId").mockResolvedValue(true);
         vi.spyOn(timeWindowService, "save").mockResolvedValue(savedTw);
 

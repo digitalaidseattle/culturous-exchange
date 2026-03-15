@@ -5,7 +5,7 @@
  *
  */
 
-import { CEGroupService } from "../../api/ceGroupService";
+import { CEGroupService } from "../group/ceGroupService";
 import { CETimeWindowService } from "../../api/ceTimeWindowService";
 import { Group, Plan, TimeWindow } from "../../api/types";
 
