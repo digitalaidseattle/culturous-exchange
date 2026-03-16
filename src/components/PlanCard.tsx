@@ -93,7 +93,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
     const handleActivePlanToggle = async (value: boolean) => {
         if (plan) {
             setLoading(true);
-            planActivation.changeActivation(plan!, value)
+            planActivation.changeActivation(plan, value)
                 .then(() => {
                     setRefresh(refresh + 1);
                     notifications.success(`Plan ${value ? 'activated' : 'deactivated'}.`);

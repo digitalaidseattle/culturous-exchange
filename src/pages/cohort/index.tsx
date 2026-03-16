@@ -51,6 +51,7 @@ const CohortPage: React.FC = () => {
 
   useEffect(() => {
     if (cohortId) {
+      setCohort(undefined);
       cohortDao.getById(cohortId)
         .then((cohort) => {
           if (cohort) {
@@ -78,7 +79,6 @@ const CohortPage: React.FC = () => {
       setTabValue(Number(searchParams.get('tab')));
     }
   }, [searchParams]);
-
 
   function handleNameChange(newText: string) {
     if (cohort && cohort.id) {
