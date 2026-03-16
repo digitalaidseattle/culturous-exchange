@@ -99,11 +99,11 @@ class CEPlanService {
     const groupService = CEGroupService.getInstance();
     const placementService = CEPlacementService.getInstance();
 
-    const saved = await planDao.upsert(plan);
-    for (const group of saved.groups) {
+    await planDao.upsert(plan);
+    for (const group of plan.groups) {
       await groupService.save(group)
     }
-    for (const placement of saved.placements) {
+    for (const placement of plan.placements) {
       await placementService.save(placement)
     }
     return plan

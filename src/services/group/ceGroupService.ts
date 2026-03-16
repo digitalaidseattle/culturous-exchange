@@ -25,10 +25,10 @@ class CEGroupService {
     const timeWindowDao = CETimeWindowDao.getInstance();
 
     // inserting group before tw is required.  Group must exist before timewindow added.
-    const saved = await CEGroupDao.getInstance().insert(group);
+    const saved = await CEGroupDao.getInstance().upsert(group);
 
     await timeWindowDao.deleteByGroupId(saved.id!);
-
+    console.log('group', group);
     for (const tw of group.time_windows!) {
       await timeWindowDao.insert(tw)
     }
