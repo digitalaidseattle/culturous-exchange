@@ -37,7 +37,6 @@ export const CohortContext = createContext<CohortContextType>({
 
 const CohortPage: React.FC = () => {
   const cohortDao = CECohortDao.getInstance();
-  const enrollmentService = CEEnrollmentService.getInstance();
 
   const [searchParams] = useSearchParams();
   const { id: cohortId } = useParams<string>();
@@ -55,18 +54,7 @@ const CohortPage: React.FC = () => {
       cohortDao.getById(cohortId)
         .then((cohort) => {
           if (cohort) {
-            enrollmentService.getStudents(cohort)
-              .then((students) => {
-                cohort.enrollments.forEach(enrollment => {
-                  const student = students.find(s => s.id === enrollment.student_id);
-                  if (student) {
-                    enrollment.student = student;
-                  } else {
-                    console.warn(`Student not found for enrollment: ${enrollment.student_id}`);
-                  }
-                });
-                setCohort(cohort);
-              });
+            setCohort(cohort);
           } else {
             console.error(`Cohort not found ${cohortId}`);
           }
