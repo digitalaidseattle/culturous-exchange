@@ -151,7 +151,6 @@ export abstract class SupabaseDao<T extends Entity> {
     try {
       const json = this.mapEntity(entity);
       const select = this.getSelect(opts!);
-console.log(select)
       return await this.client
         .from(this.tableName)
         .insert([json])

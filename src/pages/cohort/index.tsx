@@ -15,18 +15,15 @@ import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { useSearchParams } from "react-router-dom";
+import { CECohortDao } from "../../api/ceCohortDao";
 import { CEEnrollmentService } from "../../api/ceEnrollmentDao";
-import { CEPlanService } from "../../services/plan/cePlanService";
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
 import { TextEdit } from "../../components/TextEdit";
 import { UI_STRINGS } from '../../constants';
+import { CECohortService } from "../../services/cohort/ceCohortService";
 import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
-import { CEPlanDao } from "../../api/cePlanDao";
-import { PlanGenerator } from "../../services/plan/planGenerator";
-import { CECohortDao } from "../../api/ceCohortDao";
-import { CECohortService } from "../../services/cohort/ceCohortService";
 
 interface CohortContextType {
   cohort: Cohort;

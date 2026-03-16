@@ -14,6 +14,7 @@ import { Group, Placement, Plan, TimeWindow } from '../../api/types';
 import { MAX_GROUP_SIZE } from '../../constants';
 import { CEPlanDao } from '../../api/cePlanDao';
 import { CEPlacementService } from '../cePlacementService';
+import { CEPlanService } from './cePlanService';
 
 class PlanGenerator {
   private static instance: PlanGenerator;
@@ -27,10 +28,12 @@ class PlanGenerator {
 
   groupService: CEGroupService;
   timeWindowService: CETimeWindowService;
+  planService: CEPlanService;
 
   constructor() {
     this.groupService = CEGroupService.getInstance();
     this.timeWindowService = CETimeWindowService.getInstance();
+    this.planService = CEPlanService.getInstance();
   }
 
   async run(plan: Plan): Promise<Plan> {
@@ -44,7 +47,8 @@ class PlanGenerator {
 
     const planWithAnchors = await this.assignStudents(cleaned, anchorPlacements);
     const planWithAllStudents = await this.assignStudents(planWithAnchors, nonAnchorPlacements);
-    const finalPlan = await planEvaluator.evaluate(planWithAllStudents); // to update country counts
+    const evaluatedPlan = await planEvaluator.evaluate(planWithAllStudents); // to update country counts
+    const finalPlan = await this.planService.save(evaluatedPlan);
     return finalPlan;
   }
 

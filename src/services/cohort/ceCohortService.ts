@@ -37,7 +37,8 @@ class CECohortService {
 
         const created = await planService.create(cohort);
         const hydrated = await planDao.getById(created.id!);
-        const seeded = await planGenerator.run(hydrated!)
+        const seeded = await planGenerator.run(hydrated!);
+        console.log('seeded', seeded)
         return planService.save(seeded);
     }
 
