@@ -15,7 +15,7 @@ import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { useSearchParams } from "react-router-dom";
-import { CEEnrollmentService } from "../../services/ceEnrollmentService";
+import { CEEnrollmentService } from "../../api/ceEnrollmentDao";
 import { CEPlanService } from "../../services/plan/cePlanService";
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
@@ -26,6 +26,7 @@ import { StudentTable } from "./StudentTable";
 import { CEPlanDao } from "../../api/cePlanDao";
 import { PlanGenerator } from "../../services/plan/planGenerator";
 import { CECohortDao } from "../../api/ceCohortDao";
+import { CECohortService } from "../../services/cohort/ceCohortService";
 
 interface CohortContextType {
   cohort: Cohort;
@@ -94,16 +95,18 @@ const CohortPage: React.FC = () => {
   }
 
   async function handleCreatePlan() {
-    const planService = CEPlanService.getInstance();
-    const planDao = CEPlanDao.getInstance();
     if (cohort) {
-      const created = await planService.create(cohort);
-      const hydrated = await planDao.getById(created.id!);
-      const seededPlan = await PlanGenerator.getInstance().run(hydrated!)
-      await planService.save(seededPlan);
-
-      navigate(`/plan/${seededPlan.id}`);
-      notifications.success(`Plan added to  ${cohort.name}.`);
+      const cohortService = CECohortService.getInstance();
+      try {
+        const newPlan = await cohortService.createPlan(cohort!);
+        navigate(`/plan/${newPlan.id}`);
+        notifications.success(`Plan added to ${cohort!.name}.`);
+      } catch (error: any) {
+        console.error('Could not create plan.', error)
+        notifications.error(`Could not create plan. ${error.message}`);
+      }
+    } else {
+      notifications.error(`No cohort povided.`);
     }
   }
 

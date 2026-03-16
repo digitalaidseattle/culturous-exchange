@@ -8,38 +8,54 @@
 import { Identifier } from "@digitalaidseattle/core";
 import { supabaseClient } from "@digitalaidseattle/supabase";
 import { SERVICE_ERRORS } from '../constants';
-import { CETimeWindowDao } from "../api/ceTimeWindowDao";
-import { Cohort, Enrollment, Student } from "../api/types";
+import { CEStudentDao } from "./ceStudentDao";
+import { SupabaseDao } from "./SupabaseDao";
+import { Cohort, Enrollment, Student } from "./types";
 
-class CEEnrollmentService {
-    private static instance: CEEnrollmentService;
+const DEFAULT_SELECT = '*, student(*, timewindow(*))';
+
+class CEEnrollmentDao extends SupabaseDao<Enrollment> {
+    private static instance: CEEnrollmentDao;
 
     static getInstance() {
-        if (!CEEnrollmentService.instance) {
-            CEEnrollmentService.instance = new CEEnrollmentService('placement');
+        if (!CEEnrollmentDao.instance) {
+            CEEnrollmentDao.instance = new CEEnrollmentDao(supabaseClient, 'enrollment', { select: DEFAULT_SELECT });
         }
-        return CEEnrollmentService.instance;
+        return CEEnrollmentDao.instance;
     }
 
-
-    tableName = '';
-
-    constructor(tableName: string) {
-        this.tableName = tableName;
+    mapJson(json: any): Enrollment {
+        const student = CEStudentDao.getInstance().mapJson(json.student);
+        const mapped = {
+            ...json,
+            id: `${json.cohort_id}:${json.student_id}`,
+            student: student,
+        }
+        return mapped;
     }
-    async updateEnrollment(cohortId: Identifier, studentId: Identifier, updatedFields: Partial<Enrollment>, select?: string): Promise<Enrollment> {
+
+    mapEntity(entity: Partial<Enrollment>): any {
+        const json = {
+            ...entity
+        }
+        delete json.id;  // TODO remove when id added to table
+        delete json.student;
+        return json;
+    }
+
+    async updateEnrollment(cohortId: Identifier, studentId: Identifier, updatedFields: Partial<Enrollment>): Promise<Enrollment> {
         try {
             const { data, error } = await supabaseClient.from(this.tableName)
                 .update(updatedFields)
                 .eq('cohort_id', cohortId)
                 .eq('student_id', studentId)
-                .select(select ?? '*')
+                .select(this.getSelect())
                 .single();
             if (error) {
                 console.error(SERVICE_ERRORS.ERROR_UPDATING_ENTITY, error.message);
                 throw new Error(SERVICE_ERRORS.FAILED_UPDATE_ENTITY);
             }
-            return data as unknown as Enrollment;
+            return this.mapJson(data);
         } catch (err) {
             console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_UPDATE, err);
             throw err;
@@ -48,19 +64,16 @@ class CEEnrollmentService {
 
     // TODO returning timewindow as object instead of array
     async getStudents(cohort: Cohort): Promise<Student[]> {
-        const timeWindowDao = CETimeWindowDao.getInstance();
-
         return await supabaseClient
-            .from('enrollment')
-            .select('student(*, timewindow(*))')
+            .from(this.tableName)
+            .select(this.getSelect())
             .eq('cohort_id', cohort.id)
             .then((resp: any) => {
-                return resp.data!.map((json: any) => {
-                    const timeWindows = json.student.timewindow.map((tw: any) => timeWindowDao.mapJson(tw));
-                    json.student.timeWindows = timeWindows;
-                    delete json.student.timewindow;
-                    return json.student as Student;
-                })
+                return resp.data!
+                    .map((json: any) => {
+                        const enrollment = this.mapJson(json);
+                        return enrollment.student;
+                    })
             });
     }
 
@@ -81,17 +94,17 @@ class CEEnrollmentService {
         }
     }
 
-    async batchInsert(entities: Enrollment[], select?: string): Promise<Enrollment[]> {
+    async batchInsert(entities: Enrollment[]): Promise<Enrollment[]> {
         try {
             const { data, error } = await supabaseClient
                 .from(this.tableName)
-                .insert(entities)
-                .select(select ?? '*');
+                .insert(entities.map(e => this.mapEntity(e)))
+                .select(this.getSelect());
             if (error) {
                 console.error(SERVICE_ERRORS.ERROR_INSERTING_ENTITY, error);
                 throw new Error(SERVICE_ERRORS.FAILED_INSERT_ENTITY_PREFIX + error.message);
             }
-            return data as unknown as Enrollment[];
+            return data.map(json => this.mapJson(json));
         } catch (err) {
             console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_INSERTION, err);
             throw err;
@@ -99,5 +112,5 @@ class CEEnrollmentService {
     }
 }
 
-export { CEEnrollmentService };
+export { CEEnrollmentDao as CEEnrollmentService };
 

@@ -31,6 +31,7 @@ export class CEPlacementDao extends SupabaseDao<Placement> {
       ...json,
       id: `${json.plan_id}:${json.student_id}`,
       student: student,
+      anchor: json.anchor ?? false
     }
     return mapped;
   }
@@ -46,11 +47,7 @@ export class CEPlacementDao extends SupabaseDao<Placement> {
 
 
   // TODO: add ID to placement table
-  async updatePlacement(id: Identifier, updatedFields: Partial<Placement>): Promise<Placement> {
-    const parts = (id as string).split(':');
-    const planId = parts[0];
-    const studentId = parts[0];
-
+  async updatePlacement(planId: Identifier, studentId: Identifier, updatedFields: Partial<Placement>): Promise<Placement> {
     const { data, error } = await supabaseClient
       .from(this.tableName)
       .update(this.mapEntity(updatedFields))
@@ -64,6 +61,7 @@ export class CEPlacementDao extends SupabaseDao<Placement> {
     }
     return this.mapJson(data);
   }
+
   // TODO : NEW, there's something wrong with original findByPlanId need FIX.
   async findByPlan(planId: Identifier): Promise<Placement[]> {
     return await supabaseClient

@@ -10,7 +10,7 @@ import { CEPlacementDao } from "../api/cePlacementDao";
 import { CEStudentDao } from "../api/ceStudentDao";
 import { Cohort, Placement, Plan, Student } from "../api/types";
 import { SERVICE_ERRORS } from '../constants';
-import { CEEnrollmentService } from "./ceEnrollmentService";
+import { CEEnrollmentService } from "../api/ceEnrollmentDao";
 
 class CEPlacementService {
 
@@ -46,19 +46,18 @@ class CEPlacementService {
   async updatePlacement(planId: Identifier, studentId: Identifier, updatedFields: Partial<Placement>): Promise<Placement> {
     try {
       const updatedPlacement = await CEPlacementDao.getInstance()
-        .updatePlacement(`${planId}:${studentId}`, updatedFields)
+        .updatePlacement(planId, studentId, updatedFields);
 
       // If the placement's anchor flag was changed, propagate the change to the student record
       // placement's anchor state -> update student's anchor state
-      if (typeof updatedPlacement.anchor !== 'undefined') {
-        try {
-          await CEStudentDao.getInstance()
-            .update(studentId, { anchor: updatedPlacement.anchor });
-        } catch (err) {
-          // Log but do not fail placement update if student update fails
-          console.error('Failed to propagate placement.anchor to student.anchor', err);
-        }
+      try {
+        await CEStudentDao.getInstance()
+          .update(studentId, { anchor: updatedPlacement.anchor });
+      } catch (err) {
+        // Log but do not fail placement update if student update fails
+        console.error('Failed to propagate placement.anchor to student.anchor', err);
       }
+
       return updatedPlacement;
     } catch (err) {
       console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_UPDATE, err);

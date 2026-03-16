@@ -6,8 +6,11 @@
  */
 
 import { Identifier } from '@digitalaidseattle/core';
-import { Cohort, Enrollment } from '../../api/types';
-import { CEEnrollmentService } from '../ceEnrollmentService';
+import { Cohort, Enrollment, Plan } from '../../api/types';
+import { CEEnrollmentService } from '../../api/ceEnrollmentDao';
+import { CEPlanService } from '../plan/cePlanService';
+import { CEPlanDao } from '../../api/cePlanDao';
+import { PlanGenerator } from '../plan/planGenerator';
 
 
 class CECohortService {
@@ -25,6 +28,17 @@ class CECohortService {
             studentIds.map(id => CEEnrollmentService.getInstance()
                 .deleteEnrollment({ cohort_id: cohort.id, student_id: id } as Enrollment)))
             .then(() => true)
+    }
+
+    async createPlan(cohort: Cohort): Promise<Plan> {
+        const planService = CEPlanService.getInstance();
+        const planDao = CEPlanDao.getInstance();
+        const planGenerator = PlanGenerator.getInstance();
+
+        const created = await planService.create(cohort);
+        const hydrated = await planDao.getById(created.id!);
+        const seeded = await planGenerator.run(hydrated!)
+        return planService.save(seeded);
     }
 
 }

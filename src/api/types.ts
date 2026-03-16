@@ -68,7 +68,8 @@ type Cohort = Entity & {
     enrollments: Enrollment[];
 }
 
-type Enrollment = {
+// TODO table does not have an ID column
+type Enrollment = Entity & {
     cohort_id: Identifier;
     student_id: Identifier;
     student?: Student;

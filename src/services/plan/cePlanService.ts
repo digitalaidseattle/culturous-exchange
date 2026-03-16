@@ -11,7 +11,7 @@ import { CEGroupService } from "../group/ceGroupService";
 import { CEPlanDao } from "../../api/cePlanDao";
 import { Cohort, Placement, Plan, Student } from "../../api/types";
 import { CEPlacementService } from '../cePlacementService';
-import { CEEnrollmentService } from '../ceEnrollmentService';
+import { CEEnrollmentService } from '../../api/ceEnrollmentDao';
 import { CEPlacementDao } from '../../api/cePlacementDao';
 
 class CEPlanService {
@@ -51,7 +51,6 @@ class CEPlanService {
       .then((plan) => {
         return enrollmentService.getStudents(cohort)
           .then((students) => {
-            console.log('mapping student', students)
             const placements = students.map((student) => {
               return {
                 plan_id: plan.id,
@@ -61,13 +60,10 @@ class CEPlanService {
                 student: student
               } as Placement;
             });
-            console.log('inserting placements', placements)
             return placementDao
               .batchInsert(placements)
               .then((createdPlacements) => {
                 plan.placements = createdPlacements;
-                console.log('insertd placements', placements)
-
                 return plan;
               });
           });
@@ -103,11 +99,11 @@ class CEPlanService {
     const groupService = CEGroupService.getInstance();
     const placementService = CEPlacementService.getInstance();
 
-    await planDao.insert(plan)
-    for (const group of plan.groups) {
+    const saved = await planDao.upsert(plan);
+    for (const group of saved.groups) {
       await groupService.save(group)
     }
-    for (const placement of plan.placements) {
+    for (const placement of saved.placements) {
       await placementService.save(placement)
     }
     return plan
