@@ -1,16 +1,16 @@
 /**
- *  cePlanService.ts
+ *  CEPlanDao.ts
  *
- *  @copyright 2024 Digital Aid Seattle
+ *  @copyright 2026 Digital Aid Seattle
  *
  */
 
 import { Identifier } from "@digitalaidseattle/core";
-import { supabaseClient } from "@digitalaidseattle/supabase";
 import { CEGroupDao } from "./ceGroupDao";
 import { CEPlacementDao } from "./cePlacementDao";
 import { SupabaseDao } from "./SupabaseDao";
 import { Group, Placement, Plan } from "./types";
+import { getSupabaseClient } from "./Configuration";
 
 const DEFAULT_SELECT = '*, placement(*, student(*, timewindow(*))), grouptable(*, timewindow(*), assignment(*, facilitators(*, timewindow(*))))';
 
@@ -49,7 +49,7 @@ export class CEPlanDao extends SupabaseDao<Plan> {
 
   static getInstance() {
     if (!CEPlanDao.instance) {
-      CEPlanDao.instance = new CEPlanDao(supabaseClient, 'plan', { select: DEFAULT_SELECT });
+      CEPlanDao.instance = new CEPlanDao(getSupabaseClient(), 'plan', { select: DEFAULT_SELECT });
     }
     return CEPlanDao.instance;
   }
@@ -63,7 +63,7 @@ export class CEPlanDao extends SupabaseDao<Plan> {
   }
 
   async findByCohortId(cohort_id: Identifier): Promise<Plan[]> {
-    return await supabaseClient
+    return await this.client
       .from(this.tableName)
       .select('*')
       .eq('cohort_id', cohort_id)

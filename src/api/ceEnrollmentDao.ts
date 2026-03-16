@@ -1,14 +1,14 @@
 /**
- *  ceCohortService.ts
+ *  CEEnrollmentDao.ts
  *
- *  @copyright 2025 Digital Aid Seattle
+ *  @copyright 2026 Digital Aid Seattle
  *
  */
 
 import { Identifier } from "@digitalaidseattle/core";
-import { supabaseClient } from "@digitalaidseattle/supabase";
 import { SERVICE_ERRORS } from '../constants';
 import { CEStudentDao } from "./ceStudentDao";
+import { getSupabaseClient } from "./Configuration";
 import { SupabaseDao } from "./SupabaseDao";
 import { Cohort, Enrollment, Student } from "./types";
 
@@ -19,7 +19,7 @@ class CEEnrollmentDao extends SupabaseDao<Enrollment> {
 
     static getInstance() {
         if (!CEEnrollmentDao.instance) {
-            CEEnrollmentDao.instance = new CEEnrollmentDao(supabaseClient, 'enrollment', { select: DEFAULT_SELECT });
+            CEEnrollmentDao.instance = new CEEnrollmentDao(getSupabaseClient(), 'enrollment', { select: DEFAULT_SELECT });
         }
         return CEEnrollmentDao.instance;
     }
@@ -45,7 +45,7 @@ class CEEnrollmentDao extends SupabaseDao<Enrollment> {
 
     async updateEnrollment(cohortId: Identifier, studentId: Identifier, updatedFields: Partial<Enrollment>): Promise<Enrollment> {
         try {
-            const { data, error } = await supabaseClient.from(this.tableName)
+            const { data, error } = await this.client.from(this.tableName)
                 .update(updatedFields)
                 .eq('cohort_id', cohortId)
                 .eq('student_id', studentId)
@@ -64,7 +64,7 @@ class CEEnrollmentDao extends SupabaseDao<Enrollment> {
 
     // TODO returning timewindow as object instead of array
     async getStudents(cohort: Cohort): Promise<Student[]> {
-        return await supabaseClient
+        return await this.client
             .from(this.tableName)
             .select(this.getSelect())
             .eq('cohort_id', cohort.id)
@@ -79,7 +79,7 @@ class CEEnrollmentDao extends SupabaseDao<Enrollment> {
 
     async deleteEnrollment(enrollment: Enrollment): Promise<void> {
         try {
-            const { error } = await supabaseClient
+            const { error } = await this.client
                 .from(this.tableName)
                 .delete()
                 .eq('cohort_id', enrollment.cohort_id)
@@ -96,7 +96,7 @@ class CEEnrollmentDao extends SupabaseDao<Enrollment> {
 
     async batchInsert(entities: Enrollment[]): Promise<Enrollment[]> {
         try {
-            const { data, error } = await supabaseClient
+            const { data, error } = await this.client
                 .from(this.tableName)
                 .insert(entities.map(e => this.mapEntity(e)))
                 .select(this.getSelect());

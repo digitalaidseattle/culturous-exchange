@@ -6,7 +6,6 @@
  */
 import { SupabaseClient } from "@supabase/supabase-js";
 
-
 import { Entity, Identifier } from "@digitalaidseattle/core";
 import { PageInfo, QueryModel, supabaseClient } from "@digitalaidseattle/supabase";
 

@@ -1,12 +1,12 @@
 /**
- *  ceCohortService.ts
+ *  CECohortDao.ts
  *
- *  @copyright 2025 Digital Aid Seattle
+ *  @copyright 2026 Digital Aid Seattle
  *
  */
 
-import { supabaseClient } from '@digitalaidseattle/supabase';
 import { SERVICE_ERRORS } from '../constants';
+import { getSupabaseClient } from './Configuration';
 import { SupabaseDao } from './SupabaseDao';
 import { Cohort } from "./types";
 
@@ -35,7 +35,7 @@ export class CECohortDao extends SupabaseDao<Cohort> {
 
     static getInstance() {
         if (!CECohortDao.instance) {
-            CECohortDao.instance = new CECohortDao(supabaseClient, 'cohort', { select: DEFAULT_SELECT });
+            CECohortDao.instance = new CECohortDao(getSupabaseClient(), 'cohort', { select: DEFAULT_SELECT });
         }
         return CECohortDao.instance;
     }
@@ -50,7 +50,7 @@ export class CECohortDao extends SupabaseDao<Cohort> {
 
     async getLatest(): Promise<Cohort | null> {
         try {
-            return supabaseClient
+            return this.client
                 .from(this.tableName)
                 .select(this.getSelect())
                 .order('created_at', { ascending: false })

@@ -1,13 +1,13 @@
 /**
- * ceStudentService.ts
+ * CEStudentDao.ts
  *
- * @copyright 2025 Digital Aid Seattle
+ * @copyright 2026 Digital Aid Seattle
  *
  */
-import { supabaseClient } from '@digitalaidseattle/supabase';
 import { CETimeWindowDao } from './ceTimeWindowDao';
 import { SupabaseDao } from './SupabaseDao';
 import { Cohort, Student } from "./types";
+import { getSupabaseClient } from './Configuration';
 
 const DEFAULT_SELECT = '*, timewindow(*)';
 
@@ -32,7 +32,7 @@ class CEStudentDao extends SupabaseDao<Student> {
 
   static getInstance() {
     if (!CEStudentDao.instance) {
-      CEStudentDao.instance = new CEStudentDao(supabaseClient, 'student', { select: DEFAULT_SELECT });
+      CEStudentDao.instance = new CEStudentDao(getSupabaseClient(), 'student', { select: DEFAULT_SELECT });
     }
     return CEStudentDao.instance;
   }
@@ -48,7 +48,7 @@ class CEStudentDao extends SupabaseDao<Student> {
 
   async getCohortsForStudent(student: Student): Promise<Cohort[]> {
     try {
-      return await supabaseClient
+      return await this.client
         .from('enrollment')
         .select('cohort(*)')
         .eq('student_id', student.id)
@@ -62,13 +62,13 @@ class CEStudentDao extends SupabaseDao<Student> {
   async findUnenrolled(): Promise<Student[]> {
     try {
       // TODO Scaling this may require using edge function
-      const enrollment_ids = await supabaseClient
+      const enrollment_ids = await this.client
         .from('enrollment')
         .select('student_id')
         .then((resp: any) => {
           return resp.data?.map((row: any) => row.student_id)
         })
-      return supabaseClient
+      return this.client
         .from('student')
         .select(DEFAULT_SELECT)
         .not('id', 'in', `(${enrollment_ids})`)

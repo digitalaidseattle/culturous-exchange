@@ -1,16 +1,16 @@
 /**
- *  cePlacementService.ts
+ *  CEPlacementDao.ts
  *
- *  @copyright 2025 Digital Aid Seattle
+ *  @copyright 2026 Digital Aid Seattle
  *
  */
 
 import { Identifier } from "@digitalaidseattle/core";
-import { supabaseClient } from "@digitalaidseattle/supabase";
 import { SERVICE_ERRORS } from '../constants';
 import { SupabaseDao } from "./SupabaseDao";
 import { CEStudentDao } from "./ceStudentDao";
 import { Placement, Plan, Student } from "./types";
+import { getSupabaseClient } from "./Configuration";
 
 const DEFAULT_SELECT = '*, student(*, timewindow(*))';
 
@@ -20,7 +20,7 @@ export class CEPlacementDao extends SupabaseDao<Placement> {
 
   static getInstance() {
     if (!CEPlacementDao.instance) {
-      CEPlacementDao.instance = new CEPlacementDao(supabaseClient, 'placement', { select: DEFAULT_SELECT });
+      CEPlacementDao.instance = new CEPlacementDao(getSupabaseClient(), 'placement', { select: DEFAULT_SELECT });
     }
     return CEPlacementDao.instance;
   }
@@ -48,7 +48,7 @@ export class CEPlacementDao extends SupabaseDao<Placement> {
 
   // TODO: add ID to placement table
   async updatePlacement(planId: Identifier, studentId: Identifier, updatedFields: Partial<Placement>): Promise<Placement> {
-    const { data, error } = await supabaseClient
+    const { data, error } = await this.client
       .from(this.tableName)
       .update(this.mapEntity(updatedFields))
       .eq('plan_id', planId)
@@ -64,7 +64,7 @@ export class CEPlacementDao extends SupabaseDao<Placement> {
 
   // TODO : NEW, there's something wrong with original findByPlanId need FIX.
   async findByPlan(planId: Identifier): Promise<Placement[]> {
-    return await supabaseClient
+    return await this.client
       .from(this.tableName)
       .select(this.getSelect())
       .eq('plan_id', planId)
@@ -72,7 +72,7 @@ export class CEPlacementDao extends SupabaseDao<Placement> {
   }
 
   async findByPlanId(planId: Identifier): Promise<Placement[]> {
-    return await supabaseClient
+    return await this.client
       .from(this.tableName)
       .select('*, student(*), grouptable(*)')
       .eq('plan_id', planId)
@@ -80,7 +80,7 @@ export class CEPlacementDao extends SupabaseDao<Placement> {
   }
 
   async getStudents(plan: Plan): Promise<Student[]> {
-    return await supabaseClient
+    return await this.client
       .from(this.tableName)
       .select('student(*)')
       .eq('plan_id', plan.id)
@@ -89,7 +89,7 @@ export class CEPlacementDao extends SupabaseDao<Placement> {
 
   async deletePlacement(placement: Placement): Promise<void> {
     try {
-      const { error } = await supabaseClient
+      const { error } = await this.client
         .from(this.tableName)
         .delete()
         .eq('plan_id', placement.plan_id)

@@ -1,9 +1,10 @@
 /**
- * ceAssignmentService.ts
- * Scaffold service for managing assignments (facilitator <-> group mapping)
+ * CEAssignmentDao.ts
+ * 
+ *  @copyright 2026 Digital Aid Seattle
  */
-import { supabaseClient } from '@digitalaidseattle/supabase';
 import { CEFacilitatorDao } from './ceFacilitatorDao';
+import { getSupabaseClient } from './Configuration';
 import { SupabaseDao } from './SupabaseDao';
 import { Assignment } from './types';
 
@@ -34,7 +35,7 @@ export class CEAssignmentDao extends SupabaseDao<Assignment> {
 
   static getInstance() {
     if (!CEAssignmentDao.instance) {
-      CEAssignmentDao.instance = new CEAssignmentDao(supabaseClient, 'assignment', { select: DEFAULT_SELECT });
+      CEAssignmentDao.instance = new CEAssignmentDao(getSupabaseClient(), 'assignment', { select: DEFAULT_SELECT });
     }
     return CEAssignmentDao.instance;
   }
@@ -49,7 +50,7 @@ export class CEAssignmentDao extends SupabaseDao<Assignment> {
 
   async findByGroupId(groupId: string): Promise<Assignment | null> {
     try {
-      return await supabaseClient
+      return await this.client
         .from(this.tableName)
         .select(this.select)
         .eq('group_id', groupId)

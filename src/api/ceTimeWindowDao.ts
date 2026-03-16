@@ -1,15 +1,15 @@
 /**
- *  ceTimeWindowSerivce.ts
+ *  CETimeWindowDao.ts
  *
- *  @copyright 2025 Digital Aid Seattle
+ *  @copyright 2026 Digital Aid Seattle
  *
  */
 
 import { Identifier } from "@digitalaidseattle/core";
-import { supabaseClient } from "@digitalaidseattle/supabase";
 import { SERVICE_ERRORS } from '../constants';
 import { SupabaseDao } from "./SupabaseDao";
 import { TimeWindow } from "./types";
+import { getSupabaseClient } from "./Configuration";
 
 function JSON_2_ENTITY(json: any): TimeWindow {
   return {
@@ -24,7 +24,7 @@ class CETimeWindowDao extends SupabaseDao<TimeWindow> {
 
   static getInstance() {
     if (!CETimeWindowDao.instance) {
-      CETimeWindowDao.instance = new CETimeWindowDao(supabaseClient, 'timewindow');
+      CETimeWindowDao.instance = new CETimeWindowDao(getSupabaseClient(), 'timewindow');
     }
     return CETimeWindowDao.instance;
   }
@@ -35,11 +35,10 @@ class CETimeWindowDao extends SupabaseDao<TimeWindow> {
 
   async deleteByGroupId(groupId: Identifier): Promise<boolean> {
     try {
-      const { error } = await supabaseClient
+      const { error } = await this.client
         .from(this.tableName)
         .delete()
         .eq('group_id', groupId);
-
       if (error) {
         console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
         throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);

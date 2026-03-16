@@ -8,6 +8,8 @@
 import React from 'react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers';
+
+import { createClient } from "@supabase/supabase-js";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 import {
@@ -26,6 +28,7 @@ import {
 import { Config } from './Config';
 
 import "./App.css";
+import { setConfiguration } from './api/Configuration';
 
 // ==============================|| APP - THEME, ROUTER, LOCAL  ||============================== //
 
@@ -40,7 +43,16 @@ const App: React.FC = () => {
     authService: authService,
     storageService: storageService
   })
-  
+
+  setConfiguration(
+    {
+      supabaseClient: createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY
+      )
+    }
+  )
+
   return (
     <AuthServiceProvider authService={authService} >
       <StorageServiceProvider storageService={storageService} >

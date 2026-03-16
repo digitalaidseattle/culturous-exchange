@@ -16,7 +16,6 @@ import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { useSearchParams } from "react-router-dom";
 import { CECohortDao } from "../../api/ceCohortDao";
-import { CEEnrollmentService } from "../../api/ceEnrollmentDao";
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
 import { TextEdit } from "../../components/TextEdit";

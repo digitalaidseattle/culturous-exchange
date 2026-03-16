@@ -1,15 +1,12 @@
 /**
- *  ceGroupService.ts
+ *  CEGroupDao.ts
  *
- *  @copyright 2025 Digital Aid Seattle
+ *  @copyright 2026 Digital Aid Seattle
  *
  */
-
-
-
-import { supabaseClient } from '@digitalaidseattle/supabase';
 import { CEAssignmentDao } from './ceAssignmentDao';
 import { CETimeWindowDao } from './ceTimeWindowDao';
+import { getSupabaseClient } from './Configuration';
 import { SupabaseDao } from './SupabaseDao';
 import { Group } from './types';
 
@@ -44,7 +41,7 @@ export class CEGroupDao extends SupabaseDao<Group> {
 
   static getInstance() {
     if (!CEGroupDao.instance) {
-      CEGroupDao.instance = new CEGroupDao(supabaseClient, 'grouptable', { select: DEFAULT_SELECT });
+      CEGroupDao.instance = new CEGroupDao(getSupabaseClient(), 'grouptable', { select: DEFAULT_SELECT });
     }
     return CEGroupDao.instance;
   }
