@@ -95,7 +95,7 @@ class PlanGenerator {
   async assignStudents(plan: Plan, remainingPlacements: Placement[]): Promise<Plan> {
     // Assign each placement to the best group based on time windows
     for (const placement of remainingPlacements) {
-      let response = await this.getBestOverlap(plan, placement);
+      let response = await this.getOverlap(plan, placement);
       // Assign studnets that has no overlap to the first group
       if (response === null) {
         console.log("No suitable group found for placement", placement.student_id);
@@ -109,10 +109,19 @@ class PlanGenerator {
     return plan;
   }
 
-  async getBestOverlap(
-    plan: Plan,
-    placement: Placement
-  ): Promise<{ duration: number | 0; group: Group; intersect: TimeWindow[] } | null> {
+  async getOverlap(plan: Plan, placement: Placement)
+    : Promise<{ duration: number | 0; group: Group; intersect: TimeWindow[] } | null> {
+    switch (plan.optimization_style) {
+      case 'smallest_first':
+        return this.getSmallestFirst(plan, placement);
+      case 'largest_first':
+      default:
+        return this.getLargestFirst(plan, placement)
+    }
+  }
+
+  async getLargestFirst(plan: Plan, placement: Placement)
+    : Promise<{ duration: number | 0; group: Group; intersect: TimeWindow[] } | null> {
     const tuples = plan.groups
       .filter(g => (g.placements?.length ?? 0) < (plan.group_size ?? MAX_GROUP_SIZE)) // Only consider groups that are not full
       .map(group => {
@@ -135,6 +144,32 @@ class PlanGenerator {
       })
     return tuples.length > 0 ? tuples[0] : null; // Return the best group or null no match
   }
+
+  async getSmallestFirst(plan: Plan, placement: Placement)
+    : Promise<{ duration: number | 0; group: Group; intersect: TimeWindow[] } | null> {
+    const tuples = plan.groups
+      .filter(g => (g.placements?.length ?? 0) < (plan.group_size ?? MAX_GROUP_SIZE)) // Only consider groups that are not full
+      .map(group => {
+        const intersect = this.timeWindowService.intersectionTimeWindowsMultiple(
+          group.time_windows ?? [],
+          placement.student?.timeWindows ?? []
+        );
+        const overlap = this.timeWindowService.totalDuration(intersect);
+        return { duration: overlap, group: group, intersect: intersect };
+      })
+      .filter(tuple => tuple.duration > 0)  // Only consider groups with some overlap
+      .sort((a, b) => {
+        // smallest overlap - descending order by overlap duration 
+        const spread = a.duration - b.duration;
+        if (spread !== 0) {
+          return spread;
+        }
+        // Fill empty groups first - Ascending order by number of placements 
+        return (a.group.placements?.length ?? 0) - (b.group.placements?.length ?? 0);
+      })
+    return tuples.length > 0 ? tuples[0] : null; // Return the best group or null no match
+  }
+
 
 }
 

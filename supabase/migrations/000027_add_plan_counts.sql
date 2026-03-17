@@ -1,0 +1,19 @@
+ALTER TABLE
+    plan
+ADD
+    COLUMN IF NOT EXISTS avg_country_count DECIMAL(4, 2) DEFAULT 0.00;
+
+ALTER TABLE
+    plan
+ADD
+    COLUMN IF NOT EXISTS avg_duration DECIMAL(4, 2) DEFAULT 0.00;
+
+ALTER TABLE
+    plan
+ADD
+    COLUMN IF NOT EXISTS total_duration DECIMAL(4, 2) DEFAULT 0.00;
+
+ALTER TABLE
+    plan
+ADD
+    COLUMN IF NOT EXISTS optimization_style TEXT;

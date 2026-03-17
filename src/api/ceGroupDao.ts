@@ -33,6 +33,7 @@ function ENTITY_2_JSON(entity: Partial<Group>): any {
   const json = { ...entity } as any;
   delete json.placements;
   delete json.time_windows;
+  delete json.assignments;
   return json;
 }
 

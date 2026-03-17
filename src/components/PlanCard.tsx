@@ -104,60 +104,67 @@ export const PlanCard = (props: { planId: Identifier }) => {
     }
 
     return (plan &&
-        <Card
-            sx={{
-                width: "240px",
-                height: "240px",
-                borderRadius: "10px",
-                boxShadow: "0px 14px 80px rgba(34, 35, 58, 0.2)",
-                position: "relative",
-            }}
-            onDoubleClick={handleOpen}>
-            <CardHeader
-                avatar={<StarAvatar
-                    active={plan.active}
-                    title={plan.active ? 'Deactivate plan' : 'Activate plan'}
-                    onToggle={handleActivePlanToggle} />}
-                title={plan.name}
-                action={<IconButton
-                    onClick={handleClick}
-                    aria-label="more">
-                    <MoreOutlined />
-                </IconButton>
-                } />
-            <Menu
-                id="demo-positioned-menu"
-                aria-labelledby="demo-positioned-button"
-                anchorEl={anchorEl}
-                open={showMenu}
-                onClose={handleClose}
-                anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
+        <>
+            <Card
+                sx={{
+                    width: "240px",
+                    height: "260px",
+                    borderRadius: "10px",
+                    boxShadow: "0px 14px 80px rgba(34, 35, 58, 0.2)",
+                    position: "relative",
                 }}
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                }}
-            >
-                <MenuItem onClick={handleOpen}>Open</MenuItem>
-                <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
-                <MenuItem onClick={handleDelete}>Delete...</MenuItem>
-                <MenuItem disabled={loading} onClick={handleActive}>
-                    {plan.active ? "Set Inactive" : "Set Active"}
-                </MenuItem>
-            </Menu>
-            <CardContent>
-                <Typography>{UI_STRINGS.NOTES_WITH_COLON} {plan.note}</Typography>
-                <Typography>{UI_STRINGS.GROUPS_WITH_COLON} {(plan.groups ?? []).length}</Typography>
-                <Typography>{UI_STRINGS.STUDENTS_WITH_COLON} {(plan.placements ?? []).length}</Typography>
-                <ConfirmationDialog
-                    message={`Delete ${plan.name}?`}
-                    open={openDeleteDialog}
-                    handleConfirm={() => doDelete()}
-                    handleCancel={() => setOpenDeleteDialog(false)} />
-            </CardContent>
+                onDoubleClick={handleOpen}>
+                <CardHeader
+                    avatar={<StarAvatar
+                        active={plan.active}
+                        title={plan.active ? 'Deactivate plan' : 'Activate plan'}
+                        onToggle={handleActivePlanToggle} />}
+                    title={plan.name}
+                    action={<IconButton
+                        onClick={handleClick}
+                        aria-label="more">
+                        <MoreOutlined />
+                    </IconButton>
+                    } />
+                <Menu
+                    id="demo-positioned-menu"
+                    aria-labelledby="demo-positioned-button"
+                    anchorEl={anchorEl}
+                    open={showMenu}
+                    onClose={handleClose}
+                    anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                >
+                    <MenuItem onClick={handleOpen}>Open</MenuItem>
+                    <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
+                    <MenuItem onClick={handleDelete}>Delete...</MenuItem>
+                    <MenuItem disabled={loading} onClick={handleActive}>
+                        {plan.active ? "Set Inactive" : "Set Active"}
+                    </MenuItem>
+                </Menu>
+                <CardContent>
+                    <Typography>{UI_STRINGS.NOTES_LABEL}: {plan.note}</Typography>
+                    <Typography>{UI_STRINGS.GROUPS_LABEL}: {(plan.groups ?? []).length}</Typography>
+                    <Typography>{UI_STRINGS.STUDENTS_LABEL}: {(plan.placements ?? []).length}</Typography>
+                </CardContent>
+                <CardContent>
+                    <Typography>{UI_STRINGS.TOTAL_DURATION}: {plan.total_duration}</Typography>
+                    <Typography>{UI_STRINGS.AVG_COUNTRY_COUNT}: {plan.avg_country_count}</Typography>
+                    <Typography>{UI_STRINGS.AVG_DURATION}: {plan.avg_duration}</Typography>
+                </CardContent>
 
-        </Card>
+            </Card>
+            <ConfirmationDialog
+                message={`Delete ${plan.name}?`}
+                open={openDeleteDialog}
+                handleConfirm={() => doDelete()}
+                handleCancel={() => setOpenDeleteDialog(false)} />
+        </>
     );
 }

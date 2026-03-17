@@ -5,14 +5,14 @@
  *
  */
 
-import { v4 as uuidv4 } from 'uuid';
-import { SERVICE_ERRORS, UI_STRINGS } from '../../constants';
-import { CEGroupService } from "../group/ceGroupService";
-import { CEPlanDao } from "../../api/cePlanDao";
-import { Cohort, Placement, Plan, Student } from "../../api/types";
-import { CEPlacementService } from '../cePlacementService';
+import { v4 as uuid } from 'uuid';
 import { CEEnrollmentService } from '../../api/ceEnrollmentDao';
 import { CEPlacementDao } from '../../api/cePlacementDao';
+import { CEPlanDao } from "../../api/cePlanDao";
+import { Cohort, Placement, Plan, Student } from "../../api/types";
+import { SERVICE_ERRORS, UI_STRINGS } from '../../constants';
+import { CEPlacementService } from '../cePlacementService';
+import { CEGroupService } from "../group/ceGroupService";
 
 class CEPlanService {
   private static instance: CEPlanService;
@@ -26,7 +26,7 @@ class CEPlanService {
 
   empty(): Plan {
     return {
-      id: uuidv4(),
+      id: uuid(),
       name: UI_STRINGS.NEW_PLAN,
       cohort_id: '',
       note: "",
@@ -34,9 +34,13 @@ class CEPlanService {
       placements: [],
       groups: [],
       active: false,
+      avg_country_count: 0.0,
+      avg_duration: 0.0,
+      total_duration: 0.0,
+      optimization_style: 'largest_first'
     } as Plan;
-
   }
+
   async create(cohort: Cohort): Promise<Plan> {
     const planDao = CEPlanDao.getInstance();
     const placementDao = CEPlacementDao.getInstance();

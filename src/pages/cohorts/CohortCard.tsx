@@ -96,8 +96,8 @@ export const CohortCard = (props: { cohort: Cohort }) => {
                 <MenuItem onClick={handleDelete}>{UI_STRINGS.DELETE_WITH_ELLIPSIS}</MenuItem>
             </Menu>
             <CardContent>
-                <Typography>{UI_STRINGS.STUDENTS_WITH_COLON} {props.cohort.enrollments?.length} </Typography>
-                <Typography>{UI_STRINGS.PLANS_WITH_COLON} {props.cohort.plans?.length} </Typography>
+                <Typography>{UI_STRINGS.STUDENTS_LABEL}: {props.cohort.enrollments?.length} </Typography>
+                <Typography>{UI_STRINGS.PLANS_LABEL}: {props.cohort.plans?.length} </Typography>
                 <ConfirmationDialog
                     message={`Delete ${props.cohort.name}?`}
                     open={openDeleteDialog}

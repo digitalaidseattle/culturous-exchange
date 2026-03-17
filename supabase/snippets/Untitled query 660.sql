@@ -1,2 +1,4 @@
-ALTER TABLE facilitators ADD COLUMN IF NOT EXISTS city TEXT;
-ALTER TABLE facilitators ADD COLUMN IF NOT EXISTS country TEXT;
+ALTER TABLE
+    plan
+ADD
+    COLUMN IF NOT EXISTS optimization_style TEXT;

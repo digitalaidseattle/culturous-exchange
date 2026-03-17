@@ -36,6 +36,12 @@ class CETimeWindowService {
     return CETimeWindowService.instance;
   }
 
+  reduceTimeWindows(timeWindows: TimeWindow[]): TimeWindow[] {
+    timeWindows.pop()
+
+    return []
+  }
+
   unionTimeWindows(timeWindowsA: TimeWindow, timeWindowsB: TimeWindow): TimeWindow[] {
     const timeArray = [
       { name: 'AS', date: timeWindowsA.start_date_time! },
@@ -306,7 +312,6 @@ class CETimeWindowService {
     return timeWindows.reduce((acc, tw) => acc + this.duration(tw), 0);
   }
 
-
   duration(timeWindow: TimeWindow): number {
     // adding 1 hour to include the end hour
     const duration = 1 + (timeWindow.end_date_time.getTime() - timeWindow.start_date_time.getTime()) / (1000 * 60 * 60);
@@ -317,6 +322,42 @@ class CETimeWindowService {
     return CETimeWindowDao.getInstance().insert(timeWindow);
   }
 
+  createDefaultTimewindows(): TimeWindow[] {
+    const friday = {
+      id: uuid(),
+      student_id: null,
+      group_id: null,
+      day_in_week: 'Friday',
+      start_t: '07:00:00',
+      end_t: '22:00:00',
+    } as TimeWindow
+    friday.start_date_time = this.toZonedTime(0, friday.start_t, DEFAULT_TIMEZONE);
+    friday.end_date_time = this.toZonedTime(0, friday.end_t, DEFAULT_TIMEZONE);
+
+    const saturday = {
+      id: uuid(),
+      student_id: null,
+      group_id: null,
+      day_in_week: 'Saturday',
+      start_t: '07:00:00',
+      end_t: '22:00:00',
+    } as TimeWindow
+    saturday.start_date_time = this.toZonedTime(1, saturday.start_t, DEFAULT_TIMEZONE);
+    saturday.end_date_time = this.toZonedTime(1, saturday.end_t, DEFAULT_TIMEZONE);
+
+    const sunday = {
+      id: uuid(),
+      student_id: null,
+      group_id: null,
+      day_in_week: 'Sunday',
+      start_t: '07:00:00',
+      end_t: '22:00:00',
+    } as TimeWindow
+    sunday.start_date_time = this.toZonedTime(2, sunday.start_t, DEFAULT_TIMEZONE);
+    sunday.end_date_time = this.toZonedTime(2, sunday.end_t, DEFAULT_TIMEZONE);
+
+    return [friday, saturday, sunday];
+  }
 }
 
 export { CETimeWindowService };

@@ -28,13 +28,9 @@ export const UI_STRINGS = {
   TIME_WINDOWS: 'Time Windows',
   CURRENT_COHORT: 'Current Cohort:',
   STUDENTS_LABEL: 'Students',
-  STUDENTS_WITH_COLON: 'Students :',
   PLANS_LABEL: 'Plans',
-  PLANS_WITH_COLON: 'Plans :',
   NOTES_LABEL: 'Notes',
-  NOTES_WITH_COLON: 'Notes :',
   GROUPS_LABEL: 'Groups',
-  GROUPS_WITH_COLON: 'Groups :',
   GROUP: 'Group',
   NAME: 'Name',
   FULL_NAME: 'Full Name',
@@ -62,6 +58,9 @@ export const UI_STRINGS = {
   ARE_YOU_SURE_DELETE_STUDENT: 'Are you sure you want to delete this student?',
   LOCAL_TIME: 'Local Time',
   STUDENT_TIME: 'Student Time',
+  TOTAL_DURATION: 'Total Plan Duration',
+  AVG_COUNTRY_COUNT: 'Avg. Countries/Group',
+  AVG_DURATION: 'Avg. Duration/Group',
 
   // Tooltips
   EXPORT_PLAN: 'Export plan',

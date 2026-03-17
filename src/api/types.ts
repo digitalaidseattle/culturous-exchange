@@ -89,6 +89,10 @@ type Plan = Entity & {
     group_size?: number; // Optional, can be set to override default group size
     placements: Placement[]
     groups: Group[];
+    avg_country_count: number;
+    avg_duration: number;
+    total_duration: number;
+    optimization_style: string;
 }
 
 // TODO table does not have an ID column

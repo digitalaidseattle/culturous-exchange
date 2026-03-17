@@ -5,9 +5,9 @@
  *
  */
 
+import { Group, Plan, TimeWindow } from "../../api/types";
 import { CEGroupService } from "../group/ceGroupService";
 import { CETimeWindowService } from "../time/ceTimeWindowService";
-import { Group, Plan, TimeWindow } from "../../api/types";
 
 
 class PlanEvaluator {
@@ -18,6 +18,15 @@ class PlanEvaluator {
         plan.groups.forEach(group => {
             this.evaluateGroup(group);
         })
+
+        plan.avg_country_count = plan.groups
+            .map(g => g.country_count)
+            .reduce((x, y) => x + y, 0) / plan.groups.length;
+        plan.avg_duration = plan.groups
+            .map(g => g.duration)
+            .filter(d => d !== undefined)
+            .reduce((x, y) => x + y, 0) / plan.groups.length;
+        plan.total_duration = this.calcPlanDuration(plan);
         return plan
     }
 
@@ -56,6 +65,16 @@ class PlanEvaluator {
     calcDuration(group: Group): number {
         const timeWindowService = CETimeWindowService.getInstance();
         return timeWindowService.totalDuration(group.time_windows!);
+    }
+
+    calcPlanDuration(plan: Plan): number {
+        const timeWindowService = CETimeWindowService.getInstance();
+        let timeWindows = timeWindowService.createDefaultTimewindows();
+        (plan.groups ?? []).forEach(group => {
+            timeWindows.concat(group.time_windows!);
+        });
+        // TODO remove overlap from timeWindows
+        return timeWindowService.totalDuration(timeWindows);
     }
 }
 

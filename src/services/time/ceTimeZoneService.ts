@@ -40,10 +40,6 @@ export class CETimeZoneService {
   }
 
   async lookupTimeZone(city: string, country: string): Promise<{ timezone: string, offset: number }> {
-    // return {
-    //   timezone: 'America/Los_Angeles',
-    //   offset: -8
-    // };
     return fetch(`https://api.ipgeolocation.io/timezone?apiKey=${import.meta.env.VITE_IPGEOLOCATION_KEY}&location=${city},%20${country}`)
       .then(resp => {
         if (!resp.ok) {
