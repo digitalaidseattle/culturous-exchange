@@ -199,3 +199,21 @@ SELECT pg_catalog.setval('"supabase_functions"."hooks_id_seq"', 1, false);
 --
 
 RESET ALL;
+
+--
+-- Seed data for facilitators table
+--
+
+INSERT INTO facilitators (id, name, email, time_zone, tz_offset, bio, active)
+VALUES
+  ('00000000-0000-4000-8000-000000000001', 'Test Facilitator', 'facilitator@example.org', 'America/Los_Angeles', -480, 'Local test facilitator', true)
+ON CONFLICT (lower(email)) DO NOTHING;
+
+--
+-- Seed assignment (local testing): will only insert if the referenced group exists.
+--
+
+INSERT INTO assignment (id, group_id, facilitator_id)
+SELECT '00000000-0000-4000-8000-000000000010'::uuid, '00000000-0000-4000-8000-000000000002'::uuid, '00000000-0000-4000-8000-000000000001'::uuid
+WHERE EXISTS (SELECT 1 FROM grouptable WHERE id = '00000000-0000-4000-8000-000000000002'::uuid)
+ON CONFLICT (group_id) DO NOTHING;

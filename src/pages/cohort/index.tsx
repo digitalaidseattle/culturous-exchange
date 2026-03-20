@@ -1,21 +1,26 @@
+/**
+ * CohortPage.tsx
+ *
+ * Example of integrating tickets with data-grid
+ * 
+ * @copyright 2026 Digital Aid Seattle
+ */
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 // material-ui
-
-// project import
 import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
 
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { useSearchParams } from "react-router-dom";
-import { cohortService } from "../../api/ceCohortService";
-import { enrollmentService } from "../../api/ceEnrollmentService";
-import { planService } from "../../api/cePlanService";
-import { planGenerator } from "../../api/planGenerator";
+import { CECohortDao } from "../../api/ceCohortDao";
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
 import { TextEdit } from "../../components/TextEdit";
+import { UI_STRINGS } from '../../constants';
+import { CECohortService } from "../../services/cohort/ceCohortService";
 import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
 
@@ -30,6 +35,8 @@ export const CohortContext = createContext<CohortContextType>({
 });
 
 const CohortPage: React.FC = () => {
+  const cohortDao = CECohortDao.getInstance();
+
   const [searchParams] = useSearchParams();
   const { id: cohortId } = useParams<string>();
   const notifications = useNotifications();
@@ -42,21 +49,11 @@ const CohortPage: React.FC = () => {
 
   useEffect(() => {
     if (cohortId) {
-      cohortService.getById(cohortId)
+      setCohort(undefined);
+      cohortDao.getById(cohortId)
         .then((cohort) => {
           if (cohort) {
-            enrollmentService.getStudents(cohort)
-              .then((students) => {
-                cohort.enrollments.forEach(enrollment => {
-                  const student = students.find(s => s.id === enrollment.student_id);
-                  if (student) {
-                    enrollment.student = student;
-                  } else {
-                    console.warn(`Student not found for enrollment: ${enrollment.student_id}`);
-                  }
-                });
-                setCohort(cohort);
-              });
+            setCohort(cohort);
           } else {
             console.error(`Cohort not found ${cohortId}`);
           }
@@ -70,10 +67,9 @@ const CohortPage: React.FC = () => {
     }
   }, [searchParams]);
 
-
   function handleNameChange(newText: string) {
     if (cohort && cohort.id) {
-      cohortService
+      cohortDao
         .update(cohort.id, { name: newText }) // FIXME change ID to UUID
         .then((updated) => {
           setCohort(updated);
@@ -84,13 +80,17 @@ const CohortPage: React.FC = () => {
 
   async function handleCreatePlan() {
     if (cohort) {
-      const created = await planService.create(cohort);
-      const hydrated = await planService.getById(created.id);
-      const seededPlan = await planGenerator.seedPlan(hydrated)
-      await planService.save(seededPlan);
-
-      navigate(`/plan/${seededPlan.id}`);
-      notifications.success(`Plan added to  ${cohort.name}.`);
+      const cohortService = CECohortService.getInstance();
+      try {
+        const newPlan = await cohortService.createPlan(cohort!);
+        navigate(`/plan/${newPlan.id}`);
+        notifications.success(`Plan added to ${cohort!.name}.`);
+      } catch (error: any) {
+        console.error('Could not create plan.', error)
+        notifications.error(`Could not create plan. ${error.message}`);
+      }
+    } else {
+      notifications.error(`No cohort povided.`);
     }
   }
 
@@ -104,7 +104,7 @@ const CohortPage: React.FC = () => {
         <Stack gap={1}>
           <MainCard>
             <TextEdit
-              label={"Name"}
+              label={UI_STRINGS.NAME}
               value={cohort.name}
               onChange={(val) => handleNameChange(val)}
             />
@@ -113,7 +113,7 @@ const CohortPage: React.FC = () => {
               variant="contained"
               onClick={handleCreatePlan}
             >
-              New Plan
+              {UI_STRINGS.NEW_PLAN}
             </Button>
           </MainCard>
           <MainCard>
@@ -123,8 +123,8 @@ const CohortPage: React.FC = () => {
                 onChange={changeTab}
                 aria-label="basic tabs example"
               >
-                <Tab label="Plans" />
-                <Tab label="Students" />
+                <Tab label={UI_STRINGS.PLANS_LABEL} />
+                <Tab label={UI_STRINGS.STUDENTS_LABEL} />
               </Tabs>
             </Box>
             <TabPanel value={tabValue} index={0}>

@@ -21,24 +21,23 @@ import {
 
 // project import
 import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
+import { MainCard } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { useNavigate } from 'react-router';
-import { cohortService } from '../../api/ceCohortService';
+import { CECohortDao } from '../../api/ceCohortDao';
 import { Cohort, Plan } from '../../api/types';
-import { MainCard } from '@digitalaidseattle/mui';
-
-const PAGE_SIZE = 10;
+import { DEFAULT_TABLE_PAGE_SIZE, UI_STRINGS } from '../../constants';
 
 const getColumns = (): GridColDef[] => {
     return [
         {
             field: 'name',
-            headerName: 'Name',
+            headerName: UI_STRINGS.NAME,
             width: 150,
         },
         {
             field: 'plans',
-            headerName: 'Plans',
+            headerName: UI_STRINGS.PLANS_LABEL,
             renderCell: (param: any) => {
                 return <Typography>{param.row.plans.map((p: Plan) => p.name).join(', ')}</Typography>
             }
@@ -48,7 +47,9 @@ const getColumns = (): GridColDef[] => {
 
 
 export default function CohortsTable() {
-    const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
+    const cohortDao = CECohortDao.getInstance();
+
+    const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
     const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'created_at', sort: 'desc' }])
     const [pageInfo, setPageInfo] = useState<PageInfo<Cohort>>({ rows: [], totalRowCount: 0 });
     const apiRef = useGridApiRef();
@@ -65,7 +66,7 @@ export default function CohortsTable() {
                 sortField: sortModel.length === 0 ? 'created_at' : sortModel[0].field,
                 sortDirection: sortModel.length === 0 ? 'created_at' : sortModel[0].sort
             } as QueryModel
-            cohortService.find(queryModel)
+            cohortDao.find(queryModel)
                 .then((sess) => setPageInfo(sess))
         }
     }, [paginationModel, sortModel])
@@ -78,7 +79,7 @@ export default function CohortsTable() {
             sortDirection: sortModel.length === 0 ? 'created_at' : sortModel[0].sort
         } as QueryModel
         setLoading(true);
-        cohortService.find(queryModel)
+        cohortDao.find(queryModel)
             .then((pi) => setPageInfo(pi))
             .finally(() => setLoading(false))
 

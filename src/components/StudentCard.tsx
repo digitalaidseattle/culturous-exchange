@@ -5,43 +5,86 @@
  *
  */
 
-import { MoreOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
+import { useContext, useState } from "react";
+
+import { MoreOutlined } from "@ant-design/icons";
 import {
     Card,
     CardContent,
+    CardHeader,
     IconButton,
     Menu,
     MenuItem,
-    Stack,
-    Theme,
     Typography
 } from "@mui/material";
 
-import { useContext, useState } from "react";
-import { placementService } from "../api/cePlacementService";
-import { planService } from "../api/cePlanService";
-import { timeWindowService } from "../api/ceTimeWindowService";
-import { Placement } from "../api/types";
+import { RefreshContext } from "@digitalaidseattle/core";
+
 import { PlanContext } from "../pages/plan/PlanContext";
+import { CETimeWindowService } from "../services/time/ceTimeWindowService";
+import { Placement } from "../api/types";
+import StarAvatar from "./StarAvatar";
+import { UI_STRINGS, SERVICE_ERRORS } from '../constants';
+import { CEPlacementService } from "../services/cePlacementService";
 
 
 export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean }> = ({ placement, showDetails }) => {
+    const timeWindowService = CETimeWindowService.getInstance();
+    const placementService = CEPlacementService.getInstance();
+
+    const { refresh, setRefresh } = useContext(RefreshContext);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const showMenu = Boolean(anchorEl);
 
+    const timeWindows = placement.student!.timeWindows ?? [];
+
     const { plan, setPlan } = useContext(PlanContext);
 
-    const anchor = placement.anchor ? 'green' : 'gray';
-    const timeWindows = placement.student!.timeWindows ? placement.student!.timeWindows ?? [] : [];
-
     const toggleAnchor = async (placement: Placement) => {
-        placementService
-            .updatePlacement(
+        if (!plan) {
+            // no plan in context - fallback to server update
+            try {
+                await placementService.updatePlacement(
+                    placement.plan_id,
+                    placement.student_id,
+                    { anchor: !placement.anchor });
+                setRefresh(refresh + 1);
+            } catch (error) {
+                console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error)
+            }
+            return;
+        }
+
+        // Optimistic update: update plan in-place so UI doesn't re-fetch and reorder placements
+        const originalPlan = plan;
+        const updatedPlan = {
+            ...plan,
+            placements: plan.placements.map(p =>
+                p.plan_id === placement.plan_id && p.student_id === placement.student_id
+                    ? { ...p, anchor: !p.anchor }
+                    : p
+            )
+        };
+
+        try {
+            setPlan(updatedPlan);
+
+            await placementService.updatePlacement(
                 placement.plan_id,
                 placement.student_id,
-                { anchor: !placement.anchor })
-            .then(() => refreshPlan())
-            .catch((error) => console.error('Error toggling anchor:', error))
+                { anchor: !placement.anchor });
+
+            // success: no further action needed (student propagation handled server-side)
+        } catch (error) {
+            // revert optimistic update on error
+            try {
+                setPlan(originalPlan);
+            } catch (e) {
+                // ignore
+            }
+            console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error)
+            setRefresh(refresh + 1);
+        }
     };
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -64,29 +107,30 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
         setAnchorEl(null);
     };
 
-    function refreshPlan() {
-        planService.getById(plan.id)
-            .then((resp) => setPlan(resp))
-    }
-
     return (placement &&
         <Card
             id={`${placement.plan_id}.${placement.student_id}`}
             key={placement.student_id}
             sx={{
                 pointerEvents: 'auto',
-                margin: 0,
                 position: "relative",
             }}>
-            <IconButton
-                onClick={handleClick}
-                aria-label="close"
-                sx={{
-                    position: "absolute", top: 8, right: 8,
-                    color: (theme: Theme) => theme.palette.grey[500],
-                }}>
-                <MoreOutlined />
-            </IconButton>
+            <CardHeader
+                avatar={
+                    <StarAvatar
+                        active={placement.anchor}
+                        title={placement.anchor ? 'Remove anchor flag' : 'Set as anchor'}
+                        onToggle={() => toggleAnchor(placement)} />
+                }
+                title={placement.student!.name}
+                titleTypographyProps={{ fontWeight: 600 }}
+                action={
+                    <IconButton
+                        onClick={handleClick}
+                        aria-label="more">
+                        <MoreOutlined />
+                    </IconButton>
+                } />
             <Menu
                 id="demo-positioned-menu"
                 aria-labelledby="demo-positioned-button"
@@ -102,29 +146,16 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
                     horizontal: 'left',
                 }}
             >
-                <MenuItem onClick={handleOpen}>Open</MenuItem>
-                <MenuItem onClick={handleRemove}>Remove...</MenuItem>
+                <MenuItem onClick={handleOpen}>{UI_STRINGS.OPEN}</MenuItem>
+                <MenuItem onClick={handleRemove}>{UI_STRINGS.REMOVE}</MenuItem>
             </Menu>
-            <CardContent>
-                <Stack direction={'row'} spacing={{ xs: 1, sm: 1 }}>
-                    {placement.anchor &&
-                        <StarFilled style={{ fontSize: '150%', color: anchor }}
-                            onClick={() => toggleAnchor(placement)} />
-                    }
-                    {!placement.anchor &&
-                        <StarOutlined style={{ fontSize: '150%', color: anchor }}
-                            onClick={() => toggleAnchor(placement)} />
-                    }
-                    <Typography fontWeight={600}>{placement.student!.name}</Typography>
-                </Stack>
-                {showDetails &&
-                    <CardContent>
-                        <Typography>{placement.student!.country}</Typography>
-                        <Typography fontWeight={600}>Time Windows</Typography>
-                        {timeWindows.map((tw, idx) => <Typography key={idx}>{timeWindowService.toString(tw)}</Typography>)}
-                    </CardContent>
-                }
-            </CardContent>
+            {showDetails &&
+                <CardContent>
+                    <Typography>{placement.student!.country}</Typography>
+                    <Typography fontWeight={600}>{UI_STRINGS.TIME_WINDOWS}</Typography>
+                    {timeWindows.map((tw, idx) => <Typography key={idx}>{timeWindowService.toString(tw)}</Typography>)}
+                </CardContent>
+            }
         </Card>
     );
 }

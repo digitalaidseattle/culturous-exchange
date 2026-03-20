@@ -4,14 +4,13 @@
  * @copyright 2025 Digital Aid Seattle
  *
  */
-type Identifier = string | number | undefined | null;
 
-type Entity = {
-    id: Identifier;
-}
+import { Entity, Identifier } from "@digitalaidseattle/core";
 
 type TimeWindow = Entity & {
     student_id: Identifier | null;
+    facilitator_id?: Identifier | null;
+    assignment_id?: Identifier | null;
     group_id: Identifier | null;
     day_in_week: string;
     start_t: string;
@@ -20,20 +19,37 @@ type TimeWindow = Entity & {
     end_date_time: Date;
 }
 
-type Student = Entity & {
+type CEProfile = Entity & {
     name: string;
-    age: number | null;
     email: string;
     city: string;
     country: string;
+    time_zone?: string;
+    tz_offset: number;
+    timeWindows?: TimeWindow[];
+    bio?: string;
+    avatar_url?: string;
+}
+
+type Student = CEProfile & {
+    age: number | null;
     gender: string;
-    time_zone?: string; 
-    tz_offset: number; 
-    timeWindows?: TimeWindow[]; 
     anchor: boolean
 }
 
 type FailedStudent = Student & {
+    failedError: ValidationError[];
+}
+
+type Facilitator = CEProfile & {
+    active: boolean;
+}
+
+type FailedFacilitator = Facilitator & {
+    failedError: ValidationError[];
+}
+
+type FailedProfile = CEProfile & {
     failedError: ValidationError[];
 }
 
@@ -52,7 +68,8 @@ type Cohort = Entity & {
     enrollments: Enrollment[];
 }
 
-type Enrollment = {
+// TODO table does not have an ID column
+type Enrollment = Entity & {
     cohort_id: Identifier;
     student_id: Identifier;
     student?: Student;
@@ -66,16 +83,23 @@ type Enrollment = {
 type Plan = Entity & {
     name: string;
     cohort_id: Identifier;
+    /** Whether this plan is active/enabled */
+    active: boolean;
     note: string;
     group_size?: number; // Optional, can be set to override default group size
     placements: Placement[]
     groups: Group[];
+    avg_country_count: number;
+    avg_duration: number;
+    total_duration: number;
+    optimization_style: string;
 }
 
-type Placement = {
+// TODO table does not have an ID column
+type Placement = Entity & {
     plan_id: Identifier;
     student_id: Identifier;
-    group_id?: Identifier; // will be null when unassigned
+    group_id?: Identifier | null; // will be null when unassigned
     student?: Student;
     /**
      * Whether this student is an anchor student for the plan.
@@ -95,21 +119,46 @@ type Group = Entity & {
     plan_id: Identifier;
     name: string;
     country_count: number;
+    duration?: number; // in hours
     placements?: Placement[];
     time_windows?: TimeWindow[];
+    assignments?: Assignment[];
 }
 
+type Assignment = Entity & {
+    group_id: Identifier | null;
+    facilitator_id: Identifier | null;
+    created_at?: Date;
+    updated_at?: Date;
+    facilitator?: Facilitator;
+}
+
+type TimeSlot = Partial<TimeWindow> & {
+    label: string;
+    day_in_week: string;
+    start_t: string;
+    end_t: string;
+}
+
+const GENDER_OPTION = ['Female', 'Male', 'Other']
+
+export { GENDER_OPTION };
+
 export type {
+    CEProfile,
     TimeWindow,
+    TimeSlot,
     Enrollment,
-    Entity,
+    FailedFacilitator,
+    FailedProfile,
     FailedStudent,
     ValidationError,
-    Identifier,
     Student,
     StudentField,
     Cohort,
     Group,
     Placement,
-    Plan
+    Plan,
+    Facilitator,
+    Assignment
 }

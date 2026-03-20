@@ -8,7 +8,7 @@ import { TimeWindow } from "../api/types";
  *
  */
 
-import { Box, Stack } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 
 const PREF_TIMES = ['Fr', 'Fr', 'Fr', 'Sa', 'Sa', 'Sa', 'Su', 'Su', 'Su'] // Morning, Afternoon, Evening x Friday, Saturday, Sunday
 
@@ -30,5 +30,5 @@ interface Props {
 
 export const TimeSlots: React.FC<Props> = ({ key, timeWindows }) => {
     const prefs = calculatePreferences(timeWindows);
-    return <Stack key={key ?? ''} direction={'row'}>{prefs.map((p, i) => <Box key={i} sx={{ backgroundColor: p ? 'lightgreen' : 'white', width: 20, border: 1 }}>{PREF_TIMES[i]}</Box>)}</Stack>
+    return <Stack key={key ?? ''} direction={'row'}>{prefs.map((p, i) => <Typography key={i} sx={{ backgroundColor: p ? 'lightgreen' : 'white', height: 25, width: 25, border: 1, alignItems: 'center' }}>{PREF_TIMES[i]}</Typography>)}</Stack>
 }  

@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { Plan } from "../api/types";
+import { UI_STRINGS } from '../constants';
 
 interface Props {
   plan: Plan;
@@ -51,17 +52,17 @@ const PlanSettingsDialog: React.FC<Props> = ({
           sx: { width: '40rem', maxWidth: '90vw' },
         }}
       >
-        <DialogTitle><Typography variant="h2">Settings</Typography></DialogTitle>
+        <DialogTitle><Typography variant="h2">{UI_STRINGS.SETTINGS}</Typography></DialogTitle>
         <DialogContent>
           <Stack sx={{ display: "flex", flexWrap: "wrap" }}>
             <FormControl sx={{ m: 1, minWidth: 120 }}>
               <Stack direction={'row'} padding={5} spacing={5}>
                 <Typography gutterBottom sx={{ color: 'text.primary', fontSize: 14 }}>
-                  Group Size:
+                  {UI_STRINGS.GROUP_SIZE}
                 </Typography>
                 <Box sx={{ width: 400 }}>
                   <Slider
-                    aria-label="Group size"
+                    aria-label={UI_STRINGS.GROUP_SIZE_LABEL}
                     value={updatedPlan.group_size ?? 10}
                     step={1}
                     min={5}
@@ -76,12 +77,12 @@ const PlanSettingsDialog: React.FC<Props> = ({
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={onClose}>{UI_STRINGS.CANCEL}</Button>
           <Button
             type="submit"
             color="primary"
             variant="contained"
-            onClick={handleSubmit}>Submit</Button>
+            onClick={handleSubmit}>{UI_STRINGS.SUBMIT}</Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
