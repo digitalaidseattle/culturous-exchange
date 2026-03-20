@@ -7,13 +7,18 @@
  */
 
 import { MoreOutlined } from "@ant-design/icons";
+import { Identifier, LoadingContext, RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
-import { Card, CardContent, IconButton, Menu, MenuItem, Theme, Typography } from "@mui/material";
+import { Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { planService } from "../api/cePlanService";
-import { Identifier, Plan } from "../api/types";
-import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
+import { CEPlanDao } from "../api/cePlanDao";
+import { Plan } from "../api/types";
+import { UI_STRINGS } from '../constants';
+import StarAvatar from "./StarAvatar";
+import { planDelete } from "../services/plan/planDelete";
+import { planActivation } from "../services/plan/planActivation";
+import { planDuplicate } from "../services/plan/planDuplicate";
 
 
 export const PlanCard = (props: { planId: Identifier }) => {
@@ -22,15 +27,15 @@ export const PlanCard = (props: { planId: Identifier }) => {
     const showMenu = Boolean(anchorEl);
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
-
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
+    const { loading, setLoading } = useContext(LoadingContext);
 
     const navigate = useNavigate();
 
     useEffect(() => {
         if (props.planId) {
-            planService.
-                getById(props.planId)
+            CEPlanDao.getInstance()
+                .getById(props.planId)
                 .then((resp) => setPlan(resp!))
         }
     }, [props.planId]);
@@ -52,8 +57,13 @@ export const PlanCard = (props: { planId: Identifier }) => {
 
     const handleDuplicate = () => {
         if (plan) {
-            planService.duplicate(plan)
-            setAnchorEl(null);
+            setLoading(true)
+            planDuplicate(plan)
+                .then(() => {
+                    setAnchorEl(null);
+                    setRefresh(refresh + 1);
+                })
+                .finally(() => setLoading(false));
         }
     };
 
@@ -62,68 +72,99 @@ export const PlanCard = (props: { planId: Identifier }) => {
         setAnchorEl(null);
     };
 
-    const doDelete = () => {
+    const handleActive = () => {
         if (plan) {
-            console.log(plan)
-            planService.deletePlan(plan)
-                .then(() => {
-                    setOpenDeleteDialog(false);
-                    setAnchorEl(null);
-                    setRefresh(refresh + 1);
-                    notifications.success('Plan deleted.');
-                })
+            handleActivePlanToggle(!plan.active);
+            setAnchorEl(null);
         }
     };
 
+    const doDelete = () => {
+        planDelete(plan!)
+            .then(() => notifications.success(UI_STRINGS.PLAN_DELETED))
+            .catch(error => notifications.error(`Error deleting ${error.message}`))
+            .finally(() => {
+                setOpenDeleteDialog(false);
+                setAnchorEl(null);
+                setRefresh(refresh + 1);
+            })
+    };
+
+    const handleActivePlanToggle = async (value: boolean) => {
+        if (plan) {
+            setLoading(true);
+            planActivation.changeActivation(plan, value)
+                .then(() => {
+                    setRefresh(refresh + 1);
+                    notifications.success(`Plan ${value ? 'activated' : 'deactivated'}.`);
+                })
+                .catch(err => notifications.error(`Failed to update plan active state. ${err.message}`))
+                .finally(() => setLoading(false))
+        }
+    }
+
     return (plan &&
-        <Card
-            sx={{
-                width: "240px",
-                height: "240px",
-                borderRadius: "10px",
-                boxShadow: "0px 14px 80px rgba(34, 35, 58, 0.2)",
-                position: "relative",
-            }}
-            onDoubleClick={handleOpen}>
-            <IconButton
-                onClick={handleClick}
-                aria-label="close"
+        <>
+            <Card
                 sx={{
-                    position: "absolute", top: 8, right: 8,
-                    color: (theme: Theme) => theme.palette.grey[500],
-                }}>
-                <MoreOutlined />
-            </IconButton>
-            <Menu
-                id="demo-positioned-menu"
-                aria-labelledby="demo-positioned-button"
-                anchorEl={anchorEl}
-                open={showMenu}
-                onClose={handleClose}
-                anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
+                    width: "240px",
+                    height: "260px",
+                    borderRadius: "10px",
+                    boxShadow: "0px 14px 80px rgba(34, 35, 58, 0.2)",
+                    position: "relative",
                 }}
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                }}
-            >
-                <MenuItem onClick={handleOpen}>Open</MenuItem>
-                <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
-                <MenuItem onClick={handleDelete}>Delete...</MenuItem>
-            </Menu>
-            <CardContent>
-                <Typography fontWeight={600}>{plan.name}</Typography>
-                <Typography>Notes : {plan.note}</Typography>
-                <Typography>Groups : {plan.groups.length}</Typography>
-                <Typography>Students : {plan.placements.length}</Typography>
-                <ConfirmationDialog
-                    message={`Delete ${plan.name}?`}
-                    open={openDeleteDialog}
-                    handleConfirm={() => doDelete()}
-                    handleCancel={() => setOpenDeleteDialog(false)} />
-            </CardContent>
-        </Card>
+                onDoubleClick={handleOpen}>
+                <CardHeader
+                    avatar={<StarAvatar
+                        active={plan.active}
+                        title={plan.active ? 'Deactivate plan' : 'Activate plan'}
+                        onToggle={handleActivePlanToggle} />}
+                    title={plan.name}
+                    action={<IconButton
+                        onClick={handleClick}
+                        aria-label="more">
+                        <MoreOutlined />
+                    </IconButton>
+                    } />
+                <Menu
+                    id="demo-positioned-menu"
+                    aria-labelledby="demo-positioned-button"
+                    anchorEl={anchorEl}
+                    open={showMenu}
+                    onClose={handleClose}
+                    anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                >
+                    <MenuItem onClick={handleOpen}>Open</MenuItem>
+                    <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
+                    <MenuItem onClick={handleDelete}>Delete...</MenuItem>
+                    <MenuItem disabled={loading} onClick={handleActive}>
+                        {plan.active ? "Set Inactive" : "Set Active"}
+                    </MenuItem>
+                </Menu>
+                <CardContent>
+                    <Typography>{UI_STRINGS.NOTES_LABEL}: {plan.note}</Typography>
+                    <Typography>{UI_STRINGS.GROUPS_LABEL}: {(plan.groups ?? []).length}</Typography>
+                    <Typography>{UI_STRINGS.STUDENTS_LABEL}: {(plan.placements ?? []).length}</Typography>
+                </CardContent>
+                <CardContent>
+                    <Typography>{UI_STRINGS.TOTAL_DURATION}: {plan.total_duration}</Typography>
+                    <Typography>{UI_STRINGS.AVG_COUNTRY_COUNT}: {plan.avg_country_count}</Typography>
+                    <Typography>{UI_STRINGS.AVG_DURATION}: {plan.avg_duration}</Typography>
+                </CardContent>
+
+            </Card>
+            <ConfirmationDialog
+                message={`Delete ${plan.name}?`}
+                open={openDeleteDialog}
+                handleConfirm={() => doDelete()}
+                handleCancel={() => setOpenDeleteDialog(false)} />
+        </>
     );
 }

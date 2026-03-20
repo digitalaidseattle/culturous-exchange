@@ -21,22 +21,23 @@ import { DeleteOutlined, StarFilled } from '@ant-design/icons';
 import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { ConfirmationDialog } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
-import { studentService } from '../../api/ceStudentService';
-import { timeWindowService } from '../../api/ceTimeWindowService';
+import { CEStudentDao } from '../../api/ceStudentDao';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
-import StudentModal from '../../components/StudentModal';
 import { TimeSlots } from '../../components/TimeSlots';
+import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
+import StudentModal from './StudentModal';
+import { CEStudentService } from '../../services/student/CEStudentService';
 
-const PAGE_SIZE = 25;
 
 const StudentsDetailsTable: React.FC = () => {
+  const studentDao = CEStudentDao.getInstance();
+  const studentService = CEStudentService.getInstance();
+
   const { setLoading } = useContext(LoadingContext);
   const { refresh, setRefresh } = useContext(RefreshContext);
 
-  const [initialize, setInitialize] = useState<boolean>(true);
-  const [columns, setColumns] = useState<GridColDef[]>([]);
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'name', sort: 'asc' }]);
   const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
   const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
@@ -46,15 +47,8 @@ const StudentsDetailsTable: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const [deleteStudent, setDeleteStudent] = useState<Student | null>(null);
-  const [deleteMessage, setDeleteMessage] = useState<string>('Are you sure you want to delete this student?');
+  const [deleteMessage, setDeleteMessage] = useState<string>(UI_STRINGS.ARE_YOU_SURE_DELETE_STUDENT);
   const [deleteConfirmation, showDeleteConfirmation] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (initialize) {
-      setColumns(getColumns());
-      setInitialize(false);
-    }
-  }, [initialize]);
 
   useEffect(() => {
     if (paginationModel && sortModel && filterModel) {
@@ -69,7 +63,7 @@ const StudentsDetailsTable: React.FC = () => {
         filterOperator: filterModel.items.length > 0 ? filterModel.items[0].operator : undefined,
         filterValue: filterModel.items.length > 0 ? filterModel.items[0].value : undefined,
       } as QueryModel;
-      studentService
+      studentDao
         .find(queryModel)
         .then((pi) => setPageInfo(pi))
         .catch((err) => console.error(err))
@@ -80,15 +74,15 @@ const StudentsDetailsTable: React.FC = () => {
   const toggleAnchor = async (student: Student) => {
     try {
       student.anchor = !student.anchor;
-      studentService
-        .update(student.id, { anchor: student.anchor })
+      studentDao
+        .update(student.id!, { anchor: student.anchor })
         .then((resp) => {
           console.log('Anchor status updated:', resp);
           setRefresh(refresh + 1);
         });
     } catch (error) {
-      console.error('Error toggling anchor:', error);
-      notifications.error('Failed to update student anchor status');
+      console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error);
+      notifications.error(UI_STRINGS.FAILED_UPDATE_ANCHOR);
       // Revert optimistic update
       setPageInfo({ ...pageInfo });
     }
@@ -96,14 +90,14 @@ const StudentsDetailsTable: React.FC = () => {
 
   function handleDeleteStudent(param: GridRenderCellParams) {
     return (evt: any) => {
-      studentService.getCohortsForStudent(param.row)
+      studentDao.getCohortsForStudent(param.row)
         .then((cohorts) => {
           if (cohorts.length > 0) {
-            notifications.error(`Cannot delete student ${param.row.name} as they are enrolled in cohorts.`);
+            notifications.error(`${UI_STRINGS.CANNOT_DELETE_STUDENT_PREFIX} ${param.row.name} ${UI_STRINGS.CANNOT_DELETE_STUDENT_SUFFIX}`);
             return;
           } else {
             setDeleteStudent(param.row);
-            setDeleteMessage(`Are you sure you want to delete student ${param.row.name}?`);
+            setDeleteMessage(`${UI_STRINGS.CONFIRM_DELETE_STUDENT_PREFIX} ${param.row.name}?`);
             showDeleteConfirmation(true);
           }
           evt.stopPropagation()
@@ -113,14 +107,14 @@ const StudentsDetailsTable: React.FC = () => {
 
   function doDeleteStudent() {
     if (deleteStudent) {
-      studentService.delete(deleteStudent.id)
+      studentDao.delete(deleteStudent.id!)
         .then(() => {
-          notifications.success(`Student ${deleteStudent.name} deleted successfully`);
+          notifications.success(`${UI_STRINGS.DELETION_SUCCESS_PREFIX} ${deleteStudent.name} ${UI_STRINGS.DELETION_SUCCESS_SUFFIX}`);
           setRefresh(refresh + 1);
         })
         .catch((err) => {
-          console.error(`Deletion failed: ${err.message}`);
-          notifications.error(`Deletion failed: ${err.message}`);
+          console.error(`${UI_STRINGS.DELETION_FAILED_PREFIX} ${err.message}`);
+          notifications.error(`${UI_STRINGS.DELETION_FAILED_PREFIX} ${err.message}`);
         })
         .finally(() => {
           setSelectedStudent(null);
@@ -130,122 +124,120 @@ const StudentsDetailsTable: React.FC = () => {
   }
 
   function doUpdateStudent(student: Student) {
-    if (student) {
-      timeWindowService.adjustTimeWindows(student);
-      studentService.save(student)
-        .then(() => {
-          notifications.success(`Student ${student.name} updated successfully`);
-          setRefresh(refresh + 1);
-        })
-        .catch((err) => {
-          console.error(`Update failed: ${err.message}`);
-          notifications.error(`Update failed: ${err.message}`);
-        })
-        .finally(() => {
-          setSelectedStudent(null);
-          setShowDetails(false);
-        })
-    }
+    studentService.save(student)
+      .then(() => {
+        notifications.success(`Student ${student.name} updated successfully`);
+        setRefresh(refresh + 1);
+      })
+      .catch((err) => {
+        console.error(`Update failed: ${err.message}`);
+        notifications.error(`Update failed: ${err.message}`);
+      })
+      .finally(() => {
+        setSelectedStudent(null);
+        setShowDetails(false);
+      })
   }
 
-  const getColumns = (): GridColDef[] => {
-    return [
-      {
-        field: 'id',
-        headerName: '',
-        width: 75,
-        renderCell: (param: GridRenderCellParams) => {
-          return (
-            <Button
-              color='error'
-              onClick={handleDeleteStudent(param)} >
-              <DeleteOutlined />
-            </Button>
-          );
-        }
-      },
-      {
-        field: 'name',
-        headerName: 'Name',
-        width: 150,
-        filterOperators: getGridStringOperators()
-          .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
-      },
-      {
-        field: 'email',
-        headerName: 'Email',
-        width: 200,
-        filterOperators: getGridStringOperators()
-          .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
-
-      },
-      {
-        field: 'country',
-        headerName: 'Country',
-        width: 100,
-        filterOperators: getGridStringOperators()
-          .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
-      },
-      {
-        field: "anchor",
-        headerName: "Anchor",
-        width: 75,
-        type: "boolean",
-        renderCell: (param: GridRenderCellParams) => {
-          return (
-            <StarFilled
-              style={{
-                fontSize: "150%",
-                color: param.row.anchor ? "green" : "gray",
-              }}
-              onClick={() => toggleAnchor(param.row)}
-            />
-          );
-        }
-      },
-      {
-        field: 'age',
-        headerName: 'Age',
-        width: 75,
-        type: 'number',
-        filterOperators: getGridNumericOperators()
-          .filter((operator) => studentService.supportedNumberFilters().includes(operator.value))
-      },
-      {
-        field: 'gender',
-        headerName: 'Gender',
-        width: 100,
-        filterOperators: getGridStringOperators()
-          .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
-      },
-      {
-        field: 'time_zone',
-        headerName: 'Time Zone',
-        width: 150,
-        filterOperators: getGridStringOperators()
-          .filter((operator) => studentService.supportedStringFilters().includes(operator.value))
-      },
-      {
-        field: 'preferences',
-        headerName: 'Time Slots',
-        width: 200,
-        renderCell: (params) => {
-          return <TimeSlots timeWindows={params.row.timeWindows} />
-        },
-        filterable: false
-      },
-      {
-        field: 'timeWindows',
-        headerName: 'Availabilities',
-        width: 450,
-        renderCell: (params) => {
-          const timeWindows = Array.isArray(params.value) ? params.value : [];
-          return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.time_zone} />
-        },
-        filterable: false
+  const columns: GridColDef[] = [
+    {
+      field: 'id',
+      headerName: '',
+      width: 75,
+      renderCell: (param: GridRenderCellParams) => {
+        return (
+          <Button
+            color='error'
+            onClick={handleDeleteStudent(param)} >
+            <DeleteOutlined />
+          </Button>
+        );
       }
-    ];
-  };
+    },
+    {
+      field: 'name',
+      headerName: UI_STRINGS.NAME,
+      width: 150,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+    },
+    {
+      field: 'email',
+      headerName: UI_STRINGS.EMAIL,
+      width: 200,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+
+    },
+    {
+      field: 'country',
+      headerName: UI_STRINGS.COUNTRY,
+      width: 100,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+    },
+    {
+      field: "anchor",
+      headerName: UI_STRINGS.ANCHOR,
+      width: 75,
+      type: "boolean",
+      renderCell: (param: GridRenderCellParams) => {
+        return (
+          <StarFilled
+            style={{
+              fontSize: "150%",
+              color: param.row.anchor ? "green" : "gray",
+            }}
+            onClick={() => toggleAnchor(param.row)}
+          />
+        );
+      }
+    },
+    {
+      field: 'age',
+      headerName: UI_STRINGS.AGE,
+      width: 75,
+      type: 'number',
+      filterOperators: getGridNumericOperators()
+        .filter((operator) => studentDao.supportedNumberFilters().includes(operator.value))
+    },
+    {
+      field: 'gender',
+      headerName: UI_STRINGS.GENDER,
+      width: 100,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+    },
+    {
+      field: 'time_zone',
+      headerName: UI_STRINGS.TIME_ZONE,
+      width: 150,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+    },
+    {
+      field: 'preferences',
+      headerName: UI_STRINGS.TIME_SLOTS_LABEL,
+      width: 200,
+      renderCell: (params) => {
+        return <TimeSlots timeWindows={params.row.timeWindows} />
+      },
+      filterable: false,
+      sortable: false,
+    },
+    {
+      field: 'timeWindows',
+      headerName: UI_STRINGS.AVAILABILITIES,
+      flex: 1,
+      renderCell: (params) => {
+        const timeWindows = Array.isArray(params.value) ? params.value : [];
+        return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.time_zone} />
+      },
+      filterable: false,
+      sortable: false,
+    }
+  ];
+
 
   return (columns &&
     <>

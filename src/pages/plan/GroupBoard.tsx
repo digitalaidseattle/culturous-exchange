@@ -14,22 +14,24 @@ import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
 
 import { DDCategory, DDType, DragAndDrop } from "@digitalaidseattle/draganddrop";
 import "@digitalaidseattle/draganddrop/dist/draganddrop.css";
-import { planService } from "../../api/cePlanService";
-import { studentMover } from "../../api/studentMover";
-import { Group, Identifier, Placement } from "../../api/types";
+import { CEPlanService } from "../../services/plan/cePlanService";
+import { Group, Placement } from "../../api/types";
 import { GroupCard } from "../../components/GroupCard";
+import { WAITLIST_ID, UI_STRINGS } from '../../constants';
 import { StudentCard } from "../../components/StudentCard";
 import { PlanContext } from "./PlanContext";
+import { Identifier } from "@digitalaidseattle/core";
+import { studentMover } from "../../services/plan/studentMover";
 
-type PlacementWrapper = Placement & DDType
-
-const WAITLIST_ID = 'WAITLIST';
+type PlacementWrapper = Placement & DDType;
 
 export interface GroupBoardProps {
     showStudentDetails: boolean;
     showGroupDetails: boolean;
 }
 export const GroupBoard: React.FC<GroupBoardProps> = ({ showStudentDetails, showGroupDetails }) => {
+    const planService = CEPlanService.getInstance();
+
     const { plan, setPlan } = useContext(PlanContext);
 
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
@@ -41,7 +43,7 @@ export const GroupBoard: React.FC<GroupBoardProps> = ({ showStudentDetails, show
         if (plan) {
             setInitialized(false);
             const waitlist: DDCategory<string>[] = [
-                { label: 'Waitlisted', value: WAITLIST_ID }
+                { label: UI_STRINGS.WAITLISTED, value: WAITLIST_ID }
             ];
             const temCats = waitlist.concat(plan.groups
                 .map(group => {
@@ -89,7 +91,7 @@ export const GroupBoard: React.FC<GroupBoardProps> = ({ showStudentDetails, show
                 showDetails={showGroupDetails} />
         } else {
             return <GroupCard
-                group={{ id: WAITLIST_ID, name: "Waitlisted" } as Group}
+                group={{ id: WAITLIST_ID, name: UI_STRINGS.WAITLISTED } as Group}
                 showDetails={false} />
         }
     };

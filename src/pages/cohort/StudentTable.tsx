@@ -1,7 +1,9 @@
 /**
- * SetupPanel.tsx
+ * StudentTable.tsx
  *
  * Example of integrating tickets with data-grid
+ * 
+ * @copyright 2026 Digital Aid Seattle
  */
 import { useContext, useEffect, useState } from "react";
 
@@ -19,32 +21,35 @@ import {
 } from "@mui/x-data-grid";
 
 // third-party
+import { StarFilled } from "@ant-design/icons";
 
 // project import
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { PageInfo } from "@digitalaidseattle/supabase";
 
-import { StarFilled } from "@ant-design/icons";
 import { CohortContext } from ".";
-import { cohortService } from "../../api/ceCohortService";
-import { enrollmentService } from "../../api/ceEnrollmentService";
-import { studentService } from "../../api/ceStudentService";
-import { Enrollment, Identifier, Student } from "../../api/types";
-import AddStudentModal from "../../components/AddStudentModal";
+import { CEStudentDao } from "../../api/ceStudentDao";
+import { CEProfile, Enrollment, Student } from "../../api/types";
+import AddProfileModal from "../../components/AddProfileModal";
 import DisplayTimeWindow from "../../components/DisplayTimeWindow";
 import { ShowLocalTimeContext } from "../../components/ShowLocalTimeContext";
 import { TimeToggle } from "../../components/TimeToggle";
-
-const PAGE_SIZE = 10;
+import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
+import { removeStudentsFromCohort } from "../../services/cohort/removeStudentsFromCohort";
+import { addStudentsToCohort } from "../../services/cohort/addStudentsToCohort";
+import { CEEnrollmentService } from "../../api/ceEnrollmentDao";
 
 export const StudentTable: React.FC = () => {
+  const studentDao = CEStudentDao.getInstance();
+  const enrollmentService = CEEnrollmentService.getInstance();
+
   const apiRef = useGridApiRef();
   const { cohort } = useContext(CohortContext);
   const notifications = useNotifications();
   const { refresh, setRefresh } = useContext(RefreshContext);
 
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: PAGE_SIZE });
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: "created_at", sort: "desc" }]);
   const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>();
   const [pageInfo, setPageInfo] = useState<PageInfo<Enrollment>>({ rows: [], totalRowCount: 0, });
@@ -63,7 +68,7 @@ export const StudentTable: React.FC = () => {
   }, [cohort])
 
   const addStudent = () => {
-    studentService.findUnenrolled()
+    studentDao.findUnenrolled()
       .then(students => {
         setUnenrolled(students);
         setShowAddStudent(true);
@@ -74,24 +79,23 @@ export const StudentTable: React.FC = () => {
     setShowAddStudent(false);
   }
 
-  const handleAddStudent = (students: Student[]) => {
-    cohortService.addStudents(cohort, students)
+  const handleAddStudent = (students: CEProfile[]) => {
+    addStudentsToCohort(cohort, students as Student[])
       .then(() => {
-        notifications.success('Students added.');
+        notifications.success(UI_STRINGS.STUDENTS_ADDED);
         setRefresh(refresh + 1);
         setShowAddStudent(false);
       })
       .catch((err) => {
-        notifications.error('Error adding students.');
+        notifications.error(UI_STRINGS.ERROR_ADDING_STUDENTS);
         console.error(err);
       })
   }
 
   const doDelete = () => {
-    cohortService
-      .removeStudents(cohort, rowSelectionModel as Identifier[])
+    removeStudentsFromCohort(cohort, Array.from(rowSelectionModel!.ids))
       .then(() => {
-        notifications.success("Students removed.");
+        notifications.success(UI_STRINGS.STUDENTS_REMOVED);
         setRefresh(refresh + 1);
         setOpenDeleteDialog(false);
       });
@@ -103,104 +107,108 @@ export const StudentTable: React.FC = () => {
 
 
   const toggleAnchor = async (enrollment: Enrollment) => {
+    // Optimistically update UI so the change persists across pagination
+    const originalRows = pageInfo.rows;
+    const updatedRows = pageInfo.rows.map((r) =>
+      r.student_id === enrollment.student_id ? { ...r, anchor: !r.anchor } : r
+    );
+
     try {
-      enrollment.anchor = !enrollment.anchor;
-      enrollmentService
-        .updateEnrollment(enrollment.cohort_id, enrollment.student_id, { anchor: enrollment.anchor })
-        .then(() => {
-          // Optimistically update the pageInfo
-          setRefresh(refresh + 1);
-        });
+      setPageInfo({ ...pageInfo, rows: updatedRows });
+
+      await enrollmentService.updateEnrollment(enrollment.cohort_id, enrollment.student_id, { anchor: !enrollment.anchor });
+
+      // trigger a refresh to sync any other derived state
+      setRefresh(refresh + 1);
     } catch (error) {
-      console.error('Error toggling anchor:', error);
-      notifications.error('Failed to update student anchor status');
-      // Revert optimistic update
-      setPageInfo({ ...pageInfo });
+      console.error(SERVICE_ERRORS.ERROR_TOGGLING_ANCHOR, error);
+      notifications.error(UI_STRINGS.FAILED_UPDATE_ANCHOR);
+      // Revert optimistic update on error
+      setPageInfo({ ...pageInfo, rows: originalRows });
     }
   };
 
-  const getColumns = (): GridColDef[] => {
-    return [
-      {
-        field: "student.name",
-        headerName: "Name",
-        width: 150,
-        renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.student.name}</Typography>;
-        },
-        valueGetter: (params) => `${params.row.student.name}`,
+  const columns: GridColDef[] = [
+    {
+      field: "student.name",
+      headerName: UI_STRINGS.NAME,
+      width: 150,
+      renderCell: (param: GridRenderCellParams) => {
+        return <Typography>{param.row.student.name}</Typography>;
       },
-      {
-        field: "student.email",
-        headerName: "Email",
-        width: 240,
-        renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.student.email}</Typography>;
-        },
-        valueGetter: (params) => `${params.row.student.email}`,
+      valueGetter: (_value, row) => row.student.name,
+    },
+    {
+      field: "student.email",
+      headerName: UI_STRINGS.EMAIL,
+      width: 240,
+      renderCell: (param: GridRenderCellParams) => {
+        return <Typography>{param.row.student.email}</Typography>;
       },
+      valueGetter: (_value, row) => row.student.email,
 
-      {
-        field: "student.country",
-        headerName: "Country",
-        width: 140,
-        renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.student.country}</Typography>;
-        },
-        valueGetter: (params) => `${params.row.student.country}`
+    },
+
+    {
+      field: "student.country",
+      headerName: UI_STRINGS.COUNTRY,
+      width: 140,
+      renderCell: (param: GridRenderCellParams) => {
+        return <Typography>{param.row.student.country}</Typography>;
       },
-      {
-        field: "anchor",
-        headerName: "Anchor",
-        width: 75,
-        type: "boolean",
-        renderCell: (param: GridRenderCellParams) => {
-          return (
-            <StarFilled
-              style={{
-                fontSize: "150%",
-                color: param.row.anchor ? "green" : "gray",
-              }}
-              onClick={() => toggleAnchor(param.row)}
-            />
-          );
-        }
-      },
-      {
-        field: 'student.age',
-        headerName: 'Age',
-        width: 75,
-        type: 'number',
-        filterOperators: getGridNumericOperators()
-          .filter((operator) => studentService.supportedNumberFilters().includes(operator.value)),
-        renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.student.age}</Typography>;
-        },
-        valueGetter: (params) => `${params.row.student.age}`,
-      },
-      {
-        field: 'student.gender',
-        headerName: 'Gender',
-        width: 100,
-        filterOperators: getGridStringOperators()
-          .filter((operator) => studentService.supportedStringFilters().includes(operator.value)),
-        renderCell: (param: GridRenderCellParams) => {
-          return <Typography>{param.row.student.gender}</Typography>;
-        },
-        valueGetter: (params) => `${params.row.student.gender}`,
-      },
-      {
-        field: 'timeWindows',
-        headerName: 'Availabilities',
-        width: 250,
-        renderCell: (params) => {
-          const timeWindows = Array.isArray(params.row.student.timeWindows) ? params.row.student.timeWindows : [];
-          return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.student.time_zone} />
-        },
-        filterable: false
+      valueGetter: (_value, row) => row.student.country,
+    },
+    {
+      field: "anchor",
+      headerName: UI_STRINGS.ANCHOR,
+      width: 75,
+      type: "boolean",
+      renderCell: (param: GridRenderCellParams) => {
+        return (
+          <StarFilled
+            style={{
+              fontSize: "150%",
+              color: param.row.anchor ? "green" : "gray",
+            }}
+            onClick={() => toggleAnchor(param.row)}
+          />
+        );
       }
-    ];
-  };
+    },
+    {
+      field: 'student.age',
+      headerName: UI_STRINGS.AGE,
+      width: 75,
+      type: 'number',
+      filterOperators: getGridNumericOperators()
+        .filter((operator) => studentDao.supportedNumberFilters().includes(operator.value)),
+      renderCell: (param: GridRenderCellParams) => {
+        return <Typography>{param.row.student.age}</Typography>;
+      },
+      valueGetter: (_value, row) => row.student.age,
+    },
+    {
+      field: 'student.gender',
+      headerName: UI_STRINGS.GENDER,
+      width: 100,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value)),
+      renderCell: (param: GridRenderCellParams) => {
+        return <Typography>{param.row.student.gender}</Typography>;
+      },
+      valueGetter: (_value, row) => row.student.gender,
+    },
+    {
+      field: 'timeWindows',
+      headerName: UI_STRINGS.AVAILABILITIES,
+      width: 250,
+      renderCell: (params) => {
+        const timeWindows = Array.isArray(params.row.student.timeWindows) ? params.row.student.timeWindows : [];
+        return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.student.time_zone} />
+      },
+      filterable: false
+    }
+  ];
 
   return (
     <Box>
@@ -208,19 +216,19 @@ export const StudentTable: React.FC = () => {
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Stack margin={1} gap={1} direction="row" spacing={'1rem'}>
             <Button
-              title='Add Student'
+              title={UI_STRINGS.ADD_STUDENT}
               variant="contained"
               color="primary"
               onClick={addStudent}>
-              {'Add Student'}
+              {UI_STRINGS.ADD_STUDENT}
             </Button>
             <Button
-              title='RemoveStudent'
+              title={UI_STRINGS.REMOVE_STUDENT}
               variant="contained"
               color="primary"
-              disabled={!(rowSelectionModel && rowSelectionModel.length > 0)}
+              disabled={!(rowSelectionModel && rowSelectionModel.ids.size > 0)}
               onClick={removeStudent}>
-              {'Remove student'}
+              {UI_STRINGS.REMOVE_STUDENT}
             </Button>
           </Stack>
           <TimeToggle />
@@ -230,7 +238,7 @@ export const StudentTable: React.FC = () => {
             apiRef={apiRef}
             rows={pageInfo.rows}
             getRowId={(row) => row.student_id}
-            columns={getColumns()}
+            columns={columns}
 
             paginationMode='client'
             paginationModel={paginationModel}
@@ -243,17 +251,19 @@ export const StudentTable: React.FC = () => {
 
             pageSizeOptions={[5, 10, 25, 100]}
             checkboxSelection
+            rowSelectionModel={rowSelectionModel}
             onRowSelectionModelChange={setRowSelectionModel}
             disableRowSelectionOnClick={true}
           />
         }
         <ConfirmationDialog
-          message={`Delete selected students?`}
+          message={UI_STRINGS.DELETE_SELECTED_STUDENTS_CONFIRM}
           open={openDeleteDialog}
           handleConfirm={() => doDelete()}
           handleCancel={() => setOpenDeleteDialog(false)} />
-        <AddStudentModal
-          students={unEnrolled}
+        <AddProfileModal
+          title={UI_STRINGS.ADD_STUDENT}
+          profiles={unEnrolled}
           isOpen={showAddStudent}
           onClose={handleCloseStudentModal}
           onSubmit={handleAddStudent} />
