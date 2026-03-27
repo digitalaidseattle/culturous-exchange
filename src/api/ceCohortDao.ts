@@ -6,16 +6,18 @@
  */
 
 import { SERVICE_ERRORS } from '../constants';
+import { CEEnrollmentDao } from './ceEnrollmentDao';
 import { getSupabaseClient } from './Configuration';
 import { SupabaseDao } from './SupabaseDao';
 import { Cohort } from "./types";
 
-const DEFAULT_SELECT = '*, enrollment(*), plan(*)';
+const DEFAULT_SELECT = '*, enrollment(*, student(*, timewindow(*))), plan(*)';
 
 function JSON_2_ENTITY(json: any): Cohort {
+    const enrollments = json.enrollment.map((enroll: any) => CEEnrollmentDao.getInstance().mapJson(enroll));
     const cohort = {
         ...json,
-        enrollments: json.enrollment,
+        enrollments: enrollments,
         plans: json.plan
     }
     delete cohort.enrollment;
