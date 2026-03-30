@@ -149,6 +149,9 @@ const PlanPage: React.FC = () => {
               href="/">
               {UI_STRINGS.HOME}
             </Link>
+            <Link underline="hover" color="inherit" href={"/cohorts"}>
+              {UI_STRINGS.COHORTS}
+            </Link>
             <Link
               underline="hover"
               color="inherit"
