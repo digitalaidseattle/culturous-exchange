@@ -10,7 +10,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 // material-ui
-import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
+import { Breadcrumbs, Link, Typography, Box, Button, Stack, Tab, Tabs } from "@mui/material";
 
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
@@ -102,6 +102,15 @@ const CohortPage: React.FC = () => {
     cohort && (
       <CohortContext.Provider value={{ cohort, setCohort }}>
         <Stack gap={1}>
+          <Breadcrumbs>
+            <Link underline="hover" color="inherit" href="/">
+              {UI_STRINGS.HOME}
+            </Link>
+            <Link underline="hover" color="inherit" href={"/cohorts"}>
+              {UI_STRINGS.COHORTS}
+            </Link>
+            <Typography color="text.primary">{UI_STRINGS.COHORT_PREFIX} {cohort.name}</Typography>
+          </Breadcrumbs>
           <MainCard>
             <TextEdit
               label={UI_STRINGS.NAME}
