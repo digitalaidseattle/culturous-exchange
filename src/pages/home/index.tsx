@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router';
 // material-ui
 
 // project import
-import { Button, Card, CardContent, Stack, Typography } from '@mui/material';
+import { Breadcrumbs, Button, Card, CardContent, Stack, Typography } from '@mui/material';
 
 import { MainCard } from '@digitalaidseattle/mui';
 import { CECohortDao } from '../../api/ceCohortDao';
@@ -38,6 +38,9 @@ const HomePage: React.FC = () => {
 
     return (
         <Stack gap={1}>
+            <Breadcrumbs aria-label="breadcrumb">
+                <Typography sx={{ color: 'text.primary' }}>{UI_STRINGS.HOME}</Typography>
+            </Breadcrumbs>
             {current &&
                 <MainCard contentSX={{
                     background: 'linear-gradient(95deg,rgb(37, 184, 252) 100% ,rgb(7, 109, 44) 50%)',
