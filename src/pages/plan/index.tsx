@@ -9,7 +9,7 @@ import { useParams } from "react-router";
 
 // material-ui
 import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
-import { Box, Breadcrumbs, CircularProgress, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
+import { Box, Breadcrumbs, CircularProgress, Icon, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
 
 // project import
 import { Identifier, useNotifications } from "@digitalaidseattle/core";
@@ -26,6 +26,7 @@ import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
 import { PlanContext } from "./PlanContext";
 import { TimeLine } from "./TimeLine";
+import { HomeOutlined } from '@ant-design/icons';
 
 const PlanPage: React.FC = () => {
   const cohortDao = CECohortDao.getInstance();
@@ -145,10 +146,7 @@ const PlanPage: React.FC = () => {
       <CohortContext.Provider value={{ cohort, setCohort }}>
         <Stack gap={1}>
           <Breadcrumbs aria-label="breadcrumb">
-            <Link underline="hover" color="inherit"
-              href="/">
-              {UI_STRINGS.HOME}
-            </Link>
+            <Link href="/"><IconButton size="medium"><HomeOutlined /></IconButton></Link>
             <Link underline="hover" color="inherit" href={"/cohorts"}>
               {UI_STRINGS.COHORTS}
             </Link>

@@ -10,8 +10,8 @@
 // project import
 import { MainCard } from '@digitalaidseattle/mui';
 // project import
-import { Breadcrumbs, Link, Button, Stack, Typography } from '@mui/material';
-
+import { Breadcrumbs, Link, Button, Stack, Typography, IconButton } from '@mui/material';
+import { HomeOutlined } from '@ant-design/icons';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { useContext } from 'react';
 import { UI_STRINGS } from '../../constants';
@@ -39,9 +39,7 @@ const CohortsPage: React.FC = () => {
     return (
         <Stack gap={1}>
             <Breadcrumbs>
-                <Link underline="hover" color="inherit" href="/">
-                    {UI_STRINGS.HOME}
-                </Link>
+                <Link href="/"><IconButton size="medium"><HomeOutlined /></IconButton></Link>
                 <Typography color="text.primary">{UI_STRINGS.COHORTS}</Typography>
             </Breadcrumbs>
             <MainCard title={UI_STRINGS.COHORTS}>

@@ -7,11 +7,11 @@
 import { createContext, ReactNode, useState } from 'react';
 
 import { MainCard } from '@digitalaidseattle/mui';
-import { Breadcrumbs, Link, Typography } from '@mui/material';
+import { Breadcrumbs, IconButton, Link, Typography } from '@mui/material';
 import { CEProfile } from '../api/types';
 import { ShowLocalTimeContext } from './ShowLocalTimeContext';
 import { TimeWindowSelectionContext } from './TimeWindowSelectionContext';
-import { UI_STRINGS } from '../constants';
+import { HomeOutlined } from '@ant-design/icons';
 interface ProfileContextType {
     profile: CEProfile,
     setProfile: React.Dispatch<React.SetStateAction<CEProfile>>
@@ -37,9 +37,7 @@ const ProfilesPage: React.FC<Props> = ({ title, tools, table }) => {
             <TimeWindowSelectionContext.Provider value={{ selection, setSelection }}>
                 <ShowLocalTimeContext.Provider value={{ showLocalTime, setShowLocalTime }}>
                     <Breadcrumbs>
-                        <Link underline="hover" color="inherit" href="/">
-                            {UI_STRINGS.HOME}
-                        </Link>
+                        <Link href="/"><IconButton size="medium"><HomeOutlined /></IconButton></Link>
                         <Typography color="text.primary">{title}</Typography>
                     </Breadcrumbs>
                     <MainCard title={title}>

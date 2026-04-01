@@ -10,8 +10,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 // material-ui
-import { Breadcrumbs, Link, Typography, Box, Button, Stack, Tab, Tabs } from "@mui/material";
-
+import { Breadcrumbs, Link, Typography, Box, Button, IconButton, Stack, Tab, Tabs } from "@mui/material";
+import { HomeOutlined } from "@ant-design/icons";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { useSearchParams } from "react-router-dom";
@@ -103,9 +103,7 @@ const CohortPage: React.FC = () => {
       <CohortContext.Provider value={{ cohort, setCohort }}>
         <Stack gap={1}>
           <Breadcrumbs>
-            <Link underline="hover" color="inherit" href="/">
-              {UI_STRINGS.HOME}
-            </Link>
+            <Link href="/"><IconButton size="medium"><HomeOutlined /></IconButton></Link>
             <Link underline="hover" color="inherit" href={"/cohorts"}>
               {UI_STRINGS.COHORTS}
             </Link>
