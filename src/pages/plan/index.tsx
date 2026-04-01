@@ -146,7 +146,9 @@ const PlanPage: React.FC = () => {
       <CohortContext.Provider value={{ cohort, setCohort }}>
         <Stack gap={1}>
           <Breadcrumbs aria-label="breadcrumb">
-            <Link href="/"><IconButton size="medium"><HomeOutlined /></IconButton></Link>
+            <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
+              <HomeOutlined />
+            </IconButton>
             <Link underline="hover" color="inherit" href={"/cohorts"}>
               {UI_STRINGS.COHORTS}
             </Link>

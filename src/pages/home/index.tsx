@@ -39,7 +39,9 @@ const HomePage: React.FC = () => {
     return (
         <Stack gap={1}>
             <Breadcrumbs aria-label="breadcrumb">
-                <Link href="/"><IconButton size="medium"><HomeOutlined /></IconButton></Link>
+                <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
+                    <HomeOutlined />
+                </IconButton>
             </Breadcrumbs>
             {current &&
                 <MainCard contentSX={{

@@ -39,7 +39,9 @@ const CohortsPage: React.FC = () => {
     return (
         <Stack gap={1}>
             <Breadcrumbs aria-label="breadcrumb">
-                <Link href="/"><IconButton size="medium"><HomeOutlined /></IconButton></Link>
+                <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
+                    <HomeOutlined />
+                </IconButton>
                 <Typography color="text.primary">{UI_STRINGS.COHORTS}</Typography>
             </Breadcrumbs>
             <MainCard title={UI_STRINGS.COHORTS}>

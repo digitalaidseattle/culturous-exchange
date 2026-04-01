@@ -37,7 +37,9 @@ const ProfilesPage: React.FC<Props> = ({ title, tools, table }) => {
             <TimeWindowSelectionContext.Provider value={{ selection, setSelection }}>
                 <ShowLocalTimeContext.Provider value={{ showLocalTime, setShowLocalTime }}>
                     <Breadcrumbs aria-label="breadcrumb">
-                        <Link href="/"><IconButton size="medium"><HomeOutlined /></IconButton></Link>
+                        <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
+                            <HomeOutlined />
+                        </IconButton>
                         <Typography color="text.primary">{title}</Typography>
                     </Breadcrumbs>
                     <MainCard title={title}>
