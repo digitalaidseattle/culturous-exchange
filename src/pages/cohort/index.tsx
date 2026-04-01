@@ -102,7 +102,7 @@ const CohortPage: React.FC = () => {
     cohort && (
       <CohortContext.Provider value={{ cohort, setCohort }}>
         <Stack gap={1}>
-          <Breadcrumbs>
+          <Breadcrumbs aria-label="breadcrumb">
             <Link href="/"><IconButton size="medium"><HomeOutlined /></IconButton></Link>
             <Link underline="hover" color="inherit" href={"/cohorts"}>
               {UI_STRINGS.COHORTS}
