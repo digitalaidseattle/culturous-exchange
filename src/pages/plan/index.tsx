@@ -9,7 +9,7 @@ import { useParams } from "react-router";
 
 // material-ui
 import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
-import { Box, Breadcrumbs, CircularProgress, Icon, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
+import { Box, Breadcrumbs, CircularProgress, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
 
 // project import
 import { Identifier, useNotifications } from "@digitalaidseattle/core";
