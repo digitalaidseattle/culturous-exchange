@@ -14,8 +14,8 @@ jobs:
 
       - name: Build with QA environment variables
         env:
-          VITE_SUPABASE_URL: ${{ secrets.QA_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.QA_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: https://huwoiarcqvyyowwjwpte.supabase.co
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           VITE_IPGEOLOCATION_KEY: ${{ secrets.IPGEOLOCATION_KEY }}
         run: npm install && npm run build
 
