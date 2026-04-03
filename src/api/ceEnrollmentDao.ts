@@ -14,7 +14,7 @@ import { Cohort, Enrollment, Student } from "./types";
 
 const DEFAULT_SELECT = '*, student(*, timewindow(*))';
 
-class CEEnrollmentDao extends SupabaseDao<Enrollment> {
+export class CEEnrollmentDao extends SupabaseDao<Enrollment> {
     private static instance: CEEnrollmentDao;
 
     static getInstance() {
@@ -112,5 +112,5 @@ class CEEnrollmentDao extends SupabaseDao<Enrollment> {
     }
 }
 
-export { CEEnrollmentDao as CEEnrollmentService };
-
+// TODO add concrete CEEnrollmentService class
+export {CEEnrollmentDao as CEEnrollmentService}
