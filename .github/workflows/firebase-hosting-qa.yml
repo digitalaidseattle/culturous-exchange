@@ -1,0 +1,28 @@
+name: Deploy to Firebase Hosting (QA)
+
+on:
+  push:
+    branches:
+      - qa
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    environment: qa
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build with QA environment variables
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.QA_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.QA_SUPABASE_ANON_KEY }}
+          VITE_IPGEOLOCATION_KEY: ${{ secrets.IPGEOLOCATION_KEY }}
+        run: npm install && npm run build
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_CULTUROUS_EXCHANGE }}
+          channelId: live
+          projectId: culturous-exchange
+          target: qa
