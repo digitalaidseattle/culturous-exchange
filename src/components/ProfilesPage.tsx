@@ -7,7 +7,7 @@
 import { createContext, ReactNode, useState } from 'react';
 
 import { MainCard } from '@digitalaidseattle/mui';
-import { Breadcrumbs, IconButton, Link, Typography } from '@mui/material';
+import { Breadcrumbs, Stack, IconButton, Link, Typography } from '@mui/material';
 import { CEProfile } from '../api/types';
 import { ShowLocalTimeContext } from './ShowLocalTimeContext';
 import { TimeWindowSelectionContext } from './TimeWindowSelectionContext';
@@ -36,16 +36,18 @@ const ProfilesPage: React.FC<Props> = ({ title, tools, table }) => {
         <ProfileContext.Provider value={{ profile, setProfile }}>
             <TimeWindowSelectionContext.Provider value={{ selection, setSelection }}>
                 <ShowLocalTimeContext.Provider value={{ showLocalTime, setShowLocalTime }}>
-                    <Breadcrumbs aria-label="breadcrumb">
-                        <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
-                            <HomeOutlined />
-                        </IconButton>
-                        <Typography color="text.primary">{title}</Typography>
-                    </Breadcrumbs>
-                    <MainCard title={title}>
-                        {tools}
-                        {table}
-                    </MainCard>
+                    <Stack gap={1}>
+                        <Breadcrumbs aria-label="breadcrumb">
+                            <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
+                                <HomeOutlined />
+                            </IconButton>
+                            <Typography color="text.primary">{title}</Typography>
+                        </Breadcrumbs>
+                        <MainCard title={title}>
+                            {tools}
+                            {table}
+                        </MainCard>
+                    </Stack>
                 </ShowLocalTimeContext.Provider>
             </TimeWindowSelectionContext.Provider>
         </ProfileContext.Provider>
