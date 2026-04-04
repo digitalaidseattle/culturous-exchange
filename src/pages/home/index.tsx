@@ -11,13 +11,12 @@ import { useNavigate } from 'react-router';
 // material-ui
 
 // project import
-import { Breadcrumbs, Button, Link, Card, CardContent, IconButton, Stack, Typography } from '@mui/material';
+import { Button, Card, CardContent, Stack, Typography } from '@mui/material';
 
 import { MainCard } from '@digitalaidseattle/mui';
 import { CECohortDao } from '../../api/ceCohortDao';
 import { Cohort } from '../../api/types';
 import { UI_STRINGS } from '../../constants';
-import { HomeOutlined } from '@ant-design/icons';
 
 const HomePage: React.FC = () => {
     const cohortDao = CECohortDao.getInstance();
@@ -38,11 +37,6 @@ const HomePage: React.FC = () => {
 
     return (
         <Stack gap={1}>
-            <Breadcrumbs aria-label="breadcrumb">
-                <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
-                    <HomeOutlined />
-                </IconButton>
-            </Breadcrumbs>
             {current &&
                 <MainCard contentSX={{
                     background: 'linear-gradient(95deg,rgb(37, 184, 252) 100% ,rgb(7, 109, 44) 50%)',
