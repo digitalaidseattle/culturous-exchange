@@ -26,6 +26,7 @@ import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
 import { PlanContext } from "./PlanContext";
 import { TimeLine } from "./TimeLine";
+import { HomeOutlined } from '@ant-design/icons';
 
 const PlanPage: React.FC = () => {
   const cohortDao = CECohortDao.getInstance();
@@ -145,9 +146,11 @@ const PlanPage: React.FC = () => {
       <CohortContext.Provider value={{ cohort, setCohort }}>
         <Stack gap={1}>
           <Breadcrumbs aria-label="breadcrumb">
-            <Link underline="hover" color="inherit"
-              href="/">
-              {UI_STRINGS.HOME}
+            <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
+              <HomeOutlined />
+            </IconButton>
+            <Link underline="hover" color="inherit" href={"/cohorts"}>
+              {UI_STRINGS.COHORTS}
             </Link>
             <Link
               underline="hover"
