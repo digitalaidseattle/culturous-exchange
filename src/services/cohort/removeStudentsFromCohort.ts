@@ -9,7 +9,7 @@
 import { Identifier } from "@digitalaidseattle/core";
 
 import { Cohort, Enrollment } from "../../api/types";
-import { CEEnrollmentService } from "../../api/ceEnrollmentDao";
+import { CEEnrollmentService } from "../../services/ceEnrollmentService";
 
 export async function removeStudentsFromCohort(cohort: Cohort, studentIds: Identifier[]): Promise<boolean> {
     return Promise.all(

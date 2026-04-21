@@ -38,7 +38,7 @@ import { TimeToggle } from "../../components/TimeToggle";
 import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
 import { removeStudentsFromCohort } from "../../services/cohort/removeStudentsFromCohort";
 import { addStudentsToCohort } from "../../services/cohort/addStudentsToCohort";
-import { CEEnrollmentService } from "../../api/ceEnrollmentDao";
+import { CEEnrollmentService } from "../../services/ceEnrollmentService";
 
 export const StudentTable: React.FC = () => {
   const studentDao = CEStudentDao.getInstance();

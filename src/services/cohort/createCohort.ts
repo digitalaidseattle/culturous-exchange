@@ -11,7 +11,7 @@ import { v4 as uuid } from 'uuid';
 import { CECohortDao } from '../../api/ceCohortDao';
 import { CEStudentDao } from '../../api/ceStudentDao';
 import { Cohort, Enrollment, Student } from '../../api/types';
-import { CEEnrollmentService } from '../../api/ceEnrollmentDao';
+import { CEEnrollmentService } from "../../services/ceEnrollmentService";
 
 export async function createCohort(): Promise<Cohort> {
     

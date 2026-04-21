@@ -111,6 +111,3 @@ export class CEEnrollmentDao extends SupabaseDao<Enrollment> {
         }
     }
 }
-
-// TODO add concrete CEEnrollmentService class
-export {CEEnrollmentDao as CEEnrollmentService}
