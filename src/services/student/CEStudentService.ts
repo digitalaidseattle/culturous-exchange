@@ -6,8 +6,9 @@
  */
 
 import { v4 as uuid } from 'uuid';
+import { Identifier } from '@digitalaidseattle/core';
 import { CEStudentDao } from '../../api/ceStudentDao';
-import { GENDER_OPTION, Student } from '../../api/types';
+import { GENDER_OPTION, Student, TimeWindow } from '../../api/types';
 import { CEProfileService } from '../ceProfileService';
 import { CETimeZoneService } from '../time/ceTimeZoneService';
 
@@ -44,6 +45,11 @@ class CEStudentService extends CEProfileService<Student> {
         } as Student;
     }
 
+    assignOwner(timeWindow: TimeWindow, ownerId: Identifier): TimeWindow {
+        timeWindow.student_id = ownerId;
+        return timeWindow;
+    }
+
     async save(profile: Student): Promise<Student> {
         const { timezone, offset } = await this.timezoneService.getTimeZone(profile.city!, profile.country)
         const updated = {
@@ -58,4 +64,3 @@ class CEStudentService extends CEProfileService<Student> {
 
 
 export { CEStudentService };
-
