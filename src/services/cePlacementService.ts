@@ -10,7 +10,7 @@ import { CEPlacementDao } from "../api/cePlacementDao";
 import { CEStudentDao } from "../api/ceStudentDao";
 import { Cohort, Placement, Plan, Student } from "../api/types";
 import { SERVICE_ERRORS } from '../constants';
-import { CEEnrollmentService } from "../api/ceEnrollmentDao";
+import { CEEnrollmentService } from "../services/ceEnrollmentService";
 
 class CEPlacementService {
 

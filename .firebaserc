@@ -1,5 +1,13 @@
 {
   "projects": {
     "default": "culturous-exchange"
+  },
+  "targets": {
+    "culturous-exchange": {
+      "hosting": {
+        "production": ["culturous-exchange"],
+        "qa": ["culturous-exchange-qa"]
+      }
+    }
   }
 }

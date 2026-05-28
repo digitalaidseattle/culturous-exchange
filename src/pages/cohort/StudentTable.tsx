@@ -41,7 +41,8 @@ import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../const
 import { removeStudentsFromCohort } from "../../services/cohort/removeStudentsFromCohort";
 import { addStudentsToCohort } from "../../services/cohort/addStudentsToCohort";
 import { CohortUploadResult, uploadStudentsToCohort } from "../../services/cohort/uploadStudentsToCohort";
-import { CEEnrollmentService } from "../../api/ceEnrollmentDao";
+import { CEEnrollmentService } from "../../services/ceEnrollmentService";
+
 
 export const StudentTable: React.FC = () => {
   const studentDao = CEStudentDao.getInstance();
