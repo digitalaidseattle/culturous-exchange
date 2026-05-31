@@ -90,8 +90,8 @@ const ToolsSection = () => {
 
     const handleAddStudent = async (updated: Student) => {
         return studentService.save(updated)
-            .then(added => notifications.success(`Success. Added student: ${added.name}`))
-            .catch(error => notifications.error(`Error. Could not add student: ${error.message}`))
+            .then(added => notifications.success(`${UI_STRINGS.SUCCESS} ${UI_STRINGS.STUDENT_ADDED} ${added.name}`))
+            .catch(error => notifications.error(`${UI_STRINGS.ERROR} ${UI_STRINGS.STUDENT_ADD_FAILED} ${error.message}`))
             .finally(() => {
                 handleCloseAddStudentModal();
                 setRefresh(refresh + 1)
