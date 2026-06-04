@@ -16,16 +16,18 @@ import { CEStudentService } from "./student/CEStudentService";
 import { CEFacilitatorService } from "./facilitator/CEFacilitatorService";
 
 // Spies are declared via vi.hoisted so they exist when the vi.mock factories run.
-const { batchInsertSpy, adjustSpy } = vi.hoisted(() => ({
+const { batchInsertSpy, adjustSpy, deleteByStudentIdSpy, studentDaoDeleteSpy } = vi.hoisted(() => ({
     batchInsertSpy: vi.fn(),
-    adjustSpy: vi.fn()
+    adjustSpy: vi.fn(),
+    deleteByStudentIdSpy: vi.fn(async () => true),
+    studentDaoDeleteSpy: vi.fn(async () => undefined)
 }));
 
 // Stub the time-window DAO so getInstance does not need a configured Supabase
 // client, and so we can inspect exactly what gets inserted.
 vi.mock("../api/ceTimeWindowDao", () => ({
     CETimeWindowDao: {
-        getInstance: () => ({ batchInsert: batchInsertSpy })
+        getInstance: () => ({ batchInsert: batchInsertSpy, deleteByStudentId: deleteByStudentIdSpy })
     }
 }));
 
@@ -41,7 +43,8 @@ vi.mock("../api/ceStudentDao", () => ({
     CEStudentDao: {
         getInstance: () => ({
             upsert: vi.fn(async (profile: any) => ({ ...profile })),
-            getById: vi.fn(async (id: any) => ({ id }))
+            getById: vi.fn(async (id: any) => ({ id })),
+            delete: studentDaoDeleteSpy
         })
     }
 }));
@@ -69,6 +72,8 @@ describe("CEProfileService.save owner stamping (CEMT-132)", () => {
     beforeEach(() => {
         batchInsertSpy.mockClear();
         adjustSpy.mockClear();
+        deleteByStudentIdSpy.mockClear();
+        studentDaoDeleteSpy.mockClear();
     });
 
     it("stamps student_id on every time window it saves", async () => {
@@ -106,6 +111,29 @@ describe("CEProfileService.save owner stamping (CEMT-132)", () => {
         const inserted = batchInsertSpy.mock.calls[0][0] as TimeWindow[];
         expect(inserted).toHaveLength(1);
         expect(inserted[0].facilitator_id).toBe("facilitator-1");
+    });
+
+});
+
+describe("CEStudentService.delete (student delete cleanup)", () => {
+
+    beforeEach(() => {
+        deleteByStudentIdSpy.mockClear();
+        studentDaoDeleteSpy.mockClear();
+    });
+
+    it("deletes the student's time windows before the student row", async () => {
+        await CEStudentService.getInstance().delete("student-1");
+
+        expect(deleteByStudentIdSpy).toHaveBeenCalledTimes(1);
+        expect(deleteByStudentIdSpy).toHaveBeenCalledWith("student-1");
+        expect(studentDaoDeleteSpy).toHaveBeenCalledTimes(1);
+        expect(studentDaoDeleteSpy).toHaveBeenCalledWith("student-1");
+
+        // Order matters: timewindow.student_id has no ON DELETE rule, so the
+        // windows must be gone before the student row is deleted.
+        expect(deleteByStudentIdSpy.mock.invocationCallOrder[0])
+            .toBeLessThan(studentDaoDeleteSpy.mock.invocationCallOrder[0]);
     });
 
 });
