@@ -170,6 +170,20 @@ const StudentsDetailsTable: React.FC = () => {
 
     },
     {
+      field: 'city',
+      headerName: UI_STRINGS.CITY,
+      width: 120,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+    },
+    {
+      field: 'state',
+      headerName: UI_STRINGS.STATE,
+      width: 100,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+    },
+    {
       field: 'country',
       headerName: UI_STRINGS.COUNTRY,
       width: 100,
