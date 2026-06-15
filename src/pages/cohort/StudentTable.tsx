@@ -43,7 +43,6 @@ import { addStudentsToCohort } from "../../services/cohort/addStudentsToCohort";
 import { CohortUploadResult, uploadStudentsToCohort } from "../../services/cohort/uploadStudentsToCohort";
 import { CEEnrollmentService } from "../../services/ceEnrollmentService";
 
-
 export const StudentTable: React.FC = () => {
   const studentDao = CEStudentDao.getInstance();
   const enrollmentService = CEEnrollmentService.getInstance();
@@ -64,7 +63,7 @@ export const StudentTable: React.FC = () => {
 
   const [showLocalTime, setShowLocalTime] = useState<boolean>(false);
 
-  // CEMT-138: cohort-level spreadsheet upload state
+  // cohort-level spreadsheet upload state
   const [showDropzone, setShowDropzone] = useState<boolean>(false);
   const [failedProfiles, setFailedProfiles] = useState<FailedProfile[]>([]);
   const [isFailedModalOpen, setIsFailedModalOpen] = useState<boolean>(false);
@@ -101,24 +100,24 @@ export const StudentTable: React.FC = () => {
       })
   }
 
-  // CEMT-138: upload a student spreadsheet and enroll the created students into this cohort
+  // Upload a student spreadsheet and enroll the created students into this cohort.
   async function handleUpload(files: File[]): Promise<void> {
-    uploadStudentsToCohort(cohort, files)
-      .then((result) => displayUploadResults(result))
-      .catch((err) => {
-        console.error('Unexpected Error: ', err);
-        notifications.error(UI_STRINGS.ERROR_ADDING_STUDENTS);
-        setShowDropzone(false);
-      })
-      .finally(() => {
-        setRefresh(refresh + 1);
-      });
+    try {
+      const result = await uploadStudentsToCohort(cohort, files);
+      displayUploadResults(result);
+    } catch (err) {
+      console.error('Unexpected Error: ', err);
+      notifications.error(UI_STRINGS.ERROR_ADDING_STUDENTS);
+      setShowDropzone(false);
+    } finally {
+      setRefresh(refresh + 1);
+    }
   }
 
   function displayUploadResults(resp: CohortUploadResult) {
     setShowDropzone(false);
     if (resp.failedCount === resp.attemptedCount) {
-      notifications.error(`Error uploading spreadsheet. Failed to add ${resp.successCount} of ${resp.attemptedCount}`);
+      notifications.error(`Error uploading spreadsheet. Failed to add all ${resp.attemptedCount} students.`);
       setFailedProfiles(resp.failedProfiles);
       setIsFailedModalOpen(true);
     } else if (resp.failedCount > 0) {
