@@ -89,6 +89,7 @@ export const UI_STRINGS = {
   DRAG_STUDENT_FILE: 'Drag the upload file here, or click to select the file',
   NAME_FIELD: 'Name:',
   ERROR: 'Error:',
+  SUCCESS: 'Success:',
   CURRENT_TIME_SLOT_SELECTIONS: 'Current Time Slot Selections',
   NONE: 'none',
   NOT_ASSIGNED: 'not assigned',
@@ -135,6 +136,8 @@ export const UI_STRINGS = {
   DELETION_FAILED_PREFIX: 'Deletion failed:',
   UNEXPECTED_ERROR_PREFIX: 'Unexpected Error:',
   UNEXPECTED_ERROR_GENERIC: 'Unexpected error:',
+  STUDENT_ADDED: 'Student added successfully',
+  STUDENT_ADD_FAILED: 'Failed to add student',
 } as const;
 
 export const SERVICE_ERRORS = {
