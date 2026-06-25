@@ -196,8 +196,10 @@ const PlanPage: React.FC = () => {
                   </IconButton>
                 </Tooltip>
               </Toolbar>
-              {!loading && viewType === "board" && <GroupBoard showGroupDetails={showGroupDetails} showStudentDetails={showStudentDetails} />}
-              {!loading && viewType === "timeline" && <TimeLine />}
+              <Box sx={{ overflowX: 'auto', }}>
+                {!loading && viewType === "board" && <GroupBoard showGroupDetails={showGroupDetails} showStudentDetails={showStudentDetails} />}
+                {!loading && viewType === "timeline" && <TimeLine />}
+              </Box>
               <PlanSettingsDialog
                 plan={plan!}
                 isOpen={showSettings}
