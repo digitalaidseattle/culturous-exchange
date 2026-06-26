@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { formatInTimeZone } from "date-fns-tz";
 import { DEFAULT_TIMEZONE, CETimeWindowService } from "./ceTimeWindowService";
 import { TimeWindow } from "../../api/types";
 
 describe("timeWindowService", () => {
     const timeWindowService = CETimeWindowService.getInstance();
-    const offset = -7; // using a fixed offset to make test deterministic;
-    // getTimezoneOffset(DEFAULT_TIMEZONE, new Date()) / 60 / 60 / 1000;
+    const formatTimeWindow = (date: Date, timezone = DEFAULT_TIMEZONE) =>
+        formatInTimeZone(date, timezone, "yyyy-MM-dd EEE H");
 
     it("toString", () => {
         const tw = {
@@ -18,18 +19,13 @@ describe("timeWindowService", () => {
 
     it("toZonedTime", () => {
         const result = timeWindowService.toZonedTime(0, "07:00:00", DEFAULT_TIMEZONE);
-        expect(result.getDate()).toBe(1);
-        expect(result.getDay()).toBe(5);
-        expect(result.getHours()).toBe(7); // PDT is UTC-7, so 7+7=14
-        expect(result.getUTCHours()).toBe(7 - offset); // PDT is UTC-7, so 7+7=14
+        expect(formatTimeWindow(result)).toBe("2000-09-01 Fri 7");
     });
 
     it("toZonedTime - Mexico_City", () => {
         const result = timeWindowService.toZonedTime(0, "07:00:00", "America/Mexico_City");
-        expect(result.getDate()).toBe(1);
-        expect(result.getDay()).toBe(5);
-        expect(result.getHours()).toBe(9);
-        expect(result.getUTCHours()).toBe(9 - offset); // PDT is UTC-7, so 7+7=14
+        expect(formatTimeWindow(result, "America/Mexico_City")).toBe("2000-09-01 Fri 7");
+        expect(formatTimeWindow(result, DEFAULT_TIMEZONE)).toBe("2000-09-01 Fri 5");
     });
 
     it("intersectionTimeWindows", () => {
@@ -45,9 +41,9 @@ describe("timeWindowService", () => {
         } as TimeWindow;
 
         const merged = timeWindowService.intersectionTimeWindows(timeA, timeB);
-        expect(merged?.start_date_time?.getDay()).toBe(5);
-        expect(merged?.start_date_time?.getHours()).toBe(9);
-        expect(merged?.end_date_time?.getHours()).toBe(12);
+        expect(merged).not.toBeNull();
+        expect(formatTimeWindow(merged!.start_date_time!)).toBe("2000-09-01 Fri 9");
+        expect(formatTimeWindow(merged!.end_date_time!)).toBe("2000-09-01 Fri 12");
 
     });
 

@@ -5,8 +5,8 @@
  *
  */
 
-import { format, isEqual } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
+import { isEqual } from "date-fns";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { v4 as uuid } from 'uuid';
 import { SERVICE_ERRORS } from '../../constants';
 import { CETimeWindowDao } from "../../api/ceTimeWindowDao";
@@ -234,14 +234,17 @@ class CETimeWindowService {
     }
   }
 
-  //  Arbitrairly chose year 2000, September (month 8), and day 1 + dayOffset
+  // Arbitrairly chose year 2000, September (month 8), and day 1 + dayOffset
   // dayOffset is 0 for Friday, 1 for Saturday, and 2 for Sunday
   toZonedTime(dayOffset: number, time: string, timezone: string): Date {
     const sTimes = time
       .split(':')
       .map((s) => Number.parseInt(s));
-    const dateTime = new Date(2000, 8, dayOffset + 1, sTimes[0], sTimes[1], sTimes[2])
-    return toZonedTime(dateTime, timezone);
+    const day = String(dayOffset + 1).padStart(2, '0');
+    const hour = String(sTimes[0]).padStart(2, '0');
+    const minute = String(sTimes[1] ?? 0).padStart(2, '0');
+    const second = String(sTimes[2] ?? 0).padStart(2, '0');
+    return fromZonedTime(`2000-09-${day}T${hour}:${minute}:${second}`, timezone);
   }
 
   adjustTimeWindows(profile: CEProfile) {
@@ -298,11 +301,10 @@ class CETimeWindowService {
   }
 
   toString(tw: TimeWindow, timeZone?: string): string {
-    let start_time = toZonedTime(tw.start_date_time, timeZone ?? DEFAULT_TIMEZONE)
-    let end_time = toZonedTime(tw.end_date_time, timeZone ?? DEFAULT_TIMEZONE)
-    const day = format(start_time, "EEE");
-    const start = format(start_time, "haaa");
-    const end = format(end_time, "haaa");
+    const timezone = timeZone ?? DEFAULT_TIMEZONE;
+    const day = formatInTimeZone(tw.start_date_time, timezone, "EEE");
+    const start = formatInTimeZone(tw.start_date_time, timezone, "haaa");
+    const end = formatInTimeZone(tw.end_date_time, timezone, "haaa");
 
     return `${day} ${start} - ${end}`
   }

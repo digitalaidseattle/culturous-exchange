@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { formatInTimeZone } from "date-fns-tz";
 import { TimeWindow } from "../../api/types";
 import { CETimeWindowService, DEFAULT_TIMEZONE } from "./ceTimeWindowService";
 
 describe("timeWindowService", () => {
     const timeWindowService = CETimeWindowService.getInstance();
+    const hourInDefaultTimeZone = (date: Date) =>
+        Number(formatInTimeZone(date, DEFAULT_TIMEZONE, "H"));
 
     it("union, 'AS', 'AE', 'BS', 'BE' - none", () => {
         const timeA = {
@@ -19,10 +22,10 @@ describe("timeWindowService", () => {
         const merged = timeWindowService.unionTimeWindows(timeA, timeB);
         expect(merged).toBeDefined();
         expect(merged.length).toBe(2);
-        expect(merged[0].start_date_time?.getHours()).toBe(8);
-        expect(merged[0].end_date_time?.getHours()).toBe(10);
-        expect(merged[1].start_date_time?.getHours()).toBe(12);
-        expect(merged[1].end_date_time?.getHours()).toBe(13);
+        expect(hourInDefaultTimeZone(merged[0].start_date_time)).toBe(8);
+        expect(hourInDefaultTimeZone(merged[0].end_date_time)).toBe(10);
+        expect(hourInDefaultTimeZone(merged[1].start_date_time)).toBe(12);
+        expect(hourInDefaultTimeZone(merged[1].end_date_time)).toBe(13);
     });
 
     it("union, 'AS', 'AE', 'BS', 'BE' - union", () => {
@@ -39,8 +42,8 @@ describe("timeWindowService", () => {
         const merged = timeWindowService.unionTimeWindows(timeA, timeB);
         expect(merged).toBeDefined();
         expect(merged.length).toBe(1);
-        expect(merged[0].start_date_time?.getHours()).toBe(8);
-        expect(merged[0].end_date_time?.getHours()).toBe(13);
+        expect(hourInDefaultTimeZone(merged[0].start_date_time)).toBe(8);
+        expect(hourInDefaultTimeZone(merged[0].end_date_time)).toBe(13);
     });
 
     it("union, 'AS', 'BS', 'BE', 'AE' - overlap", () => {
@@ -58,8 +61,8 @@ describe("timeWindowService", () => {
         const merged = timeWindowService.unionTimeWindows(timeA, timeB);
         expect(merged).toBeDefined();
         expect(merged.length).toBe(1);
-        expect(merged[0].start_date_time?.getHours()).toBe(8);
-        expect(merged[0].end_date_time?.getHours()).toBe(17);
+        expect(hourInDefaultTimeZone(merged[0].start_date_time)).toBe(8);
+        expect(hourInDefaultTimeZone(merged[0].end_date_time)).toBe(17);
     });
 
     it("union, 'BS', 'BE', 'AS', 'AE' - overlap", () => {
@@ -77,8 +80,8 @@ describe("timeWindowService", () => {
         const merged = timeWindowService.unionTimeWindows(timeA, timeB);
         expect(merged).toBeDefined();
         expect(merged.length).toBe(1);
-        expect(merged[0].start_date_time?.getHours()).toBe(8);
-        expect(merged[0].end_date_time?.getHours()).toBe(14);
+        expect(hourInDefaultTimeZone(merged[0].start_date_time)).toBe(8);
+        expect(hourInDefaultTimeZone(merged[0].end_date_time)).toBe(14);
     });
 
     it("union, 'BS', 'BE', 'AS', 'AE' - none", () => {
@@ -96,10 +99,10 @@ describe("timeWindowService", () => {
         const union = timeWindowService.unionTimeWindows(timeA, timeB);
         expect(union).toBeDefined();
         expect(union.length).toBe(2);
-        expect(union[0].start_date_time?.getHours()).toBe(12);
-        expect(union[0].end_date_time?.getHours()).toBe(14);
-        expect(union[1].start_date_time?.getHours()).toBe(16);
-        expect(union[1].end_date_time?.getHours()).toBe(18);
+        expect(hourInDefaultTimeZone(union[0].start_date_time)).toBe(12);
+        expect(hourInDefaultTimeZone(union[0].end_date_time)).toBe(14);
+        expect(hourInDefaultTimeZone(union[1].start_date_time)).toBe(16);
+        expect(hourInDefaultTimeZone(union[1].end_date_time)).toBe(18);
     });
 
     it("union, different day - none", () => {
@@ -117,10 +120,10 @@ describe("timeWindowService", () => {
         const union = timeWindowService.unionTimeWindows(timeA, timeB);
         expect(union).toBeDefined();
         expect(union.length).toBe(2);
-        expect(union[0].start_date_time?.getHours()).toBe(8);
-        expect(union[0].end_date_time?.getHours()).toBe(14);
-        expect(union[1].start_date_time?.getHours()).toBe(8);
-        expect(union[1].end_date_time?.getHours()).toBe(14);
+        expect(hourInDefaultTimeZone(union[0].start_date_time)).toBe(8);
+        expect(hourInDefaultTimeZone(union[0].end_date_time)).toBe(14);
+        expect(hourInDefaultTimeZone(union[1].start_date_time)).toBe(8);
+        expect(hourInDefaultTimeZone(union[1].end_date_time)).toBe(14);
     });
 
     it("merge - small", () => {
@@ -134,8 +137,8 @@ describe("timeWindowService", () => {
 
         expect(merged).toBeDefined();
         expect(merged.length).toBe(1);
-        expect(merged[0].start_date_time?.getHours()).toBe(12);
-        expect(merged[0].end_date_time?.getHours()).toBe(14);
+        expect(hourInDefaultTimeZone(merged[0].start_date_time)).toBe(12);
+        expect(hourInDefaultTimeZone(merged[0].end_date_time)).toBe(14);
     });
 
     it("merge - two", () => {
@@ -154,8 +157,8 @@ describe("timeWindowService", () => {
 
         expect(merged).toBeDefined();
         expect(merged.length).toBe(1);
-        expect(merged[0].start_date_time?.getHours()).toBe(12);
-        expect(merged[0].end_date_time?.getHours()).toBe(18);
+        expect(hourInDefaultTimeZone(merged[0].start_date_time)).toBe(12);
+        expect(hourInDefaultTimeZone(merged[0].end_date_time)).toBe(18);
     });
 
     it("merge - back2back2back", () => {
@@ -179,8 +182,8 @@ describe("timeWindowService", () => {
 
         expect(merged).toBeDefined();
         expect(merged.length).toBe(1);
-        expect(merged[0].start_date_time?.getHours()).toBe(12);
-        expect(merged[0].end_date_time?.getHours()).toBe(20);
+        expect(hourInDefaultTimeZone(merged[0].start_date_time)).toBe(12);
+        expect(hourInDefaultTimeZone(merged[0].end_date_time)).toBe(20);
     });
 
     it("merge - three", () => {
@@ -204,8 +207,8 @@ describe("timeWindowService", () => {
 
         expect(merged).toBeDefined();
         expect(merged.length).toBe(2);
-        expect(merged[0].start_date_time?.getHours()).toBe(12);
-        expect(merged[0].end_date_time?.getHours()).toBe(18);
+        expect(hourInDefaultTimeZone(merged[0].start_date_time)).toBe(12);
+        expect(hourInDefaultTimeZone(merged[0].end_date_time)).toBe(18);
     });
 
 });
