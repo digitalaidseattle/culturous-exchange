@@ -8,10 +8,11 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 // material-ui
-import { ExportOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
-import { Box, Breadcrumbs, CircularProgress, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
+import { AppstoreOutlined, ExportOutlined, SettingOutlined, TableOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { Box, Breadcrumbs, ButtonGroup, CircularProgress, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
 
 // project import
+import { HomeOutlined } from '@ant-design/icons';
 import { Identifier, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { CECohortDao } from "../../api/ceCohortDao";
@@ -26,7 +27,6 @@ import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
 import { PlanContext } from "./PlanContext";
 import { TimeLine } from "./TimeLine";
-import { HomeOutlined } from '@ant-design/icons';
 
 const PlanPage: React.FC = () => {
   const cohortDao = CECohortDao.getInstance();
@@ -169,9 +169,25 @@ const PlanPage: React.FC = () => {
             {/* <PlanDetails /> */}
             <Box sx={{ marginTop: 1 }}  >
               <Toolbar>
-                <Typography variant="h3" component="div" sx={{ flexGrow: 1 }} onClick={() => setViewType(viewType === "board" ? "timeline" : "board")} style={{ cursor: 'pointer' }}>
-                  {UI_STRINGS.GROUPS_LABEL}
-                </Typography>
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography variant="h3" component="span">
+                    {UI_STRINGS.GROUPS_LABEL}
+                  </Typography>
+                  <ButtonGroup size="small" aria-label="Small button group">
+                    <Tooltip title={UI_STRINGS.SELECT_BOARD_VIEW}>
+                      <IconButton size="small"
+                        onClick={() => setViewType("board")}>
+                        <AppstoreOutlined />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={UI_STRINGS.SELECT_TIMELINE_VIEW}>
+                      <IconButton size="small"
+                        onClick={() => setViewType("timeline")}>
+                        <TableOutlined />
+                      </IconButton>
+                    </Tooltip>
+                  </ButtonGroup>
+                </Box>
 
                 <Tooltip title={UI_STRINGS.EXPORT_PLAN}>
                   <IconButton color="inherit" onClick={exportPlan}>
@@ -209,8 +225,8 @@ const PlanPage: React.FC = () => {
             </Box>
           </MainCard>
         </Stack>
-      </CohortContext.Provider>
-    </PlanContext.Provider>
+      </CohortContext.Provider >
+    </PlanContext.Provider >
   );
 };
 

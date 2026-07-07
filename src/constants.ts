@@ -63,6 +63,8 @@ export const UI_STRINGS = {
   AVG_DURATION: 'Avg. Duration/Group',
 
   // Tooltips
+  SELECT_TIMELINE_VIEW: 'Select timeline view',
+  SELECT_BOARD_VIEW: 'Select board view',
   EXPORT_PLAN: 'Export plan',
   TOGGLE_GROUP_DETAILS: 'Toggle group details',
   TOGGLE_STUDENT_DETAILS: 'Toggle student details',
