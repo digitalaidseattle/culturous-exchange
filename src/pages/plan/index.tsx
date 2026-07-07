@@ -170,8 +170,7 @@ const PlanPage: React.FC = () => {
             <Box sx={{ marginTop: 1 }}  >
               <Toolbar>
                 <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="h3" component="span"
-                    onClick={() => setViewType(viewType === "board" ? "timeline" : "board")} style={{ cursor: 'pointer' }}>
+                  <Typography variant="h3" component="span">
                     {UI_STRINGS.GROUPS_LABEL}
                   </Typography>
                   <ButtonGroup size="small" aria-label="Small button group">
