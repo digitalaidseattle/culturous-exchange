@@ -236,7 +236,7 @@ class CETimeWindowService {
 
   // Arbitrairly chose year 2000, September (month 8), and day 1 + dayOffset
   // dayOffset is 0 for Friday, 1 for Saturday, and 2 for Sunday
-  toZonedTime(dayOffset: number, time: string, timezone: string): Date {
+  localTimeToUTC(dayOffset: number, time: string, timezone: string): Date {
     const sTimes = time
       .split(':')
       .map((s) => Number.parseInt(s));
@@ -253,8 +253,8 @@ class CETimeWindowService {
         .forEach(timeWindow => {
           const dayOffset = timeWindow.day_in_week === 'Friday' ? 0
             : timeWindow.day_in_week === 'Saturday' ? 1 : 2;
-          timeWindow.start_date_time = this.toZonedTime(dayOffset, timeWindow.start_t, profile.time_zone!);
-          timeWindow.end_date_time = this.toZonedTime(dayOffset, timeWindow.end_t, profile.time_zone!);
+          timeWindow.start_date_time = this.localTimeToUTC(dayOffset, timeWindow.start_t, profile.time_zone!);
+          timeWindow.end_date_time = this.localTimeToUTC(dayOffset, timeWindow.end_t, profile.time_zone!);
         });
     }
   }
@@ -333,8 +333,8 @@ class CETimeWindowService {
       start_t: '07:00:00',
       end_t: '22:00:00',
     } as TimeWindow
-    friday.start_date_time = this.toZonedTime(0, friday.start_t, DEFAULT_TIMEZONE);
-    friday.end_date_time = this.toZonedTime(0, friday.end_t, DEFAULT_TIMEZONE);
+    friday.start_date_time = this.localTimeToUTC(0, friday.start_t, DEFAULT_TIMEZONE);
+    friday.end_date_time = this.localTimeToUTC(0, friday.end_t, DEFAULT_TIMEZONE);
 
     const saturday = {
       id: uuid(),
@@ -344,8 +344,8 @@ class CETimeWindowService {
       start_t: '07:00:00',
       end_t: '22:00:00',
     } as TimeWindow
-    saturday.start_date_time = this.toZonedTime(1, saturday.start_t, DEFAULT_TIMEZONE);
-    saturday.end_date_time = this.toZonedTime(1, saturday.end_t, DEFAULT_TIMEZONE);
+    saturday.start_date_time = this.localTimeToUTC(1, saturday.start_t, DEFAULT_TIMEZONE);
+    saturday.end_date_time = this.localTimeToUTC(1, saturday.end_t, DEFAULT_TIMEZONE);
 
     const sunday = {
       id: uuid(),
@@ -355,8 +355,8 @@ class CETimeWindowService {
       start_t: '07:00:00',
       end_t: '22:00:00',
     } as TimeWindow
-    sunday.start_date_time = this.toZonedTime(2, sunday.start_t, DEFAULT_TIMEZONE);
-    sunday.end_date_time = this.toZonedTime(2, sunday.end_t, DEFAULT_TIMEZONE);
+    sunday.start_date_time = this.localTimeToUTC(2, sunday.start_t, DEFAULT_TIMEZONE);
+    sunday.end_date_time = this.localTimeToUTC(2, sunday.end_t, DEFAULT_TIMEZONE);
 
     return [friday, saturday, sunday];
   }

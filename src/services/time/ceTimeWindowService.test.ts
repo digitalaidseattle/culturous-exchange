@@ -10,20 +10,20 @@ describe("timeWindowService", () => {
 
     it("toString", () => {
         const tw = {
-            start_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE),
-            end_date_time: timeWindowService.toZonedTime(0, "14:00:00", DEFAULT_TIMEZONE)
+            start_date_time: timeWindowService.localTimeToUTC(0, "08:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.localTimeToUTC(0, "14:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow
         const result = timeWindowService.toString(tw);
         expect(result).toBe('Fri 8am - 2pm');
     })
 
     it("toZonedTime", () => {
-        const result = timeWindowService.toZonedTime(0, "07:00:00", DEFAULT_TIMEZONE);
+        const result = timeWindowService.localTimeToUTC(0, "07:00:00", DEFAULT_TIMEZONE);
         expect(formatTimeWindow(result)).toBe("2000-09-01 Fri 7");
     });
 
     it("toZonedTime - Mexico_City", () => {
-        const result = timeWindowService.toZonedTime(0, "07:00:00", "America/Mexico_City");
+        const result = timeWindowService.localTimeToUTC(0, "07:00:00", "America/Mexico_City");
         expect(formatTimeWindow(result, "America/Mexico_City")).toBe("2000-09-01 Fri 7");
         expect(formatTimeWindow(result, DEFAULT_TIMEZONE)).toBe("2000-09-01 Fri 5");
     });
@@ -31,13 +31,13 @@ describe("timeWindowService", () => {
     it("intersectionTimeWindows", () => {
 
         const timeA = {
-            start_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE),
-            end_date_time: timeWindowService.toZonedTime(0, "12:00:00", DEFAULT_TIMEZONE)
+            start_date_time: timeWindowService.localTimeToUTC(0, "08:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.localTimeToUTC(0, "12:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const timeB = {
-            start_date_time: timeWindowService.toZonedTime(0, "09:00:00", DEFAULT_TIMEZONE),
-            end_date_time: timeWindowService.toZonedTime(0, "13:00:00", DEFAULT_TIMEZONE)
+            start_date_time: timeWindowService.localTimeToUTC(0, "09:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.localTimeToUTC(0, "13:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const merged = timeWindowService.intersectionTimeWindows(timeA, timeB);
@@ -50,13 +50,13 @@ describe("timeWindowService", () => {
     it("intersectionTimeWindows - none", () => {
 
         const timeA = {
-            start_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE),
-            end_date_time: timeWindowService.toZonedTime(0, "12:00:00", DEFAULT_TIMEZONE)
+            start_date_time: timeWindowService.localTimeToUTC(0, "08:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.localTimeToUTC(0, "12:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const timeB = {
-            start_date_time: timeWindowService.toZonedTime(1, "09:00:00", DEFAULT_TIMEZONE),
-            end_date_time: timeWindowService.toZonedTime(1, "13:00:00", DEFAULT_TIMEZONE)
+            start_date_time: timeWindowService.localTimeToUTC(1, "09:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.localTimeToUTC(1, "13:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const merged = timeWindowService.intersectionTimeWindows(timeA, timeB);
@@ -67,8 +67,8 @@ describe("timeWindowService", () => {
     it("duration - count", () => {
 
         const timeA = {
-            start_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE),
-            end_date_time: timeWindowService.toZonedTime(0, "12:00:00", DEFAULT_TIMEZONE)
+            start_date_time: timeWindowService.localTimeToUTC(0, "08:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.localTimeToUTC(0, "12:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const duration = timeWindowService.duration(timeA);
@@ -79,17 +79,31 @@ describe("timeWindowService", () => {
     it("totalDuration", () => {
 
         const timeA = {
-            start_date_time: timeWindowService.toZonedTime(0, "08:00:00", DEFAULT_TIMEZONE),
-            end_date_time: timeWindowService.toZonedTime(0, "12:00:00", DEFAULT_TIMEZONE)
+            start_date_time: timeWindowService.localTimeToUTC(0, "08:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.localTimeToUTC(0, "12:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const timeB = {
-            start_date_time: timeWindowService.toZonedTime(0, "010:00:00", DEFAULT_TIMEZONE),
-            end_date_time: timeWindowService.toZonedTime(0, "11:00:00", DEFAULT_TIMEZONE)
+            start_date_time: timeWindowService.localTimeToUTC(0, "010:00:00", DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.localTimeToUTC(0, "11:00:00", DEFAULT_TIMEZONE)
         } as TimeWindow;
 
         const duration = timeWindowService.totalDuration([timeA, timeB]);
         expect(duration).toBe(7);
 
+    });
+
+    it("adjustTimeWindows - Mexico_City", () => {
+        const timezone = "America/Mexico_City";
+        const friday = { day_in_week: "Friday", start_t: "07:00:00", end_t: "12:00:00" } as TimeWindow;
+        const saturday = { day_in_week: "Saturday", start_t: "09:00:00", end_t: "17:00:00" } as TimeWindow;
+        const profile = { time_zone: timezone, timeWindows: [friday, saturday] } as any;
+
+        timeWindowService.adjustTimeWindows(profile);
+
+        expect(formatTimeWindow(friday.start_date_time, timezone)).toBe("2000-09-01 Fri 7");
+        expect(formatTimeWindow(friday.end_date_time, timezone)).toBe("2000-09-01 Fri 12");
+        expect(formatTimeWindow(saturday.start_date_time, timezone)).toBe("2000-09-02 Sat 9");
+        expect(formatTimeWindow(saturday.end_date_time, timezone)).toBe("2000-09-02 Sat 17");
     });
 });
