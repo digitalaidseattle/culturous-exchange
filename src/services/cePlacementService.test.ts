@@ -1,55 +1,130 @@
 /**
  *  cePlacementService.test.ts
  */
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { CEStudentDao } from '../api/ceStudentDao';
 import { CEPlacementService } from './cePlacementService';
+import { CEPlacementDao } from '../api/cePlacementDao';
+import { Cohort, Placement, Plan, Student } from '../api/types';
+import { CEEnrollmentService } from './ceEnrollmentService';
 
 // Mock supabase client chain used in updatePlacement
-vi.mock('@digitalaidseattle/supabase', () => {
-  const single = vi.fn(() => Promise.resolve({ data: { plan_id: 'plan1', student_id: 'student1', anchor: true }, error: null }));
-  const select = vi.fn(() => ({ single }));
-  const eq2 = vi.fn(() => ({ select }));
-  const eq1 = vi.fn(() => ({ eq: eq2 }));
-  const update = vi.fn(() => ({ eq: eq1 }));
-  const from = vi.fn(() => ({ update }));
-  return { supabaseClient: { from } };
-});
+const mockPlacementDao = {
+  updatePlacement: vi.fn(() => { }),
+  getStudents: vi.fn(() => { })
+} as unknown as CEPlacementDao;
 
-vi.mock('./ceStudentService', () => {
-  return {
-    studentService: {
-      update: vi.fn(() => Promise.resolve({ id: 'student1', anchor: true })),
-      mapJson: vi.fn()
-    }
-  };
-});
+const mockStudentDao = {
+  update: vi.fn(() => { })
+} as unknown as CEStudentDao;
 
-class PlacementFixture {
+const mockEnrollmentService = {
+  getStudents: vi.fn(() => { })
+} as unknown as CEEnrollmentService;
 
-  async runUpdate() {
-    return CEPlacementService.getInstance().updatePlacement('plan1', 'student1', { anchor: true });
-  }
-
-  assertStudentUpdated() {
-    const studentDao = CEStudentDao.getInstance();
-
-    expect((studentDao.update as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThanOrEqual(1);
-    expect((studentDao.update as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe('student1');
-    expect((studentDao.update as ReturnType<typeof vi.fn>).mock.calls[0][1]).toEqual({ anchor: true });
-  }
-}
+const service = new CEPlacementService();
 
 describe('cePlacementService', () => {
-  const fixture = new PlacementFixture();
 
-  it('propagates anchor to student when updatePlacement is called with anchor', async () => {
-    const res = await fixture.runUpdate();
-    // placement update should return the mocked data
-    expect(res.plan_id).toBe('plan1');
+  it('getUnplacedStudents ', async () => {
 
-    // studentService.update should have been called to propagate anchor
-    fixture.assertStudentUpdated();
+    const cohort = {} as Cohort;
+
+    const plan = {} as Plan;
+
+    const enrolledStudents = [{ id: 'student_1' }, { id: 'student_2' }] as Student[];
+    const placedStudents = [{ id: 'student_1' }] as Student[];
+
+    const getEnrollmentServiceSpy = vi.spyOn(CEEnrollmentService, "getInstance").mockReturnValue(mockEnrollmentService);
+    const getPlacementDaoInstanceSpy = vi.spyOn(CEPlacementDao, "getInstance").mockReturnValue(mockPlacementDao);
+    const getStudentsSpy = vi.spyOn(mockEnrollmentService, "getStudents").mockResolvedValue(enrolledStudents);
+    const getPlacementStudentsSpy = vi.spyOn(mockPlacementDao, "getStudents").mockResolvedValue(placedStudents);
+
+
+    const resp = await service.getUnplacedStudents(cohort, plan);
+    expect(getEnrollmentServiceSpy).toHaveBeenCalledOnce();
+    expect(getPlacementDaoInstanceSpy).toHaveBeenCalledOnce();
+    expect(getStudentsSpy).toHaveBeenCalledOnce();
+    expect(getStudentsSpy).toHaveBeenCalledWith(cohort);
+    expect(getPlacementStudentsSpy).toHaveBeenCalledOnce();
+    expect(getPlacementStudentsSpy).toHaveBeenCalledWith(plan);
+    expect(resp).toEqual([{ id: 'student_2' }]);
   });
+
+
+  it('save ', async () => {
+
+    const student = { id: 'student_1' };
+    const placement = {
+      plan_id: 'plan_id',
+      student_id: 'student_id',
+      student: student
+    } as Placement;
+
+    const updatedPlacement = {
+      plan_id: 'plan_id',
+      student_id: 'student_id',
+    } as Placement;
+
+    const updatePlacementSpy = vi.spyOn(service, "updatePlacement").mockResolvedValue(updatedPlacement);
+
+    const resp = await service.save(placement);
+    expect(updatePlacementSpy).toHaveBeenCalledOnce();
+    expect(updatePlacementSpy).toHaveBeenCalledWith(
+      'plan_id',
+      'student_id',
+      {
+        plan_id: 'plan_id',
+        student_id: 'student_id'
+      }
+    );
+    expect(resp.student).toEqual(student);
+
+  });
+
+
+  it('updatePlacement - propagates anchor to student when updatePlacement is called with anchor', async () => {
+
+    const updatedPlacement = {} as Placement;
+    const updatedStudent = {} as Student;
+
+    const getPlacementDaoInstanceSpy = vi.spyOn(CEPlacementDao, "getInstance").mockReturnValue(mockPlacementDao);
+    const getStudentDaoInstanceSpy = vi.spyOn(CEStudentDao, "getInstance").mockReturnValue(mockStudentDao);
+    const updatePlacementSpy = vi.spyOn(mockPlacementDao, "updatePlacement").mockResolvedValue(updatedPlacement);
+    const updateUpdateSpy = vi.spyOn(mockStudentDao, "update").mockResolvedValue(updatedStudent);
+
+    const resp = await service.updatePlacement('plan1', 'student1', { anchor: true });
+    expect(getPlacementDaoInstanceSpy).toHaveBeenCalledOnce();
+    expect(getStudentDaoInstanceSpy).toHaveBeenCalledOnce();
+    expect(updatePlacementSpy).toHaveBeenCalledOnce();
+    expect(updateUpdateSpy).toHaveBeenCalledOnce();
+    expect(resp).toEqual(updatedPlacement);
+  })
+
+  it('getEnrichedPlacements', async () => {
+
+    const placement1 = { student_id: 'student1' };
+    const placement2 = { student_id: 'student2' };
+    const student1 = { id: 'student1' };
+    const student3 = { id: 'student3' };
+    const plan = {
+      placements: [placement1, placement2]
+    } as unknown as Plan;
+
+    const getInstanceSpy = vi.spyOn(CEPlacementDao, "getInstance").mockReturnValue(mockPlacementDao);
+    const getStudentsSpy = vi.spyOn(mockPlacementDao, "getStudents").mockResolvedValue([student1, student3] as Student[]);
+
+    const res = await service.getEnrichedPlacements(plan);
+    expect(getInstanceSpy).toHaveBeenCalledOnce();
+    expect(getStudentsSpy).toHaveBeenCalledOnce();
+    expect(getStudentsSpy).toHaveBeenCalledWith(plan);
+    expect(res[0].student).toEqual(student1);
+  });
+
+  afterEach(() => {
+    // Restores original implementations for all spies
+    vi.restoreAllMocks();
+  });
+
 });
