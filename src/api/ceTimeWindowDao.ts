@@ -50,6 +50,23 @@ class CETimeWindowDao extends SupabaseDao<TimeWindow> {
     }
   }
 
+  async deleteByStudentId(studentId: Identifier): Promise<boolean> {
+    try {
+      const { error } = await this.client
+        .from(this.tableName)
+        .delete()
+        .eq('student_id', studentId);
+      if (error) {
+        console.error(SERVICE_ERRORS.ERROR_DELETING_ENTITY, error.message);
+        throw new Error(SERVICE_ERRORS.FAILED_DELETE_ENTITY);
+      }
+      return true;
+    } catch (err) {
+      console.error(SERVICE_ERRORS.UNEXPECTED_ERROR_DELETION, err);
+      throw err;
+    }
+  }
+
 }
 
 export { CETimeWindowDao };

@@ -107,7 +107,7 @@ const StudentsDetailsTable: React.FC = () => {
 
   function doDeleteStudent() {
     if (deleteStudent) {
-      studentDao.delete(deleteStudent.id!)
+      studentService.delete(deleteStudent.id!)
         .then(() => {
           notifications.success(`${UI_STRINGS.DELETION_SUCCESS_PREFIX} ${deleteStudent.name} ${UI_STRINGS.DELETION_SUCCESS_SUFFIX}`);
           setRefresh(refresh + 1);
