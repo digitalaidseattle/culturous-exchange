@@ -5,16 +5,28 @@
  *
  */
 import { describe, expect, it, vi } from "vitest";
-import { CEGroupService } from "./ceGroupService";
+import { CEGroupDao } from "../../api/ceGroupDao";
 import { CETimeWindowDao } from "../../api/ceTimeWindowDao";
 import { Group, TimeWindow } from "../../api/types";
-import { CEGroupDao } from "../../api/ceGroupDao";
+import { CETimeWindowService } from "../time/ceTimeWindowService";
+import { CEGroupService } from "./ceGroupService";
+
 
 describe("groupService", () => {
-    const offset = -7; // using a fixed offset to make test deterministic; 
-    const groupService = CEGroupService.getInstance();
-    const groupDao = CEGroupDao.getInstance();
-    const timeWindowDao = CETimeWindowDao.getInstance();
+
+    const mockTimeWindowService = {
+        createDefaultTimewindows: vi.fn(() => { })
+    } as unknown as CETimeWindowService;
+
+    const mockTimeWindowDao = {
+        delete: vi.fn(() => { })
+    } as unknown as CETimeWindowDao;
+
+    const mockGroupDao = {
+        delete: vi.fn(() => { })
+    } as unknown as CEGroupDao;
+
+    const groupService = new CEGroupService();
 
     it("createDefaultTimewindows", () => {
 
@@ -22,15 +34,17 @@ describe("groupService", () => {
             id: "test"
         } as Group;
 
+        const timeWindow = {} as TimeWindow;
+        const timeWindows = [timeWindow];
+
+        const getTimeWindowServiceSpy = vi.spyOn(CETimeWindowService, "getInstance").mockReturnValue(mockTimeWindowService);
+        const createDefaultTimewindowsSpy = vi.spyOn(mockTimeWindowService, "createDefaultTimewindows").mockReturnValue(timeWindows);
+
         const result = groupService.createDefaultTimewindows(group)
 
-        expect(result.length).toBe(3);
-        expect(result[0].start_date_time.getDay()).toBe(5);
-        expect(result[0].start_date_time.getHours()).toBe(7);
-        expect(result[0].start_date_time.getUTCHours()).toBe(7 - offset);
-        expect(result[2].end_date_time.getDay()).toBe(0);
-        expect(result[2].end_date_time.getHours()).toBe(22);
-
+        expect(getTimeWindowServiceSpy).toHaveBeenCalledOnce();
+        expect(createDefaultTimewindowsSpy).toHaveBeenCalledOnce();
+        expect(result[0].group_id).toBe("test");
     });
 
     it("deleteGroup", () => {
@@ -43,12 +57,17 @@ describe("groupService", () => {
             time_windows: [tw]
         } as Group;
 
-        vi.spyOn(timeWindowDao, "delete").mockResolvedValue();
-        vi.spyOn(groupDao, "delete").mockResolvedValue();
+        const getimeWindowDaoSpy = vi.spyOn(CETimeWindowDao, "getInstance").mockReturnValue(mockTimeWindowDao);
+        const getGroupDaoSpy = vi.spyOn(CEGroupDao, "getInstance").mockReturnValue(mockGroupDao);
+        vi.spyOn(mockTimeWindowDao, "delete").mockResolvedValue();
+        vi.spyOn(mockGroupDao, "delete").mockResolvedValue();
+
         groupService.deleteGroup(group)
             .then(_result => {
-                expect(timeWindowDao.delete).toBeCalledWith("twid");
-                expect(groupDao.delete).toBeCalledWith("test");
+                expect(getimeWindowDaoSpy).toHaveBeenCalledOnce();
+                expect(getGroupDaoSpy).toHaveBeenCalledOnce();
+                expect(mockTimeWindowDao.delete).toBeCalledWith("twid");
+                expect(mockGroupDao.delete).toBeCalledWith("test");
             })
     });
 
