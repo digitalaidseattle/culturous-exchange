@@ -7,12 +7,18 @@
 
 import { describe, expect, it, vi } from "vitest";
 
-import { planActivation } from "./planActivation";
 import { CEPlanDao } from "../../api/cePlanDao";
 import { Plan } from "../../api/types";
+import { planActivation } from "./planActivation";
+
+const mockPlacementDao = {
+    updatePlacement: vi.fn(() => { }),
+    getStudents: vi.fn(() => { }),
+    findByCohortId: vi.fn(() => { }),
+    update: vi.fn(() => { })
+} as unknown as CEPlanDao;
 
 describe("PlanActivation", () => {
-    const planDao = CEPlanDao.getInstance();
 
     it("changeActivation", () => {
         const plan = {
@@ -32,11 +38,14 @@ describe("PlanActivation", () => {
             id: 'plan-b-id',
             active: false,
         } as Plan;
-        const findSpy = vi.spyOn(planDao, "findByCohortId").mockResolvedValue([planA, planB]);
-        const updateSpy = vi.spyOn(planDao, "update").mockResolvedValue(planChanged);
+
+        const getPlacementDaoInstanceSpy = vi.spyOn(CEPlanDao, "getInstance").mockReturnValue(mockPlacementDao);
+        const findSpy = vi.spyOn(mockPlacementDao, "findByCohortId").mockResolvedValue([planA, planB]);
+        const updateSpy = vi.spyOn(mockPlacementDao, "update").mockResolvedValue(planChanged);
 
         planActivation.changeActivation(plan, true)
             .then(updated => {
+                expect(getPlacementDaoInstanceSpy).toHaveBeenCalledOnce();
                 expect(findSpy).toBeCalledWith("cohort-id");
                 expect(updateSpy).toBeCalledWith('plan-a-id', { active: false });
                 expect(updateSpy).toBeCalledWith('test-id', { active: true });
