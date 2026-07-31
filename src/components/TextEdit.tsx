@@ -1,27 +1,29 @@
-
-
 /**
  *  TextEdit.tsx
  *
  *  @copyright 2024 Digital Aid Seattle
  *
  */
-
 import { CheckCircleOutlined, CloseCircleOutlined, EditOutlined } from "@ant-design/icons";
 import { IconButton, Stack, TextField, Typography } from "@mui/material";
 import { useState } from "react";
-
 export type TextEditProps = {
     label: string,
     value: string,
     rows?: number,
     onChange: (text: string) => void
 };
-
 export const TextEdit: React.FC<TextEditProps> = ({ label, value, rows, onChange }) => {
     const [edit, setEdit] = useState<boolean>(false);
+    // `text` is only an edit scratch buffer. The read view renders `value`
+    // directly, so an external change to the prop (e.g. another user's rename
+    // arriving via refresh) is reflected immediately. The buffer is seeded from
+    // `value` when entering edit mode, so in-progress typing is never clobbered.
     const [text, setText] = useState<string>(value);
-
+    const startEdit = () => {
+        setText(value);
+        setEdit(true);
+    }
     const cancel = () => {
         setText(value);
         setEdit(false);
@@ -30,14 +32,13 @@ export const TextEdit: React.FC<TextEditProps> = ({ label, value, rows, onChange
         onChange(text)
         setEdit(false);
     }
-
     return (
         <>
             <Stack direction={'row'}>
                 <Typography fontWeight={600} sx={{ marginRight: 2 }} >{label}:</Typography>
                 {!edit && <>
-                    <Typography sx={{ marginRight: 2 }}>{text}</Typography>
-                    <IconButton size="small" color="primary" onClick={() => setEdit(!edit)}>
+                    <Typography sx={{ marginRight: 2 }}>{value}</Typography>
+                    <IconButton size="small" color="primary" onClick={startEdit}>
                         <EditOutlined />
                     </IconButton>
                 </>
@@ -65,4 +66,3 @@ export const TextEdit: React.FC<TextEditProps> = ({ label, value, rows, onChange
             </Stack>
         </>)
 }
-

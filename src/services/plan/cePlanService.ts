@@ -6,7 +6,7 @@
  */
 
 import { v4 as uuid } from 'uuid';
-import { CEEnrollmentService } from '../../api/ceEnrollmentDao';
+import { CEEnrollmentService } from "../../services/ceEnrollmentService";
 import { CEPlacementDao } from '../../api/cePlacementDao';
 import { CEPlanDao } from "../../api/cePlanDao";
 import { Cohort, Placement, Plan, Student } from "../../api/types";

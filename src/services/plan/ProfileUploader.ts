@@ -71,7 +71,7 @@ abstract class ProfileUploader<T extends CEProfile> {
 
     }
 
-    async insert_from_excel(excel_file: File): Promise<{ successCount: number; failedProfiles: FailedProfile[] }> {
+    async insert_from_excel(excel_file: File): Promise<{ successCount: number; successProfiles: T[]; failedProfiles: FailedProfile[] }> {
         try {
             return this.get_profiles_from_excel(excel_file)
                 .then(async profiles => {
@@ -82,6 +82,8 @@ abstract class ProfileUploader<T extends CEProfile> {
                             const failed = resps.filter(resp => !resp.success);
                             return {
                                 successCount: successful.length,
+                                // CEMT-138: expose the created profiles so callers (e.g. cohort upload) can enroll them
+                                successProfiles: successful.map(resp => resp.profile as T),
                                 failedProfiles: failed.map(resp => resp.profile as FailedProfile),
                             }
                         })
