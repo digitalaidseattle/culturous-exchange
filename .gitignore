@@ -28,3 +28,8 @@ coverage
 supabase/.branches/*
 supabase/.temp/*
 .env
+
+# Large local-only test fixtures (CEMT-151) - too big to keep in repo history,
+# regenerate locally when needed for manual large-upload testing.
+test/diverse_students_5mb.xlsx
+test/large_students_10mb.xlsx

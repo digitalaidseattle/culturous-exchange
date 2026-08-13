@@ -12,7 +12,7 @@ import { CEProfile, FailedProfile } from "../../api/types";
 import { ValidationService } from "../ValidationService";
 import { CEProfileService } from "../ceProfileService";
 import { CETimeWindowService } from "../time/ceTimeWindowService";
-import { SERVICE_ERRORS } from "../../constants";
+import { PROFILE_UPLOAD_BATCH_SIZE, SERVICE_ERRORS } from "../../constants";
 
 abstract class ProfileUploader<T extends CEProfile> {
     validationService: ValidationService<T>;
@@ -71,23 +71,34 @@ abstract class ProfileUploader<T extends CEProfile> {
 
     }
 
-    async insert_from_excel(excel_file: File): Promise<{ successCount: number; successProfiles: T[]; failedProfiles: FailedProfile[] }> {
+    async insert_from_excel(
+        excel_file: File,
+        onProgress?: (completed: number, total: number) => void
+    ): Promise<{ successCount: number; successProfiles: T[]; failedProfiles: FailedProfile[] }> {
+        // Let a parse failure propagate with its own specific message (thrown by
+        // get_profiles_from_excel) instead of being masked by the generic message below.
+        const profiles = await this.get_profiles_from_excel(excel_file);
+
         try {
-            return this.get_profiles_from_excel(excel_file)
-                .then(async profiles => {
-                    return Promise
-                        .all(profiles.map(profile => this.insertProfile(profile as T)))
-                        .then((resps) => {
-                            const successful = resps.filter(resp => resp.success);
-                            const failed = resps.filter(resp => !resp.success);
-                            return {
-                                successCount: successful.length,
-                                // CEMT-138: expose the created profiles so callers (e.g. cohort upload) can enroll them
-                                successProfiles: successful.map(resp => resp.profile as T),
-                                failedProfiles: failed.map(resp => resp.profile as FailedProfile),
-                            }
-                        })
-                })
+            // Insert in bounded batches instead of firing every row's request at once -
+            // an unbounded Promise.all over thousands of rows fans out into thousands of
+            // simultaneous DB round trips, which is what causes large uploads to hang (CEMT-151).
+            const resps: { success: boolean; profile: CEProfile | FailedProfile }[] = [];
+            for (let i = 0; i < profiles.length; i += PROFILE_UPLOAD_BATCH_SIZE) {
+                const batch = profiles.slice(i, i + PROFILE_UPLOAD_BATCH_SIZE);
+                const batchResps = await Promise.all(batch.map(profile => this.insertProfile(profile as T)));
+                resps.push(...batchResps);
+                onProgress?.(resps.length, profiles.length);
+            }
+
+            const successful = resps.filter(resp => resp.success);
+            const failed = resps.filter(resp => !resp.success);
+            return {
+                successCount: successful.length,
+                // CEMT-138: expose the created profiles so callers (e.g. cohort upload) can enroll them
+                successProfiles: successful.map(resp => resp.profile as T),
+                failedProfiles: failed.map(resp => resp.profile as FailedProfile),
+            }
         } catch (error) {
             console.error(SERVICE_ERRORS.ERROR_PROCESSING_EXCEL_FILE, error);
             throw new Error(SERVICE_ERRORS.FAILED_INSERT_STUDENTS_FROM_EXCEL_FILE);

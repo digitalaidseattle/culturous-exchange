@@ -8,7 +8,7 @@
 import { useContext, useEffect, useState } from "react";
 
 // material-ui
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Button, LinearProgress, Stack, Typography } from "@mui/material";
 import {
   DataGrid,
   getGridNumericOperators,
@@ -37,6 +37,7 @@ import FailedUploadModal from "../../components/FailedUploadModal";
 import FileUploader from "../../components/FileUploader";
 import { ShowLocalTimeContext } from "../../components/ShowLocalTimeContext";
 import { TimeToggle } from "../../components/TimeToggle";
+import { useUploadProgress } from "../../components/UploadProgressContext";
 import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
 import { removeStudentsFromCohort } from "../../services/cohort/removeStudentsFromCohort";
 import { addStudentsToCohort } from "../../services/cohort/addStudentsToCohort";
@@ -51,6 +52,7 @@ export const StudentTable: React.FC = () => {
   const { cohort } = useContext(CohortContext);
   const notifications = useNotifications();
   const { refresh, setRefresh } = useContext(RefreshContext);
+  const { startUpload, updateUpload, finishUpload, uploads } = useUploadProgress();
 
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: "created_at", sort: "desc" }]);
@@ -64,6 +66,10 @@ export const StudentTable: React.FC = () => {
   const [showLocalTime, setShowLocalTime] = useState<boolean>(false);
 
   // cohort-level spreadsheet upload state
+  const uploadId = `cohort-upload-${cohort.id}`;
+  // Backed by context (not local state) so progress survives navigating away
+  // from this page and back while an upload is still running (CEMT-151).
+  const uploadProgress = uploads.find(u => u.id === uploadId) ?? null;
   const [showDropzone, setShowDropzone] = useState<boolean>(false);
   const [failedProfiles, setFailedProfiles] = useState<FailedProfile[]>([]);
   const [isFailedModalOpen, setIsFailedModalOpen] = useState<boolean>(false);
@@ -102,14 +108,19 @@ export const StudentTable: React.FC = () => {
 
   // Upload a student spreadsheet and enroll the created students into this cohort.
   async function handleUpload(files: File[]): Promise<void> {
+    startUpload(uploadId, `Cohort: ${cohort.name}`);
     try {
-      const result = await uploadStudentsToCohort(cohort, files);
+      const result = await uploadStudentsToCohort(cohort, files, (completed, total) => {
+        updateUpload(uploadId, completed, total);
+      });
       displayUploadResults(result);
     } catch (err) {
       console.error('Unexpected Error: ', err);
-      notifications.error(UI_STRINGS.ERROR_ADDING_STUDENTS);
+      const message = err instanceof Error ? err.message : String(err);
+      notifications.error(`${UI_STRINGS.ERROR_ADDING_STUDENTS} ${message}`);
       setShowDropzone(false);
     } finally {
+      finishUpload(uploadId);
       setRefresh(refresh + 1);
     }
   }
@@ -256,6 +267,7 @@ export const StudentTable: React.FC = () => {
               title={UI_STRINGS.UPLOAD}
               variant="contained"
               color="primary"
+              disabled={uploadProgress !== null}
               onClick={() => setShowDropzone(!showDropzone)}>
               {UI_STRINGS.UPLOAD}
             </Button>
@@ -277,8 +289,20 @@ export const StudentTable: React.FC = () => {
           </Stack>
           <TimeToggle />
         </Stack>
-        {showDropzone &&
+        {showDropzone && uploadProgress === null &&
           <FileUploader onChange={handleUpload} />
+        }
+        {uploadProgress !== null &&
+          <Box m={1}>
+            <LinearProgress
+              variant={uploadProgress.total > 0 ? 'determinate' : 'indeterminate'}
+              value={uploadProgress.total > 0 ? (uploadProgress.completed / uploadProgress.total) * 100 : undefined}
+            />
+            <Typography variant="body2" mt={0.5}>
+              {uploadProgress.total > 0 ? Math.round((uploadProgress.completed / uploadProgress.total) * 100) : 0}%
+              {' '}({uploadProgress.completed} / {uploadProgress.total || '?'} rows)
+            </Typography>
+          </Box>
         }
         {cohort &&
           <DataGrid
