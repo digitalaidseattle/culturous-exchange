@@ -7,6 +7,12 @@
 
 import { CEStudentDao } from "../../api/ceStudentDao";
 
+// Trim, lowercase, and strip diacritics so "Kabul"/"kabul "/"Peru"/"Perú" all
+// hit the same cache entry instead of missing on cosmetic differences in
+// free-text spreadsheet data.
+function normalize(value: string): string {
+  return value.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
 
 export class CETimeZoneService {
   private static _instance: CETimeZoneService;
@@ -21,6 +27,19 @@ export class CETimeZoneService {
   //  TODO: move this cache into persistence
   cache: Map<string, { timezone: string, offset: number }> = new Map();
 
+  // Lookups in flight, keyed the same as the cache - lets concurrent calls for
+  // the same city/country share one request instead of each firing its own.
+  private pending: Map<string, Promise<{ timezone: string, offset: number }>> = new Map();
+
+  // Counters for verifying how much load actually reaches the external API
+  // vs. being absorbed by the cache - handy when testing a new API key or
+  // diagnosing quota issues.
+  private stats = { cacheHits: 0, apiCalls: 0 };
+
+  getStats() {
+    return { ...this.stats };
+  }
+
   private constructor() {
     this.loadExisting()
       .then(() => this.cache)
@@ -32,7 +51,7 @@ export class CETimeZoneService {
       .getAll()
       .then(students =>
         students.forEach(student => {
-          const key = `${student.city}@${student.country}`;
+          const key = `${normalize(student.city)}@${normalize(student.country)}`;
           const value = { timezone: student.time_zone!, offset: student.tz_offset };
           this.cache.set(key, value);
         })
@@ -40,32 +59,49 @@ export class CETimeZoneService {
   }
 
   async lookupTimeZone(city: string, country: string): Promise<{ timezone: string, offset: number }> {
-    return fetch(`https://api.ipgeolocation.io/timezone?apiKey=${import.meta.env.VITE_IPGEOLOCATION_KEY}&location=${city},%20${country}`)
-      .then(resp => {
-        if (!resp.ok) {
-          throw new Error(`Failed to fetch timezone city: ${city}, country: ${country}`);
-        }
-        return resp.json()
-      })
-      .then(data => {
-        return {
-          timezone: data.timezone,
-          offset: data.timezone_offset
-        }
-      })
+    this.stats.apiCalls++;
+    const resp = await fetch(`https://api.ipgeolocation.io/timezone?apiKey=${import.meta.env.VITE_IPGEOLOCATION_KEY}&location=${city},%20${country}`);
+
+    if (!resp.ok) {
+      // ipgeolocation.io has no per-second/per-minute rate limit (confirmed in
+      // their docs) - a 429 here means the daily request quota is exhausted,
+      // which won't clear up on retry, only after the quota resets.
+      const reason = resp.status === 429 ? 'daily API quota likely exhausted' : `HTTP ${resp.status}`;
+      throw new Error(`Failed to fetch timezone city: ${city}, country: ${country} (${reason})`);
+    }
+    const data = await resp.json();
+    return {
+      timezone: data.timezone,
+      offset: data.timezone_offset
+    }
   }
 
   async getTimeZone(city: string, country: string): Promise<{ timezone: string, offset: number }> {
-    const key = `${city}@${country}`;
-    const value = this.cache.get(key);
-
-    if (value) {
-      return value;
+    const key = `${normalize(city)}@${normalize(country)}`;
+    const cached = this.cache.get(key);
+    if (cached) {
+      this.stats.cacheHits++;
+      return cached;
     }
-    return value ?? this.lookupTimeZone(city, country)
-      .then(lookup => {
-        this.cache.set(key, lookup);
-        return lookup;
+
+    const inFlight = this.pending.get(key);
+    if (inFlight) {
+      return inFlight;
+    }
+
+    // No per-second rate limit on this API (confirmed in their docs), so
+    // lookups can fire directly - concurrency is naturally bounded by
+    // PROFILE_UPLOAD_BATCH_SIZE upstream in ProfileUploader.
+    const lookup = this.lookupTimeZone(city, country)
+      .then(result => {
+        this.cache.set(key, result);
+        return result;
       })
+      .finally(() => {
+        this.pending.delete(key);
+      });
+
+    this.pending.set(key, lookup);
+    return lookup;
   }
 }
