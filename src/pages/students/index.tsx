@@ -6,7 +6,7 @@
  */
 import { useContext, useState } from 'react';
 // material-ui
-import { Button, Stack } from '@mui/material';
+import { Box, Button, LinearProgress, Stack, Typography } from '@mui/material';
 
 // project import
 
@@ -18,10 +18,13 @@ import FailedUploadModal from '../../components/FailedUploadModal';
 import FileUploader from '../../components/FileUploader';
 import ProfilesPage from '../../components/ProfilesPage';
 import { TimeToggle } from '../../components/TimeToggle';
+import { useUploadProgress } from '../../components/UploadProgressContext';
 import { UI_STRINGS } from '../../constants';
 import StudentModal from './StudentModal';
 import StudentsDetailsTable from './StudentsDetailsTable';
 import { CEStudentService } from '../../services/student/CEStudentService';
+
+const STUDENTS_UPLOAD_ID = 'students-upload';
 
 const ToolsSection = () => {
     const studentService = CEStudentService.getInstance();
@@ -29,6 +32,10 @@ const ToolsSection = () => {
 
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
+    // Backed by context (not local state) so progress survives navigating away
+    // from this page and back while an upload is still running (CEMT-151).
+    const { startUpload, updateUpload, finishUpload, uploads } = useUploadProgress();
+    const uploadProgress = uploads.find(u => u.id === STUDENTS_UPLOAD_ID) ?? null;
     const [showDropzone, setShowDropzone] = useState<boolean>(false);
     const [failedProfiles, setFailedProfiles] = useState<FailedProfile[]>([]);
     const [isFailedModalOpen, setIsFailedModalOpen] = useState<boolean>(false);
@@ -36,8 +43,24 @@ const ToolsSection = () => {
     const [student, setStudent] = useState<Student>(studentService.empty());
 
     async function handleUpload(files: File[]): Promise<void> {
+        // Track per-file progress and report the aggregate across all files.
+        const progressByFile = new Array(files.length).fill(0);
+        const totalByFile = new Array(files.length).fill(0);
+        const reportProgress = (fileIndex: number, completed: number, total: number) => {
+            progressByFile[fileIndex] = completed;
+            totalByFile[fileIndex] = total;
+            updateUpload(
+                STUDENTS_UPLOAD_ID,
+                progressByFile.reduce((a, b) => a + b, 0),
+                totalByFile.reduce((a, b) => a + b, 0)
+            );
+        };
+        startUpload(STUDENTS_UPLOAD_ID, UI_STRINGS.STUDENTS_PAGE_TITLE);
+
         Promise
-            .all(files.map(file => uploadService.insert_from_excel(file)))
+            .all(files.map((file, fileIndex) =>
+                uploadService.insert_from_excel(file, (completed, total) => reportProgress(fileIndex, completed, total))
+            ))
             .then(resps => {
                 let allFailed: FailedProfile[] = [];
                 resps.forEach(resp => {
@@ -55,14 +78,11 @@ const ToolsSection = () => {
             })
             .catch((err) => {
                 console.error('Unexpected Error: ', err)
-                displayUploadResults({
-                    failedProfiles: [],
-                    successCount: 0,
-                    failedCount: files.length,
-                    attemptedCount: files.length
-                })
+                setShowDropzone(false);
+                notifications.error(`Error uploading spreadsheet: ${err.message}`);
             })
             .finally(() => {
+                finishUpload(STUDENTS_UPLOAD_ID);
                 setRefresh(refresh + 1);
             });
     }
@@ -106,6 +126,7 @@ const ToolsSection = () => {
                         title={UI_STRINGS.UPLOAD_STUDENT}
                         variant="contained"
                         color="primary"
+                        disabled={uploadProgress !== null}
                         onClick={() => setShowDropzone(!showDropzone)}>
                         {UI_STRINGS.UPLOAD}
                     </Button>
@@ -123,8 +144,20 @@ const ToolsSection = () => {
                 </Stack>
                 <TimeToggle />
             </Stack>
-            {showDropzone &&
+            {showDropzone && uploadProgress === null &&
                 <FileUploader onChange={handleUpload} />
+            }
+            {uploadProgress !== null &&
+                <Box m={2}>
+                    <LinearProgress
+                        variant={uploadProgress.total > 0 ? 'determinate' : 'indeterminate'}
+                        value={uploadProgress.total > 0 ? (uploadProgress.completed / uploadProgress.total) * 100 : undefined}
+                    />
+                    <Typography variant="body2" mt={0.5}>
+                        {uploadProgress.total > 0 ? Math.round((uploadProgress.completed / uploadProgress.total) * 100) : 0}%
+                        {' '}({uploadProgress.completed} / {uploadProgress.total || '?'} rows)
+                    </Typography>
+                </Box>
             }
             <FailedUploadModal
                 isModalOpen={isFailedModalOpen}
