@@ -140,6 +140,8 @@ export const UI_STRINGS = {
   UNEXPECTED_ERROR_GENERIC: 'Unexpected error:',
   STUDENT_ADDED: 'Student added successfully',
   STUDENT_ADD_FAILED: 'Failed to add student',
+  FILE_TOO_LARGE_PREFIX: 'File is too large. Maximum allowed size is',
+  FILE_INVALID_TYPE: 'File must be an Excel spreadsheet (.xlsx or .xls)',
 } as const;
 
 export const SERVICE_ERRORS = {
@@ -192,3 +194,7 @@ export const OFFICE_HOURS = Array.from({ length: ENDING_HOUR - STARTING_HOUR + 1
 
 // Default number of rows per page in tables
 export const DEFAULT_TABLE_PAGE_SIZE = 25;
+
+// Maximum allowed size for a spreadsheet upload (Students / Cohort upload)
+export const MAX_UPLOAD_FILE_SIZE_MB = 5;
+export const MAX_UPLOAD_FILE_SIZE_BYTES = MAX_UPLOAD_FILE_SIZE_MB * 1024 * 1024;
