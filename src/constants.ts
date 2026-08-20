@@ -192,3 +192,7 @@ export const OFFICE_HOURS = Array.from({ length: ENDING_HOUR - STARTING_HOUR + 1
 
 // Default number of rows per page in tables
 export const DEFAULT_TABLE_PAGE_SIZE = 25;
+
+// Number of profile rows written to the database concurrently during a
+// spreadsheet upload, to avoid firing thousands of simultaneous requests
+export const PROFILE_UPLOAD_BATCH_SIZE = 25;
