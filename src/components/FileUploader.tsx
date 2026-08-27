@@ -7,7 +7,8 @@
 
 import { useCallback, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
-import { UI_STRINGS } from "../constants";
+import { Typography } from "@mui/material";
+import { MAX_UPLOAD_FILE_SIZE_BYTES, MAX_UPLOAD_FILE_SIZE_MB, UI_STRINGS } from "../constants";
 
 const baseStyle = {
     flex: 1,
@@ -40,16 +41,30 @@ const rejectStyle = {
 function FileUploader({ onChange }: { onChange: (files: File[]) => Promise<void> }) {
 
     const onDrop = useCallback((files: File[]) => {
-        onChange(files)
-    }, [])
+        // files here is only the accepted set - if everything was rejected
+        // (e.g. too large), there's nothing to upload. Don't call onChange,
+        // so the rejection message below stays visible instead of the parent
+        // immediately switching to its upload/progress state.
+        if (files.length > 0) {
+            onChange(files)
+        }
+    }, [onChange])
 
     const {
         getRootProps,
         getInputProps,
         isFocused,
         isDragAccept,
-        isDragReject
-    } = useDropzone({ onDrop, accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel': [] } });
+        isDragReject,
+        fileRejections
+    } = useDropzone({
+        onDrop,
+        maxSize: MAX_UPLOAD_FILE_SIZE_BYTES,
+        accept: {
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+            'application/vnd.ms-excel': ['.xls']
+        }
+    });
 
     const style = useMemo(() => ({
         ...baseStyle,
@@ -68,6 +83,18 @@ function FileUploader({ onChange }: { onChange: (files: File[]) => Promise<void>
                 <input {...getInputProps()} />
                 <p>{UI_STRINGS.DRAG_STUDENT_FILE}</p>
             </div>
+            {fileRejections.length > 0 &&
+                <Typography color="error" variant="body2" mt={1}>
+                    {fileRejections
+                        .map(({ file, errors }) => {
+                            const reason = errors.some(e => e.code === 'file-too-large')
+                                ? `${UI_STRINGS.FILE_TOO_LARGE_PREFIX} ${MAX_UPLOAD_FILE_SIZE_MB}MB`
+                                : UI_STRINGS.FILE_INVALID_TYPE;
+                            return `${file.name}: ${reason}`;
+                        })
+                        .join(', ')}
+                </Typography>
+            }
         </div>
     );
 }
