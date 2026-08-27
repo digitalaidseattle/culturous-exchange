@@ -69,7 +69,7 @@ const StudentsDetailsTable: React.FC = () => {
         .catch((err) => console.error(err))
         .finally(() => setLoading(false));
     }
-  }, [paginationModel, sortModel, filterModel]);
+  }, [paginationModel, sortModel, filterModel, refresh]);
 
   const toggleAnchor = async (student: Student) => {
     try {
