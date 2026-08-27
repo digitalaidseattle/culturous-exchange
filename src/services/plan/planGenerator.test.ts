@@ -12,32 +12,6 @@ import { CEPlanDao } from "../../api/cePlanDao";
 import { Group, Placement, Plan, TimeWindow } from "../../api/types";
 import { CEPlacementService } from "../cePlacementService";
 
-vi.mock("./cePlacementService", () => {
-    return {
-        placementService: {
-            updatePlacement: vi.fn(),
-
-        }
-    };
-});
-
-vi.mock("./ceGroupService", () => {
-    return {
-        groupService: {
-            deleteGroup: vi.fn(),
-            createDefaultTimewindows: vi.fn()
-        },
-    };
-});
-
-vi.mock("./planDao", () => {
-    return {
-        planDao: {
-            getById: vi.fn(),
-        },
-    };
-});
-
 describe("planGenerator", () => {
     const groupService = CEGroupService.getInstance();
     const planDao = CEPlanDao.getInstance();
@@ -67,9 +41,9 @@ describe("planGenerator", () => {
             id: "test-empty"
         } as Plan;
 
-        (placementService.updatePlacement as ReturnType<typeof vi.fn>).mockResolvedValue(Promise.resolve(placementLessPlan));
-        (groupService.deleteGroup as ReturnType<typeof vi.fn>).mockResolvedValue(Promise.resolve());
-        (planDao.getById as ReturnType<typeof vi.fn>).mockResolvedValue(Promise.resolve(emptyPlan));
+        vi.spyOn(placementService, 'updatePlacement').mockResolvedValue(placementLessPlan as any);
+        vi.spyOn(groupService, 'deleteGroup').mockResolvedValue(undefined as any);
+        vi.spyOn(planDao, 'getById').mockResolvedValue(emptyPlan as any);
 
         PlanGenerator.getInstance().emptyPlan(plan)
             .then(result => {
@@ -87,7 +61,7 @@ describe("planGenerator", () => {
             id: "test"
         } as Plan;
 
-        (groupService.createDefaultTimewindows as ReturnType<typeof vi.fn>).mockReturnValue([{} as TimeWindow]);
+        vi.spyOn(groupService, 'createDefaultTimewindows').mockReturnValue([{} as TimeWindow]);
         PlanGenerator.getInstance().createGroups(plan, 2)
             .then(result => {
                 expect(result.length).toBe(2);
