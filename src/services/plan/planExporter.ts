@@ -45,6 +45,7 @@ class PlanExporter {
                     [UI_STRINGS.NAME]: facilitator.name || "",
                     [UI_STRINGS.TYPE]: "Facilitator",
                     [UI_STRINGS.EMAIL]: facilitator.email || "",
+                    [UI_STRINGS.CITY]: facilitator.city,
                     [UI_STRINGS.COUNTRY]: facilitator.country,
                     [UI_STRINGS.TIME_ZONE]: facilitator.time_zone,
                     [UI_STRINGS.STUDENT_TIMES]: (facilitator.timeWindows ?? []).map(tw => timeWindowService.toString(tw)).join(', '),
@@ -63,7 +64,10 @@ class PlanExporter {
                     [UI_STRINGS.NAME]: student.name || "",
                     [UI_STRINGS.TYPE]: student.anchor ? "Anchor" : "",
                     [UI_STRINGS.EMAIL]: student.email || "",
+                    [UI_STRINGS.CITY]: student.city,
                     [UI_STRINGS.COUNTRY]: student.country,
+                    [UI_STRINGS.AGE]: student.age,
+                    [UI_STRINGS.GENDER]: student.gender,
                     [UI_STRINGS.TIME_ZONE]: student.time_zone,
                     [UI_STRINGS.STUDENT_TIMES]: (student.timeWindows ?? []).map(tw => timeWindowService.toString(tw)).join(', '),
                 };
@@ -84,7 +88,10 @@ class PlanExporter {
                 [UI_STRINGS.NAME]: student.name || "",
                 [UI_STRINGS.TYPE]: student.anchor ? "Anchor" : "",
                 [UI_STRINGS.EMAIL]: student.email || "",
+                [UI_STRINGS.CITY]: student.city,
                 [UI_STRINGS.COUNTRY]: student.country,
+                [UI_STRINGS.AGE]: student.age,
+                [UI_STRINGS.GENDER]: student.gender,
                 [UI_STRINGS.TIME_ZONE]: student.time_zone,
                 [UI_STRINGS.STUDENT_TIMES]: (student.timeWindows ?? []).map(tw => timeWindowService.toString(tw)).join(", ")
             });
