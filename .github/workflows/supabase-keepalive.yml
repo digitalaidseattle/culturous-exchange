@@ -1,0 +1,47 @@
+name: Supabase Keep-Alive
+
+# Supabase pauses free-tier projects after ~7 days without activity.
+# This job issues a lightweight REST query on a schedule so the
+# production database stays warm. Also runnable from the Actions tab.
+
+on:
+  schedule:
+    # 06:00 UTC every 3rd day — well inside the 7-day inactivity window.
+    - cron: "0 6 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  production:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Ping production Supabase
+        env:
+          SUPABASE_URL: https://${{ secrets.SUPABASE_PROJECT_REF }}.supabase.co
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_ANON_KEY:-}" ] || [ "$SUPABASE_URL" = "https://.supabase.co" ]; then
+            echo "::error::SUPABASE_PROJECT_REF and SUPABASE_ANON_KEY secrets must be set."
+            exit 1
+          fi
+
+          # A trivial select that executes a real query against the database.
+          # RLS returns an empty array for the anon role — that is fine, the
+          # request still reaches Postgres and resets the idle timer.
+          url="${SUPABASE_URL%/}/rest/v1/student?select=id&limit=1"
+
+          status=$(curl -sS -o /tmp/body.txt -w "%{http_code}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "$url")
+
+          echo "HTTP $status"
+          echo "Response: $(cat /tmp/body.txt)"
+
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            echo "::error::Supabase keep-alive request failed with HTTP $status"
+            exit 1
+          fi
+          echo "Production keep-alive ping succeeded."
