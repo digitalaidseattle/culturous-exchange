@@ -9,13 +9,6 @@ on:
     # 06:00 UTC every 3rd day — well inside the 7-day inactivity window.
     - cron: "0 6 */3 * *"
   workflow_dispatch:
-  # TEMPORARY: lets the workflow run on this branch for testing before merge.
-  # Remove this `push:` block before merging to dev.
-  push:
-    branches:
-      - CEMT-154/supabase-keepalive
-    paths:
-      - .github/workflows/supabase-keepalive.yml
 
 jobs:
   production:
