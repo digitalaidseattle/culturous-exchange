@@ -6,8 +6,8 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    # 06:00 UTC every 3rd day — well inside the 7-day inactivity window.
-    - cron: "0 6 */3 * *"
+    # 06:00 UTC every 2nd day — well inside the 7-day inactivity window.
+    - cron: "0 6 */2 * *"
   workflow_dispatch:
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
           SUPABASE_URL: https://${{ secrets.SUPABASE_PROJECT_REF }}.supabase.co
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
 
           if [ -z "${SUPABASE_ANON_KEY:-}" ] || [ "$SUPABASE_URL" = "https://.supabase.co" ]; then
             echo "::error::SUPABASE_PROJECT_REF and SUPABASE_ANON_KEY secrets must be set."
@@ -32,10 +32,21 @@ jobs:
           # request still reaches Postgres and resets the idle timer.
           url="${SUPABASE_URL%/}/rest/v1/student?select=id&limit=1"
 
-          status=$(curl -sS -o /tmp/body.txt -w "%{http_code}" \
+          # --retry* guards against a transient network blip; --connect-timeout/
+          # --max-time keep a hung endpoint from stalling the whole job.
+          status=$(curl -sS \
+            --connect-timeout 10 --max-time 30 \
+            --retry 3 --retry-delay 5 --retry-all-errors \
+            -o /tmp/body.txt -w "%{http_code}" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
             "$url")
+          curl_exit=$?
+
+          if [ "$curl_exit" -ne 0 ]; then
+            echo "::error::curl failed to reach Supabase after retries (exit code $curl_exit)"
+            exit 1
+          fi
 
           echo "HTTP $status"
           echo "Response: $(cat /tmp/body.txt)"
