@@ -1,4 +1,4 @@
-name: Supabase Keep-Alive
+name: Keep Supabase Alive
 
 # Supabase pauses free-tier projects after ~7 days without activity.
 # This job issues a lightweight REST query on a schedule so the
