@@ -43,7 +43,7 @@ const ToolsSection = () => {
                 resps.forEach(resp => {
                     allFailed = allFailed.concat(resp.failedProfiles);
                 })
-                const allSuccess = resps.map(resp => resp.successCount)
+                const allSuccess = resps.map(resp => resp.successProfiles.length)
                     .reduce((p, v) => p + v, 0);
 
                 displayUploadResults({

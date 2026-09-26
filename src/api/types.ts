@@ -23,6 +23,7 @@ type CEProfile = Entity & {
     name: string;
     email: string;
     city: string;
+    state?: string;
     country: string;
     time_zone?: string;
     tz_offset: number;

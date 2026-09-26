@@ -65,6 +65,24 @@ export class CountryValidator implements Validator<CEProfile> {
   }
 }
 
+// Country answers that mean the United States, compared after
+// trimming, lowercasing, and stripping periods. So "U.S.A." and
+// "united states" both match. US students must have a state because
+// repeated city names (Portland OR vs Portland ME) make the
+// timezone lookup ambiguous without one. CEMT-137.
+const US_COUNTRY_VALUES = ['united states', 'united states of america', 'usa', 'us'];
+
+export class StateValidator implements Validator<CEProfile> {
+  validate(profile: CEProfile): ValidationError[] {
+    const country = (profile.country ?? '').trim().toLowerCase().replace(/\./g, '');
+    const isUS = US_COUNTRY_VALUES.includes(country);
+    if (isUS && (profile.state ?? '').trim().length === 0) {
+      return [{ isValid: false, field: 'state', message: UI_STRINGS.STATE_REQUIRED_US }]
+    }
+    return []
+  }
+}
+
 export class TimezoneValidator implements Validator<CEProfile> {
   validate(profile: CEProfile): ValidationError[] {
     console.log(profile);
@@ -137,6 +155,7 @@ class StudentValidationService extends ProfileValidationService<Student> {
         'age': new AgeValidator(),
         'email': new EmailValidator(),
         'city': new CityValidator(),
+        'state': new StateValidator(),
         'country': new CountryValidator(),
         'timeWindows': new TimeWindowValidator()
       }

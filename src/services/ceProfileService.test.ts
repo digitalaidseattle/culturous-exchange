@@ -6,6 +6,9 @@
  *  the UI showed "not assigned". CEProfileService.save must stamp the saved
  *  profile's id onto every time window before insert.
  *
+ *  Also covers CEMT-137: CEStudentService.save must forward the student's
+ *  state to the timezone lookup so repeated city names resolve correctly.
+ *
  *  @copyright 2026 Digital Aid Seattle
  *
  */
@@ -16,11 +19,12 @@ import { CEStudentService } from "./student/CEStudentService";
 import { CEFacilitatorService } from "./facilitator/CEFacilitatorService";
 
 // Spies are declared via vi.hoisted so they exist when the vi.mock factories run.
-const { batchInsertSpy, adjustSpy, deleteByStudentIdSpy, studentDaoDeleteSpy } = vi.hoisted(() => ({
+const { batchInsertSpy, adjustSpy, deleteByStudentIdSpy, studentDaoDeleteSpy, getTimeZoneSpy } = vi.hoisted(() => ({
     batchInsertSpy: vi.fn(),
     adjustSpy: vi.fn(),
     deleteByStudentIdSpy: vi.fn(async () => true),
-    studentDaoDeleteSpy: vi.fn(async () => undefined)
+    studentDaoDeleteSpy: vi.fn(async () => undefined),
+    getTimeZoneSpy: vi.fn(async () => ({ timezone: "America/Los_Angeles", offset: -8 }))
 }));
 
 // Stub the time-window DAO so getInstance does not need a configured Supabase
@@ -59,10 +63,11 @@ vi.mock("../api/ceFacilitatorDao", () => ({
 }));
 
 // Stub the timezone lookup so the student save does not hit the network.
+// The spy is hoisted so tests can assert on the arguments it receives.
 vi.mock("./time/ceTimeZoneService", () => ({
     CETimeZoneService: {
         getInstance: () => ({
-            getTimeZone: vi.fn(async () => ({ timezone: "America/Los_Angeles", offset: -8 }))
+            getTimeZone: getTimeZoneSpy
         })
     }
 }));
@@ -74,6 +79,7 @@ describe("CEProfileService.save owner stamping (CEMT-132)", () => {
         adjustSpy.mockClear();
         deleteByStudentIdSpy.mockClear();
         studentDaoDeleteSpy.mockClear();
+        getTimeZoneSpy.mockClear();
     });
 
     it("stamps student_id on every time window it saves", async () => {
@@ -111,6 +117,44 @@ describe("CEProfileService.save owner stamping (CEMT-132)", () => {
         const inserted = batchInsertSpy.mock.calls[0][0] as TimeWindow[];
         expect(inserted).toHaveLength(1);
         expect(inserted[0].facilitator_id).toBe("facilitator-1");
+    });
+
+});
+
+describe("CEStudentService.save timezone lookup (CEMT-137)", () => {
+
+    beforeEach(() => {
+        getTimeZoneSpy.mockClear();
+    });
+
+    it("passes city, country, and state to the timezone lookup", async () => {
+        const student = {
+            id: "student-2",
+            name: "Test Student",
+            city: "Portland",
+            state: "OR",
+            country: "United States",
+            timeWindows: []
+        } as unknown as Student;
+
+        await CEStudentService.getInstance().save(student);
+
+        expect(getTimeZoneSpy).toHaveBeenCalledTimes(1);
+        expect(getTimeZoneSpy).toHaveBeenCalledWith("Portland", "United States", "OR");
+    });
+
+    it("passes an undefined state through unchanged", async () => {
+        const student = {
+            id: "student-3",
+            name: "Test Student",
+            city: "Cairo",
+            country: "Egypt",
+            timeWindows: []
+        } as unknown as Student;
+
+        await CEStudentService.getInstance().save(student);
+
+        expect(getTimeZoneSpy).toHaveBeenCalledWith("Cairo", "Egypt", undefined);
     });
 
 });

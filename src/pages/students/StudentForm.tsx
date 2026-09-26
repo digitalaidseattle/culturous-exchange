@@ -168,6 +168,16 @@ const StudentForm: React.FC<Props> = ({ student, fieldErrors, onChange }) => {
           errorText={getFieldError('city')}
         />
         <CETextInput
+          name="state"
+          value={updated.state || ''}
+          label={UI_STRINGS.STATE}
+          required={false}
+          type="text"
+          handleFieldChange={handleFieldChange}
+          isError={hasFieldError('state')}
+          errorText={getFieldError('state')}
+        />
+        <CETextInput
           name="country"
           value={updated.country || ''}
           label={UI_STRINGS.COUNTRY}

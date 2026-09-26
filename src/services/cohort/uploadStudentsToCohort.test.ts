@@ -48,7 +48,7 @@ describe("uploadStudentsToCohort", () => {
     it("enrolls every created student into the cohort", async () => {
         const s1 = { id: "s1", name: "Maria" } as Student;
         const s2 = { id: "s2", name: "Carlos" } as Student;
-        mockUpload({ successCount: 2, successProfiles: [s1, s2], failedProfiles: [] });
+        mockUpload({ successProfiles: [s1, s2], failedProfiles: [] });
 
         const result = await uploadStudentsToCohort(cohort, [{} as File]);
 
@@ -65,7 +65,7 @@ describe("uploadStudentsToCohort", () => {
     it("does not enroll when no students were created", async () => {
         const f1 = { name: "Bad1", failedError: "invalid" } as unknown as FailedProfile;
         const f2 = { name: "Bad2", failedError: "invalid" } as unknown as FailedProfile;
-        mockUpload({ successCount: 0, successProfiles: [], failedProfiles: [f1, f2] });
+        mockUpload({ successProfiles: [], failedProfiles: [f1, f2] });
 
         const result = await uploadStudentsToCohort(cohort, [{} as File]);
 
@@ -83,8 +83,8 @@ describe("uploadStudentsToCohort", () => {
         const s2 = { id: "s2", name: "Carlos" } as Student;
         const f1 = { name: "Bad", failedError: "invalid" } as unknown as FailedProfile;
         mockUpload(
-            { successCount: 1, successProfiles: [s1], failedProfiles: [f1] },
-            { successCount: 1, successProfiles: [s2], failedProfiles: [] },
+            { successProfiles: [s1], failedProfiles: [f1] },
+            { successProfiles: [s2], failedProfiles: [] },
         );
 
         const result = await uploadStudentsToCohort(cohort, [{} as File, {} as File]);
