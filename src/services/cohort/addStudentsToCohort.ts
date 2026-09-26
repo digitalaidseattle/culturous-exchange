@@ -8,7 +8,7 @@
 
 import { Cohort, Enrollment, Student } from "../../api/types";
 import { SERVICE_ERRORS } from "../../constants";
-import { CEEnrollmentService } from "../../api/ceEnrollmentDao";
+import { CEEnrollmentService } from "../../services/ceEnrollmentService";
 
 function createEnrollments(cohort: Cohort, students: Student[]): Enrollment[] {
     return students.map(student => {

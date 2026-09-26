@@ -2,16 +2,16 @@
  * CohortPage.tsx
  *
  * Example of integrating tickets with data-grid
- * 
+ *
  * @copyright 2026 Digital Aid Seattle
  */
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 // material-ui
-import { Box, Button, Stack, Tab, Tabs } from "@mui/material";
-
+import { Breadcrumbs, Link, Typography, Box, Button, IconButton, Stack, Tab, Tabs } from "@mui/material";
+import { HomeOutlined } from "@ant-design/icons";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { MainCard } from "@digitalaidseattle/mui";
 import { useSearchParams } from "react-router-dom";
@@ -47,9 +47,11 @@ const CohortPage: React.FC = () => {
   const [cohort, setCohort] = useState<Cohort | null>();
   const [tabValue, setTabValue] = useState<number>(0);
 
-  useEffect(() => {
+  const loadCohort = (clearFirst: boolean) => {
     if (cohortId) {
-      setCohort(undefined);
+      if (clearFirst) {
+        setCohort(undefined);
+      }
       cohortDao.getById(cohortId)
         .then((cohort) => {
           if (cohort) {
@@ -59,7 +61,26 @@ const CohortPage: React.FC = () => {
           }
         });
     }
-  }, [cohortId, refresh]);
+  };
+
+  // Initial load and cohort switch: clear first so a stale cohort never flashes
+  // while the new one loads.
+  useEffect(() => {
+    loadCohort(true);
+  }, [cohortId]);
+
+  // Refresh (manual post-mutation bump and the 10s poll): refetch in place
+  // without clearing, so the subtree is not unmounted and in-progress UI
+  // (open modals, row selections, inline rename) survives. Skip the first run
+  // so mount does not fetch twice.
+  const isFirstRefresh = useRef(true);
+  useEffect(() => {
+    if (isFirstRefresh.current) {
+      isFirstRefresh.current = false;
+      return;
+    }
+    loadCohort(false);
+  }, [refresh]);
 
   useEffect(() => {
     if (searchParams && searchParams.get('tab')) {
@@ -102,6 +123,15 @@ const CohortPage: React.FC = () => {
     cohort && (
       <CohortContext.Provider value={{ cohort, setCohort }}>
         <Stack gap={1}>
+          <Breadcrumbs aria-label="breadcrumb">
+            <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
+              <HomeOutlined />
+            </IconButton>
+            <Link underline="hover" color="inherit" href={"/cohorts"}>
+              {UI_STRINGS.COHORTS}
+            </Link>
+            <Typography color="text.primary">{UI_STRINGS.COHORT_PREFIX} {cohort.name}</Typography>
+          </Breadcrumbs>
           <MainCard>
             <TextEdit
               label={UI_STRINGS.NAME}

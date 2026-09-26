@@ -1,4 +1,3 @@
-
 /**
  *  PlanCard.tsx
  *
@@ -32,13 +31,18 @@ export const PlanCard = (props: { planId: Identifier }) => {
 
     const navigate = useNavigate();
 
+    // Refetch the plan on refresh (poll + post-mutation bump) as well as on planId
+    // change, so the card's own state (active star, name, note, counts, durations)
+    // stays current without relying on the parent remounting it. The menu/dialog
+    // state below is plain local state that a re-render does not reset, so open
+    // overlays survive a refresh.
     useEffect(() => {
         if (props.planId) {
             CEPlanDao.getInstance()
                 .getById(props.planId)
                 .then((resp) => setPlan(resp!))
         }
-    }, [props.planId]);
+    }, [props.planId, refresh]);
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);

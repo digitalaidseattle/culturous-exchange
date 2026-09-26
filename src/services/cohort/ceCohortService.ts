@@ -7,7 +7,7 @@
 
 import { Identifier } from '@digitalaidseattle/core';
 import { Cohort, Enrollment, Plan } from '../../api/types';
-import { CEEnrollmentService } from '../../api/ceEnrollmentDao';
+import { CEEnrollmentService } from "../../services/ceEnrollmentService";
 import { CEPlanService } from '../plan/cePlanService';
 import { CEPlanDao } from '../../api/cePlanDao';
 import { PlanGenerator } from '../plan/planGenerator';

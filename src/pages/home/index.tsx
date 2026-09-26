@@ -18,7 +18,6 @@ import { CECohortDao } from '../../api/ceCohortDao';
 import { Cohort } from '../../api/types';
 import { UI_STRINGS } from '../../constants';
 
-
 const HomePage: React.FC = () => {
     const cohortDao = CECohortDao.getInstance();
 

@@ -405,17 +405,17 @@ export const TimeLine: React.FC = () => {
                             </tr>
                             <tr>
                                 {OFFICE_HOURS.map((hour, idx) =>
-                                    <th key={`fri-${idx}`} style={{ width: "30px", textAlign: 'center' }}>
+                                    <th key={`fri-${idx}`} style={{ minWidth: "25px", textAlign: 'center' }}>
                                         {hour}
                                     </th>
                                 )}
                                 {OFFICE_HOURS.map((hour, idx) =>
-                                    <th key={`sat-${idx}`} style={{ width: "30px", textAlign: 'center' }}>
+                                    <th key={`sat-${idx}`} style={{ minWidth: "25px", textAlign: 'center' }}>
                                         {hour}
                                     </th>
                                 )}
                                 {OFFICE_HOURS.map((hour, idx) =>
-                                    <th key={`sun-${idx}`} style={{ width: "30px", textAlign: 'center' }}>
+                                    <th key={`sun-${idx}`} style={{ minWidth: "25px", textAlign: 'center' }}>
                                         {hour}
                                     </th>
                                 )}

@@ -30,15 +30,18 @@ import { PageInfo } from "@digitalaidseattle/supabase";
 
 import { CohortContext } from ".";
 import { CEStudentDao } from "../../api/ceStudentDao";
-import { CEProfile, Enrollment, Student } from "../../api/types";
+import { CEProfile, Enrollment, FailedProfile, Student } from "../../api/types";
 import AddProfileModal from "../../components/AddProfileModal";
 import DisplayTimeWindow from "../../components/DisplayTimeWindow";
+import FailedUploadModal from "../../components/FailedUploadModal";
+import FileUploader from "../../components/FileUploader";
 import { ShowLocalTimeContext } from "../../components/ShowLocalTimeContext";
 import { TimeToggle } from "../../components/TimeToggle";
 import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
 import { removeStudentsFromCohort } from "../../services/cohort/removeStudentsFromCohort";
 import { addStudentsToCohort } from "../../services/cohort/addStudentsToCohort";
-import { CEEnrollmentService } from "../../api/ceEnrollmentDao";
+import { CohortUploadResult, uploadStudentsToCohort } from "../../services/cohort/uploadStudentsToCohort";
+import { CEEnrollmentService } from "../../services/ceEnrollmentService";
 
 export const StudentTable: React.FC = () => {
   const studentDao = CEStudentDao.getInstance();
@@ -59,6 +62,11 @@ export const StudentTable: React.FC = () => {
   const [unEnrolled, setUnenrolled] = useState<Student[]>([]);
 
   const [showLocalTime, setShowLocalTime] = useState<boolean>(false);
+
+  // cohort-level spreadsheet upload state
+  const [showDropzone, setShowDropzone] = useState<boolean>(false);
+  const [failedProfiles, setFailedProfiles] = useState<FailedProfile[]>([]);
+  const [isFailedModalOpen, setIsFailedModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setPageInfo({
@@ -90,6 +98,35 @@ export const StudentTable: React.FC = () => {
         notifications.error(UI_STRINGS.ERROR_ADDING_STUDENTS);
         console.error(err);
       })
+  }
+
+  // Upload a student spreadsheet and enroll the created students into this cohort.
+  async function handleUpload(files: File[]): Promise<void> {
+    try {
+      const result = await uploadStudentsToCohort(cohort, files);
+      displayUploadResults(result);
+    } catch (err) {
+      console.error('Unexpected Error: ', err);
+      notifications.error(UI_STRINGS.ERROR_ADDING_STUDENTS);
+      setShowDropzone(false);
+    } finally {
+      setRefresh(refresh + 1);
+    }
+  }
+
+  function displayUploadResults(resp: CohortUploadResult) {
+    setShowDropzone(false);
+    if (resp.failedCount === resp.attemptedCount) {
+      notifications.error(`Error uploading spreadsheet. Failed to add all ${resp.attemptedCount} students.`);
+      setFailedProfiles(resp.failedProfiles);
+      setIsFailedModalOpen(true);
+    } else if (resp.failedCount > 0) {
+      setFailedProfiles(resp.failedProfiles);
+      setIsFailedModalOpen(true);
+      notifications.warn(`${resp.attemptedCount} Attempted, ${resp.successCount} added, ${resp.failedCount} failed.`);
+    } else {
+      notifications.success(`${resp.attemptedCount} Attempted, ${resp.successCount} successfully added`);
+    }
   }
 
   const doDelete = () => {
@@ -216,6 +253,13 @@ export const StudentTable: React.FC = () => {
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Stack margin={1} gap={1} direction="row" spacing={'1rem'}>
             <Button
+              title={UI_STRINGS.UPLOAD}
+              variant="contained"
+              color="primary"
+              onClick={() => setShowDropzone(!showDropzone)}>
+              {UI_STRINGS.UPLOAD}
+            </Button>
+            <Button
               title={UI_STRINGS.ADD_STUDENT}
               variant="contained"
               color="primary"
@@ -233,6 +277,9 @@ export const StudentTable: React.FC = () => {
           </Stack>
           <TimeToggle />
         </Stack>
+        {showDropzone &&
+          <FileUploader onChange={handleUpload} />
+        }
         {cohort &&
           <DataGrid
             apiRef={apiRef}
@@ -267,6 +314,11 @@ export const StudentTable: React.FC = () => {
           isOpen={showAddStudent}
           onClose={handleCloseStudentModal}
           onSubmit={handleAddStudent} />
+        <FailedUploadModal
+          isModalOpen={isFailedModalOpen}
+          onClose={() => setIsFailedModalOpen(false)}
+          failedProfiles={failedProfiles}
+        />
       </ShowLocalTimeContext.Provider>
     </Box>
   );

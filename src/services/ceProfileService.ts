@@ -6,7 +6,8 @@
  */
 
 import { v4 as uuid } from 'uuid';
-import { CEProfile } from '../api/types';
+import { Identifier } from '@digitalaidseattle/core';
+import { CEProfile, TimeWindow } from '../api/types';
 import { SupabaseDao } from '../api/SupabaseDao';
 import { CETimeWindowDao } from '../api/ceTimeWindowDao';
 import { CETimeWindowService } from './time/ceTimeWindowService';
@@ -25,6 +26,13 @@ class CEProfileService<T extends CEProfile> {
         throw new Error('Subclass should implement.')
     };
 
+    // Stamp the owning profile's id onto a time window before it is persisted.
+    // Students set student_id; facilitators set facilitator_id.
+    // Subclasses implement this so a window is never saved without an owner.
+    assignOwner(_timeWindow: TimeWindow, _ownerId: Identifier): TimeWindow {
+        throw new Error('Subclass should implement.');
+    }
+
     async save(profile: T): Promise<T> {
         const timeWindowDao = CETimeWindowDao.getInstance();
         const timeWindowService = CETimeWindowService.getInstance();
@@ -39,10 +47,7 @@ class CEProfileService<T extends CEProfile> {
         const inserted = await this.profileDao.upsert(json)
 
         const timeWindows = (profile.timeWindows ?? [])
-            .map(tw => ({
-                ...tw,
-                id: uuid()
-            }));
+            .map(tw => this.assignOwner({ ...tw, id: uuid() } as TimeWindow, inserted.id!));
 
         await timeWindowDao.batchInsert(timeWindows);
 
