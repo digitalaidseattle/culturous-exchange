@@ -26,7 +26,7 @@ export class FacilitatorUploader extends ProfileUploader<Facilitator> {
     }
 
     createProfile(dict: any): Facilitator {
-        const times = dict['please mark all times that would be possible for the online group session on the weekend (based in your time zone)'];
+        const times = this.findAvailability(dict);
         return {
             ...this.profileService.empty(),
             name: dict['first/given name in english'].trim() + ' ' + dict['last/sur/family name in english'].trim(),
