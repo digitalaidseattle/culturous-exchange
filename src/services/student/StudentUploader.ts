@@ -59,7 +59,7 @@ export class StudentUploader extends ProfileUploader<Student> {
         super(StudentValidationService.getInstance(), CEStudentService.getInstance());
     }
     createProfile(dict: any): Student {
-        const times = dict['please mark all times that would be possible for the online group session on the weekend (based in your time zone)'];
+        const times = this.findAvailability(dict);
         const location = parseLocation(
             dict['home city (and state if applicable)'],
             dict['state']

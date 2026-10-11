@@ -34,6 +34,19 @@ abstract class ProfileUploader<T extends CEProfile> {
         return lowered;
     }
 
+    // CEMT-129: the availability question is worded "based on your time zone";
+    // spreadsheets exported before the wording was corrected say "based in".
+    availabilityHeaders = [
+        'please mark all times that would be possible for the online group session on the weekend (based on your time zone)',
+        'please mark all times that would be possible for the online group session on the weekend (based in your time zone)',
+    ];
+
+    // dict keys are expected to be lowercased and trimmed (see changeToLowercase)
+    findAvailability(dict: any): any {
+        const header = this.availabilityHeaders.find(candidate => candidate in dict);
+        return header ? dict[header] : undefined;
+    }
+
     abstract createProfile(dict: any): CEProfile;
 
     async get_profiles_from_excel(excel_file: File): Promise<CEProfile[]> {
