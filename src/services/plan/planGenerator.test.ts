@@ -4,7 +4,7 @@
  *  @copyright 2025 Digital Aid Seattle
  *
  */
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { PlanGenerator } from "./planGenerator";
 import { CEGroupService } from "../group/ceGroupService";
@@ -12,38 +12,16 @@ import { CEPlanDao } from "../../api/cePlanDao";
 import { Group, Placement, Plan, TimeWindow } from "../../api/types";
 import { CEPlacementService } from "../cePlacementService";
 
-vi.mock("./cePlacementService", () => {
-    return {
-        placementService: {
-            updatePlacement: vi.fn(),
-
-        }
-    };
-});
-
-vi.mock("./ceGroupService", () => {
-    return {
-        groupService: {
-            deleteGroup: vi.fn(),
-            createDefaultTimewindows: vi.fn()
-        },
-    };
-});
-
-vi.mock("./planDao", () => {
-    return {
-        planDao: {
-            getById: vi.fn(),
-        },
-    };
-});
-
 describe("planGenerator", () => {
     const groupService = CEGroupService.getInstance();
     const planDao = CEPlanDao.getInstance();
     const placementService = CEPlacementService.getInstance();
 
-    it("emptyPlan", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it("emptyPlan", async () => {
 
         const placement = {
             student_id: "123",
@@ -59,49 +37,47 @@ describe("planGenerator", () => {
             groups: [group]
         } as Plan;
 
-        const placementLessPlan = {
-            id: "test-less"
-        } as Plan;
+        const placementLessPlacement = {
+            plan_id: "test",
+            student_id: "123",
+        } as Placement;
 
         const emptyPlan = {
             id: "test-empty"
         } as Plan;
 
-        (placementService.updatePlacement as ReturnType<typeof vi.fn>).mockResolvedValue(Promise.resolve(placementLessPlan));
-        (groupService.deleteGroup as ReturnType<typeof vi.fn>).mockResolvedValue(Promise.resolve());
-        (planDao.getById as ReturnType<typeof vi.fn>).mockResolvedValue(Promise.resolve(emptyPlan));
+        const updateSpy = vi.spyOn(placementService, "updatePlacement").mockResolvedValue(placementLessPlacement);
+        const deleteSpy = vi.spyOn(groupService, "deleteGroup").mockResolvedValue();
+        const getByIdSpy = vi.spyOn(planDao, "getById").mockResolvedValue(emptyPlan);
 
-        PlanGenerator.getInstance().emptyPlan(plan)
-            .then(result => {
-                expect(result).toBe(emptyPlan);
-                expect(placementService.updatePlacement).toHaveBeenCalledWith("test", "123", { group_id: null });
-                expect(groupService.deleteGroup).toHaveBeenCalledWith(group);
-                expect(planDao.getById).toHaveBeenCalledWith("test");
-            })
+        const result = await PlanGenerator.getInstance().emptyPlan(plan);
 
+        expect(result).toBe(emptyPlan);
+        expect(updateSpy).toHaveBeenCalledWith("test", "123", { group_id: null });
+        expect(deleteSpy).toHaveBeenCalledWith(group);
+        expect(getByIdSpy).toHaveBeenCalledWith("test");
     });
 
-    it("createGroups", () => {
+    it("createGroups", async () => {
 
         const plan = {
             id: "test"
         } as Plan;
 
-        (groupService.createDefaultTimewindows as ReturnType<typeof vi.fn>).mockReturnValue([{} as TimeWindow]);
-        PlanGenerator.getInstance().createGroups(plan, 2)
-            .then(result => {
-                expect(result.length).toBe(2);
-                expect(result[0].id).toBeDefined();
-                expect(result[0].plan_id).toBe("test");
-                expect(result[0].name).toBe("Group 1");
-                expect(result[0].country_count).toBe(0);
-                expect(result[0].time_windows?.length).toBe(1);
-                expect(result[0].placements?.length).toBe(0);
-                expect(result[1].id).toBeDefined();
-                expect(result[1].plan_id).toBe("test");
-                expect(result[1].name).toBe("Group 2");
-            })
+        vi.spyOn(groupService, "createDefaultTimewindows").mockReturnValue([{} as TimeWindow]);
 
+        const result = await PlanGenerator.getInstance().createGroups(plan, 2);
+
+        expect(result.length).toBe(2);
+        expect(result[0].id).toBeDefined();
+        expect(result[0].plan_id).toBe("test");
+        expect(result[0].name).toBe("Group 1");
+        expect(result[0].country_count).toBe(0);
+        expect(result[0].time_windows?.length).toBe(1);
+        expect(result[0].placements?.length).toBe(0);
+        expect(result[1].id).toBeDefined();
+        expect(result[1].plan_id).toBe("test");
+        expect(result[1].name).toBe("Group 2");
     });
 
 });
