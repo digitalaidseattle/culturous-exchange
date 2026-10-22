@@ -10,6 +10,7 @@ import { Cohort, Enrollment, Plan } from '../../api/types';
 import { CEEnrollmentService } from "../../services/ceEnrollmentService";
 import { CEPlanService } from '../plan/cePlanService';
 import { CEPlanDao } from '../../api/cePlanDao';
+import { CECohortDao } from '../../api/ceCohortDao';
 import { PlanGenerator } from '../plan/planGenerator';
 
 
@@ -40,6 +41,15 @@ class CECohortService {
         const seeded = await planGenerator.run(hydrated!);
         console.log('seeded', seeded)
         return planService.save(seeded);
+    }
+
+    async nameExists(name: string): Promise<boolean> {
+        console.log(name)
+        return CECohortDao.getInstance().nameExists(name)
+            .then(bb => {
+                console.log(name, bb)
+                return bb;
+            })
     }
 
 }
