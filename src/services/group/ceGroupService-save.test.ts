@@ -31,19 +31,21 @@ describe("groupService-save", () => {
         } as Group;
 
         const inserted = {
+            id: "test"
         } as Group;
 
         // Using a spy here to check if methods are called
         // Spies are a simpler alternative to mockFunctions. You can specify a mock function to do more that just return a value.
-        vi.spyOn(groupDao, "insert").mockResolvedValue(inserted);
+        vi.spyOn(groupDao, "upsert").mockResolvedValue(inserted);
         vi.spyOn(timeWindowDao, "deleteByGroupId").mockResolvedValue(true);
+        vi.spyOn(timeWindowDao, "insert").mockResolvedValue(savedTw);
         vi.spyOn(timeWindowService, "save").mockResolvedValue(savedTw);
 
         groupService.save(group)
             .then(result => {
                 expect(result).toBe(group);
                 expect(timeWindowDao.deleteByGroupId).toHaveBeenCalledWith("test");
-                expect(timeWindowService.save).toHaveBeenCalledWith(tw);
+                expect(timeWindowDao.insert).toHaveBeenCalledWith(tw);
             })
     });
 
