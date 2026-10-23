@@ -28,12 +28,30 @@ export interface CohortUploadResult {
  * into the cohort here via addStudentsToCohort, which also copies each
  * student's anchor flag onto the new enrollment.
  */
-export async function uploadStudentsToCohort(cohort: Cohort, files: File[]): Promise<CohortUploadResult> {
+export async function uploadStudentsToCohort(
+    cohort: Cohort,
+    files: File[],
+    onProgress?: (completed: number, total: number) => void
+): Promise<CohortUploadResult> {
     try {
         const uploadService = StudentUploader.getInstance();
 
+        // Track per-file progress and report the aggregate across all files.
+        const progressByFile = new Array(files.length).fill(0);
+        const totalByFile = new Array(files.length).fill(0);
+        const reportProgress = (fileIndex: number, completed: number, total: number) => {
+            progressByFile[fileIndex] = completed;
+            totalByFile[fileIndex] = total;
+            onProgress?.(
+                progressByFile.reduce((a, b) => a + b, 0),
+                totalByFile.reduce((a, b) => a + b, 0)
+            );
+        };
+
         const responses = await Promise.all(
-            files.map(file => uploadService.insert_from_excel(file))
+            files.map((file, fileIndex) =>
+                uploadService.insert_from_excel(file, (completed, total) => reportProgress(fileIndex, completed, total))
+            )
         );
 
         const createdStudents: Student[] = [];

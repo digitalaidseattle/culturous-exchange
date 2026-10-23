@@ -29,6 +29,7 @@ import { Config } from './Config';
 
 import "./App.css";
 import { setConfiguration } from './api/Configuration';
+import { UploadProgressProvider } from './components/UploadProgressContext';
 
 // ==============================|| APP - THEME, ROUTER, LOCAL  ||============================== //
 
@@ -59,7 +60,9 @@ const App: React.FC = () => {
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <UserContextProvider>
             <LayoutConfigurationProvider configuration={Config}>
-              <RouterProvider router={router} />
+              <UploadProgressProvider>
+                <RouterProvider router={router} />
+              </UploadProgressProvider>
             </LayoutConfigurationProvider>
           </UserContextProvider>
         </LocalizationProvider>
