@@ -3,7 +3,8 @@
  *
  *  CEMT-151: insert_from_excel used to fire one unbounded Promise.all inserting
  *  every parsed row concurrently, which fanned out into thousands of simultaneous
- *  DB requests for large spreadsheets. It should instead write in bounded batches.
+ *  DB requests for large spreadsheets. It should instead write in bounded batches
+ *  and report progress after each batch.
  *
  *  @copyright 2026 Digital Aid Seattle
  *
@@ -63,6 +64,20 @@ describe("ProfileUploader.insert_from_excel batching (CEMT-151)", () => {
         expect(result.successCount).toBe(profiles.length);
         expect(maxInFlight).toBeGreaterThan(1); // still concurrent within a batch
         expect(maxInFlight).toBeLessThanOrEqual(PROFILE_UPLOAD_BATCH_SIZE);
+    });
+
+    it("reports cumulative progress after each batch completes", async () => {
+        const profiles = makeProfiles(PROFILE_UPLOAD_BATCH_SIZE + 5);
+        const profileService = { save: vi.fn(async (p: CEProfile) => p) } as unknown as CEProfileService<CEProfile>;
+        const uploader = new TestUploader(passingValidation, profileService, profiles);
+
+        const progressCalls: [number, number][] = [];
+        await uploader.insert_from_excel({} as File, (completed, total) => progressCalls.push([completed, total]));
+
+        expect(progressCalls).toEqual([
+            [PROFILE_UPLOAD_BATCH_SIZE, profiles.length],
+            [profiles.length, profiles.length],
+        ]);
     });
 
     it("propagates the original parse error message instead of a generic one", async () => {

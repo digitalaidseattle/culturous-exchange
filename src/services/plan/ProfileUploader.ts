@@ -71,7 +71,10 @@ abstract class ProfileUploader<T extends CEProfile> {
 
     }
 
-    async insert_from_excel(excel_file: File): Promise<{ successCount: number; successProfiles: T[]; failedProfiles: FailedProfile[] }> {
+    async insert_from_excel(
+        excel_file: File,
+        onProgress?: (completed: number, total: number) => void
+    ): Promise<{ successCount: number; successProfiles: T[]; failedProfiles: FailedProfile[] }> {
         // Let a parse failure propagate with its own specific message (thrown by
         // get_profiles_from_excel) instead of being masked by the generic message below.
         const profiles = await this.get_profiles_from_excel(excel_file);
@@ -85,6 +88,7 @@ abstract class ProfileUploader<T extends CEProfile> {
                 const batch = profiles.slice(i, i + PROFILE_UPLOAD_BATCH_SIZE);
                 const batchResps = await Promise.all(batch.map(profile => this.insertProfile(profile as T)));
                 resps.push(...batchResps);
+                onProgress?.(resps.length, profiles.length);
             }
 
             const successful = resps.filter(resp => resp.success);
