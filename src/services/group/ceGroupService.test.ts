@@ -5,16 +5,19 @@
  *
  */
 import { describe, expect, it, vi } from "vitest";
+import { formatInTimeZone } from "date-fns-tz";
 import { CEGroupService } from "./ceGroupService";
 import { CETimeWindowDao } from "../../api/ceTimeWindowDao";
 import { Group, TimeWindow } from "../../api/types";
 import { CEGroupDao } from "../../api/ceGroupDao";
+import { DEFAULT_TIMEZONE } from "../time/ceTimeWindowService";
 
 describe("groupService", () => {
-    const offset = -7; // using a fixed offset to make test deterministic; 
     const groupService = CEGroupService.getInstance();
     const groupDao = CEGroupDao.getInstance();
     const timeWindowDao = CETimeWindowDao.getInstance();
+    const formatDefaultTimeZone = (date: Date) =>
+        formatInTimeZone(date, DEFAULT_TIMEZONE, "EEE H");
 
     it("createDefaultTimewindows", () => {
 
@@ -25,12 +28,9 @@ describe("groupService", () => {
         const result = groupService.createDefaultTimewindows(group)
 
         expect(result.length).toBe(3);
-        expect(result[0].start_date_time.getDay()).toBe(5);
-        expect(result[0].start_date_time.getHours()).toBe(7);
-        expect(result[0].start_date_time.getUTCHours()).toBe(7 - offset);
-        expect(result[2].end_date_time.getDay()).toBe(0);
-        expect(result[2].end_date_time.getHours()).toBe(22);
-
+        expect(formatDefaultTimeZone(result[0].start_date_time)).toBe("Fri 7");
+        expect(formatDefaultTimeZone(result[2].end_date_time)).toBe("Sun 22");
+        
     });
 
     it("deleteGroup", () => {
