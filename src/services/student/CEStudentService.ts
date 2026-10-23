@@ -36,6 +36,7 @@ class CEStudentService extends CEProfileService<Student> {
             name: '',
             email: '',
             city: '',
+            state: '',
             country: '',
             age: 15,
             time_zone: '',
@@ -63,7 +64,7 @@ class CEStudentService extends CEProfileService<Student> {
     }
 
     async save(profile: Student): Promise<Student> {
-        const { timezone, offset } = await this.timezoneService.getTimeZone(profile.city!, profile.country)
+        const { timezone, offset } = await this.timezoneService.getTimeZone(profile.city!, profile.country, profile.state)
         const updated = {
             ...profile,
             time_zone: timezone,
