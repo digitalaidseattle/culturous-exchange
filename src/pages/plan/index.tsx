@@ -4,7 +4,7 @@
  *  @copyright 2026 Digital Aid Seattle
  *
  */
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 // material-ui
@@ -27,6 +27,7 @@ import { CohortContext } from "../cohort";
 import { GroupBoard } from "./GroupBoard";
 import { PlanContext } from "./PlanContext";
 import { TimeLine } from "./TimeLine";
+import { ViewDetails, ViewDetailsContext } from "./ViewDetailsContext";
 
 const PlanPage: React.FC = () => {
   const cohortDao = CECohortDao.getInstance();
@@ -36,12 +37,11 @@ const PlanPage: React.FC = () => {
   const [plan, setPlan] = useState<Plan>();
   const [cohort, setCohort] = useState<Cohort>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
-  const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
+  const [viewDetails, setViewDetails] = useState<ViewDetails>({ showGroupDetails: false, showStudentDetails: false });
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [viewType, setViewType] = useState<"board" | "timeline">("board");
 
-  const notifications = useNotifications();;
+  const notifications = useNotifications();
 
   useEffect(() => {
     refreshPlan(planId!);
@@ -105,11 +105,17 @@ const PlanPage: React.FC = () => {
   }
 
   function handleGroupDetails(): void {
-    setShowGroupDetails(!showGroupDetails);
+    setViewDetails({
+      ...viewDetails,
+      showGroupDetails: !viewDetails.showGroupDetails
+    });
   }
 
   function handleStudentDetails(): void {
-    setStudentDetails(!showStudentDetails);
+    setViewDetails({
+      ...viewDetails,
+      showStudentDetails: !viewDetails.showStudentDetails
+    });
   }
 
   function handleSettings(): void {
@@ -144,87 +150,89 @@ const PlanPage: React.FC = () => {
     : plan && cohort &&
     <PlanContext.Provider value={{ plan, setPlan }}>
       <CohortContext.Provider value={{ cohort, setCohort }}>
-        <Stack gap={1}>
-          <Breadcrumbs aria-label="breadcrumb">
-            <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
-              <HomeOutlined />
-            </IconButton>
-            <Link underline="hover" color="inherit" href={"/cohorts"}>
-              {UI_STRINGS.COHORTS}
-            </Link>
-            <Link
-              underline="hover"
-              color="inherit"
-              href={`/cohort/${plan.cohort_id}`}
-            >
-              {UI_STRINGS.COHORT_PREFIX} {cohort.name}
-            </Link>
-            <Typography sx={{ color: 'text.primary' }}>{UI_STRINGS.PLAN_PREFIX} {plan.name}</Typography>
-          </Breadcrumbs>
-          <MainCard sx={{ width: '100%' }}>
-            <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
-              <TextEdit label={UI_STRINGS.NAME} value={plan.name} onChange={handleNameUpdate} />
-              <TextEdit label={UI_STRINGS.NOTES_LABEL} value={plan.note} onChange={handleNoteUpdate} />
-            </Stack>
-            {/* <PlanDetails /> */}
-            <Box sx={{ marginTop: 1 }}  >
-              <Toolbar>
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="h3" component="span">
-                    {UI_STRINGS.GROUPS_LABEL}
-                  </Typography>
-                  <ButtonGroup size="small" aria-label="Small button group">
-                    <Tooltip title={UI_STRINGS.SELECT_BOARD_VIEW}>
-                      <IconButton size="small"
-                        onClick={() => setViewType("board")}>
-                        <AppstoreOutlined />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={UI_STRINGS.SELECT_TIMELINE_VIEW}>
-                      <IconButton size="small"
-                        onClick={() => setViewType("timeline")}>
-                        <TableOutlined />
-                      </IconButton>
-                    </Tooltip>
-                  </ButtonGroup>
+        <ViewDetailsContext.Provider value={{ viewDetails, setViewDetails }}>
+          <Stack gap={1}>
+            <Breadcrumbs aria-label="breadcrumb">
+              <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
+                <HomeOutlined />
+              </IconButton>
+              <Link underline="hover" color="inherit" href={"/cohorts"}>
+                {UI_STRINGS.COHORTS}
+              </Link>
+              <Link
+                underline="hover"
+                color="inherit"
+                href={`/cohort/${plan.cohort_id}`}
+              >
+                {UI_STRINGS.COHORT_PREFIX} {cohort.name}
+              </Link>
+              <Typography sx={{ color: 'text.primary' }}>{UI_STRINGS.PLAN_PREFIX} {plan.name}</Typography>
+            </Breadcrumbs>
+            <MainCard sx={{ width: '100%' }}>
+              <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
+                <TextEdit label={UI_STRINGS.NAME} value={plan.name} onChange={handleNameUpdate} />
+                <TextEdit label={UI_STRINGS.NOTES_LABEL} value={plan.note} onChange={handleNoteUpdate} />
+              </Stack>
+              {/* <PlanDetails /> */}
+              <Box sx={{ marginTop: 1 }}  >
+                <Toolbar>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="h3" component="span">
+                      {UI_STRINGS.GROUPS_LABEL}
+                    </Typography>
+                    <ButtonGroup size="small" aria-label="Small button group">
+                      <Tooltip title={UI_STRINGS.SELECT_BOARD_VIEW}>
+                        <IconButton size="small"
+                          onClick={() => setViewType("board")}>
+                          <AppstoreOutlined />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={UI_STRINGS.SELECT_TIMELINE_VIEW}>
+                        <IconButton size="small"
+                          onClick={() => setViewType("timeline")}>
+                          <TableOutlined />
+                        </IconButton>
+                      </Tooltip>
+                    </ButtonGroup>
+                  </Box>
+
+                  <Tooltip title={UI_STRINGS.EXPORT_PLAN}>
+                    <IconButton color="inherit" onClick={exportPlan}>
+                      <ExportOutlined />
+                    </IconButton>
+                  </Tooltip>
+
+                  <Tooltip title={UI_STRINGS.TOGGLE_GROUP_DETAILS}>
+                    <IconButton color="inherit" onClick={handleGroupDetails}>
+                      <TeamOutlined />
+                    </IconButton>
+                  </Tooltip>
+
+                  <Tooltip title={UI_STRINGS.TOGGLE_STUDENT_DETAILS}>
+                    <IconButton color="inherit" onClick={handleStudentDetails}>
+                      <UserOutlined />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={UI_STRINGS.SHOW_PLAN_SETTINGS}>
+                    <IconButton color="inherit" onClick={handleSettings}>
+                      <SettingOutlined />
+                    </IconButton>
+                  </Tooltip>
+                </Toolbar>
+                <Box sx={{ overflowX: 'auto', }}>
+                  {!loading && viewType === "board" && <GroupBoard />}
+                  {!loading && viewType === "timeline" && <TimeLine />}
                 </Box>
-
-                <Tooltip title={UI_STRINGS.EXPORT_PLAN}>
-                  <IconButton color="inherit" onClick={exportPlan}>
-                    <ExportOutlined />
-                  </IconButton>
-                </Tooltip>
-
-                <Tooltip title={UI_STRINGS.TOGGLE_GROUP_DETAILS}>
-                  <IconButton color="inherit" onClick={handleGroupDetails}>
-                    <TeamOutlined />
-                  </IconButton>
-                </Tooltip>
-
-                <Tooltip title={UI_STRINGS.TOGGLE_STUDENT_DETAILS}>
-                  <IconButton color="inherit" onClick={handleStudentDetails}>
-                    <UserOutlined />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={UI_STRINGS.SHOW_PLAN_SETTINGS}>
-                  <IconButton color="inherit" onClick={handleSettings}>
-                    <SettingOutlined />
-                  </IconButton>
-                </Tooltip>
-              </Toolbar>
-              <Box sx={{ overflowX: 'auto', }}>
-                {!loading && viewType === "board" && <GroupBoard showGroupDetails={showGroupDetails} showStudentDetails={showStudentDetails} />}
-                {!loading && viewType === "timeline" && <TimeLine />}
+                <PlanSettingsDialog
+                  plan={plan!}
+                  isOpen={showSettings}
+                  onClose={() => setShowSettings(false)}
+                  onSubmit={handleSettingsChange}
+                />
               </Box>
-              <PlanSettingsDialog
-                plan={plan!}
-                isOpen={showSettings}
-                onClose={() => setShowSettings(false)}
-                onSubmit={handleSettingsChange}
-              />
-            </Box>
-          </MainCard>
-        </Stack>
+            </MainCard>
+          </Stack>
+        </ViewDetailsContext.Provider>
       </CohortContext.Provider >
     </PlanContext.Provider >
   );
