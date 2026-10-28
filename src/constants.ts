@@ -23,7 +23,7 @@ export const UI_STRINGS = {
   SETTINGS: 'Settings',
   GROUP_SIZE: 'Group Size:',
   COUNTRIES: 'Countries: ',
-  DURATION: 'Duration (hr): ',
+  DURATION: 'Overlap (hr): ',
   NOT_AVAILABLE: 'N/A',
   TIME_WINDOWS: 'Time Windows',
   CURRENT_COHORT: 'Current Cohort:',
@@ -59,9 +59,9 @@ export const UI_STRINGS = {
   ARE_YOU_SURE_DELETE_STUDENT: 'Are you sure you want to delete this student?',
   LOCAL_TIME: 'Local Time',
   STUDENT_TIME: 'Student Time',
-  TOTAL_DURATION: 'Total Plan Duration',
+  TOTAL_DURATION: 'Total Plan Overlap',
   AVG_COUNTRY_COUNT: 'Avg. Countries/Group',
-  AVG_DURATION: 'Avg. Duration/Group',
+  AVG_DURATION: 'Avg. Overlap/Group',
 
   // Tooltips
   SELECT_TIMELINE_VIEW: 'Select timeline view',

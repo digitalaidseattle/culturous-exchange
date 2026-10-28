@@ -47,6 +47,7 @@ import { studentMover } from "../../services/plan/studentMover";
 import StudentModal from "../students/StudentModal";
 import { FacilitatorMenu } from "./FacilitatorMenu";
 import { PlanContext } from "./PlanContext";
+import { ViewDetailsContext } from "./ViewDetailsContext";
 
 type TimeRow = {
     id: Identifier;
@@ -237,6 +238,8 @@ export const TimeLine: React.FC = () => {
     const planService = CEPlanService.getInstance()
 
     const { plan, setPlan } = useContext(PlanContext);
+    const { viewDetails } = useContext(ViewDetailsContext);
+
     const [initialized, setInitialized] = useState<boolean>(false);
     const [rows, setRows] = useState<TimeRow[]>([]);
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -261,7 +264,7 @@ export const TimeLine: React.FC = () => {
         if (plan) {
             refresh();
         }
-    }, [plan, initialized]);
+    }, [plan, viewDetails, initialized]);
 
     function refresh() {
         setInitialized(false);
@@ -339,11 +342,15 @@ export const TimeLine: React.FC = () => {
             .sort((g0, g1) => g0.name.localeCompare(g1.name))
             .forEach(group => {
                 tempRows.push(createGroupRow(group));
-                createFacilitatorRows(group)
-                    .forEach(fRow => tempRows.push(fRow));
-                tempRows.push();
-                createStudentRows(plan.placements.filter(p => p.group_id === group.id))
-                    .forEach(sRow => tempRows.push(sRow));
+                if (viewDetails.showGroupDetails) {
+                    createFacilitatorRows(group)
+                        .forEach(fRow => tempRows.push(fRow));
+                    tempRows.push();
+                }
+                if (viewDetails.showStudentDetails) {
+                    createStudentRows(plan.placements.filter(p => p.group_id === group.id))
+                        .forEach(sRow => tempRows.push(sRow));
+                }
             });
         tempRows.push(createWaitlistRow());
         createStudentRows(plan.placements.filter(p => !p.group_id))
