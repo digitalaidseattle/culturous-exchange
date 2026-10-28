@@ -12,8 +12,10 @@ export interface TabPanelProps {
     children?: React.ReactNode;
     index: number;
     value: number;
+    /** drop the side and bottom padding so content lines up with the page edge */
+    disableGutters?: boolean;
 }
-export const TabPanel: React.FC<TabPanelProps> = ({ children, index, value }) => {
+export const TabPanel: React.FC<TabPanelProps> = ({ children, index, value, disableGutters }) => {
     return (
         <Box
             role="tabpanel"
@@ -22,7 +24,7 @@ export const TabPanel: React.FC<TabPanelProps> = ({ children, index, value }) =>
             aria-labelledby={`simple-tab-${index}`}
         >
             {value === index && (
-                <Box sx={{ p: 3 }}>
+                <Box sx={disableGutters ? { pt: 3 } : { p: 3 }}>
                     {children}
                 </Box>
             )}

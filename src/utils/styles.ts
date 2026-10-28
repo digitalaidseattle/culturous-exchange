@@ -39,3 +39,19 @@ export const insetPanelSx: SxProps<Theme> = {
   bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
   padding: 1.5
 };
+
+// A raised card that can be clicked as a whole: the pointer shows it, and it lifts a little on hover.
+export const clickableCardSx: SxProps<Theme> = {
+  borderRadius: 1,
+  boxShadow: 3,
+  cursor: 'pointer',
+  transition: 'box-shadow 0.2s',
+  '&:hover': {
+    boxShadow: 6
+  }
+};
+
+// The surface and border of an "Active" status tag: a pale, slightly grey (sage) mint green, light
+// enough that the main text color reads clearly on it (about 12 to 1).
+export const ACTIVE_STATUS_SURFACE = '#e2f0df';
+export const ACTIVE_STATUS_BORDER = '#9fcf99';

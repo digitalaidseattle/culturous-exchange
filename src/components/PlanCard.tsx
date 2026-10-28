@@ -1,24 +1,30 @@
 /**
  *  PlanCard.tsx
  *
+ *  One plan on the cohort page. Styled to match the cohort cards on the home page.
+ *
  *  @copyright 2024 Digital Aid Seattle
  *
  */
 
-import { MoreOutlined } from "@ant-design/icons";
+import { ArrowRightOutlined, MoreOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
 import { Identifier, LoadingContext, RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
-import { Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Typography } from "@mui/material";
+import { Button, Card, CardContent, Divider, IconButton, Menu, MenuItem, Stack, Typography } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { CEPlanDao } from "../api/cePlanDao";
 import { Plan } from "../api/types";
 import { UI_STRINGS } from '../constants';
-import StarAvatar from "./StarAvatar";
-import { planDelete } from "../services/plan/planDelete";
 import { planActivation } from "../services/plan/planActivation";
+import { planDelete } from "../services/plan/planDelete";
 import { planDuplicate } from "../services/plan/planDuplicate";
-
+import { planStats } from "../services/plan/planStats";
+import { clickableCardSx, tonalButtonSx } from "../utils/styles";
+import { CountryChip } from "./CountryChip";
+import { EditPlanNameDialog } from "./EditPlanNameDialog";
+import { PlanStatusChip } from "./PlanStatusChip";
+import { PlanSummary } from "./PlanSummary";
 
 export const PlanCard = (props: { planId: Identifier }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -27,6 +33,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
     const notifications = useNotifications();
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
+    const [openEditDialog, setOpenEditDialog] = useState<boolean>(false);
     const { loading, setLoading } = useContext(LoadingContext);
 
     const navigate = useNavigate();
@@ -44,7 +51,9 @@ export const PlanCard = (props: { planId: Identifier }) => {
         }
     }, [props.planId, refresh]);
 
+    // The whole card opens the plan, so the buttons and menu on it must not also pass their clicks on to the card
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        event.stopPropagation();
         setAnchorEl(event.currentTarget);
     };
 
@@ -52,11 +61,17 @@ export const PlanCard = (props: { planId: Identifier }) => {
         setAnchorEl(null);
     };
 
-    const handleOpen = () => {
+    // "groups" or "students" opens the plan with that part's details showing
+    const handleOpen = (edit?: 'groups' | 'students') => {
         if (plan) {
-            navigate(`/plan/${plan.id}`);
+            navigate(edit ? `/plan/${plan.id}?edit=${edit}` : `/plan/${plan.id}`);
             setAnchorEl(null);
         }
+    };
+
+    const handleEditName = () => {
+        setOpenEditDialog(true);
+        setAnchorEl(null);
     };
 
     const handleDuplicate = () => {
@@ -107,63 +122,89 @@ export const PlanCard = (props: { planId: Identifier }) => {
         }
     }
 
-    return (plan &&
-        <>
-            <Card
-                sx={{
-                    width: "240px",
-                    height: "260px",
-                    borderRadius: "10px",
-                    boxShadow: "0px 14px 80px rgba(34, 35, 58, 0.2)",
-                    position: "relative",
-                }}
-                onDoubleClick={handleOpen}>
-                <CardHeader
-                    avatar={<StarAvatar
-                        active={plan.active}
-                        title={plan.active ? 'Deactivate plan' : 'Activate plan'}
-                        onToggle={handleActivePlanToggle} />}
-                    title={plan.name}
-                    action={<IconButton
-                        onClick={handleClick}
-                        aria-label="more">
-                        <MoreOutlined />
-                    </IconButton>
-                    } />
-                <Menu
-                    id="demo-positioned-menu"
-                    aria-labelledby="demo-positioned-button"
-                    anchorEl={anchorEl}
-                    open={showMenu}
-                    onClose={handleClose}
-                    anchorOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                    }}
-                    transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'left',
-                    }}
-                >
-                    <MenuItem onClick={handleOpen}>Open</MenuItem>
-                    <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
-                    <MenuItem onClick={handleDelete}>Delete...</MenuItem>
-                    <MenuItem disabled={loading} onClick={handleActive}>
-                        {plan.active ? "Set Inactive" : "Set Active"}
-                    </MenuItem>
-                </Menu>
-                <CardContent>
-                    <Typography>{UI_STRINGS.NOTES_LABEL}: {plan.note}</Typography>
-                    <Typography>{UI_STRINGS.GROUPS_LABEL}: {(plan.groups ?? []).length}</Typography>
-                    <Typography>{UI_STRINGS.STUDENTS_LABEL}: {(plan.placements ?? []).length}</Typography>
-                </CardContent>
-                <CardContent>
-                    <Typography>{UI_STRINGS.TOTAL_DURATION}: {plan.total_duration}</Typography>
-                    <Typography>{UI_STRINGS.AVG_COUNTRY_COUNT}: {plan.avg_country_count}</Typography>
-                    <Typography>{UI_STRINGS.AVG_DURATION}: {plan.avg_duration}</Typography>
-                </CardContent>
+    const stats = plan ? planStats(plan) : undefined;
 
+    return (plan && stats &&
+        <>
+            <Card sx={clickableCardSx} onClick={() => handleOpen()}>
+                <CardContent>
+                    <Stack gap={2}>
+                        <Stack direction="row" alignItems="center" gap={1.5}>
+                            <Typography variant="h3" component="h3" sx={{ fontWeight: 600 }}>
+                                {plan.name}
+                            </Typography>
+                            {/* status, shown for every plan; Set Active and Set Inactive are in the menu */}
+                            <PlanStatusChip active={Boolean(plan.active)} />
+                            <IconButton
+                                sx={{ marginLeft: 'auto' }}
+                                onClick={handleClick}
+                                aria-label="more">
+                                <MoreOutlined />
+                            </IconButton>
+                            <Menu
+                                anchorEl={anchorEl}
+                                open={showMenu}
+                                onClose={handleClose}
+                                // the menu is drawn elsewhere on the page, but its clicks would still reach the card
+                                onClick={(event) => event.stopPropagation()}>
+                                <MenuItem onClick={() => handleOpen()}>{UI_STRINGS.OPEN_PLAN}</MenuItem>
+                                <MenuItem onClick={handleEditName}>{UI_STRINGS.EDIT_NAME}</MenuItem>
+                                <MenuItem onClick={handleDuplicate}>Duplicate</MenuItem>
+                                <MenuItem onClick={handleDelete}>Delete...</MenuItem>
+                                <MenuItem disabled={loading} onClick={handleActive}>
+                                    {plan.active ? "Set Inactive" : "Set Active"}
+                                </MenuItem>
+                            </Menu>
+                        </Stack>
+                        {plan.note &&
+                            <Typography>{UI_STRINGS.NOTES_LABEL}: {plan.note}</Typography>
+                        }
+                        <PlanSummary stats={stats} />
+                        {stats.countries.length > 0 &&
+                            <Stack gap={0.75}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                    {UI_STRINGS.COUNTRIES_REPRESENTED}
+                                </Typography>
+                                <Stack direction="row" flexWrap="wrap" gap={0.75}>
+                                    {stats.countries.map(country =>
+                                        <CountryChip key={country.name} country={country.name} count={country.count} />
+                                    )}
+                                </Stack>
+                            </Stack>
+                        }
+                        <Divider />
+                        <Stack direction="row" flexWrap="wrap" alignItems="center" justifyContent="space-between" gap={1.5}>
+                            <Stack direction="row" flexWrap="wrap" gap={1.5}>
+                                <Button
+                                    variant="contained"
+                                    sx={tonalButtonSx}
+                                    startIcon={<TeamOutlined />}
+                                    onClick={(event) => { event.stopPropagation(); handleOpen('groups'); }}>
+                                    {UI_STRINGS.EDIT_GROUPS}
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    sx={tonalButtonSx}
+                                    startIcon={<UserOutlined />}
+                                    onClick={(event) => { event.stopPropagation(); handleOpen('students'); }}>
+                                    {UI_STRINGS.EDIT_STUDENTS}
+                                </Button>
+                            </Stack>
+                            <Button
+                                variant="contained"
+                                sx={{ textTransform: 'none' }}
+                                startIcon={<ArrowRightOutlined />}
+                                onClick={(event) => { event.stopPropagation(); handleOpen(); }}>
+                                {UI_STRINGS.OPEN_PLAN}
+                            </Button>
+                        </Stack>
+                    </Stack>
+                </CardContent>
             </Card>
+            <EditPlanNameDialog
+                plan={plan}
+                open={openEditDialog}
+                onClose={() => setOpenEditDialog(false)} />
             <ConfirmationDialog
                 message={`Delete ${plan.name}?`}
                 open={openDeleteDialog}

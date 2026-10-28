@@ -7,20 +7,20 @@
  */
 
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 
 // material-ui
-import { Breadcrumbs, Link, Typography, Box, Button, IconButton, Stack, Tab, Tabs } from "@mui/material";
-import { HomeOutlined } from "@ant-design/icons";
-import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
-import { MainCard } from "@digitalaidseattle/mui";
+import { Breadcrumbs, Link, Typography, Box, Button, Card, CardContent, Divider, IconButton, Stack, Tab, Tabs } from "@mui/material";
+import { EditOutlined, HomeOutlined, PlusOutlined, TeamOutlined } from "@ant-design/icons";
+import { RefreshContext } from "@digitalaidseattle/core";
 import { useSearchParams } from "react-router-dom";
 import { CECohortDao } from "../../api/ceCohortDao";
 import { Cohort } from "../../api/types";
 import { TabPanel } from "../../components/TabPanel";
-import { TextEdit } from "../../components/TextEdit";
+import { EditCohortNameDialog } from "../../components/EditCohortNameDialog";
 import { UI_STRINGS } from '../../constants';
-import { CECohortService } from "../../services/cohort/ceCohortService";
+import { NewPlanDialog } from "../../components/NewPlanDialog";
+import { raisedCardSx, tonalButtonSx } from "../../utils/styles";
 import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
 
@@ -34,18 +34,24 @@ export const CohortContext = createContext<CohortContextType>({
   setCohort: () => { },
 });
 
+// the Students tab
+const STUDENTS_TAB = 1;
+
+/** How wide the cohort summary and the plan cards may grow: wide enough for a plan's totals to sit beside its charts. */
+const CONTENT_MAX_WIDTH = 960;
+
 const CohortPage: React.FC = () => {
   const cohortDao = CECohortDao.getInstance();
 
   const [searchParams] = useSearchParams();
   const { id: cohortId } = useParams<string>();
-  const notifications = useNotifications();
-  const navigate = useNavigate();
 
   const { refresh } = useContext(RefreshContext);
 
   const [cohort, setCohort] = useState<Cohort | null>();
   const [tabValue, setTabValue] = useState<number>(0);
+  const [editingName, setEditingName] = useState<boolean>(false);
+  const [newPlanOpen, setNewPlanOpen] = useState<boolean>(false);
 
   const loadCohort = (clearFirst: boolean) => {
     if (cohortId) {
@@ -88,33 +94,6 @@ const CohortPage: React.FC = () => {
     }
   }, [searchParams]);
 
-  function handleNameChange(newText: string) {
-    if (cohort && cohort.id) {
-      cohortDao
-        .update(cohort.id, { name: newText }) // FIXME change ID to UUID
-        .then((updated) => {
-          setCohort(updated);
-          notifications.success(`Cohort ${updated.name} updated.`);
-        });
-    }
-  }
-
-  async function handleCreatePlan() {
-    if (cohort) {
-      const cohortService = CECohortService.getInstance();
-      try {
-        const newPlan = await cohortService.createPlan(cohort!);
-        navigate(`/plan/${newPlan.id}`);
-        notifications.success(`Plan added to ${cohort!.name}.`);
-      } catch (error: any) {
-        console.error('Could not create plan.', error)
-        notifications.error(`Could not create plan. ${error.message}`);
-      }
-    } else {
-      notifications.error(`No cohort povided.`);
-    }
-  }
-
   const changeTab = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
@@ -122,31 +101,65 @@ const CohortPage: React.FC = () => {
   return (
     cohort && (
       <CohortContext.Provider value={{ cohort, setCohort }}>
-        <Stack gap={1}>
+        <Stack gap={3}>
           <Breadcrumbs aria-label="breadcrumb">
             <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
               <HomeOutlined />
             </IconButton>
-            <Link underline="hover" color="inherit" href={"/cohorts"}>
-              {UI_STRINGS.COHORTS}
-            </Link>
             <Typography color="text.primary">{UI_STRINGS.COHORT_PREFIX} {cohort.name}</Typography>
           </Breadcrumbs>
-          <MainCard>
-            <TextEdit
-              label={UI_STRINGS.NAME}
-              value={cohort.name}
-              onChange={(val) => handleNameChange(val)}
-            />
-            <Button
-              sx={{ marginTop: 1 }}
-              variant="contained"
-              onClick={handleCreatePlan}
-            >
-              {UI_STRINGS.NEW_PLAN}
-            </Button>
-          </MainCard>
-          <MainCard>
+          <Card sx={{ ...raisedCardSx, maxWidth: CONTENT_MAX_WIDTH }}>
+            <CardContent>
+              <Stack gap={2}>
+                <Stack direction="row" alignItems="center" gap={1}>
+                  <Typography variant="h2" component="h1" sx={{ fontWeight: 600 }}>
+                    {cohort.name}
+                  </Typography>
+                  <IconButton aria-label={UI_STRINGS.EDIT_NAME} title={UI_STRINGS.EDIT_NAME} onClick={() => setEditingName(true)}>
+                    <EditOutlined />
+                  </IconButton>
+                </Stack>
+                <Stack direction="row" flexWrap="wrap" columnGap={4} rowGap={0.5}>
+                  <Typography>{UI_STRINGS.STUDENTS_LABEL}: {cohort.enrollments?.length ?? 0}</Typography>
+                  <Typography>{UI_STRINGS.PLANS_LABEL}: {cohort.plans?.length ?? 0}</Typography>
+                  <Typography>
+                    {UI_STRINGS.ACTIVE_PLAN}: {cohort.plans?.find(plan => plan.active)?.name ?? UI_STRINGS.NO_ACTIVE_PLAN}
+                  </Typography>
+                  {cohort.created_at &&
+                    <Typography>
+                      {UI_STRINGS.CREATED}: {new Date(cohort.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </Typography>
+                  }
+                </Stack>
+                <Divider />
+                <Stack direction="row" flexWrap="wrap" gap={1.5}>
+                  <Button
+                    variant="contained"
+                    sx={tonalButtonSx}
+                    startIcon={<PlusOutlined />}
+                    onClick={() => setNewPlanOpen(true)}>
+                    {UI_STRINGS.NEW_PLAN_BUTTON}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    sx={tonalButtonSx}
+                    startIcon={<TeamOutlined />}
+                    onClick={() => setTabValue(STUDENTS_TAB)}>
+                    {UI_STRINGS.MANAGE_STUDENTS}
+                  </Button>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+          <EditCohortNameDialog
+            cohort={cohort}
+            open={editingName}
+            onClose={() => setEditingName(false)} />
+          <NewPlanDialog
+            cohort={cohort}
+            open={newPlanOpen}
+            onClose={() => setNewPlanOpen(false)} />
+          <Box>
             <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
               <Tabs
                 value={tabValue}
@@ -157,13 +170,19 @@ const CohortPage: React.FC = () => {
                 <Tab label={UI_STRINGS.STUDENTS_LABEL} />
               </Tabs>
             </Box>
-            <TabPanel value={tabValue} index={0}>
-              <PlansStack />
+            <TabPanel value={tabValue} index={0} disableGutters>
+              <Stack gap={2} sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
+                <PlansStack />
+              </Stack>
             </TabPanel>
-            <TabPanel value={tabValue} index={1}>
-              <StudentTable />
+            <TabPanel value={tabValue} index={1} disableGutters>
+              <Card sx={raisedCardSx}>
+                <CardContent>
+                  <StudentTable />
+                </CardContent>
+              </Card>
             </TabPanel>
-          </MainCard>
+          </Box>
         </Stack>
       </CohortContext.Provider>
     )

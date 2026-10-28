@@ -6,6 +6,7 @@
  */
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
+import { useSearchParams } from "react-router-dom";
 
 // material-ui
 import { AppstoreOutlined, ExportOutlined, SettingOutlined, TableOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
@@ -33,11 +34,13 @@ const PlanPage: React.FC = () => {
   const planDao = CEPlanDao.getInstance();
 
   const { id: planId } = useParams<string>();
+  // The plan cards link here with ?edit=groups or ?edit=students to open with that part's details showing
+  const [searchParams] = useSearchParams();
   const [plan, setPlan] = useState<Plan>();
   const [cohort, setCohort] = useState<Cohort>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [showGroupDetails, setShowGroupDetails] = useState<boolean>(false);
-  const [showStudentDetails, setStudentDetails] = useState<boolean>(false);
+  const [showGroupDetails, setShowGroupDetails] = useState<boolean>(searchParams.get('edit') === 'groups');
+  const [showStudentDetails, setStudentDetails] = useState<boolean>(searchParams.get('edit') === 'students');
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [viewType, setViewType] = useState<"board" | "timeline">("board");
 
@@ -149,9 +152,6 @@ const PlanPage: React.FC = () => {
             <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
               <HomeOutlined />
             </IconButton>
-            <Link underline="hover" color="inherit" href={"/cohorts"}>
-              {UI_STRINGS.COHORTS}
-            </Link>
             <Link
               underline="hover"
               color="inherit"
