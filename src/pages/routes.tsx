@@ -6,8 +6,9 @@ import {
   MinimalLayout
 } from "@digitalaidseattle/mui";
 
+import { Navigate } from "react-router-dom";
+
 import CohortPage from "./cohort";
-import CohortsPage from "./cohorts";
 import StudentsPage from './students';
 import PlanPage from "./plan";
 import HomePage from "./home";
@@ -27,8 +28,9 @@ const routes = [
         element: <HomePage />,
       },
       {
+        // Cohorts now live on the home page; keep old links and bookmarks working.
         path: "cohorts",
-        element: <CohortsPage />,
+        element: <Navigate to="/" replace />,
       },
       {
         path: "cohort/:id",

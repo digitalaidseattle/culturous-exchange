@@ -13,6 +13,24 @@ const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 
 export default BootstrapDialog;
 
+// Raised, softly rounded card used for cohorts, plans and the cohort summary.
+export const raisedCardSx: SxProps<Theme> = {
+  borderRadius: 1,
+  boxShadow: 3
+};
+
+// Light, raised button used for shortcuts inside cards.
+export const tonalButtonSx: SxProps<Theme> = {
+  textTransform: 'none',
+  bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
+  color: 'primary.main',
+  boxShadow: 2,
+  '&:hover': {
+    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.14),
+    boxShadow: 3
+  }
+};
+
 // Softly tinted, outlined box for grouping related numbers or a chart inside a card.
 export const insetPanelSx: SxProps<Theme> = {
   borderRadius: 1,
