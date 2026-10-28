@@ -314,6 +314,18 @@ class CETimeWindowService {
     return timeWindows.reduce((acc, tw) => acc + this.duration(tw), 0);
   }
 
+  /**
+   * The real time covered by the windows, in hours: each window's end minus its start, added up.
+   * Unlike totalDuration, it does not add an hour to every window, so a 4 hour window is 4 and a
+   * 30 minute window is 0.5. This is what the screens show as overlap while the counting rule
+   * in duration() is being confirmed.
+   */
+  totalHours(timeWindows: TimeWindow[]): number {
+    const hours = timeWindows.reduce(
+      (acc, tw) => acc + (tw.end_date_time.getTime() - tw.start_date_time.getTime()) / (1000 * 60 * 60), 0);
+    return parseFloat(hours.toFixed(2));
+  }
+
   duration(timeWindow: TimeWindow): number {
     // adding 1 hour to include the end hour
     const duration = 1 + (timeWindow.end_date_time.getTime() - timeWindow.start_date_time.getTime()) / (1000 * 60 * 60);
