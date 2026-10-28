@@ -47,6 +47,9 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
         setAnchorEl(null);
     };
 
+    // the real shared time of the group's windows, listed below
+    const sharedHours = group ? timeWindowService.totalHours(group.time_windows ?? []) : 0;
+
     return (group &&
         <Card key={group.id} sx={{ alignContent: "top" }}>
             <CardHeader
@@ -76,7 +79,7 @@ export const GroupCard: React.FC<{ group: Group, showDetails: boolean }> = ({ gr
                         </Stack>
                         <Stack direction={'row'} spacing={1} >
                             <Typography fontWeight={600}>{UI_STRINGS.DURATION}</Typography>
-                            <Typography>{group.duration ? group.duration.toFixed(2) : UI_STRINGS.NOT_AVAILABLE}</Typography>
+                            <Typography>{sharedHours ? sharedHours.toFixed(2) : UI_STRINGS.NOT_AVAILABLE}</Typography>
                         </Stack>
                     </CardContent>
                     <CardContent>
