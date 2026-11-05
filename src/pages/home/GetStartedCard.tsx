@@ -125,7 +125,7 @@ export const GetStartedCard: React.FC = () => {
         <Card>
             <CardHeader
                 sx={{
-                    background: `linear-gradient(to right, ${green[400]}, ${blue[700]})`,
+                    background: `linear-gradient(to right, ${green[200]}, ${blue[900]})`,
                     color: theme.palette.common.white
                 }}
                 title={UI_STRINGS.GET_STARTED}
