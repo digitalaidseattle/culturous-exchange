@@ -124,9 +124,6 @@ export const CurrentCohortCard: React.FC = () => {
                                         }
                                     }}
                                 />
-                                {/* <Typography variant="body2" color="text.secondary" align="center">
-                                    Total countries: {countryData.length}
-                                </Typography> */}
                             </Grid>
                         }
                         {ageData.ages.length > 0 &&
