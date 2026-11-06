@@ -19,6 +19,7 @@
     "@digitalaidseattle/draganddrop": "^2.0.2",
     "@digitalaidseattle/mui": "^1.0.39",
     "@digitalaidseattle/supabase": "^1.0.17",
+    "@mui/x-charts": "^8.29.3",
     "@mui/x-data-grid": "^8.17.0",
     "@mui/x-date-pickers": "^8.17.0",
     "date-fns": "^3.6.0",

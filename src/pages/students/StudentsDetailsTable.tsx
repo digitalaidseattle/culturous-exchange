@@ -69,7 +69,7 @@ const StudentsDetailsTable: React.FC = () => {
         .catch((err) => console.error(err))
         .finally(() => setLoading(false));
     }
-  }, [paginationModel, sortModel, filterModel]);
+  }, [paginationModel, sortModel, filterModel, refresh]);
 
   const toggleAnchor = async (student: Student) => {
     try {
@@ -168,6 +168,20 @@ const StudentsDetailsTable: React.FC = () => {
       filterOperators: getGridStringOperators()
         .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
 
+    },
+    {
+      field: 'city',
+      headerName: UI_STRINGS.CITY,
+      width: 120,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+    },
+    {
+      field: 'state',
+      headerName: UI_STRINGS.STATE,
+      width: 100,
+      filterOperators: getGridStringOperators()
+        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: 'country',

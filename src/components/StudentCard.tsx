@@ -123,6 +123,7 @@ export const StudentCard: React.FC<{ placement: Placement, showDetails: boolean 
                         onToggle={() => toggleAnchor(placement)} />
                 }
                 title={placement.student!.name}
+                subheader={placement.student!.country}
                 titleTypographyProps={{ fontWeight: 600 }}
                 action={
                     <IconButton

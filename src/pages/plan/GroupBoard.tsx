@@ -22,17 +22,15 @@ import { StudentCard } from "../../components/StudentCard";
 import { PlanContext } from "./PlanContext";
 import { Identifier } from "@digitalaidseattle/core";
 import { studentMover } from "../../services/plan/studentMover";
+import { ViewDetailsContext } from "./ViewDetailsContext";
 
 type PlacementWrapper = Placement & DDType;
 
-export interface GroupBoardProps {
-    showStudentDetails: boolean;
-    showGroupDetails: boolean;
-}
-export const GroupBoard: React.FC<GroupBoardProps> = ({ showStudentDetails, showGroupDetails }) => {
+export const GroupBoard: React.FC = () => {
     const planService = CEPlanService.getInstance();
 
     const { plan, setPlan } = useContext(PlanContext);
+    const { viewDetails } = useContext(ViewDetailsContext);
 
     const [categories, setCategories] = useState<DDCategory<string>[]>([]);
     const [placementWrappers, setPlacementWrappers] = useState<Map<DDCategory<string>, PlacementWrapper[]>>(new Map());
@@ -80,7 +78,7 @@ export const GroupBoard: React.FC<GroupBoardProps> = ({ showStudentDetails, show
     }
 
     function cellRender(item: PlacementWrapper): ReactNode {
-        return <StudentCard placement={item} showDetails={showStudentDetails} />
+        return <StudentCard placement={item} showDetails={viewDetails.showStudentDetails} />
     }
 
     const headerRenderer = (cat: DDCategory<string>): ReactNode => {
@@ -88,7 +86,7 @@ export const GroupBoard: React.FC<GroupBoardProps> = ({ showStudentDetails, show
         if (group) {
             return <GroupCard
                 group={group}
-                showDetails={showGroupDetails} />
+                showDetails={viewDetails.showGroupDetails} />
         } else {
             return <GroupCard
                 group={{ id: WAITLIST_ID, name: UI_STRINGS.WAITLISTED } as Group}
