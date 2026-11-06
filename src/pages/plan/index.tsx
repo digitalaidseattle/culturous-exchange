@@ -6,27 +6,28 @@
  */
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { useSearchParams } from "react-router-dom";
 
 // material-ui
-import { AppstoreOutlined, ExportOutlined, SettingOutlined, TableOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
-import { Box, Breadcrumbs, ButtonGroup, CircularProgress, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
+import { AppstoreOutlined, ExportOutlined, SettingOutlined, TableOutlined } from "@ant-design/icons";
+import { Box, Breadcrumbs, Button, Card, CardContent, CircularProgress, Divider, IconButton, Link, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 
 // project import
 import { HomeOutlined } from '@ant-design/icons';
 import { Identifier, useNotifications } from "@digitalaidseattle/core";
-import { MainCard } from "@digitalaidseattle/mui";
 import { CECohortDao } from "../../api/ceCohortDao";
 import { CEPlanDao } from "../../api/cePlanDao";
 import { Cohort, Plan } from "../../api/types";
+import { GenerationChoice } from "../../components/useGenerationControls";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
-import { TextEdit } from "../../components/TextEdit";
 import { UI_STRINGS } from '../../constants';
 import { PlanExporter } from "../../services/plan/planExporter";
 import { PlanGenerator } from "../../services/plan/planGenerator";
 import { CohortContext } from "../cohort";
-import { GroupBoard } from "./GroupBoard";
+import { GroupsView } from "./GroupsView";
+import { raisedCardSx, tonalButtonSx } from "../../utils/styles";
 import { PlanContext } from "./PlanContext";
+import { PlanNotes } from "./PlanNotes";
+import { PlanTitle } from "./PlanTitle";
 import { TimeLine } from "./TimeLine";
 
 const PlanPage: React.FC = () => {
@@ -34,35 +35,34 @@ const PlanPage: React.FC = () => {
   const planDao = CEPlanDao.getInstance();
 
   const { id: planId } = useParams<string>();
-  // The plan cards link here with ?edit=groups or ?edit=students to open with that part's details showing
-  const [searchParams] = useSearchParams();
   const [plan, setPlan] = useState<Plan>();
   const [cohort, setCohort] = useState<Cohort>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [showGroupDetails, setShowGroupDetails] = useState<boolean>(searchParams.get('edit') === 'groups');
-  const [showStudentDetails, setStudentDetails] = useState<boolean>(searchParams.get('edit') === 'students');
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [viewType, setViewType] = useState<"board" | "timeline">("board");
 
-  const notifications = useNotifications();;
+  const notifications = useNotifications();
 
   useEffect(() => {
     refreshPlan(planId!);
   }, [planId]);
 
+  // The cohort is read again only when the plan belongs to another cohort. Reading it on every change to the
+  // plan (a moved student, a new anchor, a note) would blank the page while it loaded.
+  const cohortId = plan?.cohort_id;
   useEffect(() => {
     setCohort(undefined);
-    if (plan && plan.cohort_id) {
-      cohortDao.getById(plan.cohort_id)
+    if (cohortId) {
+      cohortDao.getById(cohortId)
         .then((cohort) => {
           if (cohort) {
             setCohort(cohort);
           } else {
-            console.error(`Cohort not found ${plan.cohort_id}`);
+            console.error(`Cohort not found ${cohortId}`);
           }
         });
     }
-  }, [plan]);
+  }, [cohortId]);
 
   function refreshPlan(planId: Identifier) {
     setPlan(undefined);
@@ -81,7 +81,7 @@ const PlanPage: React.FC = () => {
       .then(updated => {
         if (updated) {
           notifications.success(UI_STRINGS.PLAN_UPDATED);
-          refreshPlan(updated.id!);
+          setPlan(current => current && { ...current, name: text });
         }
       })
   }
@@ -91,7 +91,8 @@ const PlanPage: React.FC = () => {
       .then(updated => {
         if (updated) {
           notifications.success(UI_STRINGS.PLAN_UPDATED);
-          refreshPlan(updated.id!);
+          // keep the page as it is: reloading would hide the field being typed in
+          setPlan(current => current && { ...current, note: text });
         }
       })
   }
@@ -107,33 +108,28 @@ const PlanPage: React.FC = () => {
       })
   }
 
-  function handleGroupDetails(): void {
-    setShowGroupDetails(!showGroupDetails);
-  }
-
-  function handleStudentDetails(): void {
-    setStudentDetails(!showStudentDetails);
-  }
-
   function handleSettings(): void {
     setShowSettings(!showSettings);
   }
 
-  function handleSettingsChange(plan: Plan): void {
-    planDao.update(plan!.id!, { group_size: plan.group_size! })
-      .then(updatedPlan => {
-        PlanGenerator.getInstance().run(updatedPlan)
-          .then((seededPlan) => {
-            notifications.success(`Plan ${seededPlan.name} updated successfully`);
-            setLoading(false)
-            setPlan(seededPlan);
-            setShowSettings(false);
-          })
-          .catch((error) => {
-            notifications.error(`Failed to update plan: ${error.message}`);
-          });
-      })
-
+  // Regroups the plan's students with the settings and saves it. Throws nothing: a failure is reported
+  // and the settings window stays open, so the settings can be tried again.
+  async function handleSettingsChange(settings: GenerationChoice): Promise<void> {
+    try {
+      const updatedPlan = await planDao.update(plan!.id!, { group_size: settings.maxGroupSize });
+      const seededPlan = await PlanGenerator.getInstance().run(updatedPlan, {
+        maxGroupSize: settings.maxGroupSize,
+        minGroupSize: settings.minGroupSize,
+        minOverlapHours: settings.minOverlapHours,
+        shuffleSeed: settings.shuffleSeed
+      });
+      notifications.success(`Plan ${seededPlan.name} updated successfully`);
+      setPlan(seededPlan);
+      setShowSettings(false);
+    } catch (error) {
+      console.error('Failed to update plan', error);
+      notifications.error(`Failed to update plan: ${error instanceof Error ? error.message : error}`);
+    }
   }
   return (loading ?
     <Box sx={{
@@ -147,7 +143,7 @@ const PlanPage: React.FC = () => {
     : plan && cohort &&
     <PlanContext.Provider value={{ plan, setPlan }}>
       <CohortContext.Provider value={{ cohort, setCohort }}>
-        <Stack gap={1}>
+        <Stack gap={3}>
           <Breadcrumbs aria-label="breadcrumb">
             <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
               <HomeOutlined />
@@ -161,69 +157,56 @@ const PlanPage: React.FC = () => {
             </Link>
             <Typography sx={{ color: 'text.primary' }}>{UI_STRINGS.PLAN_PREFIX} {plan.name}</Typography>
           </Breadcrumbs>
-          <MainCard sx={{ width: '100%' }}>
-            <Stack spacing={{ xs: 1, sm: 4 }} direction='row'>
-              <TextEdit label={UI_STRINGS.NAME} value={plan.name} onChange={handleNameUpdate} />
-              <TextEdit label={UI_STRINGS.NOTES_LABEL} value={plan.note} onChange={handleNoteUpdate} />
-            </Stack>
-            {/* <PlanDetails /> */}
-            <Box sx={{ marginTop: 1 }}  >
-              <Toolbar>
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="h3" component="span">
-                    {UI_STRINGS.GROUPS_LABEL}
-                  </Typography>
-                  <ButtonGroup size="small" aria-label="Small button group">
-                    <Tooltip title={UI_STRINGS.SELECT_BOARD_VIEW}>
-                      <IconButton size="small"
-                        onClick={() => setViewType("board")}>
-                        <AppstoreOutlined />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={UI_STRINGS.SELECT_TIMELINE_VIEW}>
-                      <IconButton size="small"
-                        onClick={() => setViewType("timeline")}>
-                        <TableOutlined />
-                      </IconButton>
-                    </Tooltip>
-                  </ButtonGroup>
-                </Box>
+          <Card sx={raisedCardSx}>
+            <CardContent>
+              <Stack gap={2}>
+                <PlanTitle name={plan.name} onChange={handleNameUpdate} />
+                <Stack direction="row" flexWrap="wrap" columnGap={4} rowGap={0.5}>
+                  <Typography>{UI_STRINGS.GROUPS_LABEL}: {plan.groups.length}</Typography>
+                  <Typography>{UI_STRINGS.STUDENTS_LABEL}: {plan.placements.filter(p => p.group_id).length}</Typography>
+                  <Typography>{UI_STRINGS.WAITLISTED}: {plan.placements.filter(p => !p.group_id).length}</Typography>
+                </Stack>
+                <PlanNotes note={plan.note} onChange={handleNoteUpdate} />
+                <Divider />
+                <Stack direction="row" flexWrap="wrap" gap={1.5}>
+                  <Button variant="contained" sx={tonalButtonSx} startIcon={<ExportOutlined />} onClick={exportPlan}>
+                    {UI_STRINGS.EXPORT_PLAN}
+                  </Button>
+                  <Button variant="contained" sx={tonalButtonSx} startIcon={<SettingOutlined />} onClick={handleSettings}>
+                    {UI_STRINGS.SHOW_PLAN_SETTINGS}
+                  </Button>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
 
-                <Tooltip title={UI_STRINGS.EXPORT_PLAN}>
-                  <IconButton color="inherit" onClick={exportPlan}>
-                    <ExportOutlined />
-                  </IconButton>
-                </Tooltip>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+            <Typography variant="h4" component="h2" sx={{ fontWeight: 400 }}>
+              {UI_STRINGS.GROUPS_LABEL}
+            </Typography>
+            <ToggleButtonGroup
+              exclusive
+              size="small"
+              value={viewType}
+              aria-label={UI_STRINGS.SELECT_VIEW}
+              onChange={(_event, value) => { if (value) { setViewType(value); } }}>
+              <ToggleButton value="board" aria-label={UI_STRINGS.SELECT_BOARD_VIEW} sx={{ textTransform: 'none', gap: 0.75 }}>
+                <AppstoreOutlined /> {UI_STRINGS.VIEW_CARDS}
+              </ToggleButton>
+              <ToggleButton value="timeline" aria-label={UI_STRINGS.SELECT_TIMELINE_VIEW} sx={{ textTransform: 'none', gap: 0.75 }}>
+                <TableOutlined /> {UI_STRINGS.VIEW_TIMELINE}
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Stack>
 
-                <Tooltip title={UI_STRINGS.TOGGLE_GROUP_DETAILS}>
-                  <IconButton color="inherit" onClick={handleGroupDetails}>
-                    <TeamOutlined />
-                  </IconButton>
-                </Tooltip>
-
-                <Tooltip title={UI_STRINGS.TOGGLE_STUDENT_DETAILS}>
-                  <IconButton color="inherit" onClick={handleStudentDetails}>
-                    <UserOutlined />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={UI_STRINGS.SHOW_PLAN_SETTINGS}>
-                  <IconButton color="inherit" onClick={handleSettings}>
-                    <SettingOutlined />
-                  </IconButton>
-                </Tooltip>
-              </Toolbar>
-              <Box sx={{ overflowX: 'auto', }}>
-                {!loading && viewType === "board" && <GroupBoard showGroupDetails={showGroupDetails} showStudentDetails={showStudentDetails} />}
-                {!loading && viewType === "timeline" && <TimeLine />}
-              </Box>
-              <PlanSettingsDialog
-                plan={plan!}
-                isOpen={showSettings}
-                onClose={() => setShowSettings(false)}
-                onSubmit={handleSettingsChange}
-              />
-            </Box>
-          </MainCard>
+          {!loading && viewType === "board" && <GroupsView />}
+          {!loading && viewType === "timeline" && <Box sx={{ overflowX: 'auto' }}><TimeLine /></Box>}
+          <PlanSettingsDialog
+            plan={plan!}
+            isOpen={showSettings}
+            onClose={() => setShowSettings(false)}
+            onSubmit={handleSettingsChange}
+          />
         </Stack>
       </CohortContext.Provider >
     </PlanContext.Provider >

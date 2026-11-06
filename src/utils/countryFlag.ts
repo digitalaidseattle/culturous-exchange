@@ -118,8 +118,8 @@ function firstPart(text: string): string {
     return text.split(/\s*(?:[,/;(]|\s-\s|\sbut\s|\sand\s)/i)[0];
 }
 
-/** The flag emoji for a country name, or undefined when the country is not recognized. */
-export function countryFlag(country: string | null | undefined): string | undefined {
+/** The two-letter country code for a country name, or undefined when the country is not recognized. */
+export function countryCode(country: string | null | undefined): string | undefined {
     if (!country) {
         return undefined;
     }
@@ -127,8 +127,14 @@ export function countryFlag(country: string | null | undefined): string | undefi
     for (const candidate of [country, firstPart(country)]) {
         const code = table.get(normalizeCountryName(candidate));
         if (code) {
-            return flagEmoji(code);
+            return code;
         }
     }
     return undefined;
+}
+
+/** The flag emoji for a country name, or undefined when the country is not recognized. */
+export function countryFlag(country: string | null | undefined): string | undefined {
+    const code = countryCode(country);
+    return code ? flagEmoji(code) : undefined;
 }
