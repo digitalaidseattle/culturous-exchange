@@ -34,6 +34,7 @@ import { useState } from "react";
 import { CECohortDao } from "../api/ceCohortDao";
 import { Cohort, FailedProfile } from "../api/types";
 import { UI_STRINGS } from "../constants";
+import { CECohortService } from "../services/cohort/ceCohortService";
 import { createCohort } from "../services/cohort/createCohort";
 import { uploadStudents } from "../services/student/uploadStudents";
 import FailedUploadModal from "./FailedUploadModal";
@@ -63,6 +64,8 @@ export const CreateCohortDialog = (props: {
 
     const [step, setStep] = useState<number>(NAME_STEP);
     const [name, setName] = useState<string>('');
+    // why the name cannot be used: another cohort has it, or whether it is taken could not be checked
+    const [nameError, setNameError] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
     const [creating, setCreating] = useState<boolean>(false);
     const [cohort, setCohort] = useState<Cohort | null>(null);
@@ -80,6 +83,17 @@ export const CreateCohortDialog = (props: {
         }
         setCreating(true);
         try {
+            // stay here, before anything is uploaded, when another cohort already has the name
+            try {
+                if (await CECohortService.getInstance().nameExists(trimmedName)) {
+                    setNameError(UI_STRINGS.COHORT_NAME_EXISTS);
+                    return;
+                }
+            } catch (error) {
+                console.error('Could not check the cohort name.', error);
+                setNameError(UI_STRINGS.UNABLE_TO_VALIDATE_COHORT_NAME);
+                return;
+            }
             let students;
             if (file) {
                 const upload = await uploadStudents([file]);
@@ -115,6 +129,7 @@ export const CreateCohortDialog = (props: {
     const reset = () => {
         setStep(NAME_STEP);
         setName('');
+        setNameError('');
         setFile(null);
         setCohort(null);
         setPlanBusy(false);
@@ -140,7 +155,9 @@ export const CreateCohortDialog = (props: {
                                         label={UI_STRINGS.COHORT_NAME_LABEL}
                                         value={name}
                                         disabled={busy}
-                                        onChange={(event) => setName(event.target.value)}
+                                        error={nameError.length > 0}
+                                        helperText={nameError || undefined}
+                                        onChange={(event) => { setName(event.target.value); setNameError(''); }}
                                         onKeyDown={(event) => { if (event.key === 'Enter') handleNext(); }} />
                                     <Stack gap={0.75}>
                                         <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{UI_STRINGS.STUDENTS_FILE_LABEL}</Typography>

@@ -7,7 +7,7 @@ steps taken to get there.
 
 - **Starting point:** the `dev` branch on 2026-10-27 (commit `35ce46d`)
 - **Working branch:** `aidan/onboarding`
-- **Last updated:** 2026-11-05
+- **Last updated:** 2026-11-06
 - **Design reference:** the "Culturous Exchange" Figma file (home page frame, shared as a screenshot)
 
 ---
@@ -56,6 +56,7 @@ This section grows as decisions are made. Each numbered change below adds a line
 | 7 | New Cohort opens a two step Create Cohort window: name and students file, then the plan settings | Built and checked locally, not yet committed | 2026-11-04 |
 | 8 | Get Started card from the maintainers' pull request 185 added to the home page | Built and checked locally, not yet committed | 2026-11-04 |
 | 9 | Groups page redesigned: a card for each group, availability calendars, a waitlist side panel, Change group and See details windows, and globes | Built and checked locally, not yet committed | 2026-11-04 |
+| 10 | The team's latest work (the `dev` branch) brought in and reconciled with the redesign | Merged locally, not yet pushed | 2026-11-06 |
 
 ---
 
@@ -465,3 +466,25 @@ What a user will notice:
 - New: `PlanGroupCard`, `PlanStudentCard`, `WaitlistPanel`, `ChangeGroupDialog`, `StudentDetailsDialog`, `AvailabilityCalendar`, `AnchorBadge` and `Globe` in `src/components`; `GroupsView` in `src/pages/plan`; `src/utils/weekendGrid.ts` (time windows to the calendar), `src/utils/globeView.ts` and `src/utils/globeColors.ts`; `src/services/plan/groupFit.ts` (how a student fits a group); and `src/services/geo` (the place lookup, its cache, and a hook).
 - Removed: `GroupBoard`, `GroupCard`, `StudentCard` and `StarAvatar`.
 - `src/pages/plan/index.tsx` was restyled. `src/utils/countryFlag.ts` gained `countryCode`, which the place lookup uses to narrow results to the right country.
+
+---
+
+### 10. The team's latest work brought in and reconciled
+
+While this redesign was being built, the maintainers kept working on the shared `dev` branch. On 2026-11-06 that work was merged into this branch (13 changes from them), and where both sides had rebuilt the same screen, the redesign was kept and the useful parts of their change were carried into it.
+
+**What you will notice:**
+
+- **Create Cohort checks the name.** If another cohort already has the name, the window stays on the first step and says "A cohort with this name already exists." before anything is uploaded or created. If the name cannot be checked, it says so instead of going on. (This is the check the maintainers added to the Get Started card; the card keeps it, and the window now has it too.)
+- **A failed cohort delete is reported.** If deleting a cohort fails, a "Deletion failed" message appears and the window closes, instead of closing as if it had worked. Deleting a cohort now also removes its plans and their groups and times, through a new database migration from the maintainers.
+- **The Timeline view keeps the maintainers' two buttons** (show group details, show student details), which now sit at the right of the Cards / Timeline switch and appear only in the Timeline view.
+
+**What was set aside, for you to decide:**
+
+- The maintainers also added their own home page, with a **Current Cohort** dashboard of pie and bar charts (countries, gender, ages). The home page in this branch is the redesign, so that card is in the code but is not shown. It would need a place in the new home page layout if you want it.
+- Their older plan page header (the name and notes as two small fields, and the toggle buttons in a toolbar) and a "Cohorts" step in the breadcrumb were replaced by the redesigned plan header.
+
+**Technical notes:**
+
+- Conflicts were in `constants.ts` (both sets of strings kept), `createCohort.ts` (this branch's options-object version kept; it already adds students with their anchor flag), `home/index.tsx`, `home/GetStartedCard.tsx`, `plan/index.tsx`, `package-lock.json` (regenerated), and three files deleted here but changed there (`CohortCard`, `StudentCard`, `GroupBoard`; their changes were carried over as described above or already existed in the replacements: the student card already shows the country).
+- `CreateCohortDialog` calls `CECohortService.nameExists`; two tests cover it. New dependency from the maintainers: `@mui/x-charts`.

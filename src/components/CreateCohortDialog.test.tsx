@@ -13,6 +13,7 @@ const createPlan = vi.hoisted(() => vi.fn());
 const createCohort = vi.hoisted(() => vi.fn());
 const uploadStudents = vi.hoisted(() => vi.fn());
 const getById = vi.hoisted(() => vi.fn());
+const nameExists = vi.hoisted(() => vi.fn());
 
 // the notification helper comes from the shared library, and the rest write to the database; stand in for them
 vi.mock("@digitalaidseattle/core", async () => {
@@ -24,7 +25,7 @@ vi.mock("@digitalaidseattle/core", async () => {
 });
 vi.mock("react-router", () => ({ useNavigate: () => navigate }));
 vi.mock("../services/cohort/ceCohortService", () => ({
-    CECohortService: { getInstance: () => ({ createPlan }) }
+    CECohortService: { getInstance: () => ({ createPlan, nameExists }) }
 }));
 vi.mock("../services/cohort/createCohort", () => ({ createCohort }));
 vi.mock("../services/student/uploadStudents", () => ({ uploadStudents }));
@@ -62,6 +63,7 @@ describe("CreateCohortDialog", () => {
         getById.mockResolvedValue(NEW_COHORT);
         uploadStudents.mockResolvedValue({ students: [student("s1"), student("s2")], failedProfiles: [] });
         createPlan.mockResolvedValue({ id: "new-plan", name: "Plan 1" });
+        nameExists.mockResolvedValue(false);
     });
 
     describe("the first step", () => {
@@ -104,6 +106,30 @@ describe("CreateCohortDialog", () => {
             });
             expect((await screen.findByRole("alert")).textContent).toMatch(/not an excel spreadsheet/i);
             expect(screen.queryByText("notes.txt")).toBeNull();
+        });
+
+        it("stays on the first step, and uploads nothing, when another cohort has the name", async () => {
+            nameExists.mockResolvedValue(true);
+            renderDialog();
+            typeName("Winter 2027");
+            await chooseFile(spreadsheet());
+            fireEvent.click(nextButton());
+            expect(await screen.findByText("A cohort with this name already exists.")).toBeTruthy();
+            expect(uploadStudents).not.toHaveBeenCalled();
+            expect(createCohort).not.toHaveBeenCalled();
+            expect(nameField().getAttribute("aria-invalid")).toBe("true");
+            // typing a new name clears the message
+            typeName("Winter 2028");
+            expect(screen.queryByText("A cohort with this name already exists.")).toBeNull();
+        });
+
+        it("says so, and makes nothing, when it cannot check whether the name is taken", async () => {
+            nameExists.mockRejectedValue(new Error("offline"));
+            renderDialog();
+            typeName("Winter 2027");
+            fireEvent.click(nextButton());
+            expect(await screen.findByText("Unable to validate cohort name.")).toBeTruthy();
+            expect(createCohort).not.toHaveBeenCalled();
         });
 
         it("Cancel closes the window and makes nothing", () => {

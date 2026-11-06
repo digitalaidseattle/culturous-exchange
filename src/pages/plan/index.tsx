@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 // material-ui
-import { AppstoreOutlined, ExportOutlined, SettingOutlined, TableOutlined } from "@ant-design/icons";
-import { Box, Breadcrumbs, Button, Card, CardContent, CircularProgress, Divider, IconButton, Link, Stack, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import { AppstoreOutlined, ExportOutlined, SettingOutlined, TableOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { Box, Breadcrumbs, Button, Card, CardContent, CircularProgress, Divider, IconButton, Link, Stack, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from "@mui/material";
 
 // project import
 import { HomeOutlined } from '@ant-design/icons';
@@ -29,6 +29,7 @@ import { PlanContext } from "./PlanContext";
 import { PlanNotes } from "./PlanNotes";
 import { PlanTitle } from "./PlanTitle";
 import { TimeLine } from "./TimeLine";
+import { ViewDetails, ViewDetailsContext } from "./ViewDetailsContext";
 
 const PlanPage: React.FC = () => {
   const cohortDao = CECohortDao.getInstance();
@@ -40,6 +41,8 @@ const PlanPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [viewType, setViewType] = useState<"board" | "timeline">("board");
+  // which rows the Timeline view shows: each group's facilitators, and each group's students
+  const [viewDetails, setViewDetails] = useState<ViewDetails>({ showGroupDetails: false, showStudentDetails: false });
 
   const notifications = useNotifications();
 
@@ -143,6 +146,7 @@ const PlanPage: React.FC = () => {
     : plan && cohort &&
     <PlanContext.Provider value={{ plan, setPlan }}>
       <CohortContext.Provider value={{ cohort, setCohort }}>
+        <ViewDetailsContext.Provider value={{ viewDetails, setViewDetails }}>
         <Stack gap={3}>
           <Breadcrumbs aria-label="breadcrumb">
             <IconButton LinkComponent={Link} href="/" size="medium" aria-label="home">
@@ -197,6 +201,29 @@ const PlanPage: React.FC = () => {
                 <TableOutlined /> {UI_STRINGS.VIEW_TIMELINE}
               </ToggleButton>
             </ToggleButtonGroup>
+            {viewType === "timeline" &&
+              <Stack direction="row" gap={0.5}>
+                <Tooltip title={UI_STRINGS.TOGGLE_GROUP_DETAILS}>
+                  <ToggleButton
+                    size="small"
+                    value="group-details"
+                    aria-label={UI_STRINGS.TOGGLE_GROUP_DETAILS}
+                    selected={viewDetails.showGroupDetails}
+                    onChange={() => setViewDetails(current => ({ ...current, showGroupDetails: !current.showGroupDetails }))}>
+                    <TeamOutlined />
+                  </ToggleButton>
+                </Tooltip>
+                <Tooltip title={UI_STRINGS.TOGGLE_STUDENT_DETAILS}>
+                  <ToggleButton
+                    size="small"
+                    value="student-details"
+                    aria-label={UI_STRINGS.TOGGLE_STUDENT_DETAILS}
+                    selected={viewDetails.showStudentDetails}
+                    onChange={() => setViewDetails(current => ({ ...current, showStudentDetails: !current.showStudentDetails }))}>
+                    <UserOutlined />
+                  </ToggleButton>
+                </Tooltip>
+              </Stack>}
           </Stack>
 
           {!loading && viewType === "board" && <GroupsView />}
@@ -208,6 +235,7 @@ const PlanPage: React.FC = () => {
             onSubmit={handleSettingsChange}
           />
         </Stack>
+        </ViewDetailsContext.Provider>
       </CohortContext.Provider >
     </PlanContext.Provider >
   );

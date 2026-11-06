@@ -28,6 +28,7 @@ export const UI_STRINGS = {
   ADD_FACILITATOR: 'Add Facilitator',
   CHANGE_FACILITATOR: 'Change Facilitator',
   REMOVE_FACILITATOR: 'Remove Facilitator',
+  CLICK_TO_OPEN: 'Click to open',
 
   // Generic labels
   GET_STARTED: 'Get Started',
@@ -47,7 +48,7 @@ export const UI_STRINGS = {
   SETTINGS: 'Settings',
   GROUP_SIZE: 'Group Size:',
   COUNTRIES: 'Countries: ',
-  DURATION: 'Duration (hr): ',
+  DURATION: 'Overlap (hr): ',
   NOT_AVAILABLE: 'N/A',
   TIME_WINDOWS: 'Time Windows',
   CURRENT_COHORT: 'Current Cohort',
@@ -186,6 +187,9 @@ export const UI_STRINGS = {
   CHART_ALL_SAME: 'Min = Avg = Max',
   CHART_MIN_MAX_SAME: 'Min = Max',
   NO_GROUPS_YET: 'No groups yet',
+  TOTAL_DURATION: 'Total Plan Overlap',
+  AVG_COUNTRY_COUNT: 'Avg. Countries/Group',
+  AVG_DURATION: 'Avg. Overlap/Group',
 
   // Tooltips
   SELECT_TIMELINE_VIEW: 'Select timeline view',

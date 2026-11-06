@@ -69,8 +69,16 @@ export const CohortCard = (props: { cohort: Cohort, isCurrent?: boolean }) => {
                 .delete(cohort.id)
                 .then(() => {
                     setRefresh(refresh + 1);
-                    setOpenDeleteDialog(false);
                     notifications.success(`Cohort ${cohort.name} has been deleted.`);
+                })
+                .catch((err) => {
+                    // say so, rather than closing the window as if it had worked
+                    console.error(`${UI_STRINGS.DELETION_FAILED_PREFIX} ${err.message}`);
+                    notifications.error(`${UI_STRINGS.DELETION_FAILED_PREFIX} ${err.message}`);
+                })
+                .finally(() => {
+                    setOpenDeleteDialog(false);
+                    setAnchorEl(null);
                 })
         }
     };
