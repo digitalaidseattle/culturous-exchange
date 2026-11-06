@@ -10,29 +10,22 @@ import { v4 as uuid } from 'uuid';
 
 import { CECohortDao } from '../../api/ceCohortDao';
 import { CEStudentDao } from '../../api/ceStudentDao';
-import { Cohort, Enrollment, Student } from '../../api/types';
-import { CEEnrollmentService } from "../../services/ceEnrollmentService";
+import { Cohort, Student } from '../../api/types';
+import { addStudentsToCohort } from './addStudentsToCohort';
 
-export async function createCohort(): Promise<Cohort> {
-    
-    function createEnrollments(cohort: Cohort, students: Student[]): Enrollment[] {
-        return students.map(student => {
-            return {
-                cohort_id: cohort.id,
-                student_id: student.id,
-                anchor: student.anchor ?? false,
-            } as Enrollment
-        })
+export type NewCohortOptions = {
+    /** nothing, or only spaces, means "(New) Cohort" */
+    name?: string;
+    /** the students to enrol; nothing means every student who is not in a cohort yet */
+    students?: Student[];
+};
+
+export async function createCohort(options: NewCohortOptions = {}): Promise<Cohort> {
+    const students = options.students ?? await CEStudentDao.getInstance().findUnenrolled();
+    const cohort = await CECohortDao.getInstance()
+        .insert({ id: uuid(), name: options.name?.trim() || `(New) Cohort` } as Cohort);
+    if (students.length > 0) {
+        await addStudentsToCohort(cohort, students);
     }
-
-    return CEStudentDao.getInstance().findUnenrolled()
-        .then(students => {
-            return CECohortDao.getInstance()
-                .insert({ id: uuid(), name: `(New) Cohort`, } as Cohort)
-                .then(cohort => {
-                    const enrollments = createEnrollments(cohort, students)
-                    return CEEnrollmentService.getInstance().batchInsert(enrollments)
-                        .then(() => cohort)
-                })
-        })
+    return cohort;
 }

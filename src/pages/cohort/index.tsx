@@ -20,6 +20,7 @@ import { TabPanel } from "../../components/TabPanel";
 import { EditCohortNameDialog } from "../../components/EditCohortNameDialog";
 import { UI_STRINGS } from '../../constants';
 import { NewPlanDialog } from "../../components/NewPlanDialog";
+import { PlanCard } from "../../components/PlanCard";
 import { raisedCardSx, tonalButtonSx } from "../../utils/styles";
 import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
@@ -98,6 +99,8 @@ const CohortPage: React.FC = () => {
     setTabValue(newValue);
   };
 
+  const activePlans = cohort?.plans?.filter(plan => plan.active) ?? [];
+
   return (
     cohort && (
       <CohortContext.Provider value={{ cohort, setCohort }}>
@@ -159,6 +162,15 @@ const CohortPage: React.FC = () => {
             cohort={cohort}
             open={newPlanOpen}
             onClose={() => setNewPlanOpen(false)} />
+          {/* the active plan stays in view right under the summary, whichever tab is showing */}
+          {activePlans.length > 0 &&
+            <Stack gap={1.5} sx={{ maxWidth: CONTENT_MAX_WIDTH }}>
+              <Typography variant="h4" component="h2" sx={{ fontWeight: 600 }}>
+                {UI_STRINGS.ACTIVE_PLAN_HEADING}
+              </Typography>
+              {activePlans.map(plan => <PlanCard key={plan.id} planId={plan.id!} />)}
+            </Stack>
+          }
           <Box>
             <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
               <Tabs
@@ -166,7 +178,7 @@ const CohortPage: React.FC = () => {
                 onChange={changeTab}
                 aria-label="basic tabs example"
               >
-                <Tab label={UI_STRINGS.PLANS_LABEL} />
+                <Tab label={UI_STRINGS.INACTIVE_PLANS_TAB} />
                 <Tab label={UI_STRINGS.STUDENTS_LABEL} />
               </Tabs>
             </Box>
