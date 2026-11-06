@@ -49,10 +49,10 @@ describe("planService", () => {
         const placement2 = { group_id: null } as Placement;
         const group = { id: "group1" } as Group;
 
-        (placementDao.mapJson as ReturnType<typeof vi.fn>)
+        vi.spyOn(placementDao, 'mapJson')
             .mockReturnValueOnce(placement1)
             .mockReturnValueOnce(placement2);
-        (groupDao.mapJson as ReturnType<typeof vi.fn>).mockReturnValue(group);
+        vi.spyOn(groupDao, 'mapJson').mockReturnValue(group);
 
         const result = planDao.mapJson(json);
         expectTypeOf(result).toMatchTypeOf<Plan>();
