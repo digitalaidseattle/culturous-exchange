@@ -55,6 +55,16 @@ export class StudentUploader extends ProfileUploader<Student> {
         }
         return StudentUploader.instance;
     }
+    requiredColumns = [
+        'first/given name in english',
+        'last/sur/family name in english',
+        'your age (how old are you currently)',
+        'email address',
+        'home city (and state if applicable)',
+        'home country:',
+        'gender',
+        'please mark all times that would be possible for the online group session on the weekend (based in your time zone)',
+    ];
     constructor() {
         super(StudentValidationService.getInstance(), CEStudentService.getInstance());
     }

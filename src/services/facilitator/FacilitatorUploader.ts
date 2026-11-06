@@ -21,6 +21,15 @@ export class FacilitatorUploader extends ProfileUploader<Facilitator> {
         return FacilitatorUploader.instance;
     }
 
+    requiredColumns = [
+        'first/given name in english',
+        'last/sur/family name in english',
+        'email address',
+        'home city (and state if applicable)',
+        'home country:',
+        'please mark all times that would be possible for the online group session on the weekend (based in your time zone)',
+    ];
+
     constructor() {
         super(FacilitatorValidationService.getInstance(), CEFacilitatorService.getInstance());
     }
