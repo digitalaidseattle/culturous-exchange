@@ -13,7 +13,7 @@ import { CEStudentDao } from '../../api/ceStudentDao';
 import { Cohort, Enrollment, Student } from '../../api/types';
 import { CEEnrollmentService } from "../../services/ceEnrollmentService";
 
-export async function createCohort(): Promise<Cohort> {
+export async function createCohort(name: string = '(New) Cohort'): Promise<Cohort> {
     
     function createEnrollments(cohort: Cohort, students: Student[]): Enrollment[] {
         return students.map(student => {
@@ -28,7 +28,7 @@ export async function createCohort(): Promise<Cohort> {
     return CEStudentDao.getInstance().findUnenrolled()
         .then(students => {
             return CECohortDao.getInstance()
-                .insert({ id: uuid(), name: `(New) Cohort`, } as Cohort)
+                .insert({ id: uuid(), name: name, } as Cohort)
                 .then(cohort => {
                     const enrollments = createEnrollments(cohort, students)
                     return CEEnrollmentService.getInstance().batchInsert(enrollments)

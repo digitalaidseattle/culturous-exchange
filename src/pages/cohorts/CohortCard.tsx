@@ -51,10 +51,16 @@ export const CohortCard = (props: { cohort: Cohort }) => {
             cohortDao.delete(props.cohort.id)
                 .then(() => {
                     setRefresh(refresh + 1);
-                    setOpenDeleteDialog(false);
-                    setAnchorEl(null);
                     navigate(`/cohorts`);
                     notifications.success(`Cohort ${props.cohort.name} has been deleted.`);
+                })
+                .catch((err) => {
+                    console.error(`${UI_STRINGS.DELETION_FAILED_PREFIX} ${err.message}`);
+                    notifications.error(`${UI_STRINGS.DELETION_FAILED_PREFIX} ${err.message}`);
+                })
+                .finally(() => {
+                    setOpenDeleteDialog(false);
+                    setAnchorEl(null);
                 })
         }
     };
