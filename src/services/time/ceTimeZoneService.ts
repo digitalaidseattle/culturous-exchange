@@ -23,7 +23,7 @@ export class CETimeZoneService {
 
   cache: Map<string, { timezone: string, offset: number }> = new Map();
 
-  private pendingLookups: Map<string, Promise<{ timezone: string, offset: number }>> = new Map();
+  private pending: Map<string, Promise<{ timezone: string, offset: number }>> = new Map();
 
   private constructor() {
     this.loadExisting()
@@ -31,9 +31,6 @@ export class CETimeZoneService {
 
   }
 
-  // Cache key format: `${city}@${state}@${country}`, normalized, with state
-  // empty when absent. State disambiguates repeated city names
-  // (Portland, OR vs Portland, ME). CEMT-137.
   cacheKey(city: string, country: string, state?: string): string {
     return `${normalize(city)}@${normalize(state)}@${normalize(country)}`;
   }
@@ -71,7 +68,6 @@ export class CETimeZoneService {
     }
   }
 
-  // state is optional and last to keep existing two-argument callers working.
   async getTimeZone(city: string, country: string, state?: string): Promise<{ timezone: string, offset: number }> {
     const key = this.cacheKey(city, country, state);
     const cached = this.cache.get(key);
@@ -79,7 +75,7 @@ export class CETimeZoneService {
       return cached;
     }
 
-    const inFlight = this.pendingLookups.get(key);
+    const inFlight = this.pending.get(key);
     if (inFlight) {
       return inFlight;
     }
@@ -93,10 +89,10 @@ export class CETimeZoneService {
         return result;
       })
       .finally(() => {
-        this.pendingLookups.delete(key);
+        this.pending.delete(key);
       });
 
-    this.pendingLookups.set(key, lookup);
+    this.pending.set(key, lookup);
     return lookup;
   }
 }
