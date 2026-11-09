@@ -47,8 +47,27 @@ describe('CETimeZoneService', () => {
     });
 
     it('treats a missing state as an empty segment in the cache key', () => {
-        expect(service.cacheKey('Cairo', 'Egypt')).toBe('Cairo@@Egypt');
-        expect(service.cacheKey('Cairo', 'Egypt', '  ')).toBe('Cairo@@Egypt');
+        expect(service.cacheKey('Cairo', 'Egypt')).toBe('cairo@@egypt');
+        expect(service.cacheKey('Cairo', 'Egypt', '  ')).toBe('cairo@@egypt');
+    });
+
+    it('normalizes case, whitespace, and diacritics in the cache key', () => {
+        expect(service.cacheKey(' Kabul ', 'Afghanistan')).toBe(service.cacheKey('kabul', 'afghanistan'));
+        expect(service.cacheKey('Lima', 'Perú')).toBe(service.cacheKey('lima', 'Peru'));
+    });
+
+    it('shares one request between concurrent lookups of the same place', async () => {
+        const [a, b] = await Promise.all([
+            service.getTimeZone('Portland', 'United States', 'OR'),
+            service.getTimeZone('portland ', 'United States', 'or')
+        ]);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(a).toEqual(b);
+    });
+
+    it('reports an exhausted daily quota on a 429', async () => {
+        fetchMock.mockResolvedValue({ ok: false, status: 429 });
+        await expect(service.getTimeZone('Lima', 'Peru')).rejects.toThrow('daily API quota likely exhausted');
     });
 
     it('includes the state in the lookup location when present', async () => {
