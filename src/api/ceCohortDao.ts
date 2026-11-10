@@ -65,4 +65,20 @@ export class CECohortDao extends SupabaseDao<Cohort> {
         }
     }
 
+    async nameExists(name: string): Promise<boolean> {
+        // case-insensitive exact match; escape ilike wildcards
+        const pattern = name.trim().replace(/[\\%_]/g, c => `\\${c}`);
+        return this.client
+            .from(this.tableName)
+            .select('id')
+            .ilike('name', pattern)
+            .limit(1)
+            .then((resp: any) => {
+                if (resp.error) {
+                    throw resp.error;
+                }
+                return (resp.data ?? []).length > 0;
+            })
+    }
+
 }
