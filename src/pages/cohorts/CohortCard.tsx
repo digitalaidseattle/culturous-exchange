@@ -8,12 +8,15 @@
 import { MoreOutlined } from "@ant-design/icons";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
-import { Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Typography } from "@mui/material";
+import { Card, CardContent, CardHeader, Grid, IconButton, Menu, MenuItem, Stack, Typography } from "@mui/material";
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import { Cohort } from "../../api/types";
 import { UI_STRINGS } from '../../constants';
 import { CECohortDao } from "../../api/ceCohortDao";
+import { CountryChart } from "../../components/cohort_charts/CountryChart";
+import { StudentAgeChart } from "../../components/cohort_charts/StudentAgeChart";
+import { GenderChart } from "../../components/cohort_charts/GenderChart";
 
 
 export const CohortCard = (props: { cohort: Cohort }) => {
@@ -68,8 +71,7 @@ export const CohortCard = (props: { cohort: Cohort }) => {
     return (props.cohort &&
         <Card key={props.cohort.id}
             sx={{
-                width: "240px",
-                height: "240px",
+                width: "100%",
                 borderRadius: "10px",
                 boxShadow: "0px 14px 80px rgba(34, 35, 58, 0.2)",
                 position: "relative",
@@ -77,6 +79,12 @@ export const CohortCard = (props: { cohort: Cohort }) => {
             onDoubleClick={handleOpen}>
             <CardHeader
                 title={props.cohort.name}
+                subheader={<>
+                    <Stack direction={'row'} spacing={2}>
+                        <Typography>{UI_STRINGS.STUDENTS_LABEL}: {props.cohort.enrollments?.length} </Typography>
+                        <Typography>{UI_STRINGS.PLANS_LABEL}: {props.cohort.plans?.length} </Typography>
+                    </Stack>
+                </>}
                 action={
                     <IconButton
                         onClick={handleClick}
@@ -102,14 +110,32 @@ export const CohortCard = (props: { cohort: Cohort }) => {
                 <MenuItem onClick={handleDelete}>{UI_STRINGS.DELETE_WITH_ELLIPSIS}</MenuItem>
             </Menu>
             <CardContent>
-                <Typography>{UI_STRINGS.STUDENTS_LABEL}: {props.cohort.enrollments?.length} </Typography>
-                <Typography>{UI_STRINGS.PLANS_LABEL}: {props.cohort.plans?.length} </Typography>
-                <ConfirmationDialog
-                    message={`Delete ${props.cohort.name}?`}
-                    open={openDeleteDialog}
-                    handleConfirm={() => doDelete()}
-                    handleCancel={() => setOpenDeleteDialog(false)} />
+                <Grid container spacing={1}>
+                    <Grid size={5}>
+                        <Card>
+                            <CardHeader title={`${UI_STRINGS.STUDENTS_LABEL} by Country`} />
+                            <CountryChart cohort={props.cohort} />
+                        </Card>
+                    </Grid>
+                    <Grid size={4}>
+                        <Card>
+                            <CardHeader title={`${UI_STRINGS.STUDENTS_LABEL} by Age`} />
+                            <StudentAgeChart cohort={props.cohort} />
+                        </Card>
+                    </Grid>
+                    <Grid size={3}>
+                        <Card>
+                            <CardHeader title={`${UI_STRINGS.STUDENTS_LABEL} by Gender`} />
+                            <GenderChart cohort={props.cohort} />
+                        </Card>
+                    </Grid>
+                </Grid>
             </CardContent>
+            <ConfirmationDialog
+                message={`Delete ${props.cohort.name}?`}
+                open={openDeleteDialog}
+                handleConfirm={() => doDelete()}
+                handleCancel={() => setOpenDeleteDialog(false)} />
         </Card>
     );
 }

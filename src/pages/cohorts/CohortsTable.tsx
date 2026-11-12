@@ -21,7 +21,6 @@ import {
 
 // project import
 import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
-import { MainCard } from '@digitalaidseattle/mui';
 import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
 import { useNavigate } from 'react-router';
 import { CECohortDao } from '../../api/ceCohortDao';
@@ -90,26 +89,24 @@ export default function CohortsTable() {
     }
 
     return (pageInfo.rows.length > 0 &&
-        <MainCard>
-            <DataGrid
-                apiRef={apiRef}
-                rows={pageInfo.rows}
-                columns={getColumns()}
+        <DataGrid
+            apiRef={apiRef}
+            rows={pageInfo.rows}
+            columns={getColumns()}
 
-                paginationMode='server'
-                paginationModel={paginationModel}
-                rowCount={pageInfo.totalRowCount}
-                onPaginationModelChange={setPaginationModel}
+            paginationMode='server'
+            paginationModel={paginationModel}
+            rowCount={pageInfo.totalRowCount}
+            onPaginationModelChange={setPaginationModel}
 
-                sortingMode='server'
-                sortModel={sortModel}
-                onSortModelChange={setSortModel}
+            sortingMode='server'
+            sortModel={sortModel}
+            onSortModelChange={setSortModel}
 
-                pageSizeOptions={[5, 10, 25, 100]}
+            pageSizeOptions={[5, 10, 25, 100]}
 
-                disableRowSelectionOnClick={false}
-                onRowClick={handleRowClick}
-            />
-        </MainCard>
+            disableRowSelectionOnClick={false}
+            onRowClick={handleRowClick}
+        />
     );
 }
