@@ -5,7 +5,6 @@
  *
  */
 import { RefreshContext } from '@digitalaidseattle/core';
-import { MainCard } from '@digitalaidseattle/mui';
 import { Stack } from '@mui/material';
 import { useContext, useEffect, useState } from "react";
 import { CECohortDao } from "../../api/ceCohortDao";
@@ -25,15 +24,11 @@ export const CohortsStack = () => {
     }, [refresh]);
 
     return (cohorts.length > 0 &&
-        <MainCard>
-            <Stack gap={1}>
-                {/* Consider an alternate :  switch between selected plan and all plans */}
-                <Stack direction={'row'} gap={2}>
-                    {cohorts.map(cohort =>
-                        <CohortCard key={cohort.id} cohort={cohort} />
-                    )}
-                </Stack>
-            </Stack>
-        </MainCard>
+        <Stack gap={1}>
+            {/* Consider an alternate :  switch between selected plan and all plans */}
+            {cohorts.map(cohort =>
+                <CohortCard key={cohort.id} cohort={cohort} />
+            )}
+        </Stack>
     );
 }

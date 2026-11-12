@@ -133,7 +133,6 @@ class PlanGenerator {
     }
   }
 
-
   getSmallestGroup(overlapResults: OverlapResult[]): OverlapResult | null {
     const sortedResults = overlapResults
       .sort((a, b) => (a.group.placements?.length ?? 0) - (b.group.placements?.length ?? 0))

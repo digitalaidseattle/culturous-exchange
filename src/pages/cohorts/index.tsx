@@ -8,15 +8,14 @@
 // material-ui
 
 // project import
-import { MainCard } from '@digitalaidseattle/mui';
 // project import
-import { Breadcrumbs, Link, Button, Stack, Typography, IconButton } from '@mui/material';
 import { HomeOutlined } from '@ant-design/icons';
 import { RefreshContext, useNotifications } from '@digitalaidseattle/core';
+import { Breadcrumbs, Button, Card, CardContent, CardHeader, IconButton, Link, Stack, Typography } from '@mui/material';
 import { useContext } from 'react';
 import { UI_STRINGS } from '../../constants';
-import { CohortsStack } from './CohortsStack';
 import { createCohort } from '../../services/cohort/createCohort';
+import { CohortsStack } from './CohortsStack';
 
 // ================================|| 404 ||================================ //
 
@@ -44,18 +43,21 @@ const CohortsPage: React.FC = () => {
                 </IconButton>
                 <Typography color="text.primary">{UI_STRINGS.COHORTS}</Typography>
             </Breadcrumbs>
-            <MainCard title={UI_STRINGS.COHORTS}>
-                <Stack margin="1" gap="1" direction="row" spacing={'1rem'}>
-                    <Button
+            <Card>
+                <CardHeader
+                    title={UI_STRINGS.COHORTS}
+                    action={<Button
                         title='Action'
                         variant="contained"
                         color="primary"
                         onClick={newCohort}>
                         {UI_STRINGS.NEW}
-                    </Button>
-                </Stack>
-            </MainCard>
-            <CohortsStack />
+                    </Button>}
+                />
+                <CardContent>
+                    <CohortsStack />
+                </CardContent>
+            </Card>
         </Stack>
     );
 
