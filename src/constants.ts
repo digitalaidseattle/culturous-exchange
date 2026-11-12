@@ -21,7 +21,7 @@ export const UI_STRINGS = {
   CLICK_TO_OPEN: 'Click to open',
 
   // Generic labels
-  GET_STARTED:'Get Started',
+  GET_STARTED: 'Get Started',
   NEXT: 'Next',
   BACK: 'Back',
   GENERATE_COHORT: 'Generate',
@@ -37,6 +37,7 @@ export const UI_STRINGS = {
   UNABLE_TO_VALIDATE_COHORT_NAME: 'Unable to validate cohort name.',
   SETTINGS: 'Settings',
   GROUP_SIZE: 'Group Size:',
+  GENERATION_METHOD: 'Generation Method',
   COUNTRIES: 'Countries: ',
   DURATION: 'Overlap (hr): ',
   NOT_AVAILABLE: 'N/A',
@@ -179,6 +180,14 @@ export const SERVICE_ERRORS = {
   FAILED_INSERT_STUDENTS_FROM_EXCEL_FILE: 'Failed to insert students from Excel file'
 } as const;
 
+
+// Options for plan.optimization_style
+export const OPTIMIZATION_STYLES = [
+  { value: 'largest_first', label: 'Most Availability' },
+  { value: 'smallest_first', label: 'Least Availability' },
+  { value: 'random', label: 'Random' },
+  { value: 'balanced', label: 'Balanced Groups' }
+] as const;
 
 // Maximum number of students per group when generating plans
 export const MAX_GROUP_SIZE = 10;
