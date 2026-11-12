@@ -223,7 +223,6 @@ const PlanPage: React.FC = () => {
                   onSubmit={handleSettingsChange}
                 />
               </CardContent>
-              {/* <PlanDetails /> */}
             </Card>
           </Stack>
         </ViewDetailsContext.Provider>

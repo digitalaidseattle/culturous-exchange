@@ -48,7 +48,7 @@ class PlanGenerator {
     const anchorPlacements = cleaned.placements.filter(p => p.anchor)
     const nonAnchorPlacements = cleaned.placements.filter(p => !p.anchor);
 
-    const planWithAnchors = await this.assignAnchors(cleaned, anchorPlacements);
+    const planWithAnchors = await this.assignStudents(cleaned, anchorPlacements);
     const planWithAllStudents = await this.assignStudents(planWithAnchors, nonAnchorPlacements);
     const evaluatedPlan = await planEvaluator.evaluate(planWithAllStudents); // to update country counts
     const finalPlan = await this.planService.save(evaluatedPlan);
@@ -95,24 +95,6 @@ class PlanGenerator {
     return groups;
   }
 
-  // Algorithm to assign students to groups by time windows
-  async assignAnchors(plan: Plan, remainingPlacements: Placement[]): Promise<Plan> {
-    for (const placement of remainingPlacements) {
-      const overlapResults = this.getValidOverlaps(plan, placement);
-      let response = this.getEmptyGroup(overlapResults);  // empty group first
-      if (response === null) {
-        console.log("No suitable group found for placement", placement.student_id);
-        placement.group_id = null;
-      } else {
-        placement.group_id = response.group.id;
-        response.group.placements!.push(placement);
-        response.group.time_windows = response.intersect;
-      }
-    }
-    return plan;
-  }
-
-
   async assignStudents(plan: Plan, remainingPlacements: Placement[]): Promise<Plan> {
     // Assign each placement to the best group based on time windows
     for (const placement of remainingPlacements) {
@@ -129,28 +111,28 @@ class PlanGenerator {
     return plan;
   }
 
-
-
   getOverlap(plan: Plan, placement: Placement): OverlapResult | null {
-    const overlapResults = this.getValidOverlaps(plan, placement)
-    switch (plan.optimization_style) {
-      case 'smallest_first':
-        return this.getSmallestOverlap(overlapResults);
-      case 'largest_first':
-        return this.getLargestOverlap(overlapResults)
-      case 'balanced':
-        return this.getSmallestGroup(overlapResults)
-      case 'random':
-      default:
-        return this.getRandom(overlapResults)
+    const overlapResults = this.getValidOverlaps(plan, placement);
+    // empty group first, if there are no empty groups
+    // then use the overlap strategy
+    const results = overlapResults.find(r => (r.group.placements?.length ?? 0) === 0)
+    if (results) {
+      return results;
+    } else {
+      switch (plan.optimization_style) {
+        case 'smallest_first':
+          return this.getSmallestOverlap(overlapResults);
+        case 'largest_first':
+          return this.getLargestOverlap(overlapResults)
+        case 'balanced':
+          return this.getSmallestGroup(overlapResults)
+        case 'random':
+        default:
+          return this.getRandom(overlapResults)
+      }
     }
   }
 
-  getEmptyGroup(overlapResults: OverlapResult[]): OverlapResult | null {
-    const sortedResults = overlapResults
-      .sort((a, b) => (a.group.placements?.length ?? 0) - (b.group.placements?.length ?? 0))
-    return sortedResults.length > 0 ? sortedResults[0] : null;
-  }
 
   getSmallestGroup(overlapResults: OverlapResult[]): OverlapResult | null {
     const sortedResults = overlapResults
