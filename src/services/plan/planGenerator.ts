@@ -38,9 +38,14 @@ class PlanGenerator {
     this.planService = CEPlanService.getInstance();
   }
 
-  async run(plan: Plan): Promise<Plan> {
+  async calculate(plan: Plan): Promise<Plan> {
     const startTime = performance.now();
-    const cleaned = await this.emptyPlan(plan)
+    // emptyPlan re-queries the plan, so carry over the (possibly unsaved) generation settings
+    const cleaned: Plan = {
+      ...await this.emptyPlan(plan),
+      group_size: plan.group_size,
+      optimization_style: plan.optimization_style,
+    };
 
     const nGroups = Math.ceil(cleaned.placements.length / (plan.group_size ?? MAX_GROUP_SIZE));
     cleaned.groups = await this.createGroups(cleaned, nGroups);
@@ -51,8 +56,13 @@ class PlanGenerator {
     const planWithAnchors = await this.assignStudents(cleaned, anchorPlacements);
     const planWithAllStudents = await this.assignStudents(planWithAnchors, nonAnchorPlacements);
     const evaluatedPlan = await planEvaluator.evaluate(planWithAllStudents); // to update country counts
-    const finalPlan = await this.planService.save(evaluatedPlan);
-    console.log(`PlanGenerator.run() completed in ${performance.now() - startTime} ms`);
+    console.log(`PlanGenerator.calculate() completed in ${performance.now() - startTime} ms`);
+    return evaluatedPlan;
+  }
+
+  async run(plan: Plan): Promise<Plan> {
+    const changedPlane = await this.calculate(plan)
+    const finalPlan = await this.planService.save(changedPlane);
     return finalPlan;
   }
 

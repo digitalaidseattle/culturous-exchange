@@ -5,6 +5,8 @@ export const UI_STRINGS = {
   REMOVE: 'Remove...',
   CANCEL: 'Cancel',
   SUBMIT: 'Submit',
+  SAVE: 'Save',
+  RESET: 'Reset',
   DUPLICATE: 'Duplicate',
   DELETE_WITH_ELLIPSIS: 'Delete...',
   NEW: 'New',
@@ -78,10 +80,13 @@ export const UI_STRINGS = {
   TOTAL_DURATION: 'Total Plan Overlap',
   AVG_COUNTRY_COUNT: 'Avg. Countries/Group',
   AVG_DURATION: 'Avg. Overlap/Group',
+  GROUP_OVERLAP_CHART: 'Time Overlap per Group (hrs)',
+  GROUP_STUDENTS_COUNTRIES_CHART: 'Students & Countries per Group',
 
   // Tooltips
   SELECT_TIMELINE_VIEW: 'Select timeline view',
   SELECT_BOARD_VIEW: 'Select board view',
+  SELECT_INTERACTIVE_VIEW: 'Select interactive view',
   EXPORT_PLAN: 'Export plan',
   TOGGLE_GROUP_DETAILS: 'Toggle group details',
   TOGGLE_STUDENT_DETAILS: 'Toggle student details',
@@ -138,7 +143,7 @@ export const UI_STRINGS = {
   APP_NAME: 'Culturous Exchange',
 
   // Misc labels and messages not previously centralised
-  GROUP_SIZE_LABEL: 'Group size',
+  GROUP_SIZE_LABEL: 'Max Group size',
   GROUP_PLACEMENTS_SHEET: 'Group Placements',
   GROUP_TIMES: 'Group Times',
   GROUP_TIMES_PST: 'Group Times (PST)',

@@ -21,7 +21,7 @@ export const PlansStack: React.FC = () => {
     const { cohort } = useContext(CohortContext);
 
     return (
-        <Stack direction={'row'} gap={2} >
+        <Stack direction={'column'} gap={2} >
             {
                 cohort.plans
                     .sort((a, b) => a.name.localeCompare(b.name))

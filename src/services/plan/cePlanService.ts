@@ -15,6 +15,7 @@ import { CEPlacementService } from '../cePlacementService';
 import { CEGroupService } from "../group/ceGroupService";
 
 class CEPlanService {
+
   private static instance: CEPlanService;
 
   static getInstance() {
@@ -113,6 +114,13 @@ class CEPlanService {
     return plan
   }
 
+
+  /**
+   * Placements not assigned to any group (group_id null or undefined).
+   */
+  getWaitlisted(plan: Plan): Placement[] {
+    return (plan.placements ?? []).filter(placement => !placement.group_id);
+  }
 }
 
 export { CEPlanService };

@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 // material-ui
-import { AppstoreOutlined, ExportOutlined, SettingOutlined, TableOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
-import { Box, Breadcrumbs, ButtonGroup, Card, CardContent, CardHeader, CircularProgress, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
+import { AppstoreOutlined, ExportOutlined, InteractionOutlined, SettingOutlined, TableOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { Box, Breadcrumbs, Button, ButtonGroup, Card, CardContent, CardHeader, CircularProgress, IconButton, Link, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
 
 // project import
 import { HomeOutlined } from '@ant-design/icons';
@@ -26,6 +26,7 @@ import { GroupBoard } from "./GroupBoard";
 import { PlanContext } from "./PlanContext";
 import { TimeLine } from "./TimeLine";
 import { ViewDetails, ViewDetailsContext } from "./ViewDetailsContext";
+import { InteractiveView } from "./InteractiveView";
 
 const PlanPage: React.FC = () => {
   const cohortDao = CECohortDao.getInstance();
@@ -37,7 +38,7 @@ const PlanPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [viewDetails, setViewDetails] = useState<ViewDetails>({ showGroupDetails: false, showStudentDetails: false });
   const [showSettings, setShowSettings] = useState<boolean>(false);
-  const [viewType, setViewType] = useState<"board" | "timeline">("board");
+  const [viewType, setViewType] = useState<"board" | "timeline" | "interactive">("board");
 
   const notifications = useNotifications();
 
@@ -103,19 +104,15 @@ const PlanPage: React.FC = () => {
   async function handleSettingsChange(changed: Plan): Promise<void> {
     if (plan) {
       try {
-        const orig_optimization_style = plan.optimization_style;
-        const updatedPlan = await planDao.update(plan!.id!, {
-          name: changed.name,
-          note: changed.note,
-          group_size: changed.group_size!,
-          optimization_style: changed.optimization_style
-        })
-        if (orig_optimization_style !== updatedPlan.optimization_style) {
-          const seededPlan = await PlanGenerator.getInstance().run(updatedPlan)
-          setPlan(seededPlan)
-        } else {
-          setPlan(updatedPlan);
-        }
+        const updatedPlan = await PlanGenerator.getInstance()
+          .run({
+            ...plan,
+            name: changed.name,
+            note: changed.note,
+            group_size: changed.group_size!,
+            optimization_style: changed.optimization_style
+          })
+        setPlan(updatedPlan)
         notifications.success(`Plan ${changed.name} updated successfully`);
       }
       catch (err) {
@@ -173,25 +170,34 @@ const PlanPage: React.FC = () => {
               />
               <CardContent>
                 <Toolbar>
-                  <Box sx={{ flexGrow: 1 }}>
+                  <Stack direction={"row"} sx={{ flexGrow: 1, gap: 5 }}>
                     <Typography variant="h3" component="span">
                       {UI_STRINGS.GROUPS_LABEL}
                     </Typography>
-                    <ButtonGroup size="small" aria-label="Small button group">
+                    <ButtonGroup size="small" variant="outlined" aria-label="Button group for plan views">
                       <Tooltip title={UI_STRINGS.SELECT_BOARD_VIEW}>
-                        <IconButton size="small"
+                        <Button size="small"
+                          variant={viewType === "board" ? "contained" : "outlined"}
                           onClick={() => setViewType("board")}>
                           <AppstoreOutlined />
-                        </IconButton>
+                        </Button>
                       </Tooltip>
                       <Tooltip title={UI_STRINGS.SELECT_TIMELINE_VIEW}>
-                        <IconButton size="small"
+                        <Button size="small"
+                          variant={viewType === "timeline" ? "contained" : "outlined"}
                           onClick={() => setViewType("timeline")}>
                           <TableOutlined />
-                        </IconButton>
+                        </Button>
+                      </Tooltip>
+                      <Tooltip title={UI_STRINGS.SELECT_INTERACTIVE_VIEW}>
+                        <Button size="small"
+                          variant={viewType === "interactive" ? "contained" : "outlined"}
+                          onClick={() => setViewType("interactive")}>
+                          <InteractionOutlined />
+                        </Button>
                       </Tooltip>
                     </ButtonGroup>
-                  </Box>
+                  </Stack>
 
                   <Tooltip title={UI_STRINGS.EXPORT_PLAN}>
                     <IconButton color="inherit" onClick={exportPlan}>
@@ -215,6 +221,7 @@ const PlanPage: React.FC = () => {
                 <Box sx={{ overflowX: 'auto', }}>
                   {!loading && viewType === "board" && <GroupBoard />}
                   {!loading && viewType === "timeline" && <TimeLine />}
+                  {!loading && viewType === "interactive" && <InteractiveView />}
                 </Box>
                 <PlanSettingsDialog
                   plan={plan!}
