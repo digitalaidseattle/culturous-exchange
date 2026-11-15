@@ -5,6 +5,8 @@ export const UI_STRINGS = {
   REMOVE: 'Remove...',
   CANCEL: 'Cancel',
   SUBMIT: 'Submit',
+  SAVE: 'Save',
+  RESET: 'Reset',
   DUPLICATE: 'Duplicate',
   DELETE_WITH_ELLIPSIS: 'Delete...',
   NEW: 'New',
@@ -21,7 +23,7 @@ export const UI_STRINGS = {
   CLICK_TO_OPEN: 'Click to open',
 
   // Generic labels
-  GET_STARTED:'Get Started',
+  GET_STARTED: 'Get Started',
   NEXT: 'Next',
   BACK: 'Back',
   GENERATE_COHORT: 'Generate',
@@ -37,6 +39,7 @@ export const UI_STRINGS = {
   UNABLE_TO_VALIDATE_COHORT_NAME: 'Unable to validate cohort name.',
   SETTINGS: 'Settings',
   GROUP_SIZE: 'Group Size:',
+  GENERATION_METHOD: 'Generation Method',
   COUNTRIES: 'Countries: ',
   DURATION: 'Overlap (hr): ',
   NOT_AVAILABLE: 'N/A',
@@ -77,10 +80,13 @@ export const UI_STRINGS = {
   TOTAL_DURATION: 'Total Plan Overlap',
   AVG_COUNTRY_COUNT: 'Avg. Countries/Group',
   AVG_DURATION: 'Avg. Overlap/Group',
+  GROUP_OVERLAP_CHART: 'Time Overlap per Group (hrs)',
+  GROUP_STUDENTS_COUNTRIES_CHART: 'Students & Countries per Group',
 
   // Tooltips
   SELECT_TIMELINE_VIEW: 'Select timeline view',
   SELECT_BOARD_VIEW: 'Select board view',
+  SELECT_INTERACTIVE_VIEW: 'Select interactive view',
   EXPORT_PLAN: 'Export plan',
   TOGGLE_GROUP_DETAILS: 'Toggle group details',
   TOGGLE_STUDENT_DETAILS: 'Toggle student details',
@@ -137,7 +143,7 @@ export const UI_STRINGS = {
   APP_NAME: 'Culturous Exchange',
 
   // Misc labels and messages not previously centralised
-  GROUP_SIZE_LABEL: 'Group size',
+  GROUP_SIZE_LABEL: 'Max Group size',
   GROUP_PLACEMENTS_SHEET: 'Group Placements',
   GROUP_TIMES: 'Group Times',
   GROUP_TIMES_PST: 'Group Times (PST)',
@@ -179,6 +185,14 @@ export const SERVICE_ERRORS = {
   FAILED_INSERT_STUDENTS_FROM_EXCEL_FILE: 'Failed to insert students from Excel file'
 } as const;
 
+
+// Options for plan.optimization_style
+export const OPTIMIZATION_STYLES = [
+  { value: 'largest_first', label: 'Most Availability' },
+  { value: 'smallest_first', label: 'Least Availability' },
+  { value: 'random', label: 'Random' },
+  { value: 'balanced', label: 'Balanced Groups' }
+] as const;
 
 // Maximum number of students per group when generating plans
 export const MAX_GROUP_SIZE = 10;

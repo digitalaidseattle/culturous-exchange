@@ -19,13 +19,13 @@ class PlanEvaluator {
             this.evaluateGroup(group);
         })
 
-        plan.avg_country_count = plan.groups
+        plan.avg_country_count = Math.trunc(plan.groups
             .map(g => g.country_count)
-            .reduce((x, y) => x + y, 0) / plan.groups.length;
-        plan.avg_duration = plan.groups
+            .reduce((x, y) => x + y, 0) / plan.groups.length * 10) / 10;
+        plan.avg_duration = Math.trunc(plan.groups
             .map(g => g.duration)
             .filter(d => d !== undefined)
-            .reduce((x, y) => x + y, 0) / plan.groups.length;
+            .reduce((x, y) => x + y, 0) / plan.groups.length * 10) / 10;
         plan.total_duration = this.calcPlanDuration(plan);
         return plan
     }

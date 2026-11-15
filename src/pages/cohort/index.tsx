@@ -10,10 +10,9 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
 // material-ui
-import { Breadcrumbs, Link, Typography, Box, Button, IconButton, Stack, Tab, Tabs } from "@mui/material";
 import { HomeOutlined } from "@ant-design/icons";
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
-import { MainCard } from "@digitalaidseattle/mui";
+import { Breadcrumbs, Button, Card, CardContent, CardHeader, IconButton, Link, Stack, Tab, Tabs, Typography } from "@mui/material";
 import { useSearchParams } from "react-router-dom";
 import { CECohortDao } from "../../api/ceCohortDao";
 import { Cohort } from "../../api/types";
@@ -132,22 +131,25 @@ const CohortPage: React.FC = () => {
             </Link>
             <Typography color="text.primary">{UI_STRINGS.COHORT_PREFIX} {cohort.name}</Typography>
           </Breadcrumbs>
-          <MainCard>
-            <TextEdit
-              label={UI_STRINGS.NAME}
-              value={cohort.name}
-              onChange={(val) => handleNameChange(val)}
-            />
-            <Button
-              sx={{ marginTop: 1 }}
-              variant="contained"
-              onClick={handleCreatePlan}
-            >
-              {UI_STRINGS.NEW_PLAN}
-            </Button>
-          </MainCard>
-          <MainCard>
-            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Card>
+            <CardHeader
+              title={
+                <TextEdit
+                  label={UI_STRINGS.NAME}
+                  value={cohort.name}
+                  onChange={(val) => handleNameChange(val)}
+                />
+              }
+              action={
+                <Button
+                  sx={{ marginTop: 1 }}
+                  variant="contained"
+                  onClick={handleCreatePlan}
+                >
+                  {UI_STRINGS.NEW_PLAN}
+                </Button>
+              } />
+            <CardContent>
               <Tabs
                 value={tabValue}
                 onChange={changeTab}
@@ -156,14 +158,14 @@ const CohortPage: React.FC = () => {
                 <Tab label={UI_STRINGS.PLANS_LABEL} />
                 <Tab label={UI_STRINGS.STUDENTS_LABEL} />
               </Tabs>
-            </Box>
-            <TabPanel value={tabValue} index={0}>
-              <PlansStack />
-            </TabPanel>
-            <TabPanel value={tabValue} index={1}>
-              <StudentTable />
-            </TabPanel>
-          </MainCard>
+              <TabPanel value={tabValue} index={0}>
+                <PlansStack />
+              </TabPanel>
+              <TabPanel value={tabValue} index={1}>
+                <StudentTable />
+              </TabPanel>
+            </CardContent>
+          </Card>
         </Stack>
       </CohortContext.Provider>
     )
