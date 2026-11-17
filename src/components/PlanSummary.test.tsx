@@ -11,6 +11,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { PlanStats } from "../services/plan/planStats";
+import { SIDE_BY_SIDE_WIDTH } from "./PlanCharts";
 import { PlanSummary } from "./PlanSummary";
 import { CHART_MIN_WIDTH, TOTALS_BESIDE_WIDTH, TOTALS_COLUMN_WIDTH } from "./PlanTotals";
 
@@ -79,14 +80,28 @@ describe("PlanSummary", () => {
         expect(both.yAxis[0]).toMatchObject({ min: 0, max: 8, tickInterval: [0, 2, 4, 6, 8] });
     });
 
-    it("puts the charts one above the other", () => {
+    it("puts the charts one above the other to begin with, in the order hours and then students and countries", () => {
         render(<PlanSummary stats={stats} />);
         const [first, second] = Array.from(document.querySelectorAll("section"));
+        expect(first.getAttribute("aria-label")).toBe("Time Overlap per Group (hrs)");
+        expect(second.getAttribute("aria-label")).toBe("Students & Countries per Group");
         expect(Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
-        // they share a column, not a row
-        const column = first.parentElement!;
-        expect(second.parentElement).toBe(column);
-        expect(getComputedStyle(column).flexDirection).toBe("column");
+        // they share one column of a grid, not a row
+        const grid = first.parentElement!;
+        expect(second.parentElement).toBe(grid);
+        expect(getComputedStyle(grid).display).toBe("grid");
+        expect(getComputedStyle(grid).gridTemplateColumns).toBe("minmax(0, 1fr)");
+    });
+
+    it("puts them side by side, sharing the width evenly, from 960 pixels of the space they are in", () => {
+        render(<PlanSummary stats={stats} />);
+        expect(SIDE_BY_SIDE_WIDTH).toBe(960);
+        expect(allCss()).toMatch(new RegExp("@container \\(min-width: " + SIDE_BY_SIDE_WIDTH + "px\\)\\{[^}]*grid-template-columns:repeat\\(2, minmax\\(0, 1fr\\)\\)"));
+    });
+
+    it("stays stacked in the New Plan window, which is narrower than that", () => {
+        // 900 wide with 24 pixels of padding each side
+        expect(900 - 48).toBeLessThan(SIDE_BY_SIDE_WIDTH);
     });
 
     it("says there are no groups yet, and draws no chart, for a plan with none", () => {
