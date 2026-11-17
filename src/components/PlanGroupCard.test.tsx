@@ -16,6 +16,7 @@ vi.mock("../pages/plan/FacilitatorMenu", () => ({
     }
 }));
 
+import { rainbowSurgePalette } from "@mui/x-charts/colorPalettes";
 import { Group, Placement, Student, TimeWindow } from "../api/types";
 import { CETimeWindowService, DEFAULT_TIMEZONE } from "../services/time/ceTimeWindowService";
 import { PlanGroupCard } from "./PlanGroupCard";
@@ -97,6 +98,22 @@ describe("PlanGroupCard", () => {
         const parts = Array.from(bar.querySelectorAll("[data-gender]")).map(part => `${part.getAttribute("data-gender")}:${part.getAttribute("data-count")}`);
         expect(parts).toEqual(["female:2", "male:1", "other:1"]);
         expect(within(screen.getByRole("list", { name: "Gender counts" })).getAllByRole("listitem").map(li => li.textContent)).toEqual(["Female 2", "Male 1", "Other 1"]);
+    });
+
+    it("colors the gender bar and its key with the same colors as the MUI X charts: blue, orange, red", () => {
+        const genders = ["Female", "Male", "Nonbinary", "Female"];
+        renderCard({ placements: members.map((m, i) => ({ ...m, student: { ...m.student, gender: genders[i] } }) as Placement) });
+        const rgb = (hex: string) => {
+            const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+            return `rgb(${r}, ${g}, ${b})`;
+        };
+        const [blue, orange, red] = rainbowSurgePalette("light");
+        const bar = screen.getByRole("img", { name: /^Gender split/ });
+        const fills = Array.from(bar.querySelectorAll("[data-gender]")).map(part => getComputedStyle(part).backgroundColor);
+        expect(fills).toEqual([rgb(blue), rgb(orange), rgb(red)]);
+        // each dot in the key is the color of its part of the bar
+        const dots = within(screen.getByRole("list", { name: "Gender counts" })).getAllByRole("listitem").map(li => getComputedStyle(li.firstElementChild!).backgroundColor);
+        expect(dots).toEqual(fills);
     });
 
     it("leaves out a gender nobody in the group has, and says so for an empty group", () => {

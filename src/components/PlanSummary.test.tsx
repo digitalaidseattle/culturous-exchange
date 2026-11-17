@@ -63,6 +63,22 @@ describe("PlanSummary", () => {
         expect(both.hideLegend).toBe(false);
     });
 
+    it("rounds the bars, and keeps the charts short", () => {
+        render(<PlanSummary stats={stats} />);
+        chartProps().forEach(chart => {
+            expect(chart.borderRadius).toBe(4);
+            expect(chart.height).toBe(130);
+        });
+    });
+
+    it("runs each vertical axis from 0 to a labeled round number at or above its tallest bar", () => {
+        render(<PlanSummary stats={stats} />);
+        const [overlap, both] = chartProps();
+        // the tallest bar is 6 hours, and 7 students
+        expect(overlap.yAxis[0]).toMatchObject({ min: 0, max: 6, tickInterval: [0, 2, 4, 6] });
+        expect(both.yAxis[0]).toMatchObject({ min: 0, max: 8, tickInterval: [0, 2, 4, 6, 8] });
+    });
+
     it("puts the charts one above the other", () => {
         render(<PlanSummary stats={stats} />);
         const [first, second] = Array.from(document.querySelectorAll("section"));

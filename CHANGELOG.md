@@ -519,11 +519,13 @@ This branch swaps every chart over to one library, MUI X Charts, the one the mai
 
 - **Plan cards, New Plan and Plan settings show the maintainers' two bar charts, one above the other,** in place of the three dot plots: **Time Overlap per Group (hrs)** (a bar for each group's hours of shared time) and **Students & Countries per Group** (two bars for each group, with a key). Groups are in numeric order (Group 2 before Group 10). The totals (groups, students, waitlisted) are still in their panel, beside the charts when there is room and above them when there is not.
 - **The globe is gone.** A group's card has a **Countries** pie chart where the Location globe was, with a slice for each country and its key. The cohort page's **Students by country** is the same pie chart, beside the age bars and the gender pie. The student's **See details** window shows the city, state, country and time zone as text, with no globe.
-- The gender split bar and the availability calendars are unchanged.
+- **The bar charts are shorter, with rounded bars, and the vertical axis ends on a labeled number** at or above the tallest bar (0 to 15 in fives, say), where it used to run on to an unmarked point above the last label.
+- **The gender split bar uses the charts' colors:** Female is the charts' blue and Male their orange (and Other their red), taken from MUI X Charts' own palette, so they match the pies and bars.
+- The availability calendars are unchanged.
 
 **Technical notes:**
 
-- New `GroupBarChart`, `PlanCharts` (the two bar charts, from the maintainers' `GroupBarChart` in their interactive plan card) and `CountryPieChart` (with `utils/countryCounts`). `planStats` gains `perGroup`, each group's name, students, countries and hours, in numeric order of the names.
+- New `GroupBarChart`, `PlanCharts` (the two bar charts, from the maintainers' `GroupBarChart` in their interactive plan card) and `CountryPieChart` (with `utils/countryCounts`). `planStats` gains `perGroup`, each group's name, students, countries and hours, in numeric order of the names. `utils/chartAxis` picks the ticks of the vertical axis.
 - Removed: `DistributionChart`, `Globe`, `LocationGlobe`, the terrain and place lookup code (`services/geo`), `distribution`, `gradient`, `overlapColors`, `globeColors`, `globeView`, and the packages `d3-geo`, `topojson-client` and `world-atlas` (and their types). The browser no longer looks up city coordinates, which also removes the licence question about the terrain imagery.
 - `vitest.setup.ts` stubs the MUI charts (the test browser cannot draw them): a stub carries the props it was given, so tests check what a chart is drawing, not its pixels.
 - The built page is about 39 kB smaller (gzipped) than with the globe and dot plots, though MUI X Charts remain.
