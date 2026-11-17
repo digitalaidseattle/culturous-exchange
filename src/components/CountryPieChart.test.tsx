@@ -9,7 +9,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Student } from "../api/types";
-import { CountryPieChart, LEGEND_MAX_WIDTH } from "./CountryPieChart";
+import { CountryPieChart } from "./CountryPieChart";
 
 type PieProps = {
     height: number, hideLegend?: boolean,
@@ -43,24 +43,21 @@ describe("CountryPieChart", () => {
         expect(pie().slotProps.legend.sx.flexWrap).toBe("wrap");
     });
 
-    it("puts the legend beside the pie, in a column after a column the width of the pie", () => {
+    it("puts the legend beside the pie, taking all the width after a column the width of the pie", () => {
         render(<CountryPieChart students={from("Peru")} height={200} />);
         expect(pie().sx.gridTemplateAreas).toBe('"chart legend"');
-        expect(pie().sx.gridTemplateColumns).toBe("200px minmax(0, auto)");
+        expect(pie().sx.gridTemplateColumns).toBe("200px minmax(0, 1fr)");
     });
 
-    it("keeps the legend to what is left beside the pie, and no wider than it needs to be", () => {
+    it("lets the legend grow to all of the space beside the pie, the width of the chart less the pie and the gap", () => {
         render(<CountryPieChart students={from("Peru")} height={200} />);
-        const maxWidth = String(pie().slotProps.legend.sx.maxWidth);
-        expect(maxWidth).toContain(`${LEGEND_MAX_WIDTH}px`);
-        // the space beside the pie: the width of the chart, less the pie and the gap
-        expect(maxWidth).toContain("100cqw - 216px");
+        expect(String(pie().slotProps.legend.sx.maxWidth)).toBe("calc(100cqw - 216px)");
     });
 
-    it("hugs its contents: it is no wider than the pie and the widest legend, and measures its own space", () => {
+    it("is not capped in width: it fills the space it is given, and measures that space", () => {
         const { container } = render(<CountryPieChart students={from("Peru")} height={200} />);
         const box = container.firstElementChild as HTMLElement;
-        expect(getComputedStyle(box).maxWidth).toBe(`${200 + 16 + LEGEND_MAX_WIDTH}px`);
+        expect(getComputedStyle(box).maxWidth).not.toMatch(/px/);
         expect(Array.from(document.querySelectorAll("style")).map(style => style.textContent).join("\n")).toContain("container-type:inline-size");
     });
 });
