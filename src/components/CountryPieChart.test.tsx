@@ -9,7 +9,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Student } from "../api/types";
-import { CountryPieChart } from "./CountryPieChart";
+import { CountryPieChart, PIE_WIDTH_SHARE, SMALLEST_PIE } from "./CountryPieChart";
 
 type PieProps = {
     height: number, hideLegend?: boolean,
@@ -43,15 +43,31 @@ describe("CountryPieChart", () => {
         expect(pie().slotProps.legend.sx.flexWrap).toBe("wrap");
     });
 
-    it("puts the legend beside the pie, taking all the width after a column the width of the pie", () => {
+    const PIE_WIDTH = `clamp(110px, ${PIE_WIDTH_SHARE}cqw, 200px)`;
+
+    it("puts the legend beside the pie, taking all the width after the pie's column", () => {
         render(<CountryPieChart students={from("Peru")} height={200} />);
         expect(pie().sx.gridTemplateAreas).toBe('"chart legend"');
-        expect(pie().sx.gridTemplateColumns).toBe("200px minmax(0, 1fr)");
+        expect(pie().sx.gridTemplateColumns).toBe(`${PIE_WIDTH} minmax(0, 1fr)`);
+    });
+
+    it("lets the pie shrink with the space it is in: a share of the chart's width, from its full size down to a little over half", () => {
+        render(<CountryPieChart students={from("Peru")} height={200} />);
+        const columns = pie().sx.gridTemplateColumns;
+        // not a fixed width: it is bounded below and above, and follows the chart's width in between
+        expect(columns).toMatch(/^clamp\(110px, \d+cqw, 200px\) /);
+        expect(SMALLEST_PIE).toBeGreaterThan(0.5);
+        expect(SMALLEST_PIE).toBeLessThan(1);
+    });
+
+    it("shrinks a smaller pie in proportion", () => {
+        render(<CountryPieChart students={from("Peru")} height={132} />);
+        expect(pie().sx.gridTemplateColumns).toMatch(/^clamp\(73px, \d+cqw, 132px\) /);
     });
 
     it("lets the legend grow to all of the space beside the pie, the width of the chart less the pie and the gap", () => {
         render(<CountryPieChart students={from("Peru")} height={200} />);
-        expect(String(pie().slotProps.legend.sx.maxWidth)).toBe("calc(100cqw - 216px)");
+        expect(String(pie().slotProps.legend.sx.maxWidth)).toBe(`calc(100cqw - ${PIE_WIDTH} - 16px)`);
     });
 
     it("is not capped in width: it fills the space it is given, and measures that space", () => {
