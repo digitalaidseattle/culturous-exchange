@@ -7,7 +7,7 @@ steps taken to get there.
 
 - **Starting point:** the `dev` branch on 2026-10-27 (commit `35ce46d`)
 - **Working branch:** `aidan/onboarding`
-- **Last updated:** 2026-11-16
+- **Last updated:** 2026-11-17
 - **Design reference:** the "Culturous Exchange" Figma file (home page frame, shared as a screenshot)
 
 ---
@@ -57,6 +57,7 @@ This section grows as decisions are made. Each numbered change below adds a line
 | 8 | Get Started card from the maintainers' pull request 185 added to the home page | Built and checked locally, not yet committed | 2026-11-04 |
 | 9 | Groups page redesigned: a card for each group, availability calendars, a waitlist side panel, Change group and See details windows, and globes | Built and checked locally, not yet committed | 2026-11-04 |
 | 10 | The team's latest work (the `dev` branch) brought in and reconciled with the redesign | Merged locally, not yet pushed | 2026-11-16 |
+| 11 | Home page lists the current cohort once; the cohort page gets charts of its students, with a globe for countries | Built and checked locally, pull requests open | 2026-11-17 |
 
 ---
 
@@ -491,3 +492,18 @@ While this redesign was being built, the maintainers kept working on the shared 
 - Conflicts were in `constants.ts` (both sets of strings kept), `createCohort.ts` (this branch's options-object version kept; it already adds students with their anchor flag), `home/index.tsx`, `home/GetStartedCard.tsx`, `plan/index.tsx`, `package-lock.json` (regenerated), and three files deleted here but changed there (`CohortCard`, `StudentCard`, `GroupBoard`; their changes were carried over as described above or already existed in the replacements: the student card already shows the country).
 - `generatePlan` now handles the four `optimization_style` values (`largest_first`, `smallest_first`, `balanced`, `random`; `random` uses the shuffle seed so the preview matches the saved plan), `useGenerationControls` carries the style, and `PlanSettingsDialog` has the select. `planGenerator.ts` keeps this branch's version, which calls `generatePlan`, so the maintainers' copy of the placement code was dropped.
 - `CreateCohortDialog` calls `CECohortService.nameExists`; two tests cover it. New dependency from the maintainers: `@mui/x-charts`.
+
+---
+
+### 11. The current cohort is listed once, and the cohort page has charts
+
+**What you will notice:**
+
+- **The home page no longer lists the current cohort twice.** It is shown in the **Current Cohort** section, and the list under it is now called **All Other Cohorts** and leaves it out. When the current cohort is the only one, the list says "No other cohorts yet." (the New Cohort button beside the heading stays).
+- **The cohort page shows charts of the cohort's students**, inside the summary card: **Students by country**, **Students by age** and **Students by gender**. The age bars and the gender pie are the maintainers' charts from their Current Cohort card. In place of their pie of countries there is the **globe** from the groups page: a dot for each city the students are from, colored by country, with a key of the countries and how many students are from each (the key scrolls when there are many countries). The charts are left out for a cohort with no students, and the age chart for a cohort where no student gave an age.
+- The maintainers' Current Cohort card itself is still not shown on the home page.
+
+**Technical notes:**
+
+- New `src/components/LocationGlobe.tsx` is the globe with its key of countries, taken out of `PlanGroupCard` so a group's card and the cohort page share it (`PlanGroupCard` behaves as before). New `src/pages/cohort/CohortCharts.tsx` uses `@mui/x-charts` for the bar and pie charts. Tests cover both pages' new behavior.
+- Applied the maintainers' migration `000030_cohort_delete_cascade.sql` to the local database with `supabase migration up`.

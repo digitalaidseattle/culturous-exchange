@@ -2,8 +2,8 @@
  * home/index.tsx
  *
  *  The home page highlights the current (most recent) cohort and lists
- *  every cohort. New cohorts are made in the Create Cohort window, opened from the
- *  button beside "All Cohorts" or from the floating action button (HomeActions),
+ *  the others below it. New cohorts are made in the Create Cohort window, opened from the
+ *  button beside "All Other Cohorts" or from the floating action button (HomeActions),
  *  which also imports student lists.
  *
  *  @copyright 2026 Digital Aid Seattle
@@ -43,6 +43,8 @@ const HomePage: React.FC = () => {
     }, [refresh]);
 
     const current = cohorts[0];
+    // the current cohort has its own section above, so it is not listed again
+    const others = cohorts.slice(1);
 
     return (
         <Stack gap={4} sx={{ maxWidth: 720, paddingBottom: 12 }}>
@@ -65,9 +67,8 @@ const HomePage: React.FC = () => {
                         {UI_STRINGS.NEW_COHORT}
                     </Button>
                 </Stack>
-                {cohorts.map(cohort =>
-                    <CohortCard key={cohort.id} cohort={cohort} isCurrent={cohort.id === current.id} />
-                )}
+                {others.length === 0 && <Typography color="text.secondary">{UI_STRINGS.NO_OTHER_COHORTS}</Typography>}
+                {others.map(cohort => <CohortCard key={cohort.id} cohort={cohort} />)}
             </Stack>
             <HomeActions onNewCohort={() => setCreateOpen(true)} />
             <CreateCohortDialog

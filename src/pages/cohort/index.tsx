@@ -22,6 +22,7 @@ import { UI_STRINGS } from '../../constants';
 import { NewPlanDialog } from "../../components/NewPlanDialog";
 import { PlanCard } from "../../components/PlanCard";
 import { raisedCardSx, tonalButtonSx } from "../../utils/styles";
+import { CohortCharts } from "./CohortCharts";
 import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
 
@@ -134,6 +135,7 @@ const CohortPage: React.FC = () => {
                     </Typography>
                   }
                 </Stack>
+                <CohortCharts cohort={cohort} />
                 <Divider />
                 <Stack direction="row" flexWrap="wrap" gap={1.5}>
                   <Button
