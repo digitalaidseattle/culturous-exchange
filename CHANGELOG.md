@@ -539,7 +539,7 @@ This branch swaps every chart over to one library, MUI X Charts, the one the mai
 **What you will notice:**
 
 - **Each cohort card on the home page** (the Current Cohort and every card under All Other Cohorts) now shows what the cohort's own page shows under its name: **Students, Plans, Active plan and Created**, then the three charts, **Students by country** (pie), **Students by age** (bars) and **Students by gender** (pie), then the same buttons as before. A cohort with no students has no charts.
-- **The cohort cards are wider** (up to 960 pixels, as on the cohort page) so the three charts sit in a row. The welcome banner and the Get Started card keep their width. On a narrow window the charts wrap, and a wrapped chart no longer stretches the whole width.
+- **The home page content is wider** (up to 960 pixels, as on the cohort page) so the three charts sit in a row. The welcome banner, the Get Started card and the cohort cards all have the same width. On a narrow window the charts wrap, and a wrapped chart no longer stretches the whole width.
 
 **Technical notes:**
 

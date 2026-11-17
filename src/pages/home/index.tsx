@@ -29,9 +29,8 @@ import { WelcomeBanner } from './WelcomeBanner';
 const createdTime = (cohort: Cohort): number =>
     cohort.created_at ? new Date(cohort.created_at).getTime() : 0;
 
-/** How wide the banner and the Get Started card are, and how wide the cohort cards may grow: wide enough for a cohort's three charts to sit in a row. */
-const INTRO_MAX_WIDTH = 720;
-const CARDS_MAX_WIDTH = 960;
+/** How wide the page's cards may grow, the banner and Get Started card with the cohort cards: wide enough for a cohort's three charts to sit in a row. */
+const CONTENT_MAX_WIDTH = 960;
 
 const HomePage: React.FC = () => {
 
@@ -51,11 +50,9 @@ const HomePage: React.FC = () => {
     const others = cohorts.slice(1);
 
     return (
-        <Stack gap={4} sx={{ maxWidth: CARDS_MAX_WIDTH, paddingBottom: 12 }}>
-            <Stack gap={4} sx={{ maxWidth: INTRO_MAX_WIDTH }}>
-                <WelcomeBanner />
-                <GetStartedCard />
-            </Stack>
+        <Stack gap={4} sx={{ maxWidth: CONTENT_MAX_WIDTH, paddingBottom: 12 }}>
+            <WelcomeBanner />
+            <GetStartedCard />
             {current &&
                 <Stack gap={2}>
                     <Typography variant="h4" component="h2" sx={{ fontWeight: 400 }}>
