@@ -14,7 +14,7 @@ vi.mock("@mui/x-charts/BarChart", () => ({ BarChart: (props: object) => { bar(pr
 vi.mock("@mui/x-charts/PieChart", () => ({ PieChart: (props: object) => { pie(props); return <div data-testid="pie-chart" />; } }));
 
 import { Cohort, Enrollment, Student } from "../../api/types";
-import { CohortCharts } from "./CohortCharts";
+import { CohortCharts, THREE_ACROSS_WIDTH, TWO_ACROSS_WIDTH } from "./CohortCharts";
 
 const enrollment = (id: string, country: string, extra: Partial<Student> = {}): Enrollment =>
     ({ cohort_id: "c", student_id: id, anchor: false, student: { id, name: id, city: "City", country, ...extra } as Student }) as Enrollment;
@@ -81,5 +81,65 @@ describe("CohortCharts", () => {
         expect(screen.queryByRole("heading", { name: "Students by age" })).toBeNull();
         expect(bar).not.toHaveBeenCalled();
         expect(screen.getByRole("heading", { name: "Students by gender" })).toBeTruthy();
+    });
+
+    describe("layout", () => {
+        // container queries are not run by the test browser, so these check what is in the page and its styles
+        const allCss = () => Array.from(document.querySelectorAll("style")).map(style => style.textContent).join("\n");
+        const grid = () => screen.getByRole("region", { name: "Cohort charts" });
+        const panel = (title: string) => screen.getByRole("region", { name: title });
+        // jsdom writes "1 / -1" as "1/-1"
+        const column = (title: string) => getComputedStyle(panel(title)).gridColumn.replace(/\s/g, "");
+
+        it("measures the space it is in, not the screen", () => {
+            render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+            expect(allCss()).toContain("container-type:inline-size");
+            expect(grid().parentElement!.parentElement).not.toBeNull();
+        });
+
+        it("has the countries first, then the age and the gender, in a grid", () => {
+            render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+            expect(Array.from(grid().children).map(child => child.getAttribute("data-part"))).toEqual(["country", "age", "gender"]);
+            expect(getComputedStyle(grid()).display).toBe("grid");
+        });
+
+        it("has the three charts one under the next to begin with", () => {
+            render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+            expect(allCss()).toMatch(/grid-template-columns:minmax\(0, 1fr\)/);
+        });
+
+        it("puts the age and the gender charts side by side, splitting the width evenly, once they have room", () => {
+            render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+            expect(TWO_ACROSS_WIDTH).toBe(2 * 240 + 16);
+            expect(allCss()).toMatch(new RegExp("@container \\(min-width: " + TWO_ACROSS_WIDTH + "px\\)\\{[^}]*grid-template-columns:repeat\\(2, minmax\\(0, 1fr\\)\\)"));
+        });
+
+        it("has the countries chart across the whole width until all three fit side by side", () => {
+            render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+            const css = allCss();
+            // the countries span every column ...
+            expect(column("Students by country")).toBe("1/-1");
+            // ... except at the width where all three fit
+            expect(css).toMatch(new RegExp("@container \\(min-width: " + THREE_ACROSS_WIDTH + "px\\)\\{[^}]*grid-column:auto"));
+            // the age and gender charts are one column each, not spanning
+            expect(column("Students by age")).not.toBe("1/-1");
+            expect(column("Students by gender")).not.toBe("1/-1");
+        });
+
+        it("puts all three side by side from the width that gives the countries chart room for its pie and key", () => {
+            render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+            expect(THREE_ACROSS_WIDTH).toBeGreaterThan(TWO_ACROSS_WIDTH);
+            // the countries get 5 of the 13 parts of what is left after the two gaps: about 360 pixels
+            expect((THREE_ACROSS_WIDTH - 32) * 5 / 13).toBeGreaterThanOrEqual(355);
+            expect(allCss()).toMatch(new RegExp("@container \\(min-width: " + THREE_ACROSS_WIDTH + "px\\)\\{[^}]*grid-template-columns:minmax\\(0, 5fr\\) minmax\\(0, 4fr\\) minmax\\(0, 4fr\\)"));
+        });
+
+        it("with no ages, has the countries and the gender, and the gender takes the full width below the countries", () => {
+            render(<CohortCharts cohort={cohortOf([enrollment("a", "Peru"), enrollment("b", "Egypt")])} />);
+            expect(Array.from(grid().children).map(child => child.getAttribute("data-part"))).toEqual(["country", "gender"]);
+            expect(column("Students by gender")).toBe("1/-1");
+            // side by side only from the width where the three would have fit, in two columns
+            expect(allCss()).toMatch(new RegExp("@container \\(min-width: " + THREE_ACROSS_WIDTH + "px\\)\\{[^}]*grid-template-columns:minmax\\(0, 5fr\\) minmax\\(0, 4fr\\)(?! minmax)"));
+        });
     });
 });

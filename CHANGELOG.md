@@ -539,8 +539,9 @@ This branch swaps every chart over to one library, MUI X Charts, the one the mai
 **What you will notice:**
 
 - **Each cohort card on the home page** (the Current Cohort and every card under All Other Cohorts) now shows what the cohort's own page shows under its name: **Students, Plans, Active plan and Created**, then the three charts, **Students by country** (pie), **Students by age** (bars) and **Students by gender** (pie), then the same buttons as before. A cohort with no students has no charts.
-- **The home page content is wider** (up to 960 pixels, as on the cohort page) so the three charts sit in a row. The welcome banner, the Get Started card and the cohort cards all have the same width. On a narrow window the charts wrap, and a wrapped chart no longer stretches the whole width.
+- **The home page content now fills the width of the window,** with no 960 pixel limit (the same on the cohort page: its summary card, active plan and plan cards fill the window too). The banner, the Get Started card and the cohort cards all have the same width. The three charts in a card (and on the cohort page) are laid out by the width of the card, not of the window: **when all three fit side by side** (about 960 pixels), they are in a row, the countries a little wider than the others; **when they do not,** Students by country goes across the whole width, with Students by age and Students by gender below it splitting the width evenly; and **on a narrow card** the three are one under the next.
 
 **Technical notes:**
 
 - New `src/pages/cohort/CohortFacts.tsx` is the row of facts, now shared by the cohort page and the home card. The home card also uses `CohortCharts`. The cohort list already loads each student, so there is no new query. New tests: `CohortFacts.test.tsx` and `CohortCard.test.tsx`.
+- Later the same day the 960 pixel limit was removed from the home page and the cohort page (see above), which replaces the width given in Changes 3 and 4.
