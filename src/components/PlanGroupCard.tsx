@@ -3,8 +3,7 @@
  *
  *  One group on the groups page, as a card in the same style as the plan and cohort cards. Its
  *  students are compact cards on the left. On the right is the group's shared time on a little
- *  weekend calendar, with the days available, and a globe with a colored dot for each city the
- *  group's students are from, with a key of the countries.
+ *  weekend calendar, with the days available, and a pie chart of the countries its students are from.
  *
  *  @copyright 2026 Digital Aid Seattle
  *
@@ -16,21 +15,20 @@ import { Group, Placement, Student } from "../api/types";
 import { UI_STRINGS } from "../constants";
 import { FacilitatorMenu } from "../pages/plan/FacilitatorMenu";
 import { byAnchorThenName, countriesOf, genderSplit } from "../services/plan/groupFit";
-import { GLOBE_BACKDROP } from "../utils/globeColors";
 import { raisedCardSx } from "../utils/styles";
 import { describeDays, gridHours, toWeekendSegments } from "../utils/weekendGrid";
 import { AvailabilityCalendar } from "./AvailabilityCalendar";
-import { LocationGlobe } from "./LocationGlobe";
+import { CountryPieChart } from "./CountryPieChart";
 import { GroupSummary } from "./GroupSummary";
 import { PlanStudentCard } from "./PlanStudentCard";
 
 /**
  * A titled container for one part of the card. `aside` is a line at the right of the title, which drops under it when there is
- * no room. `dark` makes it charcoal with a white title, as behind the globe. `fill` has the contents grow to the container's height.
+ * no room. `fill` has the contents grow to the container's height.
  */
 const Section: React.FC<{
-    title: string, part: string, aside?: React.ReactNode, dark?: boolean, fill?: boolean, sx?: object, children: React.ReactNode
-}> = ({ title, part, aside, dark, fill, sx, children }) => (
+    title: string, part: string, aside?: React.ReactNode, fill?: boolean, sx?: object, children: React.ReactNode
+}> = ({ title, part, aside, fill, sx, children }) => (
     <Paper
         variant="outlined"
         component="section"
@@ -41,19 +39,18 @@ const Section: React.FC<{
             minWidth: 0,
             display: 'flex',
             flexDirection: 'column',
-            ...(dark && { bgcolor: GLOBE_BACKDROP, borderColor: GLOBE_BACKDROP, color: '#fff' }),
             ...sx
         }}>
         <Stack direction="row" justifyContent="space-between" alignItems="baseline" flexWrap="wrap" columnGap={2} sx={{ mb: 1 }}>
             <Typography variant="subtitle2" component="h4" sx={{ fontWeight: 600 }}>{title}</Typography>
-            {aside && <Typography variant="body2" color={dark ? 'inherit' : 'text.secondary'}>{aside}</Typography>}
+            {aside && <Typography variant="body2" color="text.secondary">{aside}</Typography>}
         </Stack>
         <Box sx={fill ? { flex: 1, minHeight: 0 } : undefined}>{children}</Box>
     </Paper>
 );
 
-/** How big the globe is drawn. */
-const GLOBE_SIZE = 132;
+/** How tall the countries pie chart is drawn. */
+const PIE_HEIGHT = 132;
 
 export type PlanGroupCardProps = {
     group: Group,
@@ -107,9 +104,8 @@ export const PlanGroupCard: React.FC<PlanGroupCardProps> = ({ group: initial, pl
 
                     {/* Location, Shared time and the summary, each in its own container, side by side while there is room */}
                     <Box data-part="summary-row" sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: 2 }}>
-                        <Section title={UI_STRINGS.DETAILS_LOCATION} part="location" dark sx={{ flex: '0 1 auto', maxWidth: '100%' }}>
-                            {/* the globe, with the key of countries to the right of it in a white container; the key drops below when there is no room */}
-                            <LocationGlobe students={students} name={group.name} size={GLOBE_SIZE} />
+                        <Section title={UI_STRINGS.COUNTRIES_LABEL} part="countries" sx={{ flex: '1 1 220px', maxWidth: 320 }}>
+                            <CountryPieChart students={students} height={PIE_HEIGHT} />
                         </Section>
 
                         <Section

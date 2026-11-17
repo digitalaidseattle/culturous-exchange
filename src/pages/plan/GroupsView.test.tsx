@@ -5,7 +5,7 @@
  *
  */
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const notifications = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn(), warn: vi.fn() }));
 const setRefresh = vi.hoisted(() => vi.fn());
@@ -27,7 +27,6 @@ vi.mock("../../services/cePlacementService", () => ({ CEPlacementService: { getI
 vi.mock("./FacilitatorMenu", () => ({ FacilitatorMenu: () => null }));
 
 import { Group, Placement, Plan, Student, TimeWindow } from "../../api/types";
-import { clearCoordinateCache } from "../../services/geo/cityCoordinates";
 import { CETimeWindowService, DEFAULT_TIMEZONE } from "../../services/time/ceTimeWindowService";
 import { GroupsView } from "./GroupsView";
 import { PlanContext } from "./PlanContext";
@@ -57,9 +56,6 @@ const makePlan = (): Plan => ({
     ]
 }) as unknown as Plan;
 
-const fetchMock = vi.fn();
-const storage = new Map<string, string>();
-
 const renderView = (plan: Plan = makePlan()) => {
     const setPlan = vi.fn();
     render(
@@ -75,22 +71,10 @@ const choose = (item: string) => fireEvent.click(screen.getByRole("menuitem", { 
 describe("GroupsView", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        storage.clear();
-        vi.stubGlobal("localStorage", {
-            getItem: (key: string) => storage.get(key) ?? null,
-            setItem: (key: string, value: string) => { storage.set(key, value); },
-            removeItem: (key: string) => { storage.delete(key); }
-        });
-        clearCoordinateCache();
-        fetchMock.mockReset();
-        fetchMock.mockImplementation(() => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ results: [{ latitude: 1, longitude: 2 }] }) } as Response));
-        vi.stubGlobal("fetch", fetchMock);
         run.mockImplementation(async (plan: Plan) => plan);
         save.mockImplementation(async (plan: Plan) => ({ ...plan, saved: true }));
         updatePlacement.mockResolvedValue(undefined);
     });
-    afterEach(() => { vi.unstubAllGlobals(); });
-
     it("has a card for each group, one under the next, in numeric order", () => {
         renderView();
         const names = screen.getAllByRole("article").map(card => card.getAttribute("aria-label"));

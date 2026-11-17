@@ -4,8 +4,8 @@
  *  @copyright 2026 Digital Aid Seattle
  *
  */
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const facilitatorMenu = vi.hoisted(() => vi.fn());
 // the facilitator menu reads facilitators from the database; stand in for it
@@ -17,9 +17,7 @@ vi.mock("../pages/plan/FacilitatorMenu", () => ({
 }));
 
 import { Group, Placement, Student, TimeWindow } from "../api/types";
-import { clearCoordinateCache } from "../services/geo/cityCoordinates";
 import { CETimeWindowService, DEFAULT_TIMEZONE } from "../services/time/ceTimeWindowService";
-import { GLOBE_BACKDROP } from "../utils/globeColors";
 import { PlanGroupCard } from "./PlanGroupCard";
 
 const service = CETimeWindowService.getInstance();
@@ -45,14 +43,6 @@ const members = [
 const statOf = (summary: HTMLElement, label: string) =>
     (within(summary).getByText(label).parentElement!.querySelector("p")!.textContent);
 
-const fetchMock = vi.fn();
-const storage = new Map<string, string>();
-const coordinatesFor = (url: string) => {
-    const name = new URL(url).searchParams.get("name");
-    const at: Record<string, [number, number]> = { Lima: [-12.04, -77.03], Cairo: [30.04, 31.24], Giza: [30.01, 31.21] };
-    return name && at[name] ? { results: [{ latitude: at[name][0], longitude: at[name][1] }] } : {};
-};
-
 const renderCard = (props: Partial<React.ComponentProps<typeof PlanGroupCard>> = {}) => {
     const handlers = { onSeeDetails: vi.fn(), onChangeGroup: vi.fn(), onToggleAnchor: vi.fn() };
     render(<PlanGroupCard group={group()} placements={members} {...handlers} {...props} />);
@@ -60,20 +50,7 @@ const renderCard = (props: Partial<React.ComponentProps<typeof PlanGroupCard>> =
 };
 
 describe("PlanGroupCard", () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-        storage.clear();
-        vi.stubGlobal("localStorage", {
-            getItem: (key: string) => storage.get(key) ?? null,
-            setItem: (key: string, value: string) => { storage.set(key, value); },
-            removeItem: (key: string) => { storage.delete(key); }
-        });
-        clearCoordinateCache();
-        fetchMock.mockReset();
-        fetchMock.mockImplementation((url: string) => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(coordinatesFor(url)) } as Response));
-        vi.stubGlobal("fetch", fetchMock);
-    });
-    afterEach(() => { vi.unstubAllGlobals(); });
+    beforeEach(() => { vi.clearAllMocks(); });
 
     it("is a card named for the group, with its facilitators", () => {
         renderCard({ group: group({ assignments: [{ facilitator: { name: "Sam" } }, { facilitator: { name: "Priya" } }] as Group["assignments"] }) });
@@ -102,7 +79,7 @@ describe("PlanGroupCard", () => {
         expect(within(header).queryByText(/shared/)).toBeNull();
     });
 
-    it("has the summary in its own tinted container, in the same row as the globe and calendar, to the right of them", () => {
+    it("has the summary in its own tinted container, in the same row as the countries chart and calendar, to the right of them", () => {
         renderCard();
         const summary = screen.getByRole("region", { name: "Group summary" });
         const row = document.querySelector('[data-part="summary-row"]')!;
@@ -168,16 +145,16 @@ describe("PlanGroupCard", () => {
         expect(widths).toEqual(["full", "narrow", "full"]);
     });
 
-    it("has the globe at the left of the shared time, and the students below both", () => {
+    it("has the countries chart at the left of the shared time, and the students below both", () => {
         renderCard();
-        const globe = screen.getByRole("img", { name: /^Group 1 cities/ });
+        const countries = screen.getByTestId("pie-chart");
         const calendar = screen.getByRole("img", { name: /^Group 1 shared time/ });
         const student = document.querySelector("[data-student]")!;
-        expect(Boolean(globe.compareDocumentPosition(calendar) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+        expect(Boolean(countries.compareDocumentPosition(calendar) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
         expect(Boolean(calendar.compareDocumentPosition(student) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
-        // the globe and the calendar share a row, and the students are not in it
+        // the chart and the calendar share a row, and the students are not in it
         const row = document.querySelector('[data-part="summary-row"]')!;
-        expect(row.contains(globe)).toBe(true);
+        expect(row.contains(countries)).toBe(true);
         expect(row.contains(calendar)).toBe(true);
         expect(row.contains(student)).toBe(false);
     });
@@ -192,46 +169,16 @@ describe("PlanGroupCard", () => {
         expect(screen.getByRole("img", { name: "Group 1 shared time: No shared time (Pacific time)" })).toBeTruthy();
     });
 
-    it("lists the countries, with how many students are from each", () => {
+    it("draws a pie chart of the countries, a slice for each with how many students are from it", () => {
         renderCard();
-        const countries = within(screen.getByRole("list", { name: "Group 1 countries" })).getAllByRole("listitem").map(li => li.textContent);
-        // in the order the students are listed: Maria, the anchor, is from Peru
-        expect(countries).toEqual(["Peru 2", "Egypt 2"]);
+        const pie = JSON.parse(screen.getByTestId("pie-chart").dataset.props!);
+        // in the order of the most students, and then as the students are listed: Maria, the anchor, is from Peru
+        expect(pie.series[0].data.map((slice: { label: string, value: number }) => [slice.label, slice.value])).toEqual([["Peru", 2], ["Egypt", 2]]);
     });
 
-    it("puts a dot on the globe for each city, colored by its country", async () => {
-        renderCard();
-        const globe = () => screen.getByRole("img", { name: /^Group 1 cities/ });
-        await waitFor(() => expect(globe().querySelectorAll("circle").length).toBeGreaterThan(0));
-        await waitFor(() => expect(screen.queryByText("Placing cities…")).toBeNull());
-        // Lima (two students), Cairo and Giza: three cities, though four students
-        const dots = Array.from(document.querySelectorAll<SVGCircleElement>("circle"));
-        const labels = globe().getAttribute("aria-label")!;
-        expect(labels).toMatch(/Lima, Peru/);
-        expect(labels).toMatch(/Cairo, Egypt/);
-        expect(labels).toMatch(/Giza, Egypt/);
-        expect(labels.match(/Lima/g)).toHaveLength(1);
-        // Cairo and Giza share Egypt's color, which is not Peru's
-        expect(new Set(dots.map(dot => dot.getAttribute("fill"))).size).toBeLessThanOrEqual(2);
-    });
-
-    it("uses the same colors on the globe and in the key", async () => {
-        renderCard();
-        await waitFor(() => expect(screen.queryByText("Placing cities…")).toBeNull());
-        const keyColors = within(screen.getByRole("list", { name: "Group 1 countries" })).getAllByRole("listitem")
-            .map(li => getComputedStyle(li.firstElementChild!).backgroundColor);
-        expect(new Set(keyColors).size).toBe(2);
-    });
-
-    it("says how many cities could not be placed on the globe", async () => {
-        renderCard({ placements: [...members, member("e", "Eve", "Atlantis", "Peru")] });
-        await waitFor(() => expect(screen.getByText("1 city not placed on the globe")).toBeTruthy());
-    });
-
-    it("says it is placing cities while it looks them up", () => {
-        fetchMock.mockImplementation(() => new Promise(() => { }));
-        renderCard();
-        expect(screen.getByText("Placing cities…")).toBeTruthy();
+    it("draws no countries chart for a group with no students", () => {
+        renderCard({ placements: [] });
+        expect(screen.queryByTestId("pie-chart")).toBeNull();
     });
 
     it("passes on what is chosen from a student's menu", () => {
@@ -251,60 +198,37 @@ describe("PlanGroupCard", () => {
         expect(screen.getByTestId("facilitator-menu")).toBeTruthy();
     });
 
-    describe("Location and Shared time", () => {
+    describe("Countries and Shared time", () => {
         const section = (name: string) => screen.getByRole("region", { name });
 
         it("each have a container with a title", () => {
             renderCard();
-            expect(within(section("Location")).getByRole("heading", { name: "Location" })).toBeTruthy();
+            expect(within(section("Countries")).getByRole("heading", { name: "Countries" })).toBeTruthy();
             expect(within(section("Shared time")).getByRole("heading", { name: "Shared time" })).toBeTruthy();
-            expect(section("Location").className).toMatch(/MuiPaper-outlined/);
+            expect(section("Countries").className).toMatch(/MuiPaper-outlined/);
             expect(section("Shared time").className).toMatch(/MuiPaper-outlined/);
         });
 
-        it("have the globe and the countries in Location, and the calendar and days available in Shared time", () => {
+        it("have the pie chart in Countries, and the calendar and days available in Shared time", () => {
             renderCard();
-            expect(within(section("Location")).getByRole("img", { name: /^Group 1 cities/ })).toBeTruthy();
-            expect(within(section("Location")).getByRole("list", { name: "Group 1 countries" })).toBeTruthy();
+            expect(within(section("Countries")).getByTestId("pie-chart")).toBeTruthy();
             expect(within(section("Shared time")).getByRole("img", { name: /^Group 1 shared time/ })).toBeTruthy();
             expect(within(section("Shared time")).getByText("Days available:")).toBeTruthy();
-        });
-
-        it("have the list of countries to the right of the globe", () => {
-            renderCard();
-            const globe = screen.getByRole("img", { name: /^Group 1 cities/ });
-            const countries = screen.getByRole("list", { name: "Group 1 countries" });
-            expect(Boolean(globe.compareDocumentPosition(countries) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
-            // in the same row of the container, not under it
-            expect(globe.parentElement).toBe(countries.parentElement!.parentElement);
         });
 
         it("are side by side in one row, with the students below", () => {
             renderCard();
             const row = document.querySelector('[data-part="summary-row"]')!;
-            expect(row.contains(section("Location"))).toBe(true);
+            expect(row.contains(section("Countries"))).toBe(true);
             expect(row.contains(section("Shared time"))).toBe(true);
-            expect(Boolean(section("Location").compareDocumentPosition(section("Shared time")) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+            expect(Boolean(section("Countries").compareDocumentPosition(section("Shared time")) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
             expect(row.contains(document.querySelector("[data-student]")!)).toBe(false);
         });
 
-        it("has a dark charcoal container behind the globe, with a white title", () => {
+        it("are both plain white containers", () => {
             renderCard();
-            const location = section("Location");
-            expect(getComputedStyle(location).backgroundColor).toBe("rgb(42, 45, 50)");
-            expect(GLOBE_BACKDROP).toBe("#2a2d32");
-            expect(getComputedStyle(within(location).getByRole("heading", { name: "Location" }).parentElement!.parentElement!).color).toBe("rgb(255, 255, 255)");
-            // Shared time stays a plain white container
-            expect(getComputedStyle(section("Shared time")).backgroundColor).not.toBe("rgb(42, 45, 50)");
-        });
-
-        it("has the countries in a white container, with dark text, inside the dark one", () => {
-            renderCard();
-            const legend = document.querySelector('[data-part="legend"]') as HTMLElement;
-            expect(section("Location").contains(legend)).toBe(true);
-            expect(legend.contains(screen.getByRole("list", { name: "Group 1 countries" }))).toBe(true);
-            expect(getComputedStyle(legend).backgroundColor).toBe("rgb(255, 255, 255)");
-            expect(getComputedStyle(legend).color).not.toBe("rgb(255, 255, 255)");
+            expect(getComputedStyle(section("Countries")).backgroundColor).toBe(getComputedStyle(section("Shared time")).backgroundColor);
+            expect(getComputedStyle(section("Countries")).backgroundColor).not.toBe("rgb(42, 45, 50)");
         });
 
         it("has the calendar fill the height of the Shared time container", () => {

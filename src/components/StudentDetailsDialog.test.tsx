@@ -4,10 +4,9 @@
  *  @copyright 2026 Digital Aid Seattle
  *
  */
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { Placement, Student, TimeWindow } from "../api/types";
-import { clearCoordinateCache } from "../services/geo/cityCoordinates";
 import { CETimeWindowService, DEFAULT_TIMEZONE } from "../services/time/ceTimeWindowService";
 import { StudentDetailsDialog } from "./StudentDetailsDialog";
 
@@ -25,25 +24,7 @@ const maria = {
 const placementOf = (student: Student, anchor = false): Placement =>
     ({ plan_id: "plan", student_id: student.id, anchor, priority: 0, student }) as Placement;
 
-const fetchMock = vi.fn();
-const found = () => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ results: [{ latitude: -12.04, longitude: -77.03 }] }) } as Response);
-const storage = new Map<string, string>();
-
 describe("StudentDetailsDialog", () => {
-    beforeEach(() => {
-        storage.clear();
-        vi.stubGlobal("localStorage", {
-            getItem: (key: string) => storage.get(key) ?? null,
-            setItem: (key: string, value: string) => { storage.set(key, value); },
-            removeItem: (key: string) => { storage.delete(key); }
-        });
-        clearCoordinateCache();
-        fetchMock.mockReset();
-        fetchMock.mockImplementation(found);
-        vi.stubGlobal("fetch", fetchMock);
-    });
-    afterEach(() => { vi.unstubAllGlobals(); });
-
     it("is closed when there is no student", () => {
         render(<StudentDetailsDialog placement={null} onClose={vi.fn()} />);
         expect(screen.queryByRole("dialog")).toBeNull();
@@ -88,21 +69,6 @@ describe("StudentDetailsDialog", () => {
     it("writes half hour time zones in full", () => {
         render(<StudentDetailsDialog placement={placementOf({ ...maria, time_zone: "Asia/Kolkata", tz_offset: 5.5 } as Student)} onClose={vi.fn()} />);
         expect(screen.getByText("Asia/Kolkata UTC+5:30")).toBeTruthy();
-    });
-
-    it("marks the student's city on a globe", async () => {
-        render(<StudentDetailsDialog placement={placementOf(maria)} onClose={vi.fn()} />);
-        const globe = () => within(screen.getByRole("region", { name: "Location" })).getByRole("img");
-        await waitFor(() => expect(globe().getAttribute("aria-label")).toBe("Maria Lopez's city: Lima, Peru"));
-        expect(globe().querySelectorAll("circle")).toHaveLength(1);
-    });
-
-    it("says so when the city cannot be placed on the globe", async () => {
-        fetchMock.mockImplementation(() => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) } as Response));
-        render(<StudentDetailsDialog placement={placementOf(maria)} onClose={vi.fn()} />);
-        await waitFor(() => expect(screen.getByText("not placed on the globe")).toBeTruthy());
-        const globe = within(screen.getByRole("region", { name: "Location" })).getByRole("img");
-        expect(globe.querySelectorAll("circle")).toHaveLength(0);
     });
 
     it("shows the availability on the same little calendar, and in words", () => {

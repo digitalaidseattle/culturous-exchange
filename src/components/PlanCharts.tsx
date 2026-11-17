@@ -1,39 +1,36 @@
 /**
  *  PlanCharts.tsx
  *
- *  The three dot plots that summarize a plan's groups: group size, countries per
- *  group, and time overlap per group. They are three items for the grid of a
- *  PlanSummary, which decides where they sit.
+ *  The two bar charts that summarize a plan's groups, one above the other: the hours of shared
+ *  time in each group, and the students and countries in each group. A PlanSummary decides where
+ *  they sit.
  *
  *  @copyright 2026 Digital Aid Seattle
  *
  */
+import { Stack, Typography } from "@mui/material";
 import { UI_STRINGS } from "../constants";
 import { PlanStats } from "../services/plan/planStats";
-import { OVERLAP_COLOR_STOPS } from "../utils/overlapColors";
-import { DistributionChart } from "./DistributionChart";
+import { GroupBarChart } from "./GroupBarChart";
 
-const HOUR_UNIT = { one: UI_STRINGS.UNIT_HOUR, other: UI_STRINGS.HOURS };
-const STUDENT_UNIT = { one: UI_STRINGS.UNIT_STUDENT, other: UI_STRINGS.UNIT_STUDENTS };
-const COUNTRY_UNIT = { one: UI_STRINGS.UNIT_COUNTRY, other: UI_STRINGS.UNIT_COUNTRIES };
-
-export const PlanCharts: React.FC<{ stats: PlanStats }> = ({ stats }) => (
-    <>
-        <DistributionChart
-            title={UI_STRINGS.GROUP_SIZE_LABEL}
-            groupCount={stats.groupCount}
-            unit={STUDENT_UNIT}
-            stats={stats.groupSize} />
-        <DistributionChart
-            title={UI_STRINGS.COUNTRIES_PER_GROUP}
-            groupCount={stats.groupCount}
-            unit={COUNTRY_UNIT}
-            stats={stats.countriesPerGroup} />
-        <DistributionChart
-            title={UI_STRINGS.GROUP_OVERLAP}
-            groupCount={stats.groupCount}
-            unit={HOUR_UNIT}
-            colorStops={OVERLAP_COLOR_STOPS}
-            stats={stats.groupOverlap} />
-    </>
-);
+export const PlanCharts: React.FC<{ stats: PlanStats }> = ({ stats }) => {
+    if (stats.perGroup.length === 0) {
+        return <Typography color="text.secondary">{UI_STRINGS.NO_GROUPS_YET}</Typography>;
+    }
+    const names = stats.perGroup.map(group => group.name);
+    return (
+        <Stack gap={2} sx={{ minWidth: 0 }}>
+            <GroupBarChart
+                title={UI_STRINGS.GROUP_OVERLAP_CHART}
+                names={names}
+                series={[{ data: stats.perGroup.map(group => group.hours), label: UI_STRINGS.HOURS }]} />
+            <GroupBarChart
+                title={UI_STRINGS.GROUP_STUDENTS_COUNTRIES_CHART}
+                names={names}
+                series={[
+                    { data: stats.perGroup.map(group => group.students), label: UI_STRINGS.STUDENTS_LABEL },
+                    { data: stats.perGroup.map(group => group.countries), label: UI_STRINGS.COUNTRIES_LABEL }
+                ]} />
+        </Stack>
+    );
+};

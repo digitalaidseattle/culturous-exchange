@@ -58,6 +58,7 @@ This section grows as decisions are made. Each numbered change below adds a line
 | 9 | Groups page redesigned: a card for each group, availability calendars, a waitlist side panel, Change group and See details windows, and globes | Built and checked locally, not yet committed | 2026-11-04 |
 | 10 | The team's latest work (the `dev` branch) brought in and reconciled with the redesign | Merged locally, not yet pushed | 2026-11-16 |
 | 11 | Home page lists the current cohort once; the cohort page gets charts of its students, with a globe for countries | Built and checked locally, pull requests open | 2026-11-17 |
+| 12 | MUI charts only: the globe and the dot plots are replaced with MUI X Charts (branch `aidan/onboarding-mui-only`) | Built and checked locally, not pushed | 2026-11-17 |
 
 ---
 
@@ -507,3 +508,22 @@ While this redesign was being built, the maintainers kept working on the shared 
 
 - New `src/components/LocationGlobe.tsx` is the globe with its key of countries, taken out of `PlanGroupCard` so a group's card and the cohort page share it (`PlanGroupCard` behaves as before). New `src/pages/cohort/CohortCharts.tsx` uses `@mui/x-charts` for the bar and pie charts. Tests cover both pages' new behavior.
 - Applied the maintainers' migration `000030_cohort_delete_cascade.sql` to the local database with `supabase migration up`.
+
+---
+
+### 12. MUI charts only (branch `aidan/onboarding-mui-only`)
+
+This branch swaps every chart over to one library, MUI X Charts, the one the maintainers already use. **It replaces what Changes 4, 9 and 11 say about the dot plots and the globe.**
+
+**What you will notice:**
+
+- **Plan cards, New Plan and Plan settings show the maintainers' two bar charts, one above the other,** in place of the three dot plots: **Time Overlap per Group (hrs)** (a bar for each group's hours of shared time) and **Students & Countries per Group** (two bars for each group, with a key). Groups are in numeric order (Group 2 before Group 10). The totals (groups, students, waitlisted) are still in their panel, beside the charts when there is room and above them when there is not.
+- **The globe is gone.** A group's card has a **Countries** pie chart where the Location globe was, with a slice for each country and its key. The cohort page's **Students by country** is the same pie chart, beside the age bars and the gender pie. The student's **See details** window shows the city, state, country and time zone as text, with no globe.
+- The gender split bar and the availability calendars are unchanged.
+
+**Technical notes:**
+
+- New `GroupBarChart`, `PlanCharts` (the two bar charts, from the maintainers' `GroupBarChart` in their interactive plan card) and `CountryPieChart` (with `utils/countryCounts`). `planStats` gains `perGroup`, each group's name, students, countries and hours, in numeric order of the names.
+- Removed: `DistributionChart`, `Globe`, `LocationGlobe`, the terrain and place lookup code (`services/geo`), `distribution`, `gradient`, `overlapColors`, `globeColors`, `globeView`, and the packages `d3-geo`, `topojson-client` and `world-atlas` (and their types). The browser no longer looks up city coordinates, which also removes the licence question about the terrain imagery.
+- `vitest.setup.ts` stubs the MUI charts (the test browser cannot draw them): a stub carries the props it was given, so tests check what a chart is drawing, not its pixels.
+- The built page is about 39 kB smaller (gzipped) than with the globe and dot plots, though MUI X Charts remain.

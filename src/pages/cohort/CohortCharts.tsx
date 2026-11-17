@@ -1,9 +1,9 @@
 /**
  *  CohortCharts.tsx
  *
- *  The charts of a cohort's students on the cohort page: where they are from (the globe and key of
- *  countries from a group's card), and how old they are and their gender, as bar and pie charts
- *  (the charts from the maintainers' Current Cohort card). Nothing is shown for a cohort with no students.
+ *  The charts of a cohort's students on the cohort page: where they are from, how old they are, and their
+ *  gender, as pie and bar charts from MUI X Charts (the maintainers' cohort charts). Nothing is shown for a
+ *  cohort with no students.
  *
  *  @copyright 2026 Digital Aid Seattle
  *
@@ -13,16 +13,13 @@ import { BarChart } from "@mui/x-charts/BarChart";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { useMemo } from "react";
 import { Cohort, Student } from "../../api/types";
-import { LocationGlobe } from "../../components/LocationGlobe";
+import { CountryPieChart } from "../../components/CountryPieChart";
 import { UI_STRINGS } from "../../constants";
-import { GLOBE_BACKDROP } from "../../utils/globeColors";
 
-/** How big the globe is drawn. */
-const GLOBE_SIZE = 150;
 const CHART_HEIGHT = 200;
 
-/** A titled container for one chart; `dark` makes it charcoal with a white title, as behind the globe. */
-const ChartPanel: React.FC<{ title: string, part: string, dark?: boolean, sx?: object, children: React.ReactNode }> = ({ title, part, dark, sx, children }) => (
+/** A titled container for one chart. */
+const ChartPanel: React.FC<{ title: string, part: string, sx?: object, children: React.ReactNode }> = ({ title, part, sx, children }) => (
     <Paper
         variant="outlined"
         component="section"
@@ -31,7 +28,6 @@ const ChartPanel: React.FC<{ title: string, part: string, dark?: boolean, sx?: o
         sx={{
             p: 1.5,
             minWidth: 0,
-            ...(dark && { bgcolor: GLOBE_BACKDROP, borderColor: GLOBE_BACKDROP, color: '#fff' }),
             ...sx
         }}>
         <Typography variant="subtitle2" component="h4" sx={{ fontWeight: 600, mb: 1 }}>{title}</Typography>
@@ -74,8 +70,8 @@ export const CohortCharts: React.FC<{ cohort: Cohort }> = ({ cohort }) => {
 
     return (
         <Box aria-label={UI_STRINGS.COHORT_CHARTS} role="region" sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: 2 }}>
-            <ChartPanel title={UI_STRINGS.STUDENTS_BY_COUNTRY} part="country" dark sx={{ flex: '0 1 auto', maxWidth: '100%' }}>
-                <LocationGlobe students={students} name={cohort.name ?? UI_STRINGS.COHORT_PREFIX} size={GLOBE_SIZE} maxKeyHeight={GLOBE_SIZE} />
+            <ChartPanel title={UI_STRINGS.STUDENTS_BY_COUNTRY} part="country" sx={{ flex: '1 1 300px' }}>
+                <CountryPieChart students={students} height={CHART_HEIGHT} />
             </ChartPanel>
             {ageData.ages.length > 0 &&
                 <ChartPanel title={UI_STRINGS.STUDENTS_BY_AGE} part="age" sx={{ flex: '1 1 240px' }}>

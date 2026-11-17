@@ -25,6 +25,16 @@ export type CountryCount = {
     count: number;
 };
 
+/** One group's numbers, for the charts that show a bar for each group. */
+export type GroupStat = {
+    name: string;
+    students: number;
+    /** distinct countries among its students */
+    countries: number;
+    /** hours of shared time, as for groupOverlap; 0 when the group has no shared time */
+    hours: number;
+};
+
 export type PlanStats = {
     groupCount: number;
     studentCount: number;
@@ -38,6 +48,8 @@ export type PlanStats = {
     countriesPerGroup: RangeStats | null;
     /** hours of shared time per group; null when no group has a value yet */
     groupOverlap: RangeStats | null;
+    /** each group's own numbers, in numeric order of the groups' names */
+    perGroup: GroupStat[];
 };
 
 /** Whole numbers stay whole, everything else shows up to two decimals. */
@@ -109,6 +121,13 @@ export function planStats(plan: Plan): PlanStats {
         countries: Array.from(countries.values()).sort((a, b) => a.name.localeCompare(b.name)),
         groupSize: rangeStats(groups.map(group => (group.placements ?? []).length)),
         countriesPerGroup: rangeStats(groups.map(group => countriesIn(group).size)),
-        groupOverlap: rangeStats(overlaps)
+        groupOverlap: rangeStats(overlaps),
+        // in numeric order, so "Group 2" comes before "Group 10", whatever order the groups were read in
+        perGroup: [...groups].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })).map(group => ({
+            name: group.name,
+            students: (group.placements ?? []).length,
+            countries: countriesIn(group).size,
+            hours: timeWindowService.totalHours(group.time_windows ?? [])
+        }))
     };
 }

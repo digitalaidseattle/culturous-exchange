@@ -141,6 +141,23 @@ describe("planStats", () => {
         expect(planStats(partial).groupOverlap).toEqual({ min: 5, average: 5, max: 5, values: [5] });
     });
 
+    it("gives each group's own numbers", () => {
+        expect(planStats(plan).perGroup).toEqual([
+            { name: "A", students: 3, countries: 2, hours: 6 },
+            { name: "B", students: 1, countries: 1, hours: 2 }
+        ]);
+    });
+
+    it("puts the groups in numeric order, whatever order they were read in", () => {
+        const names = ["Group 10", "Group 2", "Group 1"].map(name => group(name, [], 1));
+        expect(planStats({ ...plan, groups: names } as Plan).perGroup.map(stat => stat.name)).toEqual(["Group 1", "Group 2", "Group 10"]);
+    });
+
+    it("gives a group whose windows were not loaded 0 hours, though it is left out of the overlap summary", () => {
+        const partial = { ...plan, groups: [group("A", [a1], 5), group("B", [b1])] } as Plan;
+        expect(planStats(partial).perGroup.map(stat => stat.hours)).toEqual([5, 0]);
+    });
+
     it("returns empty summaries for a plan without groups", () => {
         const empty = { id: "plan", placements: [waitlisted], groups: [] } as unknown as Plan;
         const stats = planStats(empty);
@@ -148,6 +165,7 @@ describe("planStats", () => {
         expect(stats.waitlistedCount).toBe(1);
         expect(stats.groupSize).toBeNull();
         expect(stats.countriesPerGroup).toBeNull();
+        expect(stats.perGroup).toEqual([]);
         expect(stats.groupOverlap).toBeNull();
     });
 });
