@@ -66,10 +66,36 @@ describe("PlanSummary", () => {
 
     it("rounds the bars, and keeps the charts short", () => {
         render(<PlanSummary stats={stats} />);
-        chartProps().forEach(chart => {
-            expect(chart.borderRadius).toBe(4);
-            expect(chart.height).toBe(130);
-        });
+        chartProps().forEach(chart => expect(chart.borderRadius).toBe(4));
+        // the chart with a key is 130 tall under it; the one without fills its box, which is no less than 130
+        const [overlap, both] = chartProps();
+        expect(both.height).toBe(130);
+        expect(overlap.height).toBeUndefined();
+        const box = screen.getAllByTestId("bar-chart")[0].closest('[data-part="fill"]') as HTMLElement;
+        expect(getComputedStyle(box).minHeight).toBe("130px");
+    });
+
+    it("lets the chart with no key fill the height left in its section, so two charts side by side end at one baseline", () => {
+        render(<PlanSummary stats={stats} />);
+        const [overlap, both] = Array.from(document.querySelectorAll("section"));
+        // both sections are a column, and the first one's box takes the height left under its title
+        expect(getComputedStyle(overlap).display).toBe("flex");
+        expect(getComputedStyle(overlap).flexDirection).toBe("column");
+        const box = overlap.querySelector('[data-part="fill"]') as HTMLElement;
+        expect(getComputedStyle(box).flexGrow).toBe("1");
+        // the chart sits inside it without adding to its height
+        expect((box.firstElementChild as HTMLElement).style.position || getComputedStyle(box.firstElementChild as HTMLElement).position).toBe("absolute");
+        // the second has no such box: it keeps its own 130, under its key
+        expect(both.querySelector('[data-part="fill"]')).toBeNull();
+        // the grid stretches both to the same height
+        expect(allCss()).not.toMatch(/align-items:start/);
+    });
+
+    it("sits the chart with a key at the bottom of its room, so its baseline is the same as the other's", () => {
+        render(<PlanSummary stats={stats} />);
+        const [overlap, both] = chartProps();
+        expect(both.sx).toEqual({ alignItems: "end" });
+        expect(overlap.sx).toBeUndefined();
     });
 
     it("runs each vertical axis from 0 to a labeled round number at or above its tallest bar", () => {
