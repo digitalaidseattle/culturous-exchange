@@ -309,9 +309,40 @@ describe("generatePlan", () => {
             expect(groups.map(ids).sort()).toEqual([["a1", "a3"], ["a2"]]);
         });
 
-        it("on 'smallest first' joins the group with the least shared time", () => {
+        it("uses a group with no students yet first, whatever the style", () => {
             const { groups } = generatePlan(trio(), { maxGroupSize: 2, optimizationStyle: "smallest_first" });
-            expect(groups.map(ids).sort()).toEqual([["a1", "a2"], ["a3"]]);
+            expect(groups.map(ids).sort()).toEqual([["a1", "a3"], ["a2"]]);
+        });
+
+        // Saturday only, up to 3 in a group, two groups. a1 starts one and a2 the other (an empty group is used first).
+        // a3 shares 6 hours with a1 and 2 with a2. a4 shares 6 with a1's group and 2 with a2.
+        const saturday = () => [
+            placementFor("a1", [window(1, "08", "14")]),
+            placementFor("a2", [window(1, "12", "14")]),
+            placementFor("a3", [window(1, "08", "14")]),
+            placementFor("a4", [window(1, "08", "14")])
+        ];
+
+        it("once every group has someone, 'largest first' keeps joining the group with the most shared time", () => {
+            const { groups } = generatePlan(saturday(), { maxGroupSize: 3, optimizationStyle: "largest_first" });
+            expect(groups.map(ids).sort()).toEqual([["a1", "a3", "a4"], ["a2"]]);
+        });
+
+        it("once every group has someone, 'smallest first' joins the group with the least shared time", () => {
+            const { groups } = generatePlan(saturday(), { maxGroupSize: 3, optimizationStyle: "smallest_first" });
+            expect(groups.map(ids).sort()).toEqual([["a1"], ["a2", "a3", "a4"]]);
+        });
+
+        it("'balanced' fills the smallest group, even where another has more shared time", () => {
+            const { groups } = generatePlan(saturday(), { maxGroupSize: 3, optimizationStyle: "balanced" });
+            expect(groups.map(ids).sort()).toEqual([["a1", "a3"], ["a2", "a4"]]);
+        });
+
+        it("'random' gives the same groups for the same shuffle seed, and puts everyone somewhere or on the waitlist", () => {
+            const first = generatePlan(mixedStudents(), { maxGroupSize: 6, optimizationStyle: "random", shuffleSeed: 7 });
+            const again = generatePlan(mixedStudents(), { maxGroupSize: 6, optimizationStyle: "random", shuffleSeed: 7 });
+            expect(first.groups.map(ids)).toEqual(again.groups.map(ids));
+            expect(first.groups.flatMap(ids).length + waitlisted(first.placements).length).toBe(30);
         });
     });
 });

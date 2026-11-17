@@ -7,7 +7,7 @@ steps taken to get there.
 
 - **Starting point:** the `dev` branch on 2026-10-27 (commit `35ce46d`)
 - **Working branch:** `aidan/onboarding`
-- **Last updated:** 2026-11-06
+- **Last updated:** 2026-11-16
 - **Design reference:** the "Culturous Exchange" Figma file (home page frame, shared as a screenshot)
 
 ---
@@ -56,7 +56,7 @@ This section grows as decisions are made. Each numbered change below adds a line
 | 7 | New Cohort opens a two step Create Cohort window: name and students file, then the plan settings | Built and checked locally, not yet committed | 2026-11-04 |
 | 8 | Get Started card from the maintainers' pull request 185 added to the home page | Built and checked locally, not yet committed | 2026-11-04 |
 | 9 | Groups page redesigned: a card for each group, availability calendars, a waitlist side panel, Change group and See details windows, and globes | Built and checked locally, not yet committed | 2026-11-04 |
-| 10 | The team's latest work (the `dev` branch) brought in and reconciled with the redesign | Merged locally, not yet pushed | 2026-11-06 |
+| 10 | The team's latest work (the `dev` branch) brought in and reconciled with the redesign | Merged locally, not yet pushed | 2026-11-16 |
 
 ---
 
@@ -479,6 +479,8 @@ While this redesign was being built, the maintainers kept working on the shared 
 - **A failed cohort delete is reported.** If deleting a cohort fails, a "Deletion failed" message appears and the window closes, instead of closing as if it had worked. Deleting a cohort now also removes its plans and their groups and times, through a new database migration from the maintainers.
 - **The Timeline view keeps the maintainers' two buttons** (show group details, show student details), which now sit at the right of the Cards / Timeline switch and appear only in the Timeline view.
 
+- **Plan settings has a Generation method** (from the maintainers' CEMT-95): Most Availability, Least Availability, Balanced Groups or Random. It starts from the plan's own method, the preview changes with it, and Update plan saves it. A group with no students yet is always filled first, whatever the method. Random gives the same groups every time for the same preview, so what you see is what is saved.
+
 **What was set aside, for you to decide:**
 
 - The maintainers also added their own home page, with a **Current Cohort** dashboard of pie and bar charts (countries, gender, ages). The home page in this branch is the redesign, so that card is in the code but is not shown. It would need a place in the new home page layout if you want it.
@@ -487,4 +489,5 @@ While this redesign was being built, the maintainers kept working on the shared 
 **Technical notes:**
 
 - Conflicts were in `constants.ts` (both sets of strings kept), `createCohort.ts` (this branch's options-object version kept; it already adds students with their anchor flag), `home/index.tsx`, `home/GetStartedCard.tsx`, `plan/index.tsx`, `package-lock.json` (regenerated), and three files deleted here but changed there (`CohortCard`, `StudentCard`, `GroupBoard`; their changes were carried over as described above or already existed in the replacements: the student card already shows the country).
+- `generatePlan` now handles the four `optimization_style` values (`largest_first`, `smallest_first`, `balanced`, `random`; `random` uses the shuffle seed so the preview matches the saved plan), `useGenerationControls` carries the style, and `PlanSettingsDialog` has the select. `planGenerator.ts` keeps this branch's version, which calls `generatePlan`, so the maintainers' copy of the placement code was dropped.
 - `CreateCohortDialog` calls `CECohortService.nameExists`; two tests cover it. New dependency from the maintainers: `@mui/x-charts`.

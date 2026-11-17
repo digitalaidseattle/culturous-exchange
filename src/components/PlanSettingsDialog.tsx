@@ -10,13 +10,13 @@
  *  @copyright 2026 Digital Aid Seattle
  *
  */
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import React, { useMemo, useState } from "react";
 import { Plan } from "../api/types";
 import { planStats } from "../services/plan/planStats";
-import { MAX_GROUP_SIZE, UI_STRINGS } from '../constants';
+import { MAX_GROUP_SIZE, OPTIMIZATION_STYLES, UI_STRINGS } from '../constants';
 import { GenerationSliders, OptimizeButton } from "./PlanGenerationControls";
-import { GenerationChoice, LARGEST_GROUP_SIZE, SMALLEST_GROUP_SIZE, useGenerationControls } from "./useGenerationControls";
+import { DEFAULT_OPTIMIZATION_STYLE, GenerationChoice, LARGEST_GROUP_SIZE, SMALLEST_GROUP_SIZE, useGenerationControls } from "./useGenerationControls";
 import { PlanSummary } from "./PlanSummary";
 
 interface Props {
@@ -36,7 +36,11 @@ const PlanSettingsContent: React.FC<Omit<Props, 'isOpen'>> = ({ plan, onClose, o
   const currentStats = useMemo(() => planStats(plan), [plan]);
   const controls = useGenerationControls(
     placements,
-    { maxGroupSize: Math.min(Math.max(plan.group_size ?? MAX_GROUP_SIZE, SMALLEST_GROUP_SIZE), LARGEST_GROUP_SIZE) },
+    {
+      maxGroupSize: Math.min(Math.max(plan.group_size ?? MAX_GROUP_SIZE, SMALLEST_GROUP_SIZE), LARGEST_GROUP_SIZE),
+      // a plan with a style this version does not know starts from the default
+      optimizationStyle: OPTIMIZATION_STYLES.some(style => style.value === plan.optimization_style) ? plan.optimization_style : DEFAULT_OPTIMIZATION_STYLE
+    },
     updating,
     currentStats);
   const busy = updating || controls.optimizing;
@@ -51,6 +55,7 @@ const PlanSettingsContent: React.FC<Omit<Props, 'isOpen'>> = ({ plan, onClose, o
         minOverlapHours: controls.minOverlapHours,
         minGroupSize: controls.minGroupSize,
         maxGroupSize: controls.maxGroupSize,
+        optimizationStyle: controls.optimizationStyle,
         shuffleSeed: controls.shuffleSeed
       });
     } finally {
@@ -71,6 +76,16 @@ const PlanSettingsContent: React.FC<Omit<Props, 'isOpen'>> = ({ plan, onClose, o
           </Box>
           <PlanSummary stats={controls.stats} />
           <GenerationSliders controls={controls} disabled={busy} />
+          <TextField
+            select
+            size="small"
+            label={UI_STRINGS.GENERATION_METHOD}
+            value={controls.optimizationStyle}
+            disabled={busy}
+            onChange={(event) => controls.setOptimizationStyle(event.target.value)}
+            sx={{ maxWidth: 280 }}>
+            {OPTIMIZATION_STYLES.map(style => <MenuItem key={style.value} value={style.value}>{style.label}</MenuItem>)}
+          </TextField>
           <Typography variant="caption" color="text.secondary">{UI_STRINGS.PLAN_SETTINGS_WARNING}</Typography>
         </Stack>
       </DialogContent>

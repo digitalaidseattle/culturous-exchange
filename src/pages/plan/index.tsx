@@ -119,11 +119,15 @@ const PlanPage: React.FC = () => {
   // and the settings window stays open, so the settings can be tried again.
   async function handleSettingsChange(settings: GenerationChoice): Promise<void> {
     try {
-      const updatedPlan = await planDao.update(plan!.id!, { group_size: settings.maxGroupSize });
+      const updatedPlan = await planDao.update(plan!.id!, {
+        group_size: settings.maxGroupSize,
+        optimization_style: settings.optimizationStyle ?? plan!.optimization_style
+      });
       const seededPlan = await PlanGenerator.getInstance().run(updatedPlan, {
         maxGroupSize: settings.maxGroupSize,
         minGroupSize: settings.minGroupSize,
         minOverlapHours: settings.minOverlapHours,
+        optimizationStyle: settings.optimizationStyle,
         shuffleSeed: settings.shuffleSeed
       });
       notifications.success(`Plan ${seededPlan.name} updated successfully`);

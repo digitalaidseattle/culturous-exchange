@@ -25,6 +25,9 @@ export const LARGEST_GROUP_SIZE = 15;
 const COMPARISON_PAUSE_MS = 15;
 const pause = () => new Promise<void>(resolve => setTimeout(resolve, COMPARISON_PAUSE_MS));
 
+/** The placement style a plan has until another is chosen. */
+export const DEFAULT_OPTIMIZATION_STYLE = 'largest_first';
+
 export const GENERATION_DEFAULTS = { minOverlapHours: 0, minGroupSize: SMALLEST_GROUP_SIZE, maxGroupSize: MAX_GROUP_SIZE };
 
 /** The settings, and the arrangement Optimize chose, that make a grouping. */
@@ -32,10 +35,13 @@ export type GenerationChoice = {
     minOverlapHours: number,
     minGroupSize: number,
     maxGroupSize: number,
+    /** how students are placed when more than one group fits; see OPTIMIZATION_STYLES */
+    optimizationStyle?: string,
     shuffleSeed?: number
 };
 
-export type GenerationControls = GenerationChoice & {
+export type GenerationControls = Omit<GenerationChoice, 'optimizationStyle'> & {
+    optimizationStyle: string,
     /** what the grouping would look like; or, until a setting is changed or Optimize is run, the stats given as the current ones */
     stats: PlanStats,
     /** whether `stats` are still the current ones */
@@ -48,6 +54,7 @@ export type GenerationControls = GenerationChoice & {
     optimizing: boolean,
     setMinOverlapHours: (hours: number) => void,
     setGroupSizeRange: (min: number, max: number) => void,
+    setOptimizationStyle: (style: string) => void,
     optimize: () => Promise<void>
 };
 
@@ -64,6 +71,7 @@ export function useGenerationControls(
     const [minOverlapHours, setMinOverlapHours] = useState<number>(initial.minOverlapHours ?? GENERATION_DEFAULTS.minOverlapHours);
     const [minGroupSize, setMinGroupSize] = useState<number>(initial.minGroupSize ?? GENERATION_DEFAULTS.minGroupSize);
     const [maxGroupSize, setMaxGroupSize] = useState<number>(initial.maxGroupSize ?? GENERATION_DEFAULTS.maxGroupSize);
+    const [optimizationStyle, setOptimizationStyle] = useState<string>(initial.optimizationStyle ?? DEFAULT_OPTIMIZATION_STYLE);
     // the shuffled order Optimize chose, and how much it helped; both go back to nothing when a setting changes
     const [shuffleSeed, setShuffleSeed] = useState<number | undefined>(undefined);
     const [optimizeResult, setOptimizeResult] = useState<{ before: number, after: number } | null>(null);
@@ -72,9 +80,9 @@ export function useGenerationControls(
 
     // The grouping the settings give
     const stats = useMemo(() => {
-        const generated = generatePlan(placements, { maxGroupSize, minOverlapHours, minGroupSize, shuffleSeed });
+        const generated = generatePlan(placements, { maxGroupSize, minOverlapHours, minGroupSize, optimizationStyle, shuffleSeed });
         return planStats({ groups: generated.groups, placements: generated.placements } as unknown as Plan);
-    }, [placements, minOverlapHours, minGroupSize, maxGroupSize, shuffleSeed]);
+    }, [placements, minOverlapHours, minGroupSize, maxGroupSize, optimizationStyle, shuffleSeed]);
 
     // A different setting is a different problem, so the arrangement chosen for the old one is dropped
     const changed = () => {
@@ -90,7 +98,7 @@ export function useGenerationControls(
         setOptimizeResult(null);
         setProgress({ compared: 0, total: ARRANGEMENTS_TO_COMPARE });
         try {
-            const settings: GenerationSettings = { maxGroupSize, minOverlapHours, minGroupSize, shuffleSeed };
+            const settings: GenerationSettings = { maxGroupSize, minOverlapHours, minGroupSize, optimizationStyle, shuffleSeed };
             const result = await optimizeGrouping(placements, settings, {
                 // start somewhere new each time, so pressing Optimize again searches further
                 firstSeed: Math.floor(Math.random() * 1_000_000_000),
@@ -109,7 +117,7 @@ export function useGenerationControls(
     };
 
     return {
-        minOverlapHours, minGroupSize, maxGroupSize, shuffleSeed,
+        minOverlapHours, minGroupSize, maxGroupSize, optimizationStyle, shuffleSeed,
         stats: !touched && current ? current : stats,
         showingCurrent: !touched && Boolean(current),
         studentCount: placements.length,
@@ -118,6 +126,7 @@ export function useGenerationControls(
         optimizing: progress !== null,
         setMinOverlapHours: (hours) => { setMinOverlapHours(hours); changed(); },
         setGroupSizeRange: (min, max) => { setMinGroupSize(min); setMaxGroupSize(max); changed(); },
+        setOptimizationStyle: (style) => { setOptimizationStyle(style); changed(); },
         optimize
     };
 }

@@ -47,13 +47,19 @@ export type GenerationSettings = {
     minGroupSize?: number;
     /** the least shared time, in hours, a student may leave a group with; 0 means any shared time */
     minOverlapHours?: number;
-    /** 'largest_first' (the default) or 'smallest_first' */
+    /**
+     * How a student is placed when more than one group fits (see OPTIMIZATION_STYLES): 'largest_first' (the default),
+     * 'smallest_first', 'balanced' or 'random'. A group with no students yet is always used first.
+     */
     optimizationStyle?: string;
     /** place students in the order this seed shuffles them into, anchors first; nothing means the fixed order */
     shuffleSeed?: number;
 };
 
-type ResolvedSettings = Required<Omit<GenerationSettings, 'shuffleSeed'>>;
+type ResolvedSettings = Required<Omit<GenerationSettings, 'shuffleSeed'>> & {
+    /** the numbers behind the 'random' style, repeatable for a shuffle seed so the preview matches the saved plan */
+    random: () => number;
+};
 
 /** How many shuffled arrangements optimizeGrouping compares. */
 export const ARRANGEMENTS_TO_COMPARE = 50;
@@ -89,15 +95,29 @@ function bestGroup(groups: Group[], placement: Placement, settings: ResolvedSett
         })
         // some shared time is needed, and at least the minimum
         .filter(candidate => candidate.duration > 0
-            && timeWindowService.totalHours(candidate.intersect) >= settings.minOverlapHours)
-        .sort((a, b) => {
-            const spread = settings.optimizationStyle === 'smallest_first'
+            && timeWindowService.totalHours(candidate.intersect) >= settings.minOverlapHours);
+    if (candidates.length === 0) {
+        return null;
+    }
+    const size = (candidate: Candidate) => candidate.group.placements?.length ?? 0;
+    // a group with no students yet comes first, whatever the style
+    const empty = candidates.find(candidate => size(candidate) === 0);
+    if (empty) {
+        return empty;
+    }
+    if (settings.optimizationStyle === 'random') {
+        return candidates[Math.floor(settings.random() * candidates.length)];
+    }
+    return candidates.sort((a, b) => {
+        // 'balanced' fills the smallest group; the others rank by shared time, the most ('largest_first') or the least ('smallest_first')
+        const spread = settings.optimizationStyle === 'balanced'
+            ? size(a) - size(b)
+            : settings.optimizationStyle === 'smallest_first'
                 ? a.duration - b.duration
                 : b.duration - a.duration;
-            // on a tie, fill the emptier group first
-            return spread !== 0 ? spread : (a.group.placements?.length ?? 0) - (b.group.placements?.length ?? 0);
-        });
-    return candidates.length > 0 ? candidates[0] : null;
+        // on a tie, fill the emptier group first
+        return spread !== 0 ? spread : size(a) - size(b);
+    })[0];
 }
 
 /** Puts the student in the best group, or on the waitlist. Returns whether they got a group. */
@@ -156,7 +176,8 @@ export function generatePlan(placements: Placement[], options: GenerationSetting
         // a minimum above the maximum could never be met
         minGroupSize: Math.min(Math.max(1, options.minGroupSize ?? 1), maxGroupSize),
         minOverlapHours: Math.max(0, options.minOverlapHours ?? 0),
-        optimizationStyle: options.optimizationStyle ?? 'largest_first'
+        optimizationStyle: options.optimizationStyle ?? 'largest_first',
+        random: randomFrom((options.shuffleSeed ?? 0) ^ 0x5bd1e995)
     };
 
     // work on copies, so the students and placements that were passed in are left as they were

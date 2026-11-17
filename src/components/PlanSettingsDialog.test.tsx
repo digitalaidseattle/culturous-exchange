@@ -102,11 +102,29 @@ describe("PlanSettingsDialog", () => {
         fireEvent.change(slider("Minimum overlap"), { target: { value: 2 } });
         fireEvent.change(slider("Maximum group size"), { target: { value: 5 } });
         fireEvent.click(button(/^update plan$/i));
-        expect(onSubmit).toHaveBeenCalledWith({ minOverlapHours: 2, minGroupSize: 1, maxGroupSize: 5, shuffleSeed: undefined });
+        expect(onSubmit).toHaveBeenCalledWith({ minOverlapHours: 2, minGroupSize: 1, maxGroupSize: 5, optimizationStyle: "largest_first", shuffleSeed: undefined });
         expect(button(/updating plan/i).disabled).toBe(true);
         expect(button(/^cancel$/i).disabled).toBe(true);
         finish();
         await waitFor(() => expect(button(/^update plan$/i).disabled).toBe(false));
+    });
+
+    it("has a Generation method, starting from the plan's own, and hands over the one chosen", () => {
+        const onSubmit = vi.fn().mockResolvedValue(undefined);
+        render(<PlanSettingsDialog plan={{ ...planOf(6), optimization_style: "smallest_first" } as Plan} isOpen onClose={vi.fn()} onSubmit={onSubmit} />);
+        const method = screen.getByRole("combobox", { name: "Generation Method" });
+        expect(method.textContent).toBe("Least Availability");
+        fireEvent.mouseDown(method);
+        fireEvent.click(screen.getByRole("option", { name: "Balanced Groups" }));
+        // the preview is now of the new method, no longer of the plan as it is
+        expect(screen.queryByText(/This is the plan as it is now/)).toBeNull();
+        fireEvent.click(button(/^update plan$/i));
+        expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ optimizationStyle: "balanced" }));
+    });
+
+    it("starts a plan with a method it does not know on the default one", () => {
+        render(<PlanSettingsDialog plan={{ ...planOf(6), optimization_style: "mystery" } as Plan} isOpen onClose={vi.fn()} onSubmit={vi.fn()} />);
+        expect(screen.getByRole("combobox", { name: "Generation Method" }).textContent).toBe("Most Availability");
     });
 
     it("starts again from the plan's settings each time it opens", () => {
