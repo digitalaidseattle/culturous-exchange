@@ -6,7 +6,8 @@
  *  cohort with no students. They are laid out by the width of the space they sit in, not the width of the
  *  screen, so a card on the home page and the cohort's own page each switch at the right moment:
  *
- *  - wide: the three charts side by side, the countries a little wider than the others;
+ *  - wide: the three charts side by side, the countries twice as wide as each of the others, so its legend
+ *    has room for its countries to flow in rows beside the pie;
  *  - medium: the countries chart across the whole width, and the age and gender charts side by side
  *    below it, splitting the width evenly;
  *  - narrow: the three charts one under the next.
@@ -32,13 +33,13 @@ const CHART_HEIGHT = 200;
 export const TWO_ACROSS_WIDTH = 2 * 240 + 16;
 
 /**
- * How wide the space must be for all three to sit side by side: the countries chart needs room for its pie
- * (200) beside a legend wide enough for two countries to a row (about 240) with the gap, and the panel's
- * padding. The charts share the width in the proportion 5 : 4 : 4, so the space is that, divided by 5 / 13,
- * plus the two gaps, rounded up.
+ * How wide the space must be for all three to sit side by side, and no wider: the countries chart needs room
+ * for its pie (200) beside a legend about two countries wide (220), with the gap and the panel's padding. The
+ * charts share the width in the proportion 2 : 1 : 1, so the countries get half of it, and the space is that,
+ * doubled, plus the two gaps, rounded up. The age and gender charts then have about 230 each.
  */
-export const COUNTRIES_CHART_MIN_WIDTH = 200 + 16 + 240 + 24;
-export const THREE_ACROSS_WIDTH = 1280;
+export const COUNTRIES_CHART_MIN_WIDTH = 200 + 16 + 220 + 24;
+export const THREE_ACROSS_WIDTH = 960;
 
 const TWO_ACROSS = `@container (min-width: ${TWO_ACROSS_WIDTH}px)`;
 const THREE_ACROSS = `@container (min-width: ${THREE_ACROSS_WIDTH}px)`;
@@ -106,7 +107,7 @@ export const CohortCharts: React.FC<{ cohort: Cohort }> = ({ cohort }) => {
                     gridTemplateColumns: 'minmax(0, 1fr)',
                     gap: 2,
                     [TWO_ACROSS]: { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' },
-                    [THREE_ACROSS]: { gridTemplateColumns: hasAges ? 'minmax(0, 5fr) minmax(0, 4fr) minmax(0, 4fr)' : 'minmax(0, 5fr) minmax(0, 4fr)' }
+                    [THREE_ACROSS]: { gridTemplateColumns: hasAges ? 'minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr)' : 'minmax(0, 2fr) minmax(0, 1fr)' }
                 }}>
                 {/* across the whole width, until there is room for all three side by side */}
                 <ChartPanel title={UI_STRINGS.STUDENTS_BY_COUNTRY} part="country" sx={{ gridColumn: '1 / -1', [THREE_ACROSS]: { gridColumn: 'auto' } }}>

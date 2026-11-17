@@ -137,9 +137,11 @@ describe("CohortCharts", () => {
         it("puts all three side by side from the width that gives the countries chart room for its pie and key", () => {
             render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
             expect(THREE_ACROSS_WIDTH).toBeGreaterThan(TWO_ACROSS_WIDTH);
-            // the countries get 5 of the 13 parts of what is left after the two gaps, and that must hold the pie and its legend
-            expect((THREE_ACROSS_WIDTH - 32) * 5 / 13).toBeGreaterThanOrEqual(COUNTRIES_CHART_MIN_WIDTH);
-            expect(allCss()).toMatch(new RegExp("@container \\(min-width: " + THREE_ACROSS_WIDTH + "px\\)\\{[^}]*grid-template-columns:minmax\\(0, 5fr\\) minmax\\(0, 4fr\\) minmax\\(0, 4fr\\)"));
+            // the countries get half of what is left after the two gaps, and that must hold the pie and its legend
+            expect((THREE_ACROSS_WIDTH - 32) / 2).toBeGreaterThanOrEqual(COUNTRIES_CHART_MIN_WIDTH);
+            // and the width is no larger than that needs
+            expect((THREE_ACROSS_WIDTH - 32) / 2).toBeLessThan(COUNTRIES_CHART_MIN_WIDTH + 10);
+            expect(allCss()).toMatch(new RegExp("@container \\(min-width: " + THREE_ACROSS_WIDTH + "px\\)\\{[^}]*grid-template-columns:minmax\\(0, 2fr\\) minmax\\(0, 1fr\\) minmax\\(0, 1fr\\)"));
         });
 
         it("with no ages, has the countries and the gender, and the gender takes the full width below the countries", () => {
@@ -147,7 +149,7 @@ describe("CohortCharts", () => {
             expect(Array.from(grid().children).map(child => child.getAttribute("data-part"))).toEqual(["country", "gender"]);
             expect(column("Students by gender")).toBe("1/-1");
             // side by side only from the width where the three would have fit, in two columns
-            expect(allCss()).toMatch(new RegExp("@container \\(min-width: " + THREE_ACROSS_WIDTH + "px\\)\\{[^}]*grid-template-columns:minmax\\(0, 5fr\\) minmax\\(0, 4fr\\)(?! minmax)"));
+            expect(allCss()).toMatch(new RegExp("@container \\(min-width: " + THREE_ACROSS_WIDTH + "px\\)\\{[^}]*grid-template-columns:minmax\\(0, 2fr\\) minmax\\(0, 1fr\\)(?! minmax)"));
         });
     });
 });
