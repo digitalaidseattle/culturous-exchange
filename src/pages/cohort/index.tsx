@@ -23,6 +23,7 @@ import { NewPlanDialog } from "../../components/NewPlanDialog";
 import { PlanCard } from "../../components/PlanCard";
 import { raisedCardSx, tonalButtonSx } from "../../utils/styles";
 import { CohortCharts } from "./CohortCharts";
+import { CohortFacts } from "./CohortFacts";
 import { PlansStack } from "./PlansStack";
 import { StudentTable } from "./StudentTable";
 
@@ -123,18 +124,7 @@ const CohortPage: React.FC = () => {
                     <EditOutlined />
                   </IconButton>
                 </Stack>
-                <Stack direction="row" flexWrap="wrap" columnGap={4} rowGap={0.5}>
-                  <Typography>{UI_STRINGS.STUDENTS_LABEL}: {cohort.enrollments?.length ?? 0}</Typography>
-                  <Typography>{UI_STRINGS.PLANS_LABEL}: {cohort.plans?.length ?? 0}</Typography>
-                  <Typography>
-                    {UI_STRINGS.ACTIVE_PLAN}: {cohort.plans?.find(plan => plan.active)?.name ?? UI_STRINGS.NO_ACTIVE_PLAN}
-                  </Typography>
-                  {cohort.created_at &&
-                    <Typography>
-                      {UI_STRINGS.CREATED}: {new Date(cohort.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                    </Typography>
-                  }
-                </Stack>
+                <CohortFacts cohort={cohort} />
                 <CohortCharts cohort={cohort} />
                 <Divider />
                 <Stack direction="row" flexWrap="wrap" gap={1.5}>

@@ -1,7 +1,8 @@
 /**
  *  CohortCard.tsx
  *
- *  One cohort on the home page: name, counts, and shortcuts into the cohort.
+ *  One cohort on the home page: name, the facts about it and charts of its students (as on the
+ *  cohort's own page), and shortcuts into the cohort.
  *
  *  @copyright 2025 Digital Aid Seattle
  *
@@ -36,6 +37,8 @@ import { EditCohortNameDialog } from "../../components/EditCohortNameDialog";
 import { NewPlanDialog } from "../../components/NewPlanDialog";
 import { UI_STRINGS } from '../../constants';
 import { raisedCardSx, tonalButtonSx } from "../../utils/styles";
+import { CohortCharts } from "../cohort/CohortCharts";
+import { CohortFacts } from "../cohort/CohortFacts";
 
 // Cohort page tabs (see pages/cohort/index.tsx)
 const PLANS_TAB = 0;
@@ -108,10 +111,8 @@ export const CohortCard = (props: { cohort: Cohort, isCurrent?: boolean }) => {
                             <MenuItem onClick={handleDelete}>{UI_STRINGS.DELETE_WITH_ELLIPSIS}</MenuItem>
                         </Menu>
                     </Stack>
-                    <Stack direction="row" gap={4}>
-                        <Typography>{UI_STRINGS.STUDENTS_LABEL}: {cohort.enrollments?.length ?? 0}</Typography>
-                        <Typography>{UI_STRINGS.PLANS_LABEL}: {cohort.plans?.length ?? 0}</Typography>
-                    </Stack>
+                    <CohortFacts cohort={cohort} />
+                    <CohortCharts cohort={cohort} />
                     <Divider />
                     <Stack direction="row" flexWrap="wrap" alignItems="center" justifyContent="space-between" gap={1.5}>
                         <Stack direction="row" flexWrap="wrap" gap={1.5}>

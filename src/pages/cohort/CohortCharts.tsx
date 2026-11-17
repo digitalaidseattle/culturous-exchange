@@ -74,7 +74,7 @@ export const CohortCharts: React.FC<{ cohort: Cohort }> = ({ cohort }) => {
                 <CountryPieChart students={students} height={CHART_HEIGHT} />
             </ChartPanel>
             {ageData.ages.length > 0 &&
-                <ChartPanel title={UI_STRINGS.STUDENTS_BY_AGE} part="age" sx={{ flex: '1 1 240px' }}>
+                <ChartPanel title={UI_STRINGS.STUDENTS_BY_AGE} part="age" sx={{ flex: '1 1 240px', maxWidth: 480 }}>
                     <BarChart
                         xAxis={[{ data: ageData.ages, scaleType: 'band', label: UI_STRINGS.AGE_LABEL }]}
                         yAxis={[{ tickMinStep: 1 }]}
@@ -83,7 +83,7 @@ export const CohortCharts: React.FC<{ cohort: Cohort }> = ({ cohort }) => {
                         hideLegend />
                 </ChartPanel>
             }
-            <ChartPanel title={UI_STRINGS.STUDENTS_BY_GENDER} part="gender" sx={{ flex: '1 1 240px' }}>
+            <ChartPanel title={UI_STRINGS.STUDENTS_BY_GENDER} part="gender" sx={{ flex: '1 1 240px', maxWidth: 480 }}>
                 <PieChart
                     series={[{ data: genderData, innerRadius: 30, paddingAngle: 1, cornerRadius: 3 }]}
                     height={CHART_HEIGHT} />

@@ -59,6 +59,7 @@ This section grows as decisions are made. Each numbered change below adds a line
 | 10 | The team's latest work (the `dev` branch) brought in and reconciled with the redesign | Merged locally, not yet pushed | 2026-11-16 |
 | 11 | Home page lists the current cohort once; the cohort page gets charts of its students, with a globe for countries | Built and checked locally, pull requests open | 2026-11-17 |
 | 12 | MUI charts only: the globe and the dot plots are replaced with MUI X Charts (branch `aidan/onboarding-mui-only`) | Built and checked locally, not pushed | 2026-11-17 |
+| 13 | Each cohort card on the home page shows the same facts and charts as the cohort's page | Built and checked locally, not pushed | 2026-11-17 |
 
 ---
 
@@ -530,3 +531,16 @@ This branch swaps every chart over to one library, MUI X Charts, the one the mai
 - Removed: `DistributionChart`, `Globe`, `LocationGlobe`, the terrain and place lookup code (`services/geo`), `distribution`, `gradient`, `overlapColors`, `globeColors`, `globeView`, and the packages `d3-geo`, `topojson-client` and `world-atlas` (and their types). The browser no longer looks up city coordinates, which also removes the licence question about the terrain imagery.
 - `vitest.setup.ts` stubs the MUI charts (the test browser cannot draw them): a stub carries the props it was given, so tests check what a chart is drawing, not its pixels.
 - The built page is about 39 kB smaller (gzipped) than with the globe and dot plots, though MUI X Charts remain.
+
+---
+
+### 13. Cohort cards on the home page show the cohort's facts and charts
+
+**What you will notice:**
+
+- **Each cohort card on the home page** (the Current Cohort and every card under All Other Cohorts) now shows what the cohort's own page shows under its name: **Students, Plans, Active plan and Created**, then the three charts, **Students by country** (pie), **Students by age** (bars) and **Students by gender** (pie), then the same buttons as before. A cohort with no students has no charts.
+- **The cohort cards are wider** (up to 960 pixels, as on the cohort page) so the three charts sit in a row. The welcome banner and the Get Started card keep their width. On a narrow window the charts wrap, and a wrapped chart no longer stretches the whole width.
+
+**Technical notes:**
+
+- New `src/pages/cohort/CohortFacts.tsx` is the row of facts, now shared by the cohort page and the home card. The home card also uses `CohortCharts`. The cohort list already loads each student, so there is no new query. New tests: `CohortFacts.test.tsx` and `CohortCard.test.tsx`.
