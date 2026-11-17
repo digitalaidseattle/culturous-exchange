@@ -20,6 +20,7 @@ import { PieChart } from "@mui/x-charts/PieChart";
 import { useMemo } from "react";
 import { Cohort, Student } from "../../api/types";
 import { CountryPieChart } from "../../components/CountryPieChart";
+import { BAR_RADIUS } from "../../components/GroupBarChart";
 import { UI_STRINGS } from "../../constants";
 
 const CHART_HEIGHT = 200;
@@ -31,11 +32,13 @@ const CHART_HEIGHT = 200;
 export const TWO_ACROSS_WIDTH = 2 * 240 + 16;
 
 /**
- * How wide the space must be for all three to sit side by side: the countries chart needs about 360 for its
- * pie to be legible beside its key, and the others share the rest in the proportion 5 : 4 : 4, so the space
- * is 360 / (5 / 13) plus the two gaps, rounded up.
+ * How wide the space must be for all three to sit side by side: the countries chart needs room for its pie
+ * (200) beside a legend wide enough for two countries to a row (about 240) with the gap, and the panel's
+ * padding. The charts share the width in the proportion 5 : 4 : 4, so the space is that, divided by 5 / 13,
+ * plus the two gaps, rounded up.
  */
-export const THREE_ACROSS_WIDTH = 960;
+export const COUNTRIES_CHART_MIN_WIDTH = 200 + 16 + 240 + 24;
+export const THREE_ACROSS_WIDTH = 1280;
 
 const TWO_ACROSS = `@container (min-width: ${TWO_ACROSS_WIDTH}px)`;
 const THREE_ACROSS = `@container (min-width: ${THREE_ACROSS_WIDTH}px)`;
@@ -116,6 +119,7 @@ export const CohortCharts: React.FC<{ cohort: Cohort }> = ({ cohort }) => {
                             yAxis={[{ tickMinStep: 1 }]}
                             series={[{ data: ageData.counts, label: UI_STRINGS.STUDENTS_LABEL }]}
                             height={CHART_HEIGHT}
+                            borderRadius={BAR_RADIUS}
                             hideLegend />
                     </ChartPanel>
                 }

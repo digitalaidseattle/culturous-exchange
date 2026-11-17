@@ -14,7 +14,8 @@ vi.mock("@mui/x-charts/BarChart", () => ({ BarChart: (props: object) => { bar(pr
 vi.mock("@mui/x-charts/PieChart", () => ({ PieChart: (props: object) => { pie(props); return <div data-testid="pie-chart" />; } }));
 
 import { Cohort, Enrollment, Student } from "../../api/types";
-import { CohortCharts, THREE_ACROSS_WIDTH, TWO_ACROSS_WIDTH } from "./CohortCharts";
+import { BAR_RADIUS } from "../../components/GroupBarChart";
+import { COUNTRIES_CHART_MIN_WIDTH, CohortCharts, THREE_ACROSS_WIDTH, TWO_ACROSS_WIDTH } from "./CohortCharts";
 
 const enrollment = (id: string, country: string, extra: Partial<Student> = {}): Enrollment =>
     ({ cohort_id: "c", student_id: id, anchor: false, student: { id, name: id, city: "City", country, ...extra } as Student }) as Enrollment;
@@ -68,6 +69,13 @@ describe("CohortCharts", () => {
         const props = bar.mock.calls[0][0] as { xAxis: { data: number[] }[], series: { data: number[] }[] };
         expect(props.xAxis[0].data).toEqual([15, 17]);
         expect(props.series[0].data).toEqual([1, 2]);
+    });
+
+    it("rounds the bars of the age chart, as the group bar charts do", () => {
+        render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+        const props = bar.mock.calls[0][0] as { borderRadius: number };
+        expect(props.borderRadius).toBe(BAR_RADIUS);
+        expect(BAR_RADIUS).toBeGreaterThan(0);
     });
 
     it("charts the genders, most first, with students who gave none as Unknown", () => {
@@ -129,8 +137,8 @@ describe("CohortCharts", () => {
         it("puts all three side by side from the width that gives the countries chart room for its pie and key", () => {
             render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
             expect(THREE_ACROSS_WIDTH).toBeGreaterThan(TWO_ACROSS_WIDTH);
-            // the countries get 5 of the 13 parts of what is left after the two gaps: about 360 pixels
-            expect((THREE_ACROSS_WIDTH - 32) * 5 / 13).toBeGreaterThanOrEqual(355);
+            // the countries get 5 of the 13 parts of what is left after the two gaps, and that must hold the pie and its legend
+            expect((THREE_ACROSS_WIDTH - 32) * 5 / 13).toBeGreaterThanOrEqual(COUNTRIES_CHART_MIN_WIDTH);
             expect(allCss()).toMatch(new RegExp("@container \\(min-width: " + THREE_ACROSS_WIDTH + "px\\)\\{[^}]*grid-template-columns:minmax\\(0, 5fr\\) minmax\\(0, 4fr\\) minmax\\(0, 4fr\\)"));
         });
 
