@@ -521,6 +521,7 @@ This branch swaps every chart over to one library, MUI X Charts, the one the mai
 - **The globe is gone.** A group's card has a **Countries** pie chart where the Location globe was, with a slice for each country and its key. The cohort page's **Students by country** is the same pie chart, beside the age bars and the gender pie. The student's **See details** window shows the city, state, country and time zone as text, with no globe.
 - **The bar charts are shorter, with rounded bars, and the vertical axis ends on a labeled number** at or above the tallest bar (0 to 15 in fives, say), where it used to run on to an unmarked point above the last label.
 - **The gender split bar uses the charts' colors:** Female is the charts' blue and Male their orange (and Other their red), taken from MUI X Charts' own palette, so they match the pies and bars.
+- **The Optimize button is now "Optimize Waitlist"**, and the description under Preview says what it does: "Optimize Waitlist tries 50 configurations based on your settings to find a grouping with a smaller waitlist. The plan is not changed until you press Update Plan." (In the Create New Plan window it ends "Nothing is saved until you create the plan.")
 - The availability calendars are unchanged.
 
 **Technical notes:**
