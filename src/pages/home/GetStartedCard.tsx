@@ -99,7 +99,7 @@ export const GetStartedCard: React.FC = () => {
             if (failedCount > 0) {
                 notifications.error(`${UI_STRINGS.ERROR_ADDING_STUDENTS} (${failedCount})`);
             }
-            const cohort = await createCohort(name.trim());
+            const cohort = await createCohort({ name: name.trim() });
             try {
                 const plan = await cohortService.createPlan(cohort);
                 notifications.success(`Cohort ${cohort.name} and plan created.`);
@@ -124,9 +124,15 @@ export const GetStartedCard: React.FC = () => {
     return (
         <Card>
             <CardHeader
+                // the app's dark text color on a light gradient: 8.6 to 1 or better all along it
                 sx={{
-                    background: `linear-gradient(to right, ${green[200]}, ${blue[900]})`,
-                    color: theme.palette.common.white
+                    background: `linear-gradient(to right, ${green[200]}, ${blue[200]})`,
+                    color: theme.palette.text.primary
+                }}
+                // the title is in the h3 text style, and is an h2 in the page's outline, under the welcome banner's h1
+                slotProps={{
+                    title: { variant: 'h3', component: 'h2', sx: { fontWeight: 600 } },
+                    subheader: { sx: { color: theme.palette.text.primary } }
                 }}
                 title={UI_STRINGS.GET_STARTED}
                 subheader={'Create a cohort and a plan'}

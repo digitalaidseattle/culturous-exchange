@@ -93,6 +93,34 @@ describe("timeWindowService", () => {
 
     });
 
+    describe("totalHours", () => {
+        const window = (from: string, to: string) => ({
+            start_date_time: timeWindowService.localTimeToUTC(0, from, DEFAULT_TIMEZONE),
+            end_date_time: timeWindowService.localTimeToUTC(0, to, DEFAULT_TIMEZONE)
+        } as TimeWindow);
+
+        it("is the real length of a window, without the extra hour that duration adds", () => {
+            const eightToNoon = window("08:00:00", "12:00:00");
+            expect(timeWindowService.totalHours([eightToNoon])).toBe(4);
+            expect(timeWindowService.duration(eightToNoon)).toBe(5);
+        });
+
+        it("adds up several windows", () => {
+            expect(timeWindowService.totalHours([window("08:00:00", "12:00:00"), window("10:00:00", "11:00:00")])).toBe(5);
+            // the same two windows, counted the existing way
+            expect(timeWindowService.totalDuration([window("08:00:00", "12:00:00"), window("10:00:00", "11:00:00")])).toBe(7);
+        });
+
+        it("keeps half hours", () => {
+            expect(timeWindowService.totalHours([window("19:30:00", "20:00:00")])).toBe(0.5);
+            expect(timeWindowService.totalHours([window("07:30:00", "09:00:00"), window("10:00:00", "12:00:00")])).toBe(3.5);
+        });
+
+        it("is 0 when there are no windows", () => {
+            expect(timeWindowService.totalHours([])).toBe(0);
+        });
+    });
+
     it("adjustTimeWindows - Mexico_City", () => {
         const timezone = "America/Mexico_City";
         const friday = { day_in_week: "Friday", start_t: "07:00:00", end_t: "12:00:00" } as TimeWindow;

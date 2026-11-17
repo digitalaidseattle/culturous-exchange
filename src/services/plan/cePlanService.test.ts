@@ -4,7 +4,7 @@
  *  @copyright 2025 Digital Aid Seattle
  *
  */
-import { describe, expect, expectTypeOf, it, vi } from "vitest";
+import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { CEGroupDao } from "../../api/ceGroupDao";
 import { CEPlacementDao } from "../../api/cePlacementDao";
 import { CEPlanDao } from "../../api/cePlanDao";
@@ -15,20 +15,8 @@ describe("planService", () => {
     const planDao = CEPlanDao.getInstance();
     const placementDao = CEPlacementDao.getInstance();
 
-    vi.mock("./cePlacementService", () => {
-        return {
-            placementService: {
-                mapJson: vi.fn()
-            }
-        };
-    });
-
-    vi.mock("./ceGroupService", () => {
-        return {
-            groupService: {
-                mapJson: vi.fn()
-            }
-        };
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     it("mapJson", () => {
@@ -49,20 +37,22 @@ describe("planService", () => {
         const placement2 = { group_id: null } as Placement;
         const group = { id: "group1" } as Group;
 
-        (placementDao.mapJson as ReturnType<typeof vi.fn>)
+        vi.spyOn(placementDao, "mapJson")
             .mockReturnValueOnce(placement1)
             .mockReturnValueOnce(placement2);
-        (groupDao.mapJson as ReturnType<typeof vi.fn>).mockReturnValue(group);
+        vi.spyOn(groupDao, "mapJson").mockReturnValue(group);
 
         const result = planDao.mapJson(json);
         expectTypeOf(result).toMatchTypeOf<Plan>();
         expect(result.id).toBe("plan1");
         expect(result.name).toBe("Test Plan");
         expect(result.placements.length).toBe(2);
-        expect(result.groups[0]).toBe(group);
-        expect(result.placements.length).toBe(2);
-        expect(group.placements!.length).toBe(1);
-        expect(group.placements![0]).toBe(placement1);
-    })
+        expect(result.groups.length).toBe(1);
+        // placement1 is grouped under group1; placement2 has no group
+        expect(result.groups[0].placements).toEqual([placement1]);
+        // the raw supabase join fields are removed
+        expect((result as any).placement).toBeUndefined();
+        expect((result as any).grouptable).toBeUndefined();
+    });
 
 });

@@ -4,9 +4,8 @@
  *  @copyright 2025 Digital Aid Seattle
  *
  */
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { CEGroupService } from "./ceGroupService";
-import { CETimeWindowService } from "../time/ceTimeWindowService";
 import { Group, TimeWindow } from "../../api/types";
 import { CETimeWindowDao } from "../../api/ceTimeWindowDao";
 import { CEGroupDao } from "../../api/ceGroupDao";
@@ -14,15 +13,16 @@ import { CEGroupDao } from "../../api/ceGroupDao";
 describe("groupService-save", () => {
     const groupService = CEGroupService.getInstance();
     const groupDao = CEGroupDao.getInstance();
-    const timeWindowService = CETimeWindowService.getInstance();
     const timeWindowDao = CETimeWindowDao.getInstance();
 
-    it("save", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it("save", async () => {
 
         const tw = {
-        } as TimeWindow;
-
-        const savedTw = {
+            id: "tw1"
         } as TimeWindow;
 
         const group = {
@@ -30,21 +30,24 @@ describe("groupService-save", () => {
             time_windows: [tw]
         } as Group;
 
-        const inserted = {
+        const saved = {
+            id: "test"
         } as Group;
 
-        // Using a spy here to check if methods are called
-        // Spies are a simpler alternative to mockFunctions. You can specify a mock function to do more that just return a value.
-        vi.spyOn(groupDao, "insert").mockResolvedValue(inserted);
-        vi.spyOn(timeWindowDao, "deleteByGroupId").mockResolvedValue(true);
-        vi.spyOn(timeWindowService, "save").mockResolvedValue(savedTw);
+        // Spies replace the DAO methods on the real singleton instances so no
+        // database access happens, while still letting us assert the calls.
+        const upsertSpy = vi.spyOn(groupDao, "upsert").mockResolvedValue(saved);
+        const deleteSpy = vi.spyOn(timeWindowDao, "deleteByGroupId").mockResolvedValue(true);
+        const insertSpy = vi.spyOn(timeWindowDao, "insert").mockResolvedValue(tw);
 
-        groupService.save(group)
-            .then(result => {
-                expect(result).toBe(group);
-                expect(timeWindowDao.deleteByGroupId).toHaveBeenCalledWith("test");
-                expect(timeWindowService.save).toHaveBeenCalledWith(tw);
-            })
+        const result = await groupService.save(group);
+
+        expect(result).toBe(group);
+        expect(upsertSpy).toHaveBeenCalledWith(group);
+        // the group must be saved before its time windows are replaced
+        expect(upsertSpy.mock.invocationCallOrder[0]).toBeLessThan(deleteSpy.mock.invocationCallOrder[0]);
+        expect(deleteSpy).toHaveBeenCalledWith("test");
+        expect(insertSpy).toHaveBeenCalledWith(tw);
     });
 
 });

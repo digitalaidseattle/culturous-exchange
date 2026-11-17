@@ -1,6 +1,5 @@
 
 import {
-  CalendarOutlined,
   HomeOutlined,
   SmileOutlined,
   UserOutlined
@@ -29,13 +28,6 @@ const entities = {
   id: 'data',
   type: 'group',
   children: [
-    {
-      id: 'cohorts',
-      title: UI_STRINGS.COHORTS,
-      type: 'item',
-      url: '/cohorts',
-      icon: <CalendarOutlined />
-    } as MenuItem,
     {
       id: 'students',
       title: UI_STRINGS.STUDENTS_LABEL,

@@ -41,7 +41,8 @@ class CEPlanService {
     } as Plan;
   }
 
-  async create(cohort: Cohort): Promise<Plan> {
+  /** Makes a new plan for the cohort with a placement for every student. `overrides` replaces any of the plan's starting values, such as its name. */
+  async create(cohort: Cohort, overrides: Partial<Plan> = {}): Promise<Plan> {
     const planDao = CEPlanDao.getInstance();
     const placementDao = CEPlacementDao.getInstance();
     const enrollmentService = CEEnrollmentService.getInstance();
@@ -49,6 +50,7 @@ class CEPlanService {
     const proposed: Plan = {
       ...this.empty(),
       cohort_id: cohort.id,
+      ...overrides
     } as Plan;
 
     return planDao.insert(proposed)
