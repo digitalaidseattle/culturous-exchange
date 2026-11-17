@@ -199,6 +199,7 @@ export const UI_STRINGS = {
   TOGGLE_GROUP_DETAILS: 'Toggle group details',
   TOGGLE_STUDENT_DETAILS: 'Toggle student details',
   SHOW_PLAN_SETTINGS: 'Show plan settings',
+  PLAN_SETTINGS_BUTTON: 'Plan settings',
   PLAN_SETTINGS_TITLE: 'Plan settings',
   PLAN_SETTINGS_PREVIEW_HELP: 'Updates as you change the settings. Optimize Waitlist tries 50 configurations based on your settings to find a grouping with a smaller waitlist. The plan is not changed until you press Update Plan.',
   PLAN_SETTINGS_WARNING: 'Updating the plan regroups all of its students, so any moves made by hand are replaced. Anchors stay anchors.',
