@@ -7,7 +7,7 @@
  *
  */
 
-import { ArrowRightOutlined, MoreOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { ArrowRightOutlined, MoreOutlined, SettingOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
 import { Identifier, LoadingContext, RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
 import { Button, Card, CardContent, Divider, IconButton, Menu, MenuItem, Stack, Typography } from "@mui/material";
@@ -19,10 +19,13 @@ import { UI_STRINGS } from '../constants';
 import { planActivation } from "../services/plan/planActivation";
 import { planDelete } from "../services/plan/planDelete";
 import { planDuplicate } from "../services/plan/planDuplicate";
+import { applyPlanSettings } from "../services/plan/planSettings";
 import { planStats } from "../services/plan/planStats";
 import { clickableCardSx, tonalButtonSx } from "../utils/styles";
 import { CountryChip } from "./CountryChip";
 import { EditPlanNameDialog } from "./EditPlanNameDialog";
+import type { GenerationChoice } from "./useGenerationControls";
+import PlanSettingsDialog from "./PlanSettingsDialog";
 import { PlanStatusChip } from "./PlanStatusChip";
 import { PlanSummary } from "./PlanSummary";
 
@@ -34,6 +37,7 @@ export const PlanCard = (props: { planId: Identifier }) => {
     const { refresh, setRefresh } = useContext(RefreshContext);
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
     const [openEditDialog, setOpenEditDialog] = useState<boolean>(false);
+    const [showSettings, setShowSettings] = useState<boolean>(false);
     const { loading, setLoading } = useContext(LoadingContext);
 
     const navigate = useNavigate();
@@ -89,6 +93,24 @@ export const PlanCard = (props: { planId: Identifier }) => {
     const handleDelete = () => {
         setOpenDeleteDialog(true)
         setAnchorEl(null);
+    };
+
+    // Regroups the plan's students with the settings and saves it, then has everything on the page read it again. A failure is
+    // reported and the window stays open, so the settings can be tried again.
+    const handleSettingsChange = async (settings: GenerationChoice): Promise<void> => {
+        if (!plan) {
+            return;
+        }
+        try {
+            const updated = await applyPlanSettings(plan, settings);
+            notifications.success(`Plan ${updated.name} updated successfully`);
+            setPlan(updated);
+            setShowSettings(false);
+            setRefresh(refresh + 1);
+        } catch (error) {
+            console.error('Failed to update plan', error);
+            notifications.error(`Failed to update plan: ${error instanceof Error ? error.message : error}`);
+        }
     };
 
     const handleActive = () => {
@@ -189,6 +211,13 @@ export const PlanCard = (props: { planId: Identifier }) => {
                                     onClick={(event) => { event.stopPropagation(); handleOpen('students'); }}>
                                     {UI_STRINGS.EDIT_STUDENTS}
                                 </Button>
+                                <Button
+                                    variant="contained"
+                                    sx={tonalButtonSx}
+                                    startIcon={<SettingOutlined />}
+                                    onClick={(event) => { event.stopPropagation(); setShowSettings(true); }}>
+                                    {UI_STRINGS.PLAN_SETTINGS_BUTTON}
+                                </Button>
                             </Stack>
                             <Button
                                 variant="contained"
@@ -205,6 +234,11 @@ export const PlanCard = (props: { planId: Identifier }) => {
                 plan={plan}
                 open={openEditDialog}
                 onClose={() => setOpenEditDialog(false)} />
+            <PlanSettingsDialog
+                plan={plan}
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                onSubmit={handleSettingsChange} />
             <ConfirmationDialog
                 message={`Delete ${plan.name}?`}
                 open={openDeleteDialog}

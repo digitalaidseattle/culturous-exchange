@@ -21,7 +21,7 @@ import { GenerationChoice } from "../../components/useGenerationControls";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
 import { UI_STRINGS } from '../../constants';
 import { PlanExporter } from "../../services/plan/planExporter";
-import { PlanGenerator } from "../../services/plan/planGenerator";
+import { applyPlanSettings } from "../../services/plan/planSettings";
 import { CohortContext } from "../cohort";
 import { GroupsView } from "./GroupsView";
 import { raisedCardSx, tonalButtonSx } from "../../utils/styles";
@@ -119,17 +119,7 @@ const PlanPage: React.FC = () => {
   // and the settings window stays open, so the settings can be tried again.
   async function handleSettingsChange(settings: GenerationChoice): Promise<void> {
     try {
-      const updatedPlan = await planDao.update(plan!.id!, {
-        group_size: settings.maxGroupSize,
-        optimization_style: settings.optimizationStyle ?? plan!.optimization_style
-      });
-      const seededPlan = await PlanGenerator.getInstance().run(updatedPlan, {
-        maxGroupSize: settings.maxGroupSize,
-        minGroupSize: settings.minGroupSize,
-        minOverlapHours: settings.minOverlapHours,
-        optimizationStyle: settings.optimizationStyle,
-        shuffleSeed: settings.shuffleSeed
-      });
+      const seededPlan = await applyPlanSettings(plan!, settings);
       notifications.success(`Plan ${seededPlan.name} updated successfully`);
       setPlan(seededPlan);
       setShowSettings(false);

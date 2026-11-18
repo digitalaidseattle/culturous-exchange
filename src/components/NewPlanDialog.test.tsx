@@ -66,6 +66,8 @@ const renderDialog = (cohort: Cohort = cohortOf(twelveFree()), onClose = vi.fn()
 
 const total = (label: string) => Number(screen.getByText(label).previousElementSibling!.textContent);
 const slider = (name: string) => screen.getByRole("slider", { name }) as HTMLInputElement;
+// what the two bar charts are drawing: the hours of shared time of each group, and its students and countries
+const barCharts = () => screen.getAllByTestId("bar-chart").map(chart => JSON.parse(chart.dataset.props!) as { xAxis: { data: string[] }[], series: { data: number[], label: string }[] });
 const setSlider = (name: string, value: number) => fireEvent.change(slider(name), { target: { value } });
 const optimizeButton = () => screen.getByRole("button", { name: /optimize/i }) as HTMLButtonElement;
 const waitlistTotal = () => total("Waitlisted students");
@@ -197,8 +199,7 @@ describe("NewPlanDialog", () => {
 
         it("titles the group size control \"Group size\", with one slider and a thumb at each end", () => {
             renderDialog();
-            // the setting's title, and the title of the group size chart
-            expect(screen.getAllByText("Group size")).toHaveLength(2);
+            expect(screen.getAllByText("Group size")).toHaveLength(1);
             expect(screen.queryByText("Minimum group size")).toBeNull();
             expect(screen.getAllByRole("slider")).toHaveLength(3);
             expect(slider("Minimum group size").closest(".MuiSlider-root")).toBe(slider("Maximum group size").closest(".MuiSlider-root"));
@@ -274,29 +275,27 @@ describe("NewPlanDialog", () => {
             renderDialog();
             const after = (a: Element, b: Element) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
             const waitlisted = screen.getByText("Waitlisted students");
-            // the Optimize button's icon is an image too, so keep to the charts
-            const charts = screen.getAllByRole("img").filter(image => image.getAttribute("aria-label")!.includes(": Min"));
+            const charts = screen.getAllByTestId("bar-chart");
             expect(after(screen.getByText("Preview"), waitlisted)).toBe(true);
             expect(after(waitlisted, charts[0])).toBe(true);
             expect(after(charts[charts.length - 1], slider("Minimum overlap"))).toBe(true);
             expect(after(slider("Minimum overlap"), slider("Maximum group size"))).toBe(true);
         });
 
-        it("shows the three charts", () => {
+        it("shows the two bar charts, one above the other", () => {
             renderDialog();
-            const charts = screen.getAllByRole("img").map(chart => chart.getAttribute("aria-label")!);
-            expect(charts.some(label => label.startsWith("Group size"))).toBe(true);
-            expect(charts.some(label => label.startsWith("Countries per group"))).toBe(true);
-            expect(charts.some(label => label.startsWith("Time overlap per group"))).toBe(true);
+            expect(screen.getAllByRole("heading", { level: 4 }).map(heading => heading.textContent))
+                .toEqual(["Time Overlap per Group (hrs)", "Students & Countries per Group"]);
+            expect(barCharts()).toHaveLength(2);
         });
 
-        it("shows each group as a dot in each chart, and fewer dots when groups are broken up", () => {
+        it("shows each group as a bar in each chart, and fewer bars when groups are broken up", () => {
             renderDialog();
-            // 2 groups, so 2 dots in each of the 3 charts
-            expect(document.querySelectorAll("circle")).toHaveLength(6);
+            // 2 groups, so 2 bars in each chart
+            expect(barCharts().map(chart => chart.xAxis[0].data)).toEqual([["Group 1", "Group 2"], ["Group 1", "Group 2"]]);
             setSlider("Minimum group size", 7);
             // 1 group left
-            expect(document.querySelectorAll("circle")).toHaveLength(3);
+            expect(barCharts().map(chart => chart.xAxis[0].data)).toEqual([["Group 1"], ["Group 1"]]);
         });
 
         it("updates the groups and the waitlist as the minimum group size changes", () => {
@@ -338,12 +337,12 @@ describe("NewPlanDialog", () => {
             expect(total("Waitlisted students")).toBe(2);
         });
 
-        it("updates the group size chart as the groups change", () => {
+        it("updates the students in each group as the groups change", () => {
             renderDialog();
-            const sizeChart = () => screen.getAllByRole("img").map(c => c.getAttribute("aria-label")!).find(l => l.startsWith("Group size"))!;
-            expect(sizeChart()).toBe("Group size: Min 6 students, Max 6 students");
+            const students = () => barCharts()[1].series.find(series => series.label === "Students")!.data;
+            expect(students()).toEqual([6, 6]);
             setSlider("Minimum group size", 7);
-            expect(sizeChart()).toBe("Group size: Min 10 students, Max 10 students");
+            expect(students()).toEqual([10]);
         });
 
         it("waitlists students who cannot give the minimum overlap", () => {
@@ -358,8 +357,7 @@ describe("NewPlanDialog", () => {
         it("shows the overlap chart in hours of real shared time", () => {
             const students = [student("a", [window(0, "08", "12")]), student("b", [window(0, "08", "12")])];
             renderDialog(cohortOf(students));
-            const overlapChart = screen.getAllByRole("img").map(c => c.getAttribute("aria-label")!).find(l => l.startsWith("Time overlap per group"))!;
-            expect(overlapChart).toBe("Time overlap per group: Min 4 hours, Max 4 hours");
+            expect(barCharts()[0].series).toEqual([{ data: [4], label: "hours" }]);
         });
 
         it("says so when the cohort has no students, and shows an empty plan", () => {
@@ -473,8 +471,7 @@ describe("NewPlanDialog", () => {
             renderDialog();
             const after = (a: Element, b: Element) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
             expect(optimizeButton().disabled).toBe(false);
-            // the Optimize button's icon is an image too, so keep to the charts
-            const charts = screen.getAllByRole("img").filter(image => image.getAttribute("aria-label")!.includes(": Min"));
+            const charts = screen.getAllByTestId("bar-chart");
             expect(after(charts[charts.length - 1], optimizeButton())).toBe(true);
             expect(after(slider("Maximum group size"), optimizeButton())).toBe(true);
         });
@@ -533,9 +530,9 @@ describe("NewPlanDialog", () => {
             const after = waitlistTotal();
             expect(after).toBeLessThan(before);
             expect(screen.getByText(new RegExp(`Found a grouping that waitlists fewer students: from ${before} to ${after}\\.`))).toBeTruthy();
-            // everyone is still counted, and the charts have as many dots as groups
+            // everyone is still counted, and the charts have as many bars as groups
             expect(total("Students")).toBe(30);
-            expect(document.querySelectorAll("circle")).toHaveLength(3 * total("Groups"));
+            expect(barCharts().map(chart => chart.xAxis[0].data.length)).toEqual([total("Groups"), total("Groups")]);
         });
 
         it("says so when no other grouping is better, and leaves the numbers as they were", async () => {

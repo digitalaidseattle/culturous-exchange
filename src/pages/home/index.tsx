@@ -47,7 +47,7 @@ const HomePage: React.FC = () => {
     const others = cohorts.slice(1);
 
     return (
-        <Stack gap={4} sx={{ maxWidth: 720, paddingBottom: 12 }}>
+        <Stack gap={4} sx={{ paddingBottom: 12 }}>
             <WelcomeBanner />
             <GetStartedCard />
             {current &&

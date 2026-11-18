@@ -58,6 +58,8 @@ This section grows as decisions are made. Each numbered change below adds a line
 | 9 | Groups page redesigned: a card for each group, availability calendars, a waitlist side panel, Change group and See details windows, and globes | Built and checked locally, not yet committed | 2026-11-04 |
 | 10 | The team's latest work (the `dev` branch) brought in and reconciled with the redesign | Merged locally, not yet pushed | 2026-11-16 |
 | 11 | Home page lists the current cohort once; the cohort page gets charts of its students, with a globe for countries | Built and checked locally, pull requests open | 2026-11-17 |
+| 12 | MUI charts only: the globe and the dot plots are replaced with MUI X Charts (branch `aidan/onboarding-mui-only`) | Built and checked locally, not pushed | 2026-11-17 |
+| 13 | Each cohort card on the home page shows the same facts and charts as the cohort's page | Built and checked locally, not pushed | 2026-11-17 |
 
 ---
 
@@ -507,3 +509,44 @@ While this redesign was being built, the maintainers kept working on the shared 
 
 - New `src/components/LocationGlobe.tsx` is the globe with its key of countries, taken out of `PlanGroupCard` so a group's card and the cohort page share it (`PlanGroupCard` behaves as before). New `src/pages/cohort/CohortCharts.tsx` uses `@mui/x-charts` for the bar and pie charts. Tests cover both pages' new behavior.
 - Applied the maintainers' migration `000030_cohort_delete_cascade.sql` to the local database with `supabase migration up`.
+
+---
+
+### 12. MUI charts only (branch `aidan/onboarding-mui-only`)
+
+This branch swaps every chart over to one library, MUI X Charts, the one the maintainers already use. **It replaces what Changes 4, 9 and 11 say about the dot plots and the globe.**
+
+**What you will notice:**
+
+- **Plan cards, New Plan and Plan settings show the maintainers' two bar charts, one above the other,** in place of the three dot plots: **Time Overlap per Group (hrs)** (a bar for each group's hours of shared time) and **Students & Countries per Group** (two bars for each group, with a key). Groups are in numeric order (Group 2 before Group 10). The totals (groups, students, waitlisted) are still in their panel, beside the charts when there is room and above them when there is not.
+- **The globe is gone.** A group's card has a **Countries** pie chart where the Location globe was, with a slice for each country and its key. The cohort page's **Students by country** is the same pie chart, beside the age bars and the gender pie. The student's **See details** window shows the city, state, country and time zone as text, with no globe.
+- **The bar charts are shorter, with rounded bars, and the vertical axis ends on a labeled number** at or above the tallest bar (0 to 15 in fives, say), where it used to run on to an unmarked point above the last label.
+- **The gender split bar uses the charts' colors:** Female is the charts' blue and Male their orange (and Other their red), taken from MUI X Charts' own palette, so they match the pies and bars.
+- **The Optimize button is now "Optimize Waitlist"**, and the description under Preview says what it does: "Optimize Waitlist tries 50 configurations based on your settings to find a grouping with a smaller waitlist. The plan is not changed until you press Update Plan." (In the Create New Plan window it ends "Nothing is saved until you create the plan.")
+- The availability calendars are unchanged.
+
+**Technical notes:**
+
+- New `GroupBarChart`, `PlanCharts` (the two bar charts, from the maintainers' `GroupBarChart` in their interactive plan card) and `CountryPieChart` (with `utils/countryCounts`). `planStats` gains `perGroup`, each group's name, students, countries and hours, in numeric order of the names. `utils/chartAxis` picks the ticks of the vertical axis.
+- Removed: `DistributionChart`, `Globe`, `LocationGlobe`, the terrain and place lookup code (`services/geo`), `distribution`, `gradient`, `overlapColors`, `globeColors`, `globeView`, and the packages `d3-geo`, `topojson-client` and `world-atlas` (and their types). The browser no longer looks up city coordinates, which also removes the licence question about the terrain imagery.
+- `vitest.setup.ts` stubs the MUI charts (the test browser cannot draw them): a stub carries the props it was given, so tests check what a chart is drawing, not its pixels.
+- The built page is about 39 kB smaller (gzipped) than with the globe and dot plots, though MUI X Charts remain.
+
+---
+
+### 13. Cohort cards on the home page show the cohort's facts and charts
+
+**What you will notice:**
+
+- **Each cohort card on the home page** (the Current Cohort and every card under All Other Cohorts) now shows what the cohort's own page shows under its name: **Students, Plans, Active plan and Created**, then the three charts, **Students by country** (pie), **Students by age** (bars) and **Students by gender** (pie), then the same buttons as before. A cohort with no students has no charts.
+- **The home page content now fills the width of the window,** with no 960 pixel limit (the same on the cohort page: its summary card, active plan and plan cards fill the window too). The banner, the Get Started card and the cohort cards all have the same width. The three charts in a card (and on the cohort page) are laid out by the width of the card, not of the window: **when all three fit side by side** (a card about 960 pixels wide or more), they are in a row, the countries twice as wide as each of the others; **when they do not,** Students by country goes across the whole width, with Students by age and Students by gender below it splitting the width evenly; and **on a narrow card** the three are one under the next.
+
+**Technical notes:**
+
+- New `src/pages/cohort/CohortFacts.tsx` is the row of facts, now shared by the cohort page and the home card. The home card also uses `CohortCharts`. The cohort list already loads each student, so there is no new query. New tests: `CohortFacts.test.tsx` and `CohortCard.test.tsx`.
+- Later the same day the 960 pixel limit was removed from the home page and the cohort page (see above), which replaces the width given in Changes 3 and 4.
+- **The countries pie fills its panel.** The pie is a fixed size with the chart's own legend right beside it, taking the rest of the width, and the countries flow across in rows that wrap onto new rows, instead of a pie in the middle of the panel and one tall column of countries at the far edge. It is the same on a group's card (a smaller pie, the countries wrapping in the space beside it) and on the cohort page, where the legend takes all the width beside the pie, so the chart fills its panel and no space is left empty. The three charts are side by side from a card about 960 pixels wide, with the countries chart given half the width so its legend has room; only a narrower card puts the countries chart across the whole width, as above.
+- **The countries pie shrinks with the space it is in,** as the gender pie does. It is its full size (200 pixels on the cohort page) when there is room, and as the panel narrows it shrinks to a little over half that (110 pixels), with the legend taking the rest; the legend wraps to more rows as it narrows, and the panel grows to hold it.
+- **The two bar charts on a plan card sit side by side from 960 pixels.** Where the plan summary (the totals and the charts) has 960 pixels or more, the Time Overlap per Group chart and the Students & Countries per Group chart share the width evenly in a row; narrower, as in the Create New Plan and Plan settings windows, they are one above the other. Side by side, the two charts end at the same baseline: the Time Overlap chart, which has no key, grows to be as tall as the other is with its key, so there is no empty strip under it. Stacked, each keeps its own height.
+- **A plan's card has a Plan settings button,** between Edit Students and Open Plan. It opens the same Plan settings window as on the plan page, over the cohort page, so a plan's size limits, least shared time and generation method can be changed, previewed with Optimize Waitlist, and applied with Update Plan without opening the plan. Updating regroups the plan's students and saves it, then the cohort page shows the new numbers and charts; a failure is reported and leaves the window open. The button does not open the plan, as the rest of the card does. The update itself is shared with the plan page (`planSettings.ts`), so both do exactly the same.
+- **The bars of the age chart are rounded,** like the bars of the group charts on a plan card.

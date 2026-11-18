@@ -26,3 +26,16 @@ vi.mock('@digitalaidseattle/supabase', () => ({
 }));
 
 setConfiguration({ supabaseClient: stubSupabaseClient });
+
+// MUI X Charts measure their container and draw with the browser's layout, which the test browser does
+// not have. Stand in for them with a box that carries the props the chart was given, so a test can check
+// what a chart is drawing: `JSON.parse(screen.getByTestId("bar-chart").dataset.props!)`. A test that wants
+// to watch the calls itself mocks the same module again.
+vi.mock('@mui/x-charts/BarChart', async () => {
+  const { createElement } = await import('react');
+  return { BarChart: (props: object) => createElement('div', { 'data-testid': 'bar-chart', 'data-props': JSON.stringify(props) }) };
+});
+vi.mock('@mui/x-charts/PieChart', async () => {
+  const { createElement } = await import('react');
+  return { PieChart: (props: object) => createElement('div', { 'data-testid': 'pie-chart', 'data-props': JSON.stringify(props) }) };
+});

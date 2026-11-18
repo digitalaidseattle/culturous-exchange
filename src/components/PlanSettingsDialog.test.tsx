@@ -12,6 +12,7 @@ vi.mock("@digitalaidseattle/core", () => ({ useNotifications: () => notification
 
 import { Placement, Plan, Student, TimeWindow } from "../api/types";
 import { CETimeWindowService, DEFAULT_TIMEZONE } from "../services/time/ceTimeWindowService";
+import { ARRANGEMENTS_TO_COMPARE } from "../services/plan/planGeneration";
 import PlanSettingsDialog from "./PlanSettingsDialog";
 
 const service = CETimeWindowService.getInstance();
@@ -89,10 +90,9 @@ describe("PlanSettingsDialog", () => {
     it("Optimize only changes the preview: it does not update the plan", async () => {
         const { onSubmit } = renderDialog();
         fireEvent.click(button(/optimize/i));
-        await waitFor(() => expect(screen.getByText(/waitlist/i, { selector: "span" })).toBeTruthy(), { timeout: 5000 });
+        await waitFor(() => expect(screen.getByText(/No other grouping waitlisted fewer students than 0\./)).toBeTruthy(), { timeout: 5000 });
         await waitFor(() => expect(button(/optimize/i).disabled).toBe(false), { timeout: 5000 });
         expect(onSubmit).not.toHaveBeenCalled();
-        expect(screen.getByText(/No other grouping waitlisted fewer students than 0\./)).toBeTruthy();
     });
 
     it("Update plan hands over the settings, and the arrangement Optimize chose, and stays busy until done", async () => {
@@ -134,6 +134,23 @@ describe("PlanSettingsDialog", () => {
         rerender(<PlanSettingsDialog plan={planOf(6)} isOpen onClose={vi.fn()} onSubmit={vi.fn()} />);
         expect(slider("Maximum group size").value).toBe("6");
         expect(screen.getByText(/This is the plan as it is now/)).toBeTruthy();
+    });
+
+    it("names the button Optimize Waitlist", () => {
+        renderDialog();
+        expect(button(/optimize waitlist/i).textContent).toMatch(/Optimize Waitlist$/);
+    });
+
+    it("says under Preview what Optimize Waitlist does, and that the plan is not changed until Update Plan", () => {
+        renderDialog();
+        const help = screen.getByText(/Optimize Waitlist tries \d+ configurations/);
+        expect(help.textContent).toMatch(/tries 50 configurations based on your settings to find a grouping with a smaller waitlist/);
+        expect(help.textContent).toMatch(/not changed until you press Update Plan/);
+    });
+
+    it("says it tries as many configurations as Optimize compares", () => {
+        renderDialog();
+        expect(screen.getByText(/Optimize Waitlist tries/).textContent).toContain(`tries ${ARRANGEMENTS_TO_COMPARE} configurations`);
     });
 
     it("says that updating replaces moves made by hand", () => {

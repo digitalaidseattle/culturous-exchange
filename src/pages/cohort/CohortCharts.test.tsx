@@ -12,13 +12,10 @@ const pie = vi.hoisted(() => vi.fn());
 // the charts draw with the browser's layout; stand in for them, to see what they are given
 vi.mock("@mui/x-charts/BarChart", () => ({ BarChart: (props: object) => { bar(props); return <div data-testid="bar-chart" />; } }));
 vi.mock("@mui/x-charts/PieChart", () => ({ PieChart: (props: object) => { pie(props); return <div data-testid="pie-chart" />; } }));
-// cities are looked up over the network; nothing is placed here
-vi.mock("../../services/geo/usePlaceCoordinates", () => ({
-    usePlaceCoordinates: () => ({ coordinates: new Map(), missing: 0, loading: false })
-}));
 
 import { Cohort, Enrollment, Student } from "../../api/types";
-import { CohortCharts } from "./CohortCharts";
+import { BAR_RADIUS } from "../../components/GroupBarChart";
+import { COUNTRIES_CHART_MIN_WIDTH, CohortCharts, THREE_ACROSS_WIDTH, TWO_ACROSS_WIDTH } from "./CohortCharts";
 
 const enrollment = (id: string, country: string, extra: Partial<Student> = {}): Enrollment =>
     ({ cohort_id: "c", student_id: id, anchor: false, student: { id, name: id, city: "City", country, ...extra } as Student }) as Enrollment;
@@ -47,18 +44,24 @@ describe("CohortCharts", () => {
             expect(within(region).getByRole("heading", { name: title })).toBeTruthy());
     });
 
-    it("shows where the students are from on the globe, with a key of the countries and how many", () => {
-        render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
-        expect(screen.getByRole("img", { name: /^Fall 2026 cities/ })).toBeTruthy();
-        const countries = within(screen.getByRole("list", { name: "Fall 2026 countries" })).getAllByRole("listitem").map(li => li.textContent);
-        expect(countries).toEqual(["Peru 2", "Egypt 2"]);
+    it("shows where the students are from as a pie chart of the countries, most students first", () => {
+        render(<CohortCharts cohort={cohortOf([...ENROLLED, enrollment("e", "peru ", { age: 16, gender: "Female" })])} />);
+        const country = screen.getByRole("region", { name: "Students by country" });
+        expect(within(country).getAllByTestId("pie-chart")).toHaveLength(1);
+        const [countries] = pie.mock.calls.map(call => call[0] as { series: { data: { label: string, value: number }[] }[] });
+        // Peru is counted once however it was typed, and is spelled as first typed
+        expect(countries.series[0].data.map(({ label, value }) => [label, value])).toEqual([["Peru", 3], ["Egypt", 2]]);
     });
 
-    it("draws no pie chart of countries: the globe is where that is shown", () => {
+    it("has no globe: the countries are only a pie chart", () => {
         render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
-        // one pie, for gender
-        expect(pie).toHaveBeenCalledTimes(1);
-        expect(screen.getAllByTestId("pie-chart")).toHaveLength(1);
+        expect(screen.queryByRole("img", { name: /cities/ })).toBeNull();
+    });
+
+    it("draws two pie charts, one for the countries and one for gender", () => {
+        render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+        expect(pie).toHaveBeenCalledTimes(2);
+        expect(screen.getAllByTestId("pie-chart")).toHaveLength(2);
     });
 
     it("charts the ages from youngest, each with its number of students, and leaves out students with no age", () => {
@@ -68,9 +71,16 @@ describe("CohortCharts", () => {
         expect(props.series[0].data).toEqual([1, 2]);
     });
 
+    it("rounds the bars of the age chart, as the group bar charts do", () => {
+        render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+        const props = bar.mock.calls[0][0] as { borderRadius: number };
+        expect(props.borderRadius).toBe(BAR_RADIUS);
+        expect(BAR_RADIUS).toBeGreaterThan(0);
+    });
+
     it("charts the genders, most first, with students who gave none as Unknown", () => {
         render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
-        const props = pie.mock.calls[0][0] as { series: { data: { label: string, value: number }[] }[] };
+        const props = pie.mock.calls[1][0] as { series: { data: { label: string, value: number }[] }[] };
         expect(props.series[0].data.map(({ label, value }) => [label, value])).toEqual([["Female", 2], ["Male", 1], ["Unknown", 1]]);
     });
 
@@ -79,5 +89,67 @@ describe("CohortCharts", () => {
         expect(screen.queryByRole("heading", { name: "Students by age" })).toBeNull();
         expect(bar).not.toHaveBeenCalled();
         expect(screen.getByRole("heading", { name: "Students by gender" })).toBeTruthy();
+    });
+
+    describe("layout", () => {
+        // container queries are not run by the test browser, so these check what is in the page and its styles
+        const allCss = () => Array.from(document.querySelectorAll("style")).map(style => style.textContent).join("\n");
+        const grid = () => screen.getByRole("region", { name: "Cohort charts" });
+        const panel = (title: string) => screen.getByRole("region", { name: title });
+        // jsdom writes "1 / -1" as "1/-1"
+        const column = (title: string) => getComputedStyle(panel(title)).gridColumn.replace(/\s/g, "");
+
+        it("measures the space it is in, not the screen", () => {
+            render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+            expect(allCss()).toContain("container-type:inline-size");
+            expect(grid().parentElement!.parentElement).not.toBeNull();
+        });
+
+        it("has the countries first, then the age and the gender, in a grid", () => {
+            render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+            expect(Array.from(grid().children).map(child => child.getAttribute("data-part"))).toEqual(["country", "age", "gender"]);
+            expect(getComputedStyle(grid()).display).toBe("grid");
+        });
+
+        it("has the three charts one under the next to begin with", () => {
+            render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+            expect(allCss()).toMatch(/grid-template-columns:minmax\(0, 1fr\)/);
+        });
+
+        it("puts the age and the gender charts side by side, splitting the width evenly, once they have room", () => {
+            render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+            expect(TWO_ACROSS_WIDTH).toBe(2 * 240 + 16);
+            expect(allCss()).toMatch(new RegExp("@container \\(min-width: " + TWO_ACROSS_WIDTH + "px\\)\\{[^}]*grid-template-columns:repeat\\(2, minmax\\(0, 1fr\\)\\)"));
+        });
+
+        it("has the countries chart across the whole width until all three fit side by side", () => {
+            render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+            const css = allCss();
+            // the countries span every column ...
+            expect(column("Students by country")).toBe("1/-1");
+            // ... except at the width where all three fit
+            expect(css).toMatch(new RegExp("@container \\(min-width: " + THREE_ACROSS_WIDTH + "px\\)\\{[^}]*grid-column:auto"));
+            // the age and gender charts are one column each, not spanning
+            expect(column("Students by age")).not.toBe("1/-1");
+            expect(column("Students by gender")).not.toBe("1/-1");
+        });
+
+        it("puts all three side by side from the width that gives the countries chart room for its pie and key", () => {
+            render(<CohortCharts cohort={cohortOf(ENROLLED)} />);
+            expect(THREE_ACROSS_WIDTH).toBeGreaterThan(TWO_ACROSS_WIDTH);
+            // the countries get half of what is left after the two gaps, and that must hold the pie and its legend
+            expect((THREE_ACROSS_WIDTH - 32) / 2).toBeGreaterThanOrEqual(COUNTRIES_CHART_MIN_WIDTH);
+            // and the width is no larger than that needs
+            expect((THREE_ACROSS_WIDTH - 32) / 2).toBeLessThan(COUNTRIES_CHART_MIN_WIDTH + 10);
+            expect(allCss()).toMatch(new RegExp("@container \\(min-width: " + THREE_ACROSS_WIDTH + "px\\)\\{[^}]*grid-template-columns:minmax\\(0, 2fr\\) minmax\\(0, 1fr\\) minmax\\(0, 1fr\\)"));
+        });
+
+        it("with no ages, has the countries and the gender, and the gender takes the full width below the countries", () => {
+            render(<CohortCharts cohort={cohortOf([enrollment("a", "Peru"), enrollment("b", "Egypt")])} />);
+            expect(Array.from(grid().children).map(child => child.getAttribute("data-part"))).toEqual(["country", "gender"]);
+            expect(column("Students by gender")).toBe("1/-1");
+            // side by side only from the width where the three would have fit, in two columns
+            expect(allCss()).toMatch(new RegExp("@container \\(min-width: " + THREE_ACROSS_WIDTH + "px\\)\\{[^}]*grid-template-columns:minmax\\(0, 2fr\\) minmax\\(0, 1fr\\)(?! minmax)"));
+        });
     });
 });

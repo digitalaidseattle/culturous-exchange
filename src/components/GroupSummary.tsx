@@ -7,14 +7,21 @@
  *  @copyright 2026 Digital Aid Seattle
  *
  */
-import { Box, Stack, SxProps, Theme, Typography } from "@mui/material";
+import { Box, Stack, SxProps, Theme, Typography, useTheme } from "@mui/material";
+import { rainbowSurgePalette } from "@mui/x-charts/colorPalettes";
 import { UI_STRINGS } from "../constants";
 import { GenderKind, GenderSplit } from "../services/plan/groupFit";
 import { insetPanelSx } from "../utils/styles";
 import { formatHours } from "../utils/weekendGrid";
 
-/** Soft colors for the bar, in the same family as the globe's dots. */
-const GENDER_COLORS: Record<GenderKind, string> = { female: '#e59ab8', male: '#7fb0e6', other: '#b9a8e0' };
+/**
+ * The colors for the bar are the first three of MUI X Charts' own palette, as its pie charts take them (blue, orange,
+ * red), so the bar matches the charts; they follow the theme's light or dark mode, as the charts do.
+ */
+const genderColors = (mode: 'light' | 'dark'): Record<GenderKind, string> => {
+    const [female, male, other] = rainbowSurgePalette(mode);
+    return { female, male, other };
+};
 const GENDER_LABELS: Record<GenderKind, string> = {
     female: UI_STRINGS.GENDER_FEMALE,
     male: UI_STRINGS.GENDER_MALE,
@@ -45,6 +52,7 @@ export type GroupSummaryProps = {
 export const GroupSummary: React.FC<GroupSummaryProps> = ({ studentCount, countryCount, sharedHours, gender, sx }) => {
     // "1 hour", "6 hours" or "45 minutes": the number is big, and the unit is its label
     const [hours, unit] = formatHours(sharedHours).split(' ');
+    const colors = genderColors(useTheme().palette.mode);
     const total = gender.reduce((sum, part) => sum + part.count, 0);
     const parts = gender.filter(part => part.count > 0);
     const describe = parts.map(part => `${part.count} ${GENDER_LABELS[part.kind].toLowerCase()}`).join(', ');
@@ -80,14 +88,14 @@ export const GroupSummary: React.FC<GroupSummaryProps> = ({ studentCount, countr
                             key={part.kind}
                             data-gender={part.kind}
                             data-count={part.count}
-                            sx={{ flex: `${part.count} 1 0`, bgcolor: GENDER_COLORS[part.kind] }} />
+                            sx={{ flex: `${part.count} 1 0`, bgcolor: colors[part.kind] }} />
                     )}
                 </Box>
                 {total > 0 &&
                     <Stack direction="row" flexWrap="wrap" columnGap={1.5} rowGap={0.25} component="ul" aria-label="Gender counts" sx={{ listStyle: 'none', m: 0, p: 0, mt: 0.75 }}>
                         {parts.map(part =>
                             <Box component="li" key={part.kind} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                <Box aria-hidden="true" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: GENDER_COLORS[part.kind] }} />
+                                <Box aria-hidden="true" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: colors[part.kind] }} />
                                 <Typography variant="caption">{GENDER_LABELS[part.kind]} <strong>{part.count}</strong></Typography>
                             </Box>
                         )}

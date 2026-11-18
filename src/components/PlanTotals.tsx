@@ -5,13 +5,10 @@
  *  Inside a PlanSummary they take one of two shapes, by the width of the space:
  *
  *  - a row, each label under its number (the default: above the charts when there is no
- *    room to put the totals beside them, and above the stacked charts when two charts do
- *    not fit side by side);
- *  - a column, each label to the right of its number, when the panel sits in the grid with
- *    the charts: as a cell in a 2 by 2 grid when two charts fit side by side but three do
- *    not, or to the left of all three charts when there is room. Each number and its
- *    label are centered together in the panel, and "Waitlisted students" wraps onto two
- *    lines.
+ *    room to put the totals beside them);
+ *  - a column, each label to the right of its number, to the left of the charts when there is
+ *    room. Each number and its label are centered together in the panel, and "Waitlisted
+ *    students" wraps onto two lines.
  *
  *  @copyright 2026 Digital Aid Seattle
  *
@@ -20,32 +17,22 @@ import { Box, Stack, SxProps, Theme, Typography } from "@mui/material";
 import { UI_STRINGS } from "../constants";
 import { insetPanelSx } from "../utils/styles";
 
-/**
- * How wide the space must be, in pixels, for two charts side by side at their narrowest, with the
- * gap. From here the totals stack in a column and form a 2 by 2 grid with the three charts. Below
- * it the totals and each chart are stacked in one column.
- */
-export const TWO_CHARTS_WIDTH = 416;
+/** The narrowest a chart is drawn, in pixels, and the least width of the totals' column. */
+export const CHART_MIN_WIDTH = 360;
+export const TOTALS_COLUMN_WIDTH = 210;
 
 /**
- * How wide the space must be before all three charts fit side by side, at their narrowest with the
- * gaps. From here the totals are in a row above the charts, until there is room to put them beside.
+ * How wide the space must be before the totals move to the left of the charts: a column for them
+ * (labels beside the numbers), the gap, and room for the charts. Below it the totals are a row
+ * above the charts.
  */
-export const THREE_CHARTS_WIDTH = 632;
+export const TOTALS_BESIDE_WIDTH = TOTALS_COLUMN_WIDTH + 16 + CHART_MIN_WIDTH;
 
-/**
- * How wide the space must be before the totals move to the left of the three charts: a column
- * for them (labels beside the numbers), the gap, and room for the three charts.
- */
-export const TOTALS_BESIDE_WIDTH = 840;
-
-// two charts fit side by side but three do not
-const MIDDLE = `@container (min-width: ${TWO_CHARTS_WIDTH}px) and (max-width: ${THREE_CHARTS_WIDTH - 0.02}px)`;
-// room to put the totals to the left of the three charts
+// room to put the totals to the left of the charts
 const BESIDE = `@container (min-width: ${TOTALS_BESIDE_WIDTH}px)`;
 
-/** The same styles in the two cases where the totals are a column. */
-const inColumn = (styles: Record<string, unknown>) => ({ [MIDDLE]: styles, [BESIDE]: styles });
+/** The styles for when the totals are a column. */
+const inColumn = (styles: Record<string, unknown>) => ({ [BESIDE]: styles });
 
 const TotalStat = (props: { value: number, label: string }) => (
     <Stack
