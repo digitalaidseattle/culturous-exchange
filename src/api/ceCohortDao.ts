@@ -4,11 +4,10 @@
  *  @copyright 2026 Digital Aid Seattle
  *
  */
+import { SupabaseConfiguration, SupabaseDAO } from "@digitalaidseattle/supabase";
 
 import { SERVICE_ERRORS } from '../constants';
 import { CEEnrollmentDao } from './ceEnrollmentDao';
-import { getSupabaseClient } from './Configuration';
-import { SupabaseDao } from './SupabaseDao';
 import { Cohort } from "./types";
 
 const DEFAULT_SELECT = '*, enrollment(*, student(*, timewindow(*))), plan(*)';
@@ -32,12 +31,20 @@ function ENTITY_2_JSON(entity: Partial<Cohort>): any {
     return json;
 }
 
-export class CECohortDao extends SupabaseDao<Cohort> {
+export class CECohortDao extends SupabaseDAO<Cohort> {
     private static instance: CECohortDao;
 
     static getInstance() {
         if (!CECohortDao.instance) {
-            CECohortDao.instance = new CECohortDao(getSupabaseClient(), 'cohort', { select: DEFAULT_SELECT });
+            const supabaseClient = SupabaseConfiguration.getInstance().getSupabaseClient();
+            CECohortDao.instance = new CECohortDao(
+                supabaseClient,
+                'cohort',
+                {
+                    select: DEFAULT_SELECT,
+                    mapper: JSON_2_ENTITY
+                }
+            );
         }
         return CECohortDao.instance;
     }
@@ -54,7 +61,7 @@ export class CECohortDao extends SupabaseDao<Cohort> {
         try {
             return this.client
                 .from(this.tableName)
-                .select(this.getSelect())
+                .select(this.getSelect({}))
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .single()

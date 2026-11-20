@@ -234,7 +234,7 @@ const StudentsDetailsTable: React.FC = () => {
       headerName: UI_STRINGS.TIME_SLOTS_LABEL,
       width: 200,
       renderCell: (params) => {
-        return <TimeSlots timeWindows={params.row.timeWindows} />
+        return <TimeSlots timeWindows={params.row.timeWindows ?? []} />
       },
       filterable: false,
       sortable: false,

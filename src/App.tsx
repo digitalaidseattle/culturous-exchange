@@ -28,7 +28,6 @@ import {
 import { Config } from './Config';
 
 import "./App.css";
-import { setConfiguration } from './api/Configuration';
 
 // ==============================|| APP - THEME, ROUTER, LOCAL  ||============================== //
 
@@ -38,8 +37,6 @@ SupabaseConfiguration.props({
   supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
   anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY
 });
-const supabaseClient = SupabaseConfiguration.getInstance().getSupabaseClient();
-setConfiguration({ supabaseClient });
 
 const authService = SupabaseAuthService.getInstance();
 const storageService = SupabaseStorageService.getInstance();

@@ -4,10 +4,10 @@
  * @copyright 2026 Digital Aid Seattle
  *
  */
+import { SupabaseConfiguration, SupabaseDAO } from "@digitalaidseattle/supabase";
+
 import { CETimeWindowDao } from './ceTimeWindowDao';
-import { SupabaseDao } from './SupabaseDao';
 import { Cohort, Student } from "./types";
-import { getSupabaseClient } from './Configuration';
 
 const DEFAULT_SELECT = '*, timewindow(*)';
 
@@ -27,12 +27,17 @@ function JSON_2_ENTITY(json: any): Student {
   return student
 }
 
-class CEStudentDao extends SupabaseDao<Student> {
+class CEStudentDao extends SupabaseDAO<Student> {
   private static instance: CEStudentDao;
 
   static getInstance() {
     if (!CEStudentDao.instance) {
-      CEStudentDao.instance = new CEStudentDao(getSupabaseClient(), 'student', { select: DEFAULT_SELECT });
+      CEStudentDao.instance = new CEStudentDao(SupabaseConfiguration.getInstance().getSupabaseClient(),
+        'student',
+        {
+          select: DEFAULT_SELECT,
+          mapper: ENTITY_2_JSON
+        });
     }
     return CEStudentDao.instance;
   }

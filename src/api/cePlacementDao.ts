@@ -4,23 +4,27 @@
  *  @copyright 2026 Digital Aid Seattle
  *
  */
+import { SupabaseConfiguration, SupabaseDAO } from "@digitalaidseattle/supabase";
 
 import { Identifier } from "@digitalaidseattle/core";
 import { SERVICE_ERRORS } from '../constants';
-import { SupabaseDao } from "./SupabaseDao";
 import { CEStudentDao } from "./ceStudentDao";
 import { Placement, Plan, Student } from "./types";
-import { getSupabaseClient } from "./Configuration";
 
 const DEFAULT_SELECT = '*, student(*, timewindow(*))';
 
-export class CEPlacementDao extends SupabaseDao<Placement> {
+export class CEPlacementDao extends SupabaseDAO<Placement> {
 
   private static instance: CEPlacementDao;
 
   static getInstance() {
     if (!CEPlacementDao.instance) {
-      CEPlacementDao.instance = new CEPlacementDao(getSupabaseClient(), 'placement', { select: DEFAULT_SELECT });
+      CEPlacementDao.instance = new CEPlacementDao(
+        SupabaseConfiguration.getInstance().getSupabaseClient(),
+        'placement',
+        {
+          select: DEFAULT_SELECT
+        });
     }
     return CEPlacementDao.instance;
   }
@@ -53,7 +57,7 @@ export class CEPlacementDao extends SupabaseDao<Placement> {
       .update(this.mapEntity(updatedFields))
       .eq('plan_id', planId)
       .eq('student_id', studentId)
-      .select(this.getSelect())
+      .select(this.getSelect({}))
       .single();
     if (error) {
       console.error(SERVICE_ERRORS.ERROR_UPDATING_ENTITY, error.message);
@@ -66,7 +70,7 @@ export class CEPlacementDao extends SupabaseDao<Placement> {
   async findByPlan(planId: Identifier): Promise<Placement[]> {
     return await this.client
       .from(this.tableName)
-      .select(this.getSelect())
+      .select(this.getSelect({}))
       .eq('plan_id', planId)
       .then((resp: any) => resp.data.map((json: any) => this.mapJson(json)))
   }

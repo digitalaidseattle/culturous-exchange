@@ -4,22 +4,21 @@
  *  @copyright 2026 Digital Aid Seattle
  *
  */
+import { SupabaseConfiguration, SupabaseDAO } from "@digitalaidseattle/supabase";
 
 import { Identifier } from "@digitalaidseattle/core";
 import { SERVICE_ERRORS } from '../constants';
 import { CEStudentDao } from "./ceStudentDao";
-import { getSupabaseClient } from "./Configuration";
-import { SupabaseDao } from "./SupabaseDao";
 import { Cohort, Enrollment, Student } from "./types";
 
 const DEFAULT_SELECT = '*, student(*, timewindow(*))';
 
-export class CEEnrollmentDao extends SupabaseDao<Enrollment> {
+export class CEEnrollmentDao extends SupabaseDAO<Enrollment> {
     private static instance: CEEnrollmentDao;
 
     static getInstance() {
         if (!CEEnrollmentDao.instance) {
-            CEEnrollmentDao.instance = new CEEnrollmentDao(getSupabaseClient(), 'enrollment', { select: DEFAULT_SELECT });
+            CEEnrollmentDao.instance = new CEEnrollmentDao(SupabaseConfiguration.getInstance().getSupabaseClient(), 'enrollment', { select: DEFAULT_SELECT });
         }
         return CEEnrollmentDao.instance;
     }
@@ -49,7 +48,7 @@ export class CEEnrollmentDao extends SupabaseDao<Enrollment> {
                 .update(updatedFields)
                 .eq('cohort_id', cohortId)
                 .eq('student_id', studentId)
-                .select(this.getSelect())
+                .select(this.getSelect({}))
                 .single();
             if (error) {
                 console.error(SERVICE_ERRORS.ERROR_UPDATING_ENTITY, error.message);
@@ -66,7 +65,7 @@ export class CEEnrollmentDao extends SupabaseDao<Enrollment> {
     async getStudents(cohort: Cohort): Promise<Student[]> {
         return await this.client
             .from(this.tableName)
-            .select(this.getSelect())
+            .select(this.getSelect({}))
             .eq('cohort_id', cohort.id)
             .then((resp: any) => {
                 return resp.data!
@@ -99,7 +98,7 @@ export class CEEnrollmentDao extends SupabaseDao<Enrollment> {
             const { data, error } = await this.client
                 .from(this.tableName)
                 .insert(entities.map(e => this.mapEntity(e)))
-                .select(this.getSelect());
+                .select(this.getSelect({}));
             if (error) {
                 console.error(SERVICE_ERRORS.ERROR_INSERTING_ENTITY, error);
                 throw new Error(SERVICE_ERRORS.FAILED_INSERT_ENTITY_PREFIX + error.message);

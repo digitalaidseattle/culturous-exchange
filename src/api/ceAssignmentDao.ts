@@ -3,9 +3,9 @@
  * 
  *  @copyright 2026 Digital Aid Seattle
  */
+import { SupabaseConfiguration, SupabaseDAO } from "@digitalaidseattle/supabase";
+
 import { CEFacilitatorDao } from './ceFacilitatorDao';
-import { getSupabaseClient } from './Configuration';
-import { SupabaseDao } from './SupabaseDao';
 import { Assignment } from './types';
 
 const DEFAULT_SELECT = '*, facilitators(*, timewindow(*))';
@@ -29,19 +29,20 @@ function ENTITY_2_JSON(entity: Assignment): any {
   return json;
 }
 
-export class CEAssignmentDao extends SupabaseDao<Assignment> {
+export class CEAssignmentDao extends SupabaseDAO<Assignment> {
 
   private static instance: CEAssignmentDao;
 
   static getInstance() {
     if (!CEAssignmentDao.instance) {
-      CEAssignmentDao.instance = new CEAssignmentDao(getSupabaseClient(), 'assignment', { select: DEFAULT_SELECT });
+      CEAssignmentDao.instance = new CEAssignmentDao(SupabaseConfiguration.getInstance().getSupabaseClient(),
+        'assignment',
+        {
+          select: DEFAULT_SELECT,
+          mapper: JSON_2_ENTITY
+        });
     }
     return CEAssignmentDao.instance;
-  }
-
-  mapJson(json: any): Assignment {
-    return JSON_2_ENTITY(json);
   }
 
   mapEntity(entity: Assignment): any {
