@@ -49,10 +49,6 @@ export class CECohortDao extends SupabaseDAO<Cohort> {
         return CECohortDao.instance;
     }
 
-    mapJson(json: any): Cohort {
-        return JSON_2_ENTITY(json);
-    }
-
     mapEntity(entity: Cohort): any {
         return ENTITY_2_JSON(entity);
     }

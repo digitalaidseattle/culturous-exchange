@@ -13,6 +13,17 @@ import { Placement, Plan, Student } from "./types";
 
 const DEFAULT_SELECT = '*, student(*, timewindow(*))';
 
+function JSON_2_ENTITY(json: any): Placement {
+  const student = CEStudentDao.getInstance().mapJson(json.student);
+  const mapped = {
+    ...json,
+    id: `${json.plan_id}:${json.student_id}`,
+    student: student,
+    anchor: json.anchor ?? false
+  }
+  return mapped;
+}
+
 export class CEPlacementDao extends SupabaseDAO<Placement> {
 
   private static instance: CEPlacementDao;
@@ -23,21 +34,11 @@ export class CEPlacementDao extends SupabaseDAO<Placement> {
         SupabaseConfiguration.getInstance().getSupabaseClient(),
         'placement',
         {
-          select: DEFAULT_SELECT
+          select: DEFAULT_SELECT,
+          mapper: JSON_2_ENTITY
         });
     }
     return CEPlacementDao.instance;
-  }
-
-  mapJson(json: any): Placement {
-    const student = CEStudentDao.getInstance().mapJson(json.student);
-    const mapped = {
-      ...json,
-      id: `${json.plan_id}:${json.student_id}`,
-      student: student,
-      anchor: json.anchor ?? false
-    }
-    return mapped;
   }
 
   mapEntity(entity: Partial<Placement>): any {

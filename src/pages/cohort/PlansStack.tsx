@@ -3,7 +3,7 @@
  * 
  * Example of integrating tickets with data-grid
  */
-import { useContext, useEffect } from 'react';
+import { useContext } from 'react';
 
 // material-ui
 import {

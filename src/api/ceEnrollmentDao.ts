@@ -13,24 +13,30 @@ import { Cohort, Enrollment, Student } from "./types";
 
 const DEFAULT_SELECT = '*, student(*, timewindow(*))';
 
+function JSON_2_ENTITY(json: any): Enrollment {
+    const student = CEStudentDao.getInstance().mapJson(json.student);
+    const mapped = {
+        ...json,
+        id: `${json.cohort_id}:${json.student_id}`,
+        student: student,
+    }
+    return mapped;
+}
+
+
 export class CEEnrollmentDao extends SupabaseDAO<Enrollment> {
     private static instance: CEEnrollmentDao;
 
     static getInstance() {
         if (!CEEnrollmentDao.instance) {
-            CEEnrollmentDao.instance = new CEEnrollmentDao(SupabaseConfiguration.getInstance().getSupabaseClient(), 'enrollment', { select: DEFAULT_SELECT });
+            CEEnrollmentDao.instance = new CEEnrollmentDao(SupabaseConfiguration.getInstance().getSupabaseClient(),
+                'enrollment',
+                {
+                    select: DEFAULT_SELECT,
+                    mapper: JSON_2_ENTITY
+                });
         }
         return CEEnrollmentDao.instance;
-    }
-
-    mapJson(json: any): Enrollment {
-        const student = CEStudentDao.getInstance().mapJson(json.student);
-        const mapped = {
-            ...json,
-            id: `${json.cohort_id}:${json.student_id}`,
-            student: student,
-        }
-        return mapped;
     }
 
     mapEntity(entity: Partial<Enrollment>): any {

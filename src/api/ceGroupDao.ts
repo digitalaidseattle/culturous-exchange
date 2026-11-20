@@ -52,10 +52,6 @@ export class CEGroupDao extends SupabaseDAO<Group> {
     return CEGroupDao.instance;
   }
 
-  mapJson(json: any): Group {
-    return JSON_2_ENTITY(json);
-  }
-
   mapEntity(entity: Partial<Group>): any {
     return ENTITY_2_JSON(entity);
   }

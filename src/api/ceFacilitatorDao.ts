@@ -61,10 +61,6 @@ class CEFacilitatorDao extends SupabaseDAO<Facilitator> {
     return ENTITY_2_JSON(entity);
   }
 
-  mapJson(json: any): Facilitator {
-    return JSON_2_ENTITY(json);
-  }
-
   async findActive(isActive: boolean): Promise<Facilitator[]> {
     return await this.client
       .from(this.tableName)

@@ -58,10 +58,6 @@ export class CEPlanDao extends SupabaseDAO<Plan> {
     return CEPlanDao.instance;
   }
 
-  mapJson(json: any): Plan {
-    return JSON_2_ENTITY(json);
-  }
-
   mapEntity(entity: Plan): any {
     return ENTITY_2_JSON(entity);
   }

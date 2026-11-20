@@ -36,15 +36,10 @@ class CEStudentDao extends SupabaseDAO<Student> {
         'student',
         {
           select: DEFAULT_SELECT,
-          mapper: ENTITY_2_JSON
+          mapper: JSON_2_ENTITY
         });
     }
     return CEStudentDao.instance;
-  }
-
-
-  mapJson(json: any): Student {
-    return JSON_2_ENTITY(json)
   }
 
   mapEntity(student: Partial<Student>): any {
