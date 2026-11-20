@@ -23,7 +23,7 @@ import {
 // DAS
 import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { ConfirmationDialog } from '@digitalaidseattle/mui';
-import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
+import { PageInfo, QueryModel } from '@digitalaidseattle/core';
 
 // Culturous
 import { CEFacilitatorDao } from '../../api/ceFacilitatorDao';

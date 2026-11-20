@@ -26,7 +26,7 @@ import { StarFilled } from "@ant-design/icons";
 // project import
 import { RefreshContext, useNotifications } from "@digitalaidseattle/core";
 import { ConfirmationDialog } from "@digitalaidseattle/mui";
-import { PageInfo } from "@digitalaidseattle/supabase";
+import { PageInfo } from "@digitalaidseattle/core";
 
 import { CohortContext } from ".";
 import { CEStudentDao } from "../../api/ceStudentDao";

@@ -6,8 +6,7 @@
  */
 import { SupabaseClient } from "@supabase/supabase-js";
 
-import { Entity, Identifier } from "@digitalaidseattle/core";
-import { PageInfo, QueryModel, supabaseClient } from "@digitalaidseattle/supabase";
+import { Entity, Identifier, PageInfo, QueryModel } from "@digitalaidseattle/core";
 
 export type DataAccessOptions = {
   count?: number;
@@ -50,7 +49,7 @@ export abstract class SupabaseDao<T extends Entity> {
   async find(queryModel: QueryModel, opts?: DataAccessOptions): Promise<PageInfo<T>> {
     try {
 
-      let query: any = supabaseClient
+      let query: any = this.client
         .from(this.tableName)
         .select(this.getSelect(opts), { count: 'exact' })
         .range(queryModel.page * queryModel.pageSize, (queryModel.page + 1) * queryModel.pageSize - 1)
@@ -220,7 +219,7 @@ export abstract class SupabaseDao<T extends Entity> {
       const json = this.mapEntity(entity);
       const select = this.getSelect(opts);
 
-      const { data, error } = await supabaseClient
+      const { data, error } = await this.client
         .from(this.tableName)
         .upsert([json])
         .select(select)

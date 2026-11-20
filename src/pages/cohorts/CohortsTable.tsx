@@ -22,7 +22,7 @@ import {
 // project import
 import { LoadingContext, RefreshContext } from '@digitalaidseattle/core';
 import { MainCard } from '@digitalaidseattle/mui';
-import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
+import { PageInfo, QueryModel } from '@digitalaidseattle/core';
 import { useNavigate } from 'react-router';
 import { CECohortDao } from '../../api/ceCohortDao';
 import { Cohort, Plan } from '../../api/types';

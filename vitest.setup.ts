@@ -9,3 +9,8 @@ vi.mock('@digitalaidseattle/supabase', () => ({
     }
   })),
 }));
+
+// DAOs pull their client from the app Configuration; tests stub the calls they need.
+import { SupabaseClient } from '@supabase/supabase-js';
+import { setConfiguration } from './src/api/Configuration';
+setConfiguration({ supabaseClient: {} as SupabaseClient });
