@@ -6,10 +6,10 @@
  */
 
 import { Identifier } from "@digitalaidseattle/core";
+import { SupabaseConfiguration, SupabaseDAO } from "@digitalaidseattle/supabase";
+
 import { SERVICE_ERRORS } from '../constants';
-import { SupabaseDao } from "./SupabaseDao";
 import { TimeWindow } from "./types";
-import { getSupabaseClient } from "./Configuration";
 
 function JSON_2_ENTITY(json: any): TimeWindow {
   return {
@@ -19,18 +19,19 @@ function JSON_2_ENTITY(json: any): TimeWindow {
   }
 }
 
-class CETimeWindowDao extends SupabaseDao<TimeWindow> {
+class CETimeWindowDao extends SupabaseDAO<TimeWindow> {
   private static instance: CETimeWindowDao;
 
   static getInstance() {
     if (!CETimeWindowDao.instance) {
-      CETimeWindowDao.instance = new CETimeWindowDao(getSupabaseClient(), 'timewindow');
+      CETimeWindowDao.instance = new CETimeWindowDao(SupabaseConfiguration.getInstance().getSupabaseClient(),
+        'timewindow',
+        {
+          mapper: JSON_2_ENTITY
+        }
+      );
     }
     return CETimeWindowDao.instance;
-  }
-
-  mapJson(json: any): TimeWindow {
-    return JSON_2_ENTITY(json);
   }
 
   async deleteByGroupId(groupId: Identifier): Promise<boolean> {

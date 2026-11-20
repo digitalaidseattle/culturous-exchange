@@ -10,26 +10,26 @@ import { CEPlacementDao } from "../../api/cePlacementDao";
 import { CEPlanDao } from "../../api/cePlanDao";
 import { Group, Placement, Plan } from "../../api/types";
 
+vi.mock("./cePlacementService", () => {
+    return {
+        placementService: {
+            mapJson: vi.fn()
+        }
+    };
+});
+
+vi.mock("./ceGroupService", () => {
+    return {
+        groupService: {
+            mapJson: vi.fn()
+        }
+    };
+});
+
 describe("planService", () => {
     const groupDao = CEGroupDao.getInstance();
     const planDao = CEPlanDao.getInstance();
     const placementDao = CEPlacementDao.getInstance();
-
-    vi.mock("./cePlacementService", () => {
-        return {
-            placementService: {
-                mapJson: vi.fn()
-            }
-        };
-    });
-
-    vi.mock("./ceGroupService", () => {
-        return {
-            groupService: {
-                mapJson: vi.fn()
-            }
-        };
-    });
 
     it("mapJson", () => {
 

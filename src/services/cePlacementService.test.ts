@@ -7,14 +7,15 @@ import { CEStudentDao } from '../api/ceStudentDao';
 import { CEPlacementService } from './cePlacementService';
 
 // Mock supabase client chain used in updatePlacement
-vi.mock('@digitalaidseattle/supabase', () => {
+vi.mock('../api/Configuration', () => {
   const single = vi.fn(() => Promise.resolve({ data: { plan_id: 'plan1', student_id: 'student1', anchor: true }, error: null }));
   const select = vi.fn(() => ({ single }));
   const eq2 = vi.fn(() => ({ select }));
   const eq1 = vi.fn(() => ({ eq: eq2 }));
   const update = vi.fn(() => ({ eq: eq1 }));
   const from = vi.fn(() => ({ update }));
-  return { supabaseClient: { from } };
+  const supabaseClient = { from };
+  return { getSupabaseClient: () => supabaseClient, setConfiguration: vi.fn() };
 });
 
 vi.mock('./ceStudentService', () => {

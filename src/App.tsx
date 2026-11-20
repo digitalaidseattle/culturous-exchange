@@ -9,7 +9,6 @@ import React from 'react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 
-import { createClient } from "@supabase/supabase-js";
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 import {
@@ -23,35 +22,31 @@ import { LayoutConfigurationProvider } from "@digitalaidseattle/mui";
 import { routes } from './pages/routes';
 import {
   SupabaseAuthService,
+  SupabaseConfiguration,
   SupabaseStorageService
 } from '@digitalaidseattle/supabase';
 import { Config } from './Config';
 
 import "./App.css";
-import { setConfiguration } from './api/Configuration';
 
 // ==============================|| APP - THEME, ROUTER, LOCAL  ||============================== //
 
 const router = createBrowserRouter(routes);
 
+SupabaseConfiguration.props({
+  supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+  anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY
+});
+
+const authService = SupabaseAuthService.getInstance();
+const storageService = SupabaseStorageService.getInstance();
+
+setCoreServices({
+  authService: authService,
+  storageService: storageService
+})
+
 const App: React.FC = () => {
-
-  const authService = new SupabaseAuthService();
-  const storageService = new SupabaseStorageService();
-
-  setCoreServices({
-    authService: authService,
-    storageService: storageService
-  })
-
-  setConfiguration(
-    {
-      supabaseClient: createClient(
-        import.meta.env.VITE_SUPABASE_URL,
-        import.meta.env.VITE_SUPABASE_ANON_KEY
-      )
-    }
-  )
 
   return (
     <AuthServiceProvider authService={authService} >

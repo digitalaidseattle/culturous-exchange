@@ -20,7 +20,7 @@ import {
 import { DeleteOutlined, StarFilled } from '@ant-design/icons';
 import { LoadingContext, RefreshContext, useNotifications } from '@digitalaidseattle/core';
 import { ConfirmationDialog } from '@digitalaidseattle/mui';
-import { PageInfo, QueryModel } from '@digitalaidseattle/supabase';
+import { PageInfo, QueryModel } from '@digitalaidseattle/core';
 import { CEStudentDao } from '../../api/ceStudentDao';
 import { Student } from '../../api/types';
 import DisplayTimeWindow from '../../components/DisplayTimeWindow';
@@ -234,7 +234,7 @@ const StudentsDetailsTable: React.FC = () => {
       headerName: UI_STRINGS.TIME_SLOTS_LABEL,
       width: 200,
       renderCell: (params) => {
-        return <TimeSlots timeWindows={params.row.timeWindows} />
+        return <TimeSlots timeWindows={params.row.timeWindows ?? []} />
       },
       filterable: false,
       sortable: false,

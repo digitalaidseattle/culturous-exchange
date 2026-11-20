@@ -8,17 +8,17 @@
 import { v4 as uuid } from 'uuid';
 import { Identifier } from '@digitalaidseattle/core';
 import { CEProfile, TimeWindow } from '../api/types';
-import { SupabaseDao } from '../api/SupabaseDao';
 import { CETimeWindowDao } from '../api/ceTimeWindowDao';
 import { CETimeWindowService } from './time/ceTimeWindowService';
+import { SupabaseDAO } from '@digitalaidseattle/supabase';
 
 
 
 class CEProfileService<T extends CEProfile> {
 
-    profileDao: SupabaseDao<T>;
+    profileDao: SupabaseDAO<T>;
 
-    constructor(profileDao: SupabaseDao<T>) {
+    constructor(profileDao: SupabaseDAO<T>) {
         this.profileDao = profileDao;
     }
 

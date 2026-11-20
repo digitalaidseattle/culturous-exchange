@@ -4,13 +4,12 @@
  *  @copyright 2026 Digital Aid Seattle
  *
  */
+import { SupabaseConfiguration, SupabaseDAO } from "@digitalaidseattle/supabase";
 
 import { Identifier } from "@digitalaidseattle/core";
 import { CEGroupDao } from "./ceGroupDao";
 import { CEPlacementDao } from "./cePlacementDao";
-import { SupabaseDao } from "./SupabaseDao";
 import { Group, Placement, Plan } from "./types";
-import { getSupabaseClient } from "./Configuration";
 
 const DEFAULT_SELECT = '*, placement(*, student(*, timewindow(*))), grouptable(*, timewindow(*), assignment(*, facilitators(*, timewindow(*))))';
 
@@ -44,18 +43,19 @@ function ENTITY_2_JSON(entity: Partial<Plan>): any {
   return json;
 }
 
-export class CEPlanDao extends SupabaseDao<Plan> {
+export class CEPlanDao extends SupabaseDAO<Plan> {
   private static instance: CEPlanDao;
 
   static getInstance() {
     if (!CEPlanDao.instance) {
-      CEPlanDao.instance = new CEPlanDao(getSupabaseClient(), 'plan', { select: DEFAULT_SELECT });
+      CEPlanDao.instance = new CEPlanDao(SupabaseConfiguration.getInstance().getSupabaseClient(),
+        'plan',
+        {
+          select: DEFAULT_SELECT,
+          mapper: JSON_2_ENTITY
+        });
     }
     return CEPlanDao.instance;
-  }
-
-  mapJson(json: any): Plan {
-    return JSON_2_ENTITY(json);
   }
 
   mapEntity(entity: Plan): any {
