@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { Student, ValidationError } from '../../api/types';
+import { Student, ValidationError } from '../api/types';
 import StudentForm from './StudentForm';
-import { UI_STRINGS } from '../../constants';
-import { StudentValidationService } from '../../services/ValidationService';
+import { UI_STRINGS } from '../constants';
+import { StudentValidationService } from '../services/ValidationService';
 
 interface Props {
   mode: 'add' | 'edit';
@@ -55,6 +55,7 @@ const StudentModal: React.FC<Props> = ({ mode, student, open, onClose, onChange 
           <StudentForm
             student={updated}
             fieldErrors={validationErrors}
+            showCohort={mode === 'edit'}
             onChange={handleChange}
           />
         </DialogContent>

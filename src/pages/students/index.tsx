@@ -19,7 +19,7 @@ import FileUploader from '../../components/FileUploader';
 import ProfilesPage from '../../components/ProfilesPage';
 import { TimeToggle } from '../../components/TimeToggle';
 import { UI_STRINGS } from '../../constants';
-import StudentModal from './StudentModal';
+import StudentModal from '../../components/StudentModal';
 import StudentsDetailsTable from './StudentsDetailsTable';
 import { CEStudentService } from '../../services/student/CEStudentService';
 
