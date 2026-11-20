@@ -22,23 +22,21 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-
-import { CEStudentDao } from '../../api/ceStudentDao';
-import { CETimeSlotService, TIME_SLOTS } from '../../services/time/ceTimeSlotService';
-import { Cohort, GENDER_OPTION, Student, TimeSlot, TimeWindow, ValidationError } from '../../api/types';
-import { StudentValidationService } from '../../services/ValidationService';
-import { CETextInput } from '../../components/CETextInput';
-import { UI_STRINGS } from '../../constants';
-
-
+import { Cohort, GENDER_OPTION, Student, TimeSlot, TimeWindow, ValidationError } from '../api/types';
+import { CEStudentDao } from '../api/ceStudentDao';
+import { StudentValidationService } from '../services/ValidationService';
+import { CETimeSlotService, TIME_SLOTS } from '../services/time/ceTimeSlotService';
+import { CETextInput } from './CETextInput';
+import { UI_STRINGS } from '../constants';
 
 interface Props {
   student: Student;
   fieldErrors: ValidationError[],
+  showCohort?: boolean,
   onChange: (student: Student, validationErrors: ValidationError[]) => void;
 }
 
-const StudentForm: React.FC<Props> = ({ student, fieldErrors, onChange }) => {
+const StudentForm: React.FC<Props> = ({ student, fieldErrors, showCohort = true, onChange }) => {
   const studentDao = CEStudentDao.getInstance();
   const validationService = StudentValidationService.getInstance();
   const timeSlotService = CETimeSlotService.getInstance();
@@ -254,18 +252,20 @@ const StudentForm: React.FC<Props> = ({ student, fieldErrors, onChange }) => {
         <FormHelperText>{getFieldError('timeWindows') || ' '}</FormHelperText>
       </FormControl>
 
-      <FormControl fullWidth>
-        <FormLabel htmlFor="cohort-display">{UI_STRINGS.COHORTS}</FormLabel>
-        <TextField
-          id="cohort-display"
-          variant="standard"
-          value={cohorts && cohorts.length > 0
-            ? cohorts.map((cc: Cohort) => cc.name).join(', ')
-            : UI_STRINGS.NOT_ASSIGNED_COHORT
-          }
-          disabled={true}
-        />
-      </FormControl>
+      {showCohort &&
+        <FormControl fullWidth>
+          <FormLabel htmlFor="cohort-display">{UI_STRINGS.COHORTS}</FormLabel>
+          <TextField
+            id="cohort-display"
+            variant="standard"
+            value={cohorts && cohorts.length > 0
+              ? cohorts.map((cc: Cohort) => cc.name).join(', ')
+              : UI_STRINGS.NOT_ASSIGNED_COHORT
+            }
+            disabled={true}
+          />
+        </FormControl>
+      }
     </Box>
   )
 }

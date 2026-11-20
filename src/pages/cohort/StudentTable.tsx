@@ -6,8 +6,6 @@
  * @copyright 2026 Digital Aid Seattle
  */
 import { useContext, useEffect, useState } from "react";
-
-// material-ui
 import { Box, Button, Stack, Typography } from "@mui/material";
 import {
   DataGrid,
@@ -19,8 +17,6 @@ import {
   GridSortModel,
   useGridApiRef,
 } from "@mui/x-data-grid";
-
-// third-party
 import { StarFilled } from "@ant-design/icons";
 
 // project import
@@ -31,17 +27,17 @@ import { PageInfo } from "@digitalaidseattle/supabase";
 import { CohortContext } from ".";
 import { CEStudentDao } from "../../api/ceStudentDao";
 import { CEProfile, Enrollment, FailedProfile, Student } from "../../api/types";
-import AddProfileModal from "../../components/AddProfileModal";
 import DisplayTimeWindow from "../../components/DisplayTimeWindow";
 import FailedUploadModal from "../../components/FailedUploadModal";
 import FileUploader from "../../components/FileUploader";
 import { ShowLocalTimeContext } from "../../components/ShowLocalTimeContext";
 import { TimeToggle } from "../../components/TimeToggle";
 import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
-import { removeStudentsFromCohort } from "../../services/cohort/removeStudentsFromCohort";
-import { addStudentsToCohort } from "../../services/cohort/addStudentsToCohort";
-import { CohortUploadResult, uploadStudentsToCohort } from "../../services/cohort/uploadStudentsToCohort";
 import { CEEnrollmentService } from "../../services/ceEnrollmentService";
+import { addStudentsToCohort } from "../../services/cohort/addStudentsToCohort";
+import { removeStudentsFromCohort } from "../../services/cohort/removeStudentsFromCohort";
+import { CohortUploadResult, uploadStudentsToCohort } from "../../services/cohort/uploadStudentsToCohort";
+import { AddStudentModal } from "../../components/AddStudentModal";
 
 export const StudentTable: React.FC = () => {
   const studentDao = CEStudentDao.getInstance();
@@ -171,7 +167,11 @@ export const StudentTable: React.FC = () => {
       headerName: UI_STRINGS.NAME,
       width: 150,
       renderCell: (param: GridRenderCellParams) => {
-        return <Typography>{param.row.student.name}</Typography>;
+        return (
+          <Typography sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+            {param.row.student.name}
+          </Typography>
+        );
       },
       valueGetter: (_value, row) => row.student.name,
     },
@@ -180,7 +180,11 @@ export const StudentTable: React.FC = () => {
       headerName: UI_STRINGS.EMAIL,
       width: 240,
       renderCell: (param: GridRenderCellParams) => {
-        return <Typography>{param.row.student.email}</Typography>;
+        return (
+          <Typography sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+            {param.row.student.email}
+          </Typography>
+        )
       },
       valueGetter: (_value, row) => row.student.email,
 
@@ -191,7 +195,11 @@ export const StudentTable: React.FC = () => {
       headerName: UI_STRINGS.COUNTRY,
       width: 140,
       renderCell: (param: GridRenderCellParams) => {
-        return <Typography>{param.row.student.country}</Typography>;
+        return (
+          <Typography sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+            {param.row.student.country}
+          </Typography>
+        )
       },
       valueGetter: (_value, row) => row.student.country,
     },
@@ -220,7 +228,11 @@ export const StudentTable: React.FC = () => {
       filterOperators: getGridNumericOperators()
         .filter((operator) => studentDao.supportedNumberFilters().includes(operator.value)),
       renderCell: (param: GridRenderCellParams) => {
-        return <Typography>{param.row.student.age}</Typography>;
+        return (
+          <Typography sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+            {param.row.student.age}
+          </Typography>
+        )
       },
       valueGetter: (_value, row) => row.student.age,
     },
@@ -231,7 +243,11 @@ export const StudentTable: React.FC = () => {
       filterOperators: getGridStringOperators()
         .filter((operator) => studentDao.supportedStringFilters().includes(operator.value)),
       renderCell: (param: GridRenderCellParams) => {
-        return <Typography>{param.row.student.gender}</Typography>;
+        return (
+          <Typography sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+            {param.row.student.gender}
+          </Typography>
+        )
       },
       valueGetter: (_value, row) => row.student.gender,
     },
@@ -241,7 +257,9 @@ export const StudentTable: React.FC = () => {
       width: 250,
       renderCell: (params) => {
         const timeWindows = Array.isArray(params.row.student.timeWindows) ? params.row.student.timeWindows : [];
-        return <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.student.time_zone} />
+        return <Box sx={{ height: '100%', display: 'flex', alignItems: 'center' }}>
+          <DisplayTimeWindow timeWindows={timeWindows} timezone={params.row.student.time_zone} />
+        </Box>
       },
       filterable: false
     }
@@ -308,7 +326,7 @@ export const StudentTable: React.FC = () => {
           open={openDeleteDialog}
           handleConfirm={() => doDelete()}
           handleCancel={() => setOpenDeleteDialog(false)} />
-        <AddProfileModal
+        <AddStudentModal
           title={UI_STRINGS.ADD_STUDENT}
           profiles={unEnrolled}
           isOpen={showAddStudent}
