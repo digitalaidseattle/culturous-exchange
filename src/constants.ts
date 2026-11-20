@@ -28,6 +28,7 @@ export const UI_STRINGS = {
   STEP_COHORT_NAME: 'Enter a name for the cohort',
   STEP_UPLOAD_STUDENTS: 'Drop a file of students',
   STEP_GENERATE_COHORT: 'Generate the cohort and plan',
+  COHORT: 'Cohort',
   COHORT_NAME: 'Cohort Name',
   SPREADSHEET_UNREADABLE: 'The file could not be read as a spreadsheet.',
   SPREADSHEET_EMPTY: 'The spreadsheet has no rows.',

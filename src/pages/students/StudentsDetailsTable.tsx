@@ -28,9 +28,10 @@ import { TimeSlots } from '../../components/TimeSlots';
 import { DEFAULT_TABLE_PAGE_SIZE, SERVICE_ERRORS, UI_STRINGS } from '../../constants';
 import StudentModal from './StudentModal';
 import { CEStudentService } from '../../services/student/CEStudentService';
-
+import { CEStudentListDao, EnrolledStudent } from '../../api/ceStudentListDao';
 
 const StudentsDetailsTable: React.FC = () => {
+  const listDao = CEStudentListDao.getInstance();
   const studentDao = CEStudentDao.getInstance();
   const studentService = CEStudentService.getInstance();
 
@@ -40,7 +41,7 @@ const StudentsDetailsTable: React.FC = () => {
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: DEFAULT_TABLE_PAGE_SIZE });
   const [sortModel, setSortModel] = useState<GridSortModel>([{ field: 'name', sort: 'asc' }]);
   const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
-  const [pageInfo, setPageInfo] = useState<PageInfo<Student>>({ rows: [], totalRowCount: 0 });
+  const [pageInfo, setPageInfo] = useState<PageInfo<EnrolledStudent>>({ rows: [], totalRowCount: 0 });
   const notifications = useNotifications();
 
   const [showDetails, setShowDetails] = useState<boolean>(false);
@@ -63,7 +64,7 @@ const StudentsDetailsTable: React.FC = () => {
         filterOperator: filterModel.items.length > 0 ? filterModel.items[0].operator : undefined,
         filterValue: filterModel.items.length > 0 ? filterModel.items[0].value : undefined,
       } as QueryModel;
-      studentDao
+     listDao
         .find(queryModel)
         .then((pi) => setPageInfo(pi))
         .catch((err) => console.error(err))
@@ -155,18 +156,33 @@ const StudentsDetailsTable: React.FC = () => {
       }
     },
     {
+      field: 'cohort',
+      headerName: UI_STRINGS.COHORT,
+      width: 150,
+      // Cohort names come from the nested enrollment(*, cohort(*)) select; a student may be in several cohorts.
+      renderCell: (params: GridRenderCellParams) => {
+        return (params.row.cohorts ?? [])
+          .map((cohort: any) => cohort.name)
+          .filter((name: string) => !!name)
+          .join(', ');
+      },
+      // Not a column on the student table, so server-side sort/filter can't use it.
+      filterable: false,
+      sortable: false,
+    },
+    {
       field: 'name',
       headerName: UI_STRINGS.NAME,
       width: 150,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+        .filter((operator) => listDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: 'email',
       headerName: UI_STRINGS.EMAIL,
       width: 200,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+        .filter((operator) => listDao.supportedStringFilters().includes(operator.value))
 
     },
     {
@@ -174,21 +190,21 @@ const StudentsDetailsTable: React.FC = () => {
       headerName: UI_STRINGS.CITY,
       width: 120,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+        .filter((operator) => listDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: 'state',
       headerName: UI_STRINGS.STATE,
       width: 100,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+        .filter((operator) => listDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: 'country',
       headerName: UI_STRINGS.COUNTRY,
       width: 100,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+        .filter((operator) => listDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: "anchor",
@@ -213,21 +229,21 @@ const StudentsDetailsTable: React.FC = () => {
       width: 75,
       type: 'number',
       filterOperators: getGridNumericOperators()
-        .filter((operator) => studentDao.supportedNumberFilters().includes(operator.value))
+        .filter((operator) => listDao.supportedNumberFilters().includes(operator.value))
     },
     {
       field: 'gender',
       headerName: UI_STRINGS.GENDER,
       width: 100,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+        .filter((operator) => listDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: 'time_zone',
       headerName: UI_STRINGS.TIME_ZONE,
       width: 150,
       filterOperators: getGridStringOperators()
-        .filter((operator) => studentDao.supportedStringFilters().includes(operator.value))
+        .filter((operator) => listDao.supportedStringFilters().includes(operator.value))
     },
     {
       field: 'preferences',
@@ -249,6 +265,7 @@ const StudentsDetailsTable: React.FC = () => {
       },
       filterable: false,
       sortable: false,
+
     }
   ];
 
@@ -258,6 +275,14 @@ const StudentsDetailsTable: React.FC = () => {
       <DataGrid
         rows={pageInfo.rows}
         columns={columns}
+        initialState={{
+          columns: {
+            columnVisibilityModel: {
+              preferences: false,
+              timeWindows: false,
+            },
+          },
+        }}
         rowCount={pageInfo.totalRowCount}
         pageSizeOptions={[5, 10, 25, 100]}
 
