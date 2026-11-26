@@ -130,7 +130,7 @@ const PlanSettingsDialog: React.FC<Props> = ({
                 labelId="optimization-style-label"
                 id="optimization-style"
                 label={UI_STRINGS.GENERATION_METHOD}
-                value={updatedPlan.optimization_style ?? 'largest_first'}
+                value={updatedPlan.optimization_style ?? 'country'}
                 onChange={handleOptimizationStyleChange}
               >
                 {OPTIMIZATION_STYLES.map(option => (

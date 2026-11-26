@@ -93,7 +93,7 @@ type Plan = Entity & {
     avg_country_count: number;
     avg_duration: number;
     total_duration: number;
-    optimization_style: string;
+    optimization_style: 'country' | 'smallest_first' | 'largest_first' | 'balanced' | 'random'
 }
 
 // TODO table does not have an ID column

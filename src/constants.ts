@@ -183,6 +183,7 @@ export const SERVICE_ERRORS = {
 
 // Options for plan.optimization_style
 export const OPTIMIZATION_STYLES = [
+  { value: 'country', label: 'Country Balanced' },
   { value: 'largest_first', label: 'Most Availability' },
   { value: 'smallest_first', label: 'Least Availability' },
   { value: 'random', label: 'Random' },
