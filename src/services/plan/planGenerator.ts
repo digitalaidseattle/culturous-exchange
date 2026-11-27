@@ -120,6 +120,8 @@ class PlanGenerator {
       return results;
     } else {
       switch (plan.optimization_style) {
+        case 'country':
+          return this.getLeastCountryOverlap(overlapResults, placement);
         case 'smallest_first':
           return this.getSmallestOverlap(overlapResults);
         case 'largest_first':
@@ -133,6 +135,26 @@ class PlanGenerator {
     }
   }
 
+  getLeastCountryOverlap(overlapResults: OverlapResult[], placement: Placement): OverlapResult | null {
+    const country = placement.student!.country.toLowerCase();
+
+    const hasCountry = (r: OverlapResult) =>
+      (r.group.placements ?? []).some(p => p.student!.country.toLowerCase() === country);
+    const groupSize = (r: OverlapResult) => r.group.placements?.length ?? 0;
+
+    const sortedResults = overlapResults
+      .sort((a, b) => {
+        // 1. favor groups without the placement's country
+        const countryDiff = Number(hasCountry(a)) - Number(hasCountry(b));
+        if (countryDiff !== 0) {
+          return countryDiff;
+        } else {
+          // 2. favor smaller groups
+          return groupSize(a) - groupSize(b);
+        }
+      })
+    return sortedResults.length > 0 ? sortedResults[0] : null;
+  }
 
   getSmallestGroup(overlapResults: OverlapResult[]): OverlapResult | null {
     const sortedResults = overlapResults

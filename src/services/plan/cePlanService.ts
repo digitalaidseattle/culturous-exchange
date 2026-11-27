@@ -37,7 +37,7 @@ class CEPlanService {
       avg_country_count: 0.0,
       avg_duration: 0.0,
       total_duration: 0.0,
-      optimization_style: 'largest_first'
+      optimization_style: 'country'
     } as Plan;
   }
 
