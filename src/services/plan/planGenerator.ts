@@ -138,15 +138,20 @@ class PlanGenerator {
   getLeastCountryOverlap(overlapResults: OverlapResult[], placement: Placement): OverlapResult | null {
     const country = placement.student!.country.toLowerCase();
 
+    const hasCountry = (r: OverlapResult) =>
+      (r.group.placements ?? []).some(p => p.student!.country.toLowerCase() === country);
+    const groupSize = (r: OverlapResult) => r.group.placements?.length ?? 0;
+
     const sortedResults = overlapResults
       .sort((a, b) => {
-        const aCountries = (a.group.placements ?? [])
-          .map(p => p.student!.country)
-          .filter(pCountry => pCountry.toLowerCase() !== country);
-        const bCountries = (b.group.placements ?? [])
-          .map(p => p.student!.country)
-          .filter(pCountry => pCountry.toLowerCase() !== country);
-        return bCountries.length - aCountries.length;
+        // 1. favor groups without the placement's country
+        const countryDiff = Number(hasCountry(a)) - Number(hasCountry(b));
+        if (countryDiff !== 0) {
+          return countryDiff;
+        } else {
+          // 2. favor smaller groups
+          return groupSize(a) - groupSize(b);
+        }
       })
     return sortedResults.length > 0 ? sortedResults[0] : null;
   }

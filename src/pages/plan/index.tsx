@@ -18,7 +18,7 @@ import { CECohortDao } from "../../api/ceCohortDao";
 import { CEPlanDao } from "../../api/cePlanDao";
 import { Cohort, Plan } from "../../api/types";
 import PlanSettingsDialog from "../../components/PlanSettingsDialog";
-import { UI_STRINGS } from '../../constants';
+import { OPTIMIZATION_STYLES, UI_STRINGS } from '../../constants';
 import { PlanExporter } from "../../services/plan/planExporter";
 import { PlanGenerator } from "../../services/plan/planGenerator";
 import { CohortContext } from "../cohort";
@@ -103,19 +103,14 @@ const PlanPage: React.FC = () => {
   async function handleSettingsChange(changed: Plan): Promise<void> {
     if (plan) {
       try {
-        const orig_optimization_style = plan.optimization_style;
         const updatedPlan = await planDao.update(plan!.id!, {
           name: changed.name,
           note: changed.note,
           group_size: changed.group_size!,
           optimization_style: changed.optimization_style
         })
-        if (orig_optimization_style !== updatedPlan.optimization_style) {
-          const seededPlan = await PlanGenerator.getInstance().run(updatedPlan)
-          setPlan(seededPlan)
-        } else {
-          setPlan(updatedPlan);
-        }
+        const seededPlan = await PlanGenerator.getInstance().run(updatedPlan)
+        setPlan(seededPlan)
         notifications.success(`Plan ${changed.name} updated successfully`);
       }
       catch (err) {
@@ -162,7 +157,7 @@ const PlanPage: React.FC = () => {
               <CardHeader title={plan.name}
                 subheader={<Stack>
                   <Typography variant="body2" color="text.secondary">{UI_STRINGS.NOTES_LABEL}: {plan.note}</Typography>
-                  <Typography variant="body2" color="text.secondary">{UI_STRINGS.GENERATION_METHOD}: {plan.optimization_style}</Typography>
+                  <Typography variant="body2" color="text.secondary">{UI_STRINGS.GENERATION_METHOD}: {OPTIMIZATION_STYLES.find(s => s.value === plan.optimization_style)!.label}</Typography>
                 </Stack>}
                 action={
                   <Tooltip title={UI_STRINGS.SHOW_PLAN_SETTINGS}>

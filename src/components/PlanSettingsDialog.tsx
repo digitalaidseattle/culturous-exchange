@@ -55,7 +55,7 @@ const PlanSettingsDialog: React.FC<Props> = ({
     });
   }
 
-  function handleOptimizationStyleChange(event: SelectChangeEvent<string>): void {
+  function handleOptimizationStyleChange(event: SelectChangeEvent<"country" | "largest_first" | "smallest_first" | "random" | "balanced">): void {
     setUpdatedPlan({
       ...updatedPlan,
       optimization_style: event.target.value
